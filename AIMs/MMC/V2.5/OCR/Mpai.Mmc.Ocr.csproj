@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <!-- Compile only this project's own source files, NOT the test subfolder. -->
+  <ItemGroup>
+    <Compile Include="IOcrAim.cs" />
+    <Compile Include="RapidOcrAim.cs" />
+    <Compile Include="OcrFactory.cs" />
+    <Compile Include="OcrAimProcessor.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="RapidOcrNet" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Core\Mpai.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\AIF\V3.0\src\AIF.Controller\AIF.Controller.csproj" />
+    <ProjectReference Include="..\..\..\..\AIF\V3.0\src\AIF.Store\AIF.Store.csproj" />
+  </ItemGroup>
+
+</Project>

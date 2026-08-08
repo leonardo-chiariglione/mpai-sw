@@ -1,0 +1,54 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="UaUi.MainWindow"
+        Width="1100" Height="720"
+        MinWidth="820" MinHeight="540"
+        Title="MPAI AMQ — User Agent"
+        FontFamily="Segoe UI">
+
+  <Grid RowDefinitions="Auto,*,Auto" Margin="14">
+
+    <!-- Top: folder selection -->
+    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,10">
+      <TextBlock Grid.Column="0" Text="Image folder:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+      <TextBox   Grid.Column="1" x:Name="FolderBox" Watermark="Choose the folder that holds your images"/>
+      <Button    Grid.Column="2" x:Name="BrowseButton" Content="Browse…" Margin="8,0,0,0"/>
+    </Grid>
+
+    <!-- Middle: file list (left) | image frame (right) -->
+    <Grid Grid.Row="1" ColumnDefinitions="320,*">
+
+      <Grid Grid.Column="0" RowDefinitions="Auto,*,Auto" Margin="0,0,10,0">
+        <TextBlock Grid.Row="0" Text="Images in folder" FontWeight="SemiBold" Margin="0,0,0,6"/>
+        <Border Grid.Row="1" BorderBrush="#D0D0D0" BorderThickness="1" CornerRadius="4">
+          <ScrollViewer>
+            <ListBox x:Name="FileList" Background="Transparent" BorderThickness="0"/>
+          </ScrollViewer>
+        </Border>
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+          <TextBox Grid.Column="0" x:Name="TypedName" Watermark="…or type name.ext"/>
+          <Button  Grid.Column="1" x:Name="PickTyped" Content="Show" Margin="6,0,0,0"/>
+        </Grid>
+      </Grid>
+
+      <Grid Grid.Column="1" RowDefinitions="Auto,*">
+        <TextBlock Grid.Row="0" x:Name="FrameCaption" Text="Image" FontWeight="SemiBold" Margin="0,0,0,6"/>
+        <Border Grid.Row="1" BorderBrush="#D0D0D0" BorderThickness="1" CornerRadius="4" Background="#FAFAFA">
+          <Image x:Name="FrameImage" Stretch="Uniform" Margin="8"/>
+        </Border>
+      </Grid>
+    </Grid>
+
+    <!-- Bottom: Ask question | question box | Get answer | status -->
+    <Grid Grid.Row="2" RowDefinitions="Auto,Auto" Margin="0,12,0,0">
+      <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
+        <Button  Grid.Column="0" x:Name="AskButton"    Content="Ask question" IsEnabled="False"/>
+        <TextBox Grid.Column="1" x:Name="QuestionBox"  Margin="8,0,8,0"
+                 Watermark="Type your question about the image…" IsEnabled="False"/>
+        <Button  Grid.Column="2" x:Name="AnswerButton" Content="Get answer" IsEnabled="False"/>
+      </Grid>
+      <TextBlock Grid.Row="1" x:Name="StatusText" Margin="0,8,0,0" TextWrapping="Wrap"
+                 Text="Choose a folder and select an image."/>
+    </Grid>
+  </Grid>
+</Window>

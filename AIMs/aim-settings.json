@@ -1,0 +1,35 @@
+﻿{
+    "CVE-VOA-V1.0":  {
+                         "SourceHint":  "D:\\AI\\MPAIApps\\VisualIn",
+                         "ImageFile":  "D:\\AI\\MPAIApps\\VisualIn\\zebra.jpg"
+                     },
+    "CAE-AOA-V1.0":  {
+                         "DurationSeconds":  "5",
+                         "QuestionAudio":  "D:\\AI\\MPAIApps\\AudioIn\\question.wav"
+                     },
+    "MMC-ASR-V2.5":  {
+                         "ExecutablePath":  "D:\\AI\\Models\\Whisper\\bin\\whisper-cli.exe",
+                         "ModelPath":  "D:\\AI\\Models\\Whisper\\models\\ggml-base.en.bin",
+                         "LanguageCode":  "en"
+                     },
+    "MMC-TIQ-V2.5":  {
+                         "VisionModel":  "D:\\AI\\Models\\BLIP\\onnx\\blip_vision_model.onnx",
+                         "EncoderModel":  "D:\\AI\\Models\\BLIP\\onnx\\blip_text_encoder_wrapper.onnx",
+                         "DecoderModel":  "D:\\AI\\Models\\BLIP\\onnx\\blip_decoder_context_dynamic.onnx",
+                         "VocabFile":  "D:\\AI\\Models\\BLIP\\blip-vqa-base\\vocab.txt"
+                     },
+    "MMC-TTS-V2.5":  {
+                         "PiperExecutable":  "D:\\AI\\Models\\Piper\\piper_windows_amd64\\piper\\piper.exe",
+                         "VoiceModel":  "D:\\AI\\Models\\Piper\\voices\\en_US-lessiac-medium\\en_US-lessiac-medium.onnx",
+                         "VoiceConfig":  "D:\\AI\\Models\\Piper\\voices\\en_US-lessiac-medium\\en_US-lessiac-medium.onnx.json"
+                     },
+    "CAE-AOD-V1.0":  {
+                         "OutputFolder":  "D:\\AI\\MPAIApps\\AudioOut"
+                     },
+    "MMC-OCR-V2.5":  {
+                         "DetModel":  "D:\\AI\\Models\\OCR\\ch_PP-OCRv5_mobile_det.onnx",
+                         "ClsModel":  "D:\\AI\\Models\\OCR\\ch_ppocr_mobile_v2.0_cls_infer.onnx",
+                         "RecModel":  "D:\\AI\\Models\\OCR\\latin_PP-OCRv5_rec_mobile_infer.onnx",
+                         "KeysFile":  "D:\\AI\\Models\\OCR\\ppocrv5_latin_dict.txt"
+                     }
+}

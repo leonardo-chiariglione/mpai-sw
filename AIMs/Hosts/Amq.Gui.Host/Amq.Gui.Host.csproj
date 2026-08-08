@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- WinExe, not Exe: a windowed application must not open a console. -->
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>AMQApp</AssemblyName>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\AIF\V3.0\src\AIF.Store\AIF.Store.csproj" />
+    <ProjectReference Include="..\..\Core\Mpai.Core.csproj" />
+    <ProjectReference Include="..\..\CVE\V1.0\VOA\Mpai.Cve.Voa.csproj" />
+    <ProjectReference Include="..\..\CVE\V1.0\VOA.Windows\Mpai.Cve.Voa.Windows.csproj" />
+    <ProjectReference Include="..\..\CVE\V1.0\VOD\Mpai.Cve.Vod.csproj" />
+    <ProjectReference Include="..\..\CVE\V1.0\VOD.Windows\Mpai.Cve.Vod.Windows.csproj" />
+    <ProjectReference Include="..\..\CAE3\V1.0\AOA\Mpai.Cae.Aoa.csproj" />
+    <ProjectReference Include="..\..\CAE3\V1.0\AOA.Windows\Mpai.Cae.Aoa.Windows.csproj" />
+    <ProjectReference Include="..\..\CAE3\V1.0\AOD\Mpai.Cae.Aod.csproj" />
+    <ProjectReference Include="..\..\CAE3\V1.0\AOD.Windows\Mpai.Cae.Aod.Windows.csproj" />
+    <ProjectReference Include="..\..\MMC\V2.5\ASR\Mpai.Mmc.Asr.csproj" />
+    <ProjectReference Include="..\..\MMC\V2.5\TIQ\Mpai.Mmc.Tiq.csproj" />
+    <ProjectReference Include="..\..\MMC\V2.5\TTS\Mpai.Mmc.Tts.csproj" />
+    <ProjectReference Include="..\..\MMC\V2.5\AMQ\Mpai.Mmc.Amq.csproj" />
+  </ItemGroup>
+
+</Project>
+

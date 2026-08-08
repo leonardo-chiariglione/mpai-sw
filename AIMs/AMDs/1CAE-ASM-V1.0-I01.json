@@ -1,0 +1,154 @@
+﻿{
+  "Identifier": {
+    "ImplementerID": "1",
+    "ImplementationID": "CAE-ASM-V1.0-I01",
+    "AIMName": "CAE-ASM-V1.0"
+  },
+  "APIProfile": "Basic",
+  "Description": "Audio Scene Manager: acquires audio, edits it into Objects, composes Objects into a Scene, and delivers the Scene. Composite of AOA + AOE + ASE + ASD, all reading/writing through the shared Repository. UNLIKE MMC-AMQ, this composite is NOT executed via AIF.Controller/MachineExecutor as a run-to-completion pipeline: a user builds/edits Objects and Scenes on demand, in whatever order, via ASMApp, which hosts the Repository and calls directly into the live AOA/AOE/ASE/ASD instances. The Topology below documents the intended logical data flow for registration/documentation purposes; it does not drive execution the way it does for MMC-AMQ.",
+  "Types": [
+    {
+      "Name": "AudioObject_t",
+      "Type": "uint8[]"
+    },
+    {
+      "Name": "AudioSceneDescriptors_t",
+      "Type": "uint8[]"
+    },
+    {
+      "Name": "AudioDestination_t",
+      "Type": "uint8[]"
+    }
+  ],
+  "Ports": [
+    {
+      "Name": "AudioSource",
+      "Direction": "InputOutput",
+      "RecordType": "AudioObject_t",
+      "Technology": "Hardware",
+      "Protocol": "",
+      "IsRemote": false
+    },
+    {
+      "Name": "AudioDestination",
+      "Direction": "OutputInput",
+      "RecordType": "AudioDestination_t",
+      "Technology": "Hardware",
+      "Protocol": "",
+      "IsRemote": false
+    }
+  ],
+  "SubAIMs": [
+    {
+      "Identifier": {
+        "ImplementerID": "1",
+        "ImplementationID": "CAE-AOA-V1.0-I01",
+        "AIMName": "CAE-AOA-V1.0"
+      }
+    },
+    {
+      "Identifier": {
+        "ImplementerID": "/* String from IIDRA */",
+        "ImplementationID": "/* String from Implementer */",
+        "AIMName": "CAE-AOE-V1.0"
+      }
+    },
+    {
+      "Identifier": {
+        "ImplementerID": "/* String from IIDRA */",
+        "ImplementationID": "/* String from Implementer */",
+        "AIMName": "CAE-ASE-V1.0"
+      }
+    },
+    {
+      "Identifier": {
+        "ImplementerID": "/* String from IIDRA */",
+        "ImplementationID": "/* String from Implementer */",
+        "AIMName": "CAE-ASD-V1.0"
+      }
+    }
+  ],
+  "Topology": [
+    {
+      "OutputInput": {
+        "AIMName": "",
+        "PortName": "AudioSource"
+      },
+      "InputOutput": {
+        "AIMName": "CAE-AOA-V1.0",
+        "PortName": "AudioSource"
+      }
+    },
+    {
+      "OutputInput": {
+        "AIMName": "CAE-AOA-V1.0",
+        "PortName": "AudioObject"
+      },
+      "InputOutput": {
+        "AIMName": "CAE-AOE-V1.0",
+        "PortName": "BasicAudioObject"
+      }
+    },
+    {
+      "OutputInput": {
+        "AIMName": "CAE-AOE-V1.0",
+        "PortName": "AudioObject"
+      },
+      "InputOutput": {
+        "AIMName": "CAE-ASE-V1.0",
+        "PortName": "AudioObject"
+      }
+    },
+    {
+      "OutputInput": {
+        "AIMName": "CAE-ASE-V1.0",
+        "PortName": "AudioSceneDescriptors"
+      },
+      "InputOutput": {
+        "AIMName": "CAE-ASD-V1.0",
+        "PortName": "AudioSceneDescriptors"
+      }
+    },
+    {
+      "OutputInput": {
+        "AIMName": "CAE-ASD-V1.0",
+        "PortName": "AudioDestination"
+      },
+      "InputOutput": {
+        "AIMName": "",
+        "PortName": "AudioDestination"
+      }
+    }
+  ],
+  "Implementations": [
+    {
+      "ImplementationURI": "file:///D:/AI/MPAIApps/ASMApp",
+      "BinaryName": "ASMApp",
+      "Architecture": "x86-64",
+      "OperatingSystem": "Windows",
+      "Version": "1.0",
+      "Source": "AIMStorage"
+    }
+  ],
+  "ResourcePolicies": [
+    {
+      "Name": "Memory",
+      "Minimum": "0.5_GB",
+      "Request": "1_GB",
+      "Maximum": "2_GB"
+    },
+    {
+      "Name": "CPU:Class",
+      "Minimum": "Low",
+      "Request": "Medium",
+      "Maximum": "Medium"
+    }
+  ],
+  "DataXMData": {},
+  "Documentation": [
+    {
+      "Type": "Tutorial",
+      "URI": "https://mpai.community/standards/mpai-cae/"
+    }
+  ]
+}

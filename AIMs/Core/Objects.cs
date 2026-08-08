@@ -1,0 +1,513 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Mpai.Core;
+
+// ---------------------------------------------------------------------------
+//  Placeholder projections for schemas not yet shared. Shapes are stubbed so
+//  the surrounding types are structurally correct; fill them in when the
+//  referenced schemas arrive.
+// ---------------------------------------------------------------------------
+// OSD/V1.5/data/SpaceTime.json
+public sealed class SpaceTime
+{
+    public string Header { get; init; } = "OSD-SPT-V1.5";
+    public string? MInstanceID { get; init; }
+    public string? UEnvironmentID { get; init; }
+    public string SpaceTimeID { get; init; } = "";
+    public SimpleTime? SpaceTimeTime { get; init; }
+
+    public SpatialAttitude? SpatialAttitude1 { get; init; }   // at T0
+    public SpatialAttitude? SpatialAttitude2 { get; init; }   // at T1
+    public SimpleTime Time { get; init; } = new();             // interval between T0 and T1
+
+    public DataExchangeMetadata? DataXMData { get; init; }
+    public string? DescrMetadata { get; init; }
+}
+
+// (SpatialAttitude is defined properly further below, replacing this placeholder)
+// OSD/V1.5/data/SimpleTime.json
+// Header pattern in the schema as given has a typo (spurious commas, missing
+// "V"): "^OSD-STM-[0-9],{1,2},[.][0-9],{1,2}$". Using the convention every
+// other Header follows instead ("OSD-STM-V1.5"), consistent with SpaceTime,
+// AudioObject, etc.
+public sealed class SimpleTime
+{
+    public string Header { get; init; } = "OSD-STM-V1.5";
+    public string? MInstanceID { get; init; }
+    public string? UEnvironmentID { get; init; }
+    public string SimpleTimeID { get; init; } = "";
+    public List<TimeSegment> SimpleTimeData { get; init; } = new();
+    public string? DescrMetadata { get; init; }
+}
+
+// One time segment. FlagsByte and the decoded TimeType/TimeUnit/Reserved are
+// modelled as separate properties, exactly as the schema lists them, even
+// though the description explains them as "decoded from FlagsByte" - the
+// schema does not actually compute one from the other, both are present.
+public sealed class TimeSegment
+{
+    public int FlagsByte { get; init; }
+    public double StartTime { get; init; }
+    public double EndTime { get; init; }
+
+    public string AccuracyMode { get; init; } = "single";   // "single" | "separate"
+    public double? AccuracyPlusMinus { get; init; }         // required when AccuracyMode == "single"
+    public double? AccuracyStartPlusMinus { get; init; }    // required when AccuracyMode == "separate"
+    public double? AccuracyEndPlusMinus { get; init; }      // required when AccuracyMode == "separate"
+
+    public bool? TimeType { get; init; }    // false=Relative (epoch 0000-00-00T00:00), true=Absolute (epoch 1970-01-01T00:00)
+    public string? TimeUnit { get; init; }  // "00"=sec, "01"=ms, "10"=us, "11"=ns
+    public int? Reserved { get; init; }     // 0-31
+}
+
+// OSD/V1.5/data/PointOfView.json
+public sealed class PointOfView
+{
+    public string Header { get; init; } = "OSD-OPV-V1.5";
+    public string? MInstanceID { get; init; }
+    public string? UEnvironmentID { get; init; }
+    public string PointOfViewID { get; init; } = "";
+    public SimpleTime? PointOfViewTime { get; init; }
+
+    public GeneralClassification? General { get; init; }
+
+    public double[] CartPosition { get; init; } = new double[3];   // required: (X, Y, Z) metres
+    public double[]? CartAccuracy { get; init; }                    // (X, Y, Z) metres
+    public double[]? SpherPosition { get; init; }                   // (r, phi, theta) metres/degrees
+    public double[]? SpherAccuracy { get; init; }
+    public double[] Orientation { get; init; } = new double[3];     // required: Euler angles (alpha, beta, gamma) degrees
+    public double[]? OrientAccuracy { get; init; }
+
+    public List<ApertureEntry>? Aperture { get; init; }
+    public double? FocalDistance { get; init; }
+
+    public DataExchangeMetadata? DataXMData { get; init; }
+    public string? DescrMetadata { get; init; }
+}
+
+// Shared by PointOfView.General and SpatialAttitude.General. PointOfView
+// requires all three fields; SpatialAttitude only requires CoordType - kept
+// as one class with ObjectType/MediaType nullable (a strict superset of
+// both), rather than two near-identical classes.
+public sealed class GeneralClassification
+{
+    public CoordinateType CoordType { get; init; }
+    public ObjectType? ObjectType { get; init; }
+    public string? MediaType { get; init; }   // MediaType.* constant
+}
+
+public sealed class ApertureEntry
+{
+    public double Azimuth { get; init; }
+    public double Elevation { get; init; }
+}
+
+// TFA/V1.5/types/CoordinateTypes.json and ObjectTypes.json - real schemas.
+public enum CoordinateType { Cartesian, Spherical, Cylindrical, Geodetic, Toroidal }
+public enum ObjectType { DigitalHuman, Generic }
+
+// TFA/V1.5/types/MediaTypes.json - real schema. Kept as string constants
+// (matching the Formats.cs convention) rather than a C# enum, because two of
+// its wire values ("3D Model", "OfflineMap" - note the inconsistent spacing
+// between them) aren't valid C# enum member names.
+public static class MediaType
+{
+    public const string ThreeDModel = "3D Model";
+    public const string Audio = "Audio";
+    public const string AudioVisual = "AudioVisual";
+    public const string Haptic = "Haptic";
+    public const string LiDAR = "LiDAR";
+    public const string OfflineMap = "OfflineMap";
+    public const string RADAR = "RADAR";
+    public const string Smell = "Smell";
+    public const string Speech = "Speech";
+    public const string Text = "Text";
+    public const string Ultrasound = "Ultrasound";
+    public const string Visual = "Visual";
+}
+
+// OSD/V1.5/data/SpatialAttitude.json
+public sealed class SpatialAttitude
+{
+    public string Header { get; init; } = "OSD-OSA-V1.5";
+    public string? MInstanceID { get; init; }
+    public string? UEnvironmentID { get; init; }
+    public string ObjectSpatialAttitudeID { get; init; } = "";
+    public SimpleTime? SpatialAttitudeTime { get; init; }
+
+    public GeneralClassification? General { get; init; }
+
+    public Position Position { get; init; } = new();       // required
+    public Orientation Orientation { get; init; } = new();  // required
+
+    public DataExchangeMetadata? DataXMData { get; init; }
+    public string? DescrMetadata { get; init; }
+}
+
+// OSD/V1.5/data/Position.json
+public sealed class Position
+{
+    public string Header { get; init; } = "OSD-OPS-V1.5";
+    public string? MInstanceID { get; init; }
+    public string? UEnvironmentID { get; init; }
+    public string PositionID { get; init; } = "";
+    public SimpleTime? PositionTime { get; init; }
+    public SimpleTime? PositionSpaceTime { get; init; }   // schema refs SimpleTime here (field named "...SpaceTime") - not confirmed as the same bug as AudioObject's; kept faithful until confirmed
+
+    public GeneralClassification? General { get; init; }   // General.CoordType is required here, matching GeneralClassification's shape exactly
+
+    public double[]? CartPosition { get; init; }
+    public double[]? CartPositionAccuracy { get; init; }
+    public double[]? SpherPosition { get; init; }
+    public double[]? SpherPositionAccuracy { get; init; }
+
+    public double[]? CartVelocity { get; init; }
+    public double[]? CartVelocityAccuracy { get; init; }
+    public double[]? SpherVelocity { get; init; }
+    public double[]? SpherVelocityAccuracy { get; init; }
+
+    public double[]? CartAccel { get; init; }
+    public double[]? CartAccelAccuracy { get; init; }
+    public double[]? SpherAccel { get; init; }
+    public double[]? SpherAccelAccuracy { get; init; }
+
+    public DataExchangeMetadata? DataXMData { get; init; }
+    public string? DescrMetadata { get; init; }
+}
+
+// OSD/V1.5/data/Orientation.json
+public sealed class Orientation
+{
+    public string Header { get; init; } = "OSD-OOR-V1.5";
+    public string? MInstanceID { get; init; }
+    public string? UEnvironmentID { get; init; }
+    public string OrientationID { get; init; } = "";
+    public SimpleTime? OrientationTime { get; init; }
+    public SimpleTime? OrientationSpaceTime { get; init; }   // schema refs SimpleTime here too - same caveat as Position's PositionSpaceTime
+
+    public OrientationGeneral? General { get; init; }   // no CoordType here (unlike Position/PointOfView/SpatialAttitude) - orientation isn't coordinate-system dependent
+
+    // Named "EulerAngles" rather than the schema's literal "Orientation" to
+    // avoid a property sharing the exact name of its own containing class -
+    // same reasoning as BasicAudioSceneDescriptorsEntries.
+    public double[] EulerAngles { get; init; } = new double[3];   // required: (alpha, beta, gamma) degrees
+    public double[]? OrientAccuracy { get; init; }
+    public double[]? OrientVelocity { get; init; }
+    public double[]? OrientVelocityAccuracy { get; init; }
+    public double[]? OrientAccel { get; init; }
+    public double[]? OrientAccelAccuracy { get; init; }
+
+    public DataExchangeMetadata? DataXMData { get; init; }
+    public string? DescrMetadata { get; init; }
+}
+
+public sealed class OrientationGeneral
+{
+    public ObjectType? ObjectType { get; init; }
+    public string? MediaType { get; init; }   // MediaType.* constant
+}
+
+public sealed class InstanceIdentifier { public string? Id { get; init; } }  // OSD/V1.5/data/InstanceIdentifier.json
+public sealed class DataExchangeMetadata { }      // PTF/V1.0/data/DataExchangeMetadata.json
+public sealed class PersonalStatus { }            // MMC/V2.5/data/PersonalStatus.json
+// VisualQualifier is now defined in VisualQualifier.cs (TFA/V1.5 schema).
+
+// ---------------------------------------------------------------------------
+//  Basic Text Object â€” the ATOMIC unit: Basic Text Data + a Text Qualifier.
+//  OSD/V1.5/data/BasicTextObject.json
+// ---------------------------------------------------------------------------
+public sealed class BasicTextObject
+{
+    public string Header { get; init; } = "OSD-BTO-V1.5";
+    public string? MInstanceID { get; init; }
+    public string? UEnvironmentID { get; init; }
+    public string BasicTextObjectID { get; init; } = "";
+    public SpaceTime? BasicTextObjectSpaceTime { get; init; }
+
+    public List<BasicTextDataItem> BasicTextData { get; init; } = new();
+    public TextQualifier? TextQualifier { get; init; }
+
+    public DataExchangeMetadata? DataXMData { get; init; }
+    public string? DescrMetadata { get; init; }
+
+    // Convenience: the inline text (concatenated inline data items).
+    public string GetText() =>
+        string.Concat(BasicTextData.OfType<InlineTextData>().Select(d => d.Data));
+
+    public static BasicTextObject FromText(string text, TextQualifier? qualifier = null) => new()
+    {
+        BasicTextObjectID = Guid.NewGuid().ToString(),
+        BasicTextData = new() { new InlineTextData(text) },
+        TextQualifier = qualifier
+    };
+}
+
+// BasicTextData is a oneOf: inline data | length+URI reference | id reference.
+public abstract record BasicTextDataItem;
+public sealed record InlineTextData(string Data) : BasicTextDataItem;
+public sealed record ReferencedData(long Length, string DataURI) : BasicTextDataItem;
+public sealed record IdentifiedData(string ID) : BasicTextDataItem;
+
+// ---------------------------------------------------------------------------
+//  Basic Speech Object â€” atomic speech unit (Data + Speech Qualifier).
+//  Projected by analogy to BasicTextObject; the audio schema is not yet shared.
+// ---------------------------------------------------------------------------
+public sealed class BasicSpeechObject
+{
+    public string Header { get; init; } = "OSD-BAO-V1.5";     // placeholder header
+    public string? MInstanceID { get; init; }
+    public string? UEnvironmentID { get; init; }
+    public string BasicSpeechObjectID { get; init; } = "";
+    public SpaceTime? BasicSpeechObjectSpaceTime { get; init; }
+
+    public byte[] Data { get; init; } = [];                    // inline speech data (e.g. WAV/PCM)
+    public SpeechQualifier? SpeechQualifier { get; init; }
+
+    public DataExchangeMetadata? DataXMData { get; init; }
+    public string? DescrMetadata { get; init; }
+
+    public static BasicSpeechObject FromData(byte[] data, SpeechQualifier? qualifier = null) => new()
+    {
+        BasicSpeechObjectID = Guid.NewGuid().ToString(),
+        Data = data,
+        SpeechQualifier = qualifier
+    };
+
+    // Audio == Speech at this level: reinterpret as a Basic Audio Object.
+    public BasicAudioObject AsAudio() => BasicAudioObject.FromData(Data, SpeechQualifier);
+}
+
+// ---------------------------------------------------------------------------
+//  Basic Audio Object â€” OSD/V1.5/data/BasicAudioObject.json, schema-correct.
+//
+//  The stored shape now matches the real schema: BasicAudioObjectData is the
+//  array-of-variants the schema specifies (inline/reference/id), not a raw
+//  byte array, and BasicAudioDataQualifier is its own field rather than a
+//  borrowed SpeechQualifier.
+//
+//  .Data and .Qualifier below are a COMPATIBILITY SURFACE, not the real
+//  storage: every existing AOA/AOD backend (Alsa/Wasapi/File acquisition,
+//  Aplay/File/Winmm delivery) and FromData() reads/writes through them, so
+//  none of that code needs to change for this fix. They project to/from the
+//  schema-correct fields underneath.
+//
+//  BasicAudioDataQualifier is typed as AudioQualifier (TFA/V1.5/data/
+//  AudioQualifier.json) â€” a schema not yet provided. Rather than an empty
+//  placeholder that would discard the real sample-rate/format/device data
+//  every backend already determines, AudioQualifier (see Qualifiers.cs)
+//  reuses the same Format/Attributes shape already used for Speech, so no
+//  information is lost; only its internals need revisiting once the real
+//  schema arrives, not every call site.
+// ---------------------------------------------------------------------------
+public sealed class BasicAudioObject
+{
+    public string Header { get; init; } = "OSD-BAO-V1.5";
+    public string? MInstanceID { get; init; }
+    public string? UEnvironmentID { get; init; }
+    public string BasicAudioObjectID { get; init; } = "";
+    public SpaceTime? BasicAudioObjectTime { get; init; }
+
+    public List<ParentObjectRef>? ParentObjects { get; init; }
+    public List<ChildObjectRef>? ChildObjects { get; init; }
+
+    public List<BasicAudioObjectDataItem> BasicAudioObjectData { get; init; } = new();
+    public BasicAudioObjectProperties? BasicAudioObjectProperties { get; init; }
+    public AudioQualifier? BasicAudioDataQualifier { get; init; }
+
+    public DataExchangeMetadata? DataXMData { get; init; }
+    public string? DescrMetadata { get; init; }
+
+    // --- Compatibility surface (see note above) ---
+    public byte[] Data =>
+        BasicAudioObjectData.OfType<InlineAudioData>().Select(d => Convert.FromBase64String(d.Data)).FirstOrDefault()
+        ?? [];
+
+    public SpeechQualifier? Qualifier => BasicAudioDataQualifier is null ? null : new SpeechQualifier
+    {
+        SpeechQualifierID = BasicAudioDataQualifier.AudioQualifierID,
+        SubType = BasicAudioDataQualifier.SubType,
+        Format = BasicAudioDataQualifier.Format,
+        Attributes = BasicAudioDataQualifier.Attributes
+    };
+
+    public static BasicAudioObject FromData(byte[] data, SpeechQualifier? qualifier = null) => new()
+    {
+        BasicAudioObjectID = Guid.NewGuid().ToString(),
+        BasicAudioObjectData = new() { new InlineAudioData(Convert.ToBase64String(data)) },
+        BasicAudioDataQualifier = qualifier is null ? null : new AudioQualifier
+        {
+            AudioQualifierID = qualifier.SpeechQualifierID,
+            SubType = qualifier.SubType,
+            Format = qualifier.Format,
+            Attributes = qualifier.Attributes
+        }
+    };
+
+    // Audio == Speech at this level: reinterpret as a Basic Speech Object.
+    public BasicSpeechObject AsSpeech() => BasicSpeechObject.FromData(Data, Qualifier);
+
+    // Returns a copy with a different BasicAudioObjectID. Used by AOE to
+    // correct the stored object's own ID to match the Repository AssetId at
+    // creation time - otherwise the domain payload's self-assigned GUID (from
+    // FromData) and the Repository's readable "BAO000001"-style ID diverge,
+    // which surfaces confusingly later (e.g. delivered filenames named by a
+    // random GUID instead of the Repository ID everything else uses).
+    public BasicAudioObject WithId(string id) => new()
+    {
+        Header = Header,
+        MInstanceID = MInstanceID,
+        UEnvironmentID = UEnvironmentID,
+        BasicAudioObjectID = id,
+        BasicAudioObjectTime = BasicAudioObjectTime,
+        ParentObjects = ParentObjects,
+        ChildObjects = ChildObjects,
+        BasicAudioObjectData = BasicAudioObjectData,
+        BasicAudioObjectProperties = BasicAudioObjectProperties,
+        BasicAudioDataQualifier = BasicAudioDataQualifier,
+        DataXMData = DataXMData,
+        DescrMetadata = DescrMetadata
+    };
+}
+
+// BasicAudioObjectData is an anyOf: inline data | length+URI reference | id reference.
+// Polymorphic attributes are required for System.Text.Json to deserialize
+// the abstract base back into the correct concrete variant - without them,
+// round-tripping through RepositoryAsset.GetData<T>() fails outright
+// (caught by an actual end-to-end AOE test, not just a compile check).
+[System.Text.Json.Serialization.JsonPolymorphic(TypeDiscriminatorPropertyName = "$dataKind")]
+[System.Text.Json.Serialization.JsonDerivedType(typeof(InlineAudioData), "inline")]
+[System.Text.Json.Serialization.JsonDerivedType(typeof(ReferencedAudioData), "referenced")]
+[System.Text.Json.Serialization.JsonDerivedType(typeof(IdentifiedAudioData), "identified")]
+public abstract record BasicAudioObjectDataItem;
+public sealed record InlineAudioData(string Data) : BasicAudioObjectDataItem;
+public sealed record ReferencedAudioData(long DataLength, string DataURI) : BasicAudioObjectDataItem;
+public sealed record IdentifiedAudioData(string ID) : BasicAudioObjectDataItem;
+
+public sealed class ParentObjectRef
+{
+    public string? ParentObjectID { get; init; }
+    public SpaceTime? ParentObjectSpaceTime { get; init; }
+}
+
+public sealed class ChildObjectRef
+{
+    public string? ChildObjectID { get; init; }
+    public SpaceTime? ChildObjectSpaceTime { get; init; }
+}
+
+public sealed class BasicAudioObjectProperties
+{
+    public SpaceTime? BasicAudioObjectSpaceTime { get; init; }
+    public double? Level { get; init; }
+    public bool? PerceptStatus { get; init; }
+    public AcousticProfile? AcousticProfile { get; init; }
+    public InstanceIdentifier? BasicAudioObjectIdentifier { get; init; }
+}
+
+// ---------------------------------------------------------------------------
+//  Acoustic Profile â€” OSD/V1.5/data/AcousticProfile.json
+// ---------------------------------------------------------------------------
+public sealed class AcousticProfile
+{
+    public string Header { get; init; } = "OSD-ACP-V1.5";
+    public string? MInstanceID { get; init; }
+    public string? UEnvironmentID { get; init; }
+    public string AcousticProfileID { get; init; } = "";
+    public SpaceTime? AcousticProfileTime { get; init; }
+
+    public FrequencyRange FrequencyRange { get; init; } = new();
+    public Plot? Spectrogram { get; init; }
+    public double Loudness { get; init; }
+    public List<Reflectivity>? Reflectivity { get; init; }
+    public List<Reverberation>? Reverberation { get; init; }
+    public double? Diffusion { get; init; }
+    public double? Absorption { get; init; }
+    public List<Doppler>? Doppler { get; init; }
+
+    public DataExchangeMetadata? DataXMData { get; init; }
+    public string? DescrMetadata { get; init; }
+}
+
+public sealed class FrequencyRange { public double MinFrequencyHz { get; init; } public double MaxFrequencyHz { get; init; } }
+public sealed class Timbre
+{
+    public double? Attack { get; init; }
+    public List<double>? Overtones { get; init; }
+    public List<List<double>>? Resonance { get; init; }
+}
+public sealed class Reflectivity { public double EarlyReflectionTime { get; init; } public double LateReflectionTime { get; init; } }
+public sealed class Reverberation { public Plot? RT60 { get; init; } public Plot? RT30 { get; init; } public Plot? RT20 { get; init; } public double? EDT { get; init; } }
+public sealed class Doppler { public double? DirectSoundFactor { get; init; } public double? IndirectSound { get; init; } }
+public sealed class Plot { }   // OSD/V1.5/data/Plot.json â€” not yet provided
+
+// ---------------------------------------------------------------------------
+//  Basic Visual Object â€” atomic visual unit (Data + Visual Qualifier).
+//  Projected by analogy; the visual schema is not yet shared.
+// ---------------------------------------------------------------------------
+public sealed class BasicVisualObject
+{
+    public string Header { get; init; } = "OSD-BVO-V1.5";     // placeholder header
+    public string BasicVisualObjectID { get; init; } = "";
+    public string? FileName { get; init; }
+    public byte[] Data { get; init; } = [];
+    public VisualQualifier? VisualQualifier { get; init; }
+
+    public static BasicVisualObject FromFile(string fileName, byte[] data) => new()
+    {
+        BasicVisualObjectID = Guid.NewGuid().ToString(),
+        FileName = fileName,
+        Data = data,
+        VisualQualifier = BuildQualifier(fileName)
+    };
+
+    // A Visual Object is Data + Qualifier. Populate at least the 2D static
+    // content format from the file name, so downstream AIMs receive the
+    // format rather than raw bytes alone.
+    private static VisualQualifier? BuildQualifier(string? fileName)
+    {
+        var fmt = VisualFormatDetection.FromExtension(fileName);
+        return fmt is null ? null : VisualQualifier.For2DStill(fmt.Value);
+    }
+}
+
+// ---------------------------------------------------------------------------
+//  Text Object â€” the recursive COLLECTION (Basic Text Objects + nested Text
+//  Objects). A one-element Text Object is exactly a Basic Text Object.
+//  OSD/V1.5/data/TextObject.json
+// ---------------------------------------------------------------------------
+public sealed class TextObject
+{
+    public string Header { get; init; } = "OSD-TXO-V1.5";
+    public string? MInstanceID { get; init; }
+    public string? UEnvironmentID { get; init; }
+    public string TextObjectID { get; init; } = "";
+    public SpaceTime? TextObjectSpaceTime { get; init; }
+
+    public int? BasicTextObjectCount { get; init; }
+    public List<BasicTextObjectEntry> BasicTextObjects { get; init; } = new();
+
+    public int? SubTextObjectCount { get; init; }
+    public List<SubTextObjectEntry> SubTextObjects { get; init; } = new();
+
+    // Wrap a single Basic Text Object as a one-element Text Object (Object subsumes Basic).
+    public static TextObject FromBasic(BasicTextObject basic) => new()
+    {
+        TextObjectID = Guid.NewGuid().ToString(),
+        BasicTextObjectCount = 1,
+        BasicTextObjects = new() { new BasicTextObjectEntry { BTObjectIDOrBTObject = basic } }
+    };
+}
+
+public sealed class BasicTextObjectEntry
+{
+    public SpaceTime? BasicTextObjectSpaceTime { get; init; }
+    public BasicTextObject? BTObjectIDOrBTObject { get; init; }   // object or id-string (simplified to object)
+}
+
+public sealed class SubTextObjectEntry
+{
+    public SpaceTime? SubTextObjectSpaceTime { get; init; }
+    public TextObject? SubTObjectIDOrSubTObject { get; init; }
+}

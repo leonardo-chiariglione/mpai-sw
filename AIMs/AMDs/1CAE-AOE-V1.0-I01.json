@@ -1,0 +1,22 @@
+{ "Identifier":           {"ImplementerID": "1", "ImplementationID": "CAE-AOE-V1.0-I01", "AIMName": "CAE-AOE-V1.0"},
+
+  "APIProfile":           "Basic",
+  "Description":          "Audio Object Editing: creates and composes AudioObjects (a BasicAudioObject is the degenerate case, with no sub-objects) in the Repository. Invoked directly (CreateObject/AddSubObject/Materialize) by ASMApp, not through port-based streaming execution - the Ports/Topology below describe the logical data flow, not the actual call interface.",
+
+  "Types":                [{ "Name": "AudioObject_t", "Type": "uint8[]" }],
+
+  "Ports":                [{ "Name": "BasicAudioObject", "Direction": "InputOutput", "RecordType": "AudioObject_t", "Technology": "Software", "Protocol": "", "IsRemote": false },
+                           { "Name": "AudioObject",      "Direction": "OutputInput", "RecordType": "AudioObject_t", "Technology": "Software", "Protocol": "", "IsRemote": false }],
+
+  "SubAIMs":              [],
+
+  "Topology":             [],
+
+  "Implementations":      [{ "ImplementationURI": "file:///D:/AI/AIMs/CAE3/V1.0/AOE", "BinaryName": "Mpai.Cae.Aoe", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "1.0", "Source": "AIMStorage" }],
+
+  "ResourcePolicies":     [{ "Name": "Memory", "Minimum": "0.1_GB", "Request": "0.2_GB", "Maximum": "0.5_GB" },
+                           { "Name": "CPU:Class", "Minimum": "Low", "Request": "Low", "Maximum": "Medium" }],
+
+  "DataXMData":           { },
+
+  "Documentation":        [{ "Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-cae/" }] }

@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AIF.Controller/AIF.Controller.csproj" />
+    <Project Path="src/AIF.Console/AIF.Console.csproj" />
+    <Project Path="src/AIF.Store/AIF.Store.csproj" />
+  </Folder>
+</Solution>

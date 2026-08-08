@@ -1,0 +1,66 @@
+# Build outputs
+**/bin/
+**/obj/
+
+# VS
+.vs/
+
+# User files
+*.user
+*.suo
+
+# Logs
+*.log
+
+# Model files
+*.onnx
+*.onnx.data
+*.bin
+*.safetensors
+*.h5
+*.pt
+*.pth
+
+# Archives
+*.zip
+
+# Generated audio
+*.wav
+
+# Model repositories
+Models/
+
+# Temporary
+*.tmp
+# --- Added for first checkpoint ---
+# Backups and old-schema copies
+*.bak
+*.bak2
+*.bak3
+**/_old_schema_backup/
+**/AMDs_Backup/
+**/*.old/
+*.old
+
+# Generated / runtime output
+Output/
+Temp/
+**/ua-ui.log
+filenames.txt
+
+# Test scratch folders (regenerable)
+AoaAodDirectTest/
+ASD_Test/
+ASE_Test/
+
+# Shortcuts
+*.lnk
+
+# Executables (tools distributed separately)
+*.exe
+
+
+**/_backups/
+MPAIApps/VisualIn/
+
+Assets/

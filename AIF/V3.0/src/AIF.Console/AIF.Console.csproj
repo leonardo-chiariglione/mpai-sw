@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\AIF.Store\AIF.Store.csproj" />
+    <ProjectReference Include="..\AIF.Controller\AIF.Controller.csproj" />
+    <ProjectReference Include="..\..\..\..\AIMs\MMC\V2.5\AMQ\Mpai.Mmc.Amq.csproj" />
+    <ProjectReference Include="..\..\..\..\AIMs\CAE3\V1.0\AOA\Mpai.Cae.Aoa.csproj" />
+    <ProjectReference Include="..\..\..\..\AIMs\CAE3\V1.0\AOD\Mpai.Cae.Aod.csproj" />
+    <ProjectReference Include="..\..\..\..\AIMs\CVE\V1.0\VOA\Mpai.Cve.Voa.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

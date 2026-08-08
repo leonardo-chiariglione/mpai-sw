@@ -1,0 +1,23 @@
+{ "Identifier":           {"ImplementerID": "1", "ImplementationID": "CAE-ASE-V1.0-I01", "AIMName": "CAE-ASE-V1.0"},
+
+  "APIProfile":           "Basic",
+  "Description":          "Audio Scene Editing: composes AudioObjects into an AudioSceneDescriptors in the Repository. Invoked directly (CreateScene/AddObjectToScene/Materialize) by ASMApp, not through port-based streaming execution - the Ports/Topology below describe the logical data flow, not the actual call interface.",
+
+  "Types":                [{ "Name": "AudioObject_t",           "Type": "uint8[]" },
+                           { "Name": "AudioSceneDescriptors_t", "Type": "uint8[]" }],
+
+  "Ports":                [{ "Name": "AudioObject",           "Direction": "InputOutput", "RecordType": "AudioObject_t",           "Technology": "Software", "Protocol": "", "IsRemote": false },
+                           { "Name": "AudioSceneDescriptors", "Direction": "OutputInput", "RecordType": "AudioSceneDescriptors_t", "Technology": "Software", "Protocol": "", "IsRemote": false }],
+
+  "SubAIMs":              [],
+
+  "Topology":             [],
+
+  "Implementations":      [{ "ImplementationURI": "file:///D:/AI/AIMs/CAE3/V1.0/ASE", "BinaryName": "Mpai.Cae.Ase", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "1.0", "Source": "AIMStorage" }],
+
+  "ResourcePolicies":     [{ "Name": "Memory", "Minimum": "0.1_GB", "Request": "0.2_GB", "Maximum": "0.5_GB" },
+                           { "Name": "CPU:Class", "Minimum": "Low", "Request": "Low", "Maximum": "Medium" }],
+
+  "DataXMData":           { },
+
+  "Documentation":        [{ "Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-cae/" }] }

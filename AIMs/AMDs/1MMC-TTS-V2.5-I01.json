@@ -1,0 +1,20 @@
+{ "Identifier":           {"ImplementerID": "1", "ImplementationID": "MMC-TTS-V2.5-I01", "AIMName": "MMC-TTS-V2.5"},
+
+  "APIProfile":           "Basic",
+  "Description":          "Text to Speech: converts a Basic Text Object into a Basic Speech Object.",
+
+  "ExternalPorts":        [{ "Name": "InputText",   "Direction": "Input",  "DataType": "OSD-TXO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false },
+                           { "Name": "OutputAudio", "Direction": "Output", "DataType": "OSD-AUO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false }],
+
+  "SubAIMs":              [],
+
+  "Topology":             [],
+
+  "Implementations":      [{ "ImplementationURI": "file:///D:/AI/AIMs/MMC-TTS-V2.5-I01", "BinaryName": "Mpai.Mmc.Tts", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "2.5", "Source": "AIMStorage" }],
+
+  "ResourcePolicies":     [{ "Name": "Memory", "Minimum": "0.2_GB", "Request": "0.5_GB", "Maximum": "1_GB" },
+                           { "Name": "CPU:Class", "Minimum": "Low", "Request": "Medium", "Maximum": "High" }],
+
+  "DataXMData":           { },
+
+  "Documentation":        [{ "Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-mmc/" }] }

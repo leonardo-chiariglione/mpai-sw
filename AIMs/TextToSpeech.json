@@ -1,0 +1,25 @@
+{ "$schema":              "https://json-schema.org/draft/2020-12/schema",
+  "$comment":                   "https://schemas.mpai.community/AIF/V3.0/AIMMetadata.json",
+  "$id":                        "https://schemas.mpai.community/MMC/V2.5/AIMs/TextToSpeech.json",
+  "title":                      "Text-To-Speech V2.5",
+
+  "Identifier":                 {"ImplementerID": "/* String assigned by IIDRA */", "AIM": {"const": "MMC-TTS-V2.5"}},
+
+  "APIProfile":                 "Basic",
+  "Description":                "This AIM receives a Text Object and produces a Synthesised Speech Object. It may also receive a Personal Status and a Speech Model.",
+
+  "Types":                      [{"Name": "TextObject_t",    "Type": "uint8[]"},
+                           {"Name": "SpeechObject_t",  "Type": "uint8[]"},
+                           {"Name": "PersonalStatus_t","Type": "uint8[]"},
+                           {"Name": "SpeechModel_t",   "Type": "uint8[]"}],
+
+  "Ports":                      [{"Name": "TextObject",     "Direction": "InputOutput", "RecordType": "TextObject_t",    "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "PersonalStatus", "Direction": "InputOutput", "RecordType": "PersonalStatus_t","Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "SpeechModel",    "Direction": "InputOutput", "RecordType": "SpeechModel_t",   "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "SpeechObject",   "Direction": "OutputInput", "RecordType": "SpeechObject_t",  "Technology": "Software", "Protocol": "", "IsRemote": false}],
+
+  "SubAIMs":                    [],
+  "Topology":                   [],
+  "Implementations":            [],
+  "ResourcePolicies":           [],
+  "Documentation":              [{"Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-mmc/"}]}

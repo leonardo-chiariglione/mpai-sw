@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>ASMApp</AssemblyName>
+    <TargetFramework>net10.0-windows7.0</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\AIMs\Repository\Repository\Mpai.Repository.csproj" />
+    <ProjectReference Include="..\..\AIMs\CAE3\V1.0\AOE\Mpai.Cae.Aoe.csproj" />
+    <ProjectReference Include="..\..\AIMs\CAE3\V1.0\ASE\Mpai.Cae.Ase.csproj" />
+    <ProjectReference Include="..\..\AIMs\CAE3\V1.0\ASD\Mpai.Cae.Asd.csproj" />
+    <ProjectReference Include="..\..\AIMs\CAE3\V1.0\AOD\Mpai.Cae.Aod.csproj" />
+    <ProjectReference Include="..\..\AIMs\CAE3\V1.0\AOD.Windows\Mpai.Cae.Aod.Windows.csproj" />
+    <ProjectReference Include="..\..\AIMs\CAE3\V1.0\AOA.Windows\Mpai.Cae.Aoa.Windows.csproj" />
+  </ItemGroup>
+
+</Project>

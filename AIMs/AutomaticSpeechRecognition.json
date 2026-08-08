@@ -1,0 +1,34 @@
+{ "$schema":      "https://json-schema.org/draft/2020-12/schema",
+  "$comment":     "https://schemas.mpai.community/AIF/V3.0/AIMMetadata.json",
+  "$id":          "https://schemas.mpai.community/MMC/V2.5/AIMs/AutomaticSpeechRecognition.json",
+  "title":        "Automatic Speech Recognition V2.5",
+
+  "Identifier":   { "ImplementerID": "/* String assigned by IIDRA */",
+                    "AIM": { "const": "MMC-ASR-V2.5" } },
+
+  "APIProfile":   "Basic",
+  "Description":  "This AIM implements the speech recognition function: it converts the user's speech to text and produces paralinguistic Speech Descriptors.",
+
+  "Types":        [ { "Name": "LanguageSelector_t",   "Type": "uint8[]" },
+                    { "Name": "TextObject_t",          "Type": "uint8[]" },
+                    { "Name": "SpeechObject_t",        "Type": "uint8[]" },
+                    { "Name": "InstanceID_t",          "Type": "{string InstanceLabel; float32 LabelConfidenceLevel; string Taxonomy; float32 TaxonomyConfidenceLevel}" },
+                    { "Name": "SpeechOverlap_t",       "Type": "uint8[]" },
+                    { "Name": "Time_t",                "Type": "uint8[]" },
+                    { "Name": "TextSegment_t",         "Type": "uint8[]" },
+                    { "Name": "SpeechDescriptors_t",   "Type": "uint8[]" } ],
+
+  "Ports":        [ { "Name": "LanguageSelector",   "Direction": "InputOutput", "RecordType": "LanguageSelector_t", "Technology": "Software", "Protocol": "", "IsRemote": false },
+                    { "Name": "AuxiliaryText",       "Direction": "InputOutput", "RecordType": "TextObject_t",       "Technology": "Software", "Protocol": "", "IsRemote": false },
+                    { "Name": "SpeechObject",        "Direction": "InputOutput", "RecordType": "SpeechObject_t",    "Technology": "Software", "Protocol": "", "IsRemote": false },
+                    { "Name": "SpeakerID",           "Direction": "InputOutput", "RecordType": "InstanceID_t",      "Technology": "Software", "Protocol": "", "IsRemote": false },
+                    { "Name": "SpeechOverlap",       "Direction": "InputOutput", "RecordType": "SpeechOverlap_t",   "Technology": "Software", "Protocol": "", "IsRemote": false },
+                    { "Name": "SpeakerTime",         "Direction": "InputOutput", "RecordType": "Time_t",            "Technology": "Software", "Protocol": "", "IsRemote": false },
+                    { "Name": "RecognisedText",      "Direction": "OutputInput", "RecordType": "TextSegment_t",     "Technology": "Software", "Protocol": "", "IsRemote": false },
+                    { "Name": "SpeechDescriptors",   "Direction": "OutputInput", "RecordType": "SpeechDescriptors_t","Technology": "Software", "Protocol": "", "IsRemote": false } ],
+
+  "SubAIMs":          [],
+  "Topology":         [],
+  "Implementations":  [],
+  "ResourcePolicies": [],
+  "Documentation":    [ { "Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-mmc/" } ] }

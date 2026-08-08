@@ -1,0 +1,22 @@
+{ "$schema":              "https://json-schema.org/draft/2020-12/schema",
+  "$comment":                   "https://schemas.mpai.community/AIF/V3.0/AIMMetadata.json",
+  "$id":                        "https://schemas.mpai.community/MMC/V2.5/AIMs/TextAndImageQuery.json",
+  "title":                      "Text and Image Query V2.5",
+
+  "Identifier":                 {"ImplementerID": "/* String assigned by IIDRA */", "AIM": {"const": "MMC-TIQ-V2.5"}},
+
+  "APIProfile":                 "Basic",
+  "Description":                "This AIM provides a Text response to a Text and Image query.",
+
+  "Types":                      [{"Name": "TextObject_t",  "Type": "uint8[]"},
+                           {"Name": "VisualObject_t", "Type": "uint8[]"}],
+
+  "Ports":                      [{"Name": "TextObject",   "Direction": "InputOutput", "RecordType": "TextObject_t",  "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "VisualObject",  "Direction": "InputOutput", "RecordType": "VisualObject_t", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "MachineText",   "Direction": "OutputInput", "RecordType": "TextObject_t",  "Technology": "Software", "Protocol": "", "IsRemote": false}],
+
+  "SubAIMs":                    [],
+  "Topology":                   [],
+  "Implementations":            [],
+  "ResourcePolicies":           [],
+  "Documentation":              [{"Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-mmc/"}]}

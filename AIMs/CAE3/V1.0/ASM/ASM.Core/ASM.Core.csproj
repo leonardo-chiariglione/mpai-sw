@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\ASL.RepositoryService\ASL.RepositoryService.csproj" />
+    <ProjectReference Include="..\ASL.FileService\ASL.FileService.csproj" />
+    <ProjectReference Include="..\ASL.SearchService\ASL.SearchService.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>
