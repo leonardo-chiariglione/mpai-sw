@@ -18,9 +18,12 @@ namespace UaUi;
 
 public partial class MainWindow : Window
 {
-    private const string AmdRepository = @"D:\AI\AIMs\AMDs";
-    private const string SettingsFile  = @"D:\AI\AIMs\aim-settings.json";
-    private const string OutputFolder  = @"D:\AI\MPAIApps\AMQ\Output";
+    // Paths come from ua-config.json (next to the exe); falls back to D:\AI
+    // defaults if the config is absent. One edit (MpaiRoot) relocates everything.
+    private static readonly UaConfig Config = UaConfig.Load();
+    private static readonly string AmdRepository = Config.AmdRepository;
+    private static readonly string SettingsFile  = Config.SettingsFile;
+    private static readonly string OutputFolder  = Config.OutputFolder;
 
     private static readonly string[] ImageExtensions =
         { ".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp", ".tif", ".tiff" };
@@ -61,7 +64,7 @@ public partial class MainWindow : Window
     private void Status(string message) =>
         Dispatcher.UIThread.Post(() => StatusText.Text = message);
 
-    private static readonly string LogFile = @"D:\AI\MPAIApps\AMQ\UaUi\ua-ui.log";
+    private static readonly string LogFile = Config.LogFile;
     private static void Log(string message)
     {
         try { File.AppendAllText(LogFile, DateTime.Now.ToString("HH:mm:ss") + "  " + message + Environment.NewLine); }
