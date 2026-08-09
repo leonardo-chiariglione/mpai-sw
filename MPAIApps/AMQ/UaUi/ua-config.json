@@ -1,5 +1,5 @@
 {
-  "MpaiRoot": "D:\\AI",
+  "MasServerUrl": "", "MpaiRoot": "D:\\AI",
   "AmdRepository": "%MpaiRoot%\\AIMs\\AMDs",
   "SettingsFile": "%MpaiRoot%\\AIMs\\aim-settings.json",
   "OutputFolder": "%MpaiRoot%\\MPAIApps\\AMQ\\Output"
