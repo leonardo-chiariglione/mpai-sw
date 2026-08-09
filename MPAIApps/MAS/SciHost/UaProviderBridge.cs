@@ -41,6 +41,8 @@ public sealed class UaProviderBridge : IAimProvider
             "MMC-ASR-V2.5" => new AsrAimProcessor(aimName, _asr ??= AsrFactory.Create(settings), _store),
             "MMC-TIQ-V2.5" => new TiqAimProcessor(aimName, _tiq ??= TiqFactory.Create(settings), _store),
             "MMC-TTS-V2.5" => new TtsAimProcessor(aimName, _tts ??= TtsFactory.Create(settings), _store),
+            "MMC-SOA-V2.5" => new SoaAimProcessor(aimName, new FileAudioAcquisition(string.Empty), _store, TimeSpan.FromSeconds(5)),
+            "MMC-SOD-V2.5" => new SodAimProcessor(aimName, new FileAudioDelivery(_outputFolder), _store),
             "CAE-AOD-V1.0" => new AodAimProcessor(aimName, new FileAudioDelivery(_outputFolder), _store),
             "CVE-VOD-V1.0" => new VodAimProcessor(aimName, new FileVisualDelivery(_outputFolder), _store),
             _ => throw new NotSupportedException($"No implementation for {aimName}.")

@@ -32,6 +32,8 @@
     <ProjectReference Include="..\..\..\AIMs\MMC\V2.5\TIQ\Mpai.Mmc.Tiq.csproj" />
     <ProjectReference Include="..\..\..\AIMs\MMC\V2.5\TTS\Mpai.Mmc.Tts.csproj" />
     <ProjectReference Include="..\..\..\AIMs\CVE\V1.0\VOD\Mpai.Cve.Vod.csproj" />
+    <ProjectReference Include="..\..\..\AIMs\MMC\V2.5\SOA\Mpai.Mmc.Soa.csproj" />
+    <ProjectReference Include="..\..\..\AIMs\MMC\V2.5\SOD\Mpai.Mmc.Sod.csproj" />
   </ItemGroup>
 
 </Project>

@@ -80,6 +80,19 @@ public sealed class UaProvider : IAimProvider
                     _tts ??= TtsFactory.Create(settings),
                     _store),
 
+            "MMC-SOA-V2.5" =>
+                new SoaAimProcessor(
+                    aimName,
+                    new FileAudioAcquisition(string.Empty),
+                    _store,
+                    TimeSpan.FromSeconds(5)),
+
+            "MMC-SOD-V2.5" =>
+                new SodAimProcessor(
+                    aimName,
+                    new FileAudioDelivery(_outputFolder),
+                    _store),
+
             "CAE-AOD-V1.0" =>
                 new AodAimProcessor(
                     aimName,
