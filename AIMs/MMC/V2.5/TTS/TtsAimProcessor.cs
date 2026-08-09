@@ -10,7 +10,10 @@ namespace Mpai.Aims.Tts;
 
 // MMC-TTS-V2.5 — self-contained IAimProcessor.
 // Reads its own port names from 1MMC-TTS-V2.5-I01.json at startup.
-// No adapter needed.
+//
+// TTS produces SPEECH (OSD-SPO-V1.5): its output is a Basic Speech Object,
+// carrying a SpeechQualifier. The output port is now typed as speech so the
+// object's speech metadata is preserved to whatever consumes it (SOD, or ASR).
 public sealed class TtsAimProcessor : IAimProcessor
 {
     private readonly string      _inputPort;
@@ -28,7 +31,7 @@ public sealed class TtsAimProcessor : IAimProcessor
         _tts        = tts;
         var ports   = AimPortReader.Load(store, instanceId);
         _inputPort  = ports.Input("OSD-TXO-V1.5");
-        _outputPort = ports.Output("OSD-AUO-V1.5");
+        _outputPort = ports.Output("OSD-SPO-V1.5");
     }
 
     public async Task<Message> ProcessAsync(Message message)

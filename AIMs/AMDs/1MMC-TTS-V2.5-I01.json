@@ -4,7 +4,7 @@
   "Description":          "Text to Speech: converts a Basic Text Object into a Basic Speech Object.",
 
   "ExternalPorts":        [{ "Name": "InputText",   "Direction": "Input",  "DataType": "OSD-TXO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false },
-                           { "Name": "OutputAudio", "Direction": "Output", "DataType": "OSD-AUO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false }],
+                           { "Name": "OutputSpeech", "Direction": "Output", "DataType": "OSD-SPO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false }],
 
   "SubAIMs":              [],
 
@@ -17,4 +17,4 @@
 
   "DataXMData":           { },
 
-  "Documentation":        [{ "Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-mmc/" }] }
+  "Documentation":        [{ "Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-mmc/tts/" }] }

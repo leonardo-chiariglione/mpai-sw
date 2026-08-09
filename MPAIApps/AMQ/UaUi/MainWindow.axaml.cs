@@ -294,11 +294,11 @@ public partial class MainWindow : Window
                     return (false, "Pipeline did not reach the question step.", null, null);
 
                 // TIQ has one text input, fed by EITHER the boundary InputText OR
-                // ASR (from the audio branch). To avoid the two colliding:
-                //  * TEXT mode: supply the typed InputText AND an empty InputAudio.
-                //    The empty audio lets AOA run without suspending; ASR yields
+                // ASR (from the speech branch). To avoid the two colliding:
+                //  * TEXT mode: supply the typed InputText AND an empty InputSpeech.
+                //    The empty speech lets SOA run without suspending; ASR yields
                 //    no real text; TIQ uses the typed InputText.
-                //  * VOICE mode: supply ONLY InputAudio. ASR produces the text and
+                //  * VOICE mode: supply ONLY InputSpeech. ASR produces the text and
                 //    feeds TIQ; the boundary InputText is left unset. The executor
                 //    does not suspend for it because TIQ is satisfied internally
                 //    by ASR (InternallySatisfied).
@@ -308,16 +308,16 @@ public partial class MainWindow : Window
                     Log($"[UA-UI] TEXT question: \"{question}\"");
                     questionPorts = new Dictionary<string, string>
                     {
-                        ["InputText"]  = MpaiJson.ToJson(BasicTextObject.FromText(question)),
-                        ["InputAudio"] = MpaiJson.ToJson(BasicAudioObject.FromData(Array.Empty<byte>()))
+                        ["InputText"]   = MpaiJson.ToJson(BasicTextObject.FromText(question)),
+                        ["InputSpeech"] = MpaiJson.ToJson(BasicSpeechObject.FromData(Array.Empty<byte>()))
                     };
                 }
                 else
                 {
-                    Log($"[UA-UI] AUDIO question: {audioQuestion!.Length} bytes");
+                    Log($"[UA-UI] SPEECH question: {audioQuestion!.Length} bytes");
                     questionPorts = new Dictionary<string, string>
                     {
-                        ["InputAudio"] = MpaiJson.ToJson(BasicAudioObject.FromData(audioQuestion!))
+                        ["InputSpeech"] = MpaiJson.ToJson(BasicSpeechObject.FromData(audioQuestion!))
                     };
                 }
 
