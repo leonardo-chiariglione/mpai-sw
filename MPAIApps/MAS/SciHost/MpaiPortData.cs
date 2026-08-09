@@ -118,6 +118,34 @@ public static class MpaiPortData
         return BasicAudioObject.FromData(bytes);
     }
 
+    // ── Speech ───────────────────────────────────────────────────────────────
+    // OSD-SPO-V1.5: { Header, BasicSpeechObjectID, BasicSpeechObjectData:[{Data}],
+    //                 SpeechQualifier? }.  Speech is a first-class type distinct
+    //                 from Audio; its qualifier carries speech-specific metadata.
+    public static byte[] FromSpeech(BasicSpeechObject s)
+    {
+        var obj = new JsonObject
+        {
+            ["Header"]              = "OSD-SPO-V1.5",
+            ["BasicSpeechObjectID"] = string.IsNullOrEmpty(s.BasicSpeechObjectID)
+                                        ? Guid.NewGuid().ToString() : s.BasicSpeechObjectID,
+            ["BasicSpeechObjectData"] = new JsonArray(
+                new JsonObject { ["Data"] = Convert.ToBase64String(s.Data) })
+        };
+        if (s.SpeechQualifier is not null)
+            obj["SpeechQualifier"] = SerialiseQualifier(s.SpeechQualifier);
+
+        return Encode(obj);
+    }
+
+    public static BasicSpeechObject ToSpeech(byte[] portData)
+    {
+        var root  = Parse(portData);
+        var data  = FirstInlineData(root, "BasicSpeechObjectData");
+        var bytes = data is null ? Array.Empty<byte>() : Convert.FromBase64String(data);
+        return BasicSpeechObject.FromData(bytes);
+    }
+
     // ── helpers ────────────────────────────────────────────────────────────
     private static byte[] Encode(JsonObject obj) =>
         Encoding.UTF8.GetBytes(obj.ToJsonString(JsonOpts));

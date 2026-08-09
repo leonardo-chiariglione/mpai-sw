@@ -27,9 +27,9 @@ public sealed class MasAmqBackend : IAmqBackend
     // AMQ boundary port names (current, Audio-based AMQ).
     private const string PortInVisual  = "InputVisual";
     private const string PortInText    = "InputText";
-    private const string PortInAudio   = "InputAudio";
+    private const string PortInSpeech  = "InputSpeech";
     private const string PortOutText   = "OutputText";
-    private const string PortOutAudio  = "OutputAudio";
+    private const string PortOutSpeech = "OutputSpeech";
     private const string PortOutVisual = "OutputVisual";
 
     private readonly MasApiClient _api;
@@ -61,11 +61,17 @@ public sealed class MasAmqBackend : IAmqBackend
 
         // 2. Send the question on exactly one branch.
         if (questionText is not null)
+        {
             await _api.SendInputAsync(_moduleId, PortInText,
                 MpaiPortData.FromText(questionText), ct);
+            // AMQ's speech branch needs a (possibly empty) InputSpeech to run
+            // without suspending; TIQ uses the typed InputText for the answer.
+            await _api.SendInputAsync(_moduleId, PortInSpeech,
+                MpaiPortData.FromSpeech(BasicSpeechObject.FromData(Array.Empty<byte>())), ct);
+        }
         else if (questionAudio is not null)
-            await _api.SendInputAsync(_moduleId, PortInAudio,
-                MpaiPortData.FromAudio(questionAudio), ct);
+            await _api.SendInputAsync(_moduleId, PortInSpeech,
+                MpaiPortData.FromSpeech(BasicSpeechObject.FromData(questionAudio.Data)), ct);
         else
             throw new ArgumentException("Provide either questionText or questionAudio.");
 
@@ -74,18 +80,18 @@ public sealed class MasAmqBackend : IAmqBackend
         var answer = MpaiPortData.ToText(answerBytes).GetText();
 
         // 4. Receive the spoken answer and frame (best-effort - may be absent).
-        byte[]? spokenWav = await TryReceiveAudioAsync(PortOutAudio, ct);
+        byte[]? spokenWav = await TryReceiveSpeechAsync(PortOutSpeech, ct);
         byte[]? frame     = await TryReceiveVisualAsync(PortOutVisual, ct);
 
         return new AmqAnswer { Text = answer, SpokenWav = spokenWav, FrameBytes = frame };
     }
 
-    private async Task<byte[]?> TryReceiveAudioAsync(string port, CancellationToken ct)
+    private async Task<byte[]?> TryReceiveSpeechAsync(string port, CancellationToken ct)
     {
         try
         {
             var bytes = await _api.ReceiveOutputAsync(_moduleId, port, ct);
-            return MpaiPortData.ToAudio(bytes).Data;   // raw WAV bytes for playback
+            return MpaiPortData.ToSpeech(bytes).Data;   // raw WAV bytes for playback
         }
         catch { return null; }
     }

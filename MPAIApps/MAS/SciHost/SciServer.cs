@@ -232,6 +232,7 @@ public sealed class SciServer
         {
             "InputVisual" => MpaiJson.ToJson(MpaiPortData.ToVisual(bytes)),
             "InputText"   => MpaiJson.ToJson(MpaiPortData.ToText(bytes)),
+            "InputSpeech" => MpaiJson.ToJson(MpaiPortData.ToSpeech(bytes)),
             "InputAudio"  => MpaiJson.ToJson(MpaiPortData.ToAudio(bytes)),
             _             => Encoding.UTF8.GetString(bytes)   // unknown port: pass through
         };
@@ -269,10 +270,10 @@ public sealed class SciServer
     {
         // For the current (Audio) AMQ, the executor's "boundary wins / internally
         // satisfied" rules handle text-vs-voice. We pass whatever inputs the RCA
-        // supplied; for text mode we also supply an empty audio so AOA runs.
+        // supplied; for text mode we also supply an empty speech so SOA runs.
         var ports = new Dictionary<string, string>(s.Inputs);
-        if (ports.ContainsKey("InputText") && !ports.ContainsKey("InputAudio"))
-            ports["InputAudio"] = MpaiJson.ToJson(BasicAudioObject.FromData(Array.Empty<byte>()));
+        if (ports.ContainsKey("InputText") && !ports.ContainsKey("InputSpeech"))
+            ports["InputSpeech"] = MpaiJson.ToJson(BasicSpeechObject.FromData(Array.Empty<byte>()));
 
         // Two-step to match the AMQ suspend/resume: image first, then question.
         // We split the buffered inputs: InputVisual runs first (suspends), the
@@ -298,6 +299,7 @@ public sealed class SciServer
                 byte[] wire = pid switch
                 {
                     "OutputText"   => MpaiPortData.FromText(MpaiJson.FromJson<BasicTextObject>(internalJson)),
+                    "OutputSpeech" => MpaiPortData.FromSpeech(MpaiJson.FromJson<BasicSpeechObject>(internalJson)),
                     "OutputAudio"  => MpaiPortData.FromAudio(MpaiJson.FromJson<BasicAudioObject>(internalJson)),
                     "OutputVisual" => MpaiPortData.FromVisual(MpaiJson.FromJson<BasicVisualObject>(internalJson)),
                     _              => Encoding.UTF8.GetBytes(internalJson)
