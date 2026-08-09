@@ -255,13 +255,16 @@ public partial class MainWindow : Window
         {
             try
             {
-                // Reuse the already-loaded UA. Start a fresh AIW for this question.
-                var store = new AmdStore(AmdRepository);
-                store.Scan();
-                var settings = AimSettings.Load(SettingsFile);
-                var provider = new UaProvider(store, OutputFolder);
-                var e0 = ua.MPAI_AIFU_AIW_Start("MMC-AMQ-V2.5", provider, settings, out var aiwId);
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+
+                // Reuse the persistent store/settings/provider created ONCE at
+                // launch. The provider caches the heavy BLIP model (and ASR/TTS
+                // cores); creating a new provider here would discard that cache
+                // and reload BLIP on every question — the main latency cause.
+                var provider = _provider!;
+                var e0 = ua.MPAI_AIFU_AIW_Start("MMC-AMQ-V2.5", provider, _settings!, out var aiwId);
                 if (e0 != AifError.OK) return (false, $"Start failed: {e0}", (string?)null, (string?)null);
+                Log($"[UA-UI] AIW_Start: {sw.ElapsedMilliseconds} ms");
 
                 Log($"[UA-UI] Image={Path.GetFileName(selected)}  Question=\"{question}\"");
 
@@ -271,6 +274,7 @@ public partial class MainWindow : Window
                 {
                     ["InputVisual"] = MpaiJson.ToJson(image)
                 }).GetAwaiter().GetResult();
+                Log($"[UA-UI] RunAsync(image): {sw.ElapsedMilliseconds} ms total");
                 if (e1 != AifError.OK || o1 is null || !o1.Suspended)
                     return (false, "Pipeline did not reach the question step.", null, null);
 
@@ -304,6 +308,7 @@ public partial class MainWindow : Window
 
                 Log($"[UA-UI] Resuming with ports: {string.Join(",", questionPorts.Keys)}");
                 var (e2, o2) = ua.ResumeAsync(aiwId, questionPorts).GetAwaiter().GetResult();
+                Log($"[UA-UI] ResumeAsync(answer): {sw.ElapsedMilliseconds} ms total");
                 if (o2 is not null && o2.Completed is not null)
                     Log($"[UA-UI] Completed ports: {string.Join(",", o2.Completed.Ports.Keys)}");
                 if (e2 != AifError.OK || o2 is null) return (false, $"Answer failed: {e2}", null, null);
