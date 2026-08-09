@@ -60,7 +60,11 @@ public partial class MainWindow : Window
         };
 
         // Model loading starts as soon as the app launches, in the background.
-        // Get answer stays disabled until this completes.
+        // Until models are ready, disable folder/image controls so the user
+        // can't act on a not-yet-ready system (which caused a double-entry).
+        BrowseButton.IsEnabled = false;
+        FolderBox.IsEnabled    = false;
+        PickTyped.IsEnabled    = false;
         _loadTask = Task.Run(LoadModels);
     }
 
@@ -110,6 +114,10 @@ public partial class MainWindow : Window
             Dispatcher.UIThread.Post(() =>
             {
                 StatusText.Text = "Models loaded. Choose a folder and select an image.";
+                // System is now in a stable state: enable folder/image controls.
+                BrowseButton.IsEnabled = true;
+                FolderBox.IsEnabled    = true;
+                PickTyped.IsEnabled    = true;
                 RefreshAskButton();
             });
         }
