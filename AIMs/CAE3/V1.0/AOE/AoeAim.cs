@@ -172,7 +172,7 @@ public sealed class AoeAim
             ChildObjects = existingData.ChildObjects,
             BasicAudioObjectData = existingData.BasicAudioObjectData,
             BasicAudioObjectProperties = updatedProps,
-            BasicAudioDataQualifier = existingData.BasicAudioDataQualifier,
+            AudioQualifier = existingData.AudioQualifier,
             DataXMData = existingData.DataXMData,
             DescrMetadata = existingData.DescrMetadata
         });

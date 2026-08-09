@@ -17,6 +17,11 @@ public sealed class UaConfig
     public string SettingsFile  { get; init; } = @"D:\AI\AIMs\aim-settings.json";
     public string OutputFolder  { get; init; } = @"D:\AI\MPAIApps\AMQ\Output";
 
+    // When set (e.g. "http://localhost:5005"), the UI runs as a MAS Remote
+    // Client Application (RCA), talking to that SCI. When empty (default),
+    // the UI runs in-process with a local Controller + models, as before.
+    public string MasServerUrl  { get; init; } = "";
+
     // Log file derives from the output folder's parent (the app folder).
     public string LogFile => Path.Combine(
         Path.GetDirectoryName(OutputFolder) ?? @"D:\AI\MPAIApps\AMQ",
@@ -28,6 +33,7 @@ public sealed class UaConfig
         public string? AmdRepository { get; set; }
         public string? SettingsFile  { get; set; }
         public string? OutputFolder  { get; set; }
+        public string? MasServerUrl  { get; set; }
     }
 
     public static UaConfig Load()
@@ -59,7 +65,8 @@ public sealed class UaConfig
                 MpaiRoot      = root,
                 AmdRepository = Expand(raw.AmdRepository, Path.Combine(root, "AIMs", "AMDs")),
                 SettingsFile  = Expand(raw.SettingsFile,  Path.Combine(root, "AIMs", "aim-settings.json")),
-                OutputFolder  = Expand(raw.OutputFolder,  Path.Combine(root, "MPAIApps", "AMQ", "Output"))
+                OutputFolder  = Expand(raw.OutputFolder,  Path.Combine(root, "MPAIApps", "AMQ", "Output")),
+                MasServerUrl  = raw.MasServerUrl ?? ""
             };
         }
         catch

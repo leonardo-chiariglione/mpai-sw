@@ -215,7 +215,7 @@ public sealed class PersonalStatus { }            // MMC/V2.5/data/PersonalStatu
 // VisualQualifier is now defined in VisualQualifier.cs (TFA/V1.5 schema).
 
 // ---------------------------------------------------------------------------
-//  Basic Text Object â€” the ATOMIC unit: Basic Text Data + a Text Qualifier.
+//  Basic Text Object â€�?the ATOMIC unit: Basic Text Data + a Text Qualifier.
 //  OSD/V1.5/data/BasicTextObject.json
 // ---------------------------------------------------------------------------
 public sealed class BasicTextObject
@@ -251,7 +251,7 @@ public sealed record ReferencedData(long Length, string DataURI) : BasicTextData
 public sealed record IdentifiedData(string ID) : BasicTextDataItem;
 
 // ---------------------------------------------------------------------------
-//  Basic Speech Object â€” atomic speech unit (Data + Speech Qualifier).
+//  Basic Speech Object â€�?atomic speech unit (Data + Speech Qualifier).
 //  Projected by analogy to BasicTextObject; the audio schema is not yet shared.
 // ---------------------------------------------------------------------------
 public sealed class BasicSpeechObject
@@ -280,11 +280,11 @@ public sealed class BasicSpeechObject
 }
 
 // ---------------------------------------------------------------------------
-//  Basic Audio Object â€” OSD/V1.5/data/BasicAudioObject.json, schema-correct.
+//  Basic Audio Object â€�?OSD/V1.5/data/BasicAudioObject.json, schema-correct.
 //
 //  The stored shape now matches the real schema: BasicAudioObjectData is the
 //  array-of-variants the schema specifies (inline/reference/id), not a raw
-//  byte array, and BasicAudioDataQualifier is its own field rather than a
+//  byte array, and AudioQualifier is its own field rather than a
 //  borrowed SpeechQualifier.
 //
 //  .Data and .Qualifier below are a COMPATIBILITY SURFACE, not the real
@@ -293,8 +293,8 @@ public sealed class BasicSpeechObject
 //  none of that code needs to change for this fix. They project to/from the
 //  schema-correct fields underneath.
 //
-//  BasicAudioDataQualifier is typed as AudioQualifier (TFA/V1.5/data/
-//  AudioQualifier.json) â€” a schema not yet provided. Rather than an empty
+//  AudioQualifier is typed as AudioQualifier (TFA/V1.5/data/
+//  AudioQualifier.json) â€�?a schema not yet provided. Rather than an empty
 //  placeholder that would discard the real sample-rate/format/device data
 //  every backend already determines, AudioQualifier (see Qualifiers.cs)
 //  reuses the same Format/Attributes shape already used for Speech, so no
@@ -314,7 +314,7 @@ public sealed class BasicAudioObject
 
     public List<BasicAudioObjectDataItem> BasicAudioObjectData { get; init; } = new();
     public BasicAudioObjectProperties? BasicAudioObjectProperties { get; init; }
-    public AudioQualifier? BasicAudioDataQualifier { get; init; }
+    public AudioQualifier? AudioQualifier { get; init; }
 
     public DataExchangeMetadata? DataXMData { get; init; }
     public string? DescrMetadata { get; init; }
@@ -324,19 +324,19 @@ public sealed class BasicAudioObject
         BasicAudioObjectData.OfType<InlineAudioData>().Select(d => Convert.FromBase64String(d.Data)).FirstOrDefault()
         ?? [];
 
-    public SpeechQualifier? Qualifier => BasicAudioDataQualifier is null ? null : new SpeechQualifier
+    public SpeechQualifier? Qualifier => AudioQualifier is null ? null : new SpeechQualifier
     {
-        SpeechQualifierID = BasicAudioDataQualifier.AudioQualifierID,
-        SubType = BasicAudioDataQualifier.SubType,
-        Format = BasicAudioDataQualifier.Format,
-        Attributes = BasicAudioDataQualifier.Attributes
+        SpeechQualifierID = AudioQualifier.AudioQualifierID,
+        SubType = AudioQualifier.SubType,
+        Format = AudioQualifier.Format,
+        Attributes = AudioQualifier.Attributes
     };
 
     public static BasicAudioObject FromData(byte[] data, SpeechQualifier? qualifier = null) => new()
     {
         BasicAudioObjectID = Guid.NewGuid().ToString(),
         BasicAudioObjectData = new() { new InlineAudioData(Convert.ToBase64String(data)) },
-        BasicAudioDataQualifier = qualifier is null ? null : new AudioQualifier
+        AudioQualifier = qualifier is null ? null : new AudioQualifier
         {
             AudioQualifierID = qualifier.SpeechQualifierID,
             SubType = qualifier.SubType,
@@ -365,7 +365,7 @@ public sealed class BasicAudioObject
         ChildObjects = ChildObjects,
         BasicAudioObjectData = BasicAudioObjectData,
         BasicAudioObjectProperties = BasicAudioObjectProperties,
-        BasicAudioDataQualifier = BasicAudioDataQualifier,
+        AudioQualifier = AudioQualifier,
         DataXMData = DataXMData,
         DescrMetadata = DescrMetadata
     };
@@ -407,7 +407,7 @@ public sealed class BasicAudioObjectProperties
 }
 
 // ---------------------------------------------------------------------------
-//  Acoustic Profile â€” OSD/V1.5/data/AcousticProfile.json
+//  Acoustic Profile â€�?OSD/V1.5/data/AcousticProfile.json
 // ---------------------------------------------------------------------------
 public sealed class AcousticProfile
 {
@@ -440,10 +440,10 @@ public sealed class Timbre
 public sealed class Reflectivity { public double EarlyReflectionTime { get; init; } public double LateReflectionTime { get; init; } }
 public sealed class Reverberation { public Plot? RT60 { get; init; } public Plot? RT30 { get; init; } public Plot? RT20 { get; init; } public double? EDT { get; init; } }
 public sealed class Doppler { public double? DirectSoundFactor { get; init; } public double? IndirectSound { get; init; } }
-public sealed class Plot { }   // OSD/V1.5/data/Plot.json â€” not yet provided
+public sealed class Plot { }   // OSD/V1.5/data/Plot.json â€�?not yet provided
 
 // ---------------------------------------------------------------------------
-//  Basic Visual Object â€” atomic visual unit (Data + Visual Qualifier).
+//  Basic Visual Object â€�?atomic visual unit (Data + Visual Qualifier).
 //  Projected by analogy; the visual schema is not yet shared.
 // ---------------------------------------------------------------------------
 public sealed class BasicVisualObject
@@ -473,7 +473,7 @@ public sealed class BasicVisualObject
 }
 
 // ---------------------------------------------------------------------------
-//  Text Object â€” the recursive COLLECTION (Basic Text Objects + nested Text
+//  Text Object â€�?the recursive COLLECTION (Basic Text Objects + nested Text
 //  Objects). A one-element Text Object is exactly a Basic Text Object.
 //  OSD/V1.5/data/TextObject.json
 // ---------------------------------------------------------------------------

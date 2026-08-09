@@ -41,6 +41,9 @@ public partial class MainWindow : Window
     private byte[]? _recordedQuestion;
     private string? _lastAnswerWav;
 
+    // RCA mode: the MAS backend, created lazily when MasServerUrl is configured.
+    private Mpai.Mas.Rca.MasAmqBackend? _masBackend;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -254,6 +257,15 @@ public partial class MainWindow : Window
         var question = typed;
         var audioQuestion = _recordedQuestion;
 
+        // ── MAS mode: when a SCI URL is configured, act as a Remote Client
+        // Application and answer via the remote SCI over the MPAI-MAS Remote API.
+        // Otherwise fall through to the in-process path below (unchanged).
+        if (!string.IsNullOrWhiteSpace(Config.MasServerUrl))
+        {
+            await AnswerViaMasAsync(selected!, useText, question, audioQuestion);
+            return;
+        }
+
         var (ok, msg, answer, frame) = await Task.Run(() =>
         {
             try
@@ -366,5 +378,56 @@ public partial class MainWindow : Window
             }
             RefreshAnswerButton();
         });
+    }
+
+    // ── RCA mode: answer via the remote SCI over the MPAI-MAS Remote API ──────
+    private async Task AnswerViaMasAsync(
+        string imagePath, bool useText, string question, byte[]? audioQuestion)
+    {
+        try
+        {
+            // Lazily create + prepare the MAS backend (create SCI, start AIW).
+            if (_masBackend is null)
+            {
+                Status("Connecting to MPAI-MAS service…");
+                _masBackend = new Mpai.Mas.Rca.MasAmqBackend(Config.MasServerUrl);
+                await _masBackend.PrepareAsync();
+            }
+
+            var image = BasicVisualObject.FromFile(imagePath, File.ReadAllBytes(imagePath));
+            BasicTextObject?  qText  = useText ? BasicTextObject.FromText(question) : null;
+            BasicAudioObject? qAudio = useText ? null
+                                               : BasicAudioObject.FromData(audioQuestion!);
+
+            Log($"[UA-UI] MAS ask ({(useText ? "text" : "audio")}) via {Config.MasServerUrl}");
+            var result = await _masBackend.AskAsync(image, qText, qAudio);
+            Log($"[UA-UI] MAS answer = \"{result.Text}\"");
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                StatusText.Text = $"Answer: {result.Text}";
+                if (result.FrameBytes is { Length: > 0 })
+                {
+                    try { using var s = new MemoryStream(result.FrameBytes);
+                          FrameImage.Source = new Bitmap(s); FrameCaption.Text = "Answer frame"; }
+                    catch { }
+                }
+                if (result.SpokenWav is { Length: > 0 })
+                {
+                    try { _player.PlayWav(result.SpokenWav); }
+                    catch (Exception ex) { Log("[UA-UI] MAS PLAY FAILED: " + ex); }
+                }
+                RefreshAnswerButton();
+            });
+        }
+        catch (Exception ex)
+        {
+            Log("[UA-UI] MAS ANSWER EXCEPTION: " + ex);
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                StatusText.Text = "MAS answer failed: " + ex.Message;
+                RefreshAnswerButton();
+            });
+        }
     }
 }
