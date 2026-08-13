@@ -69,3 +69,5 @@ obj/
 MPAIApps/AMQApp/_bin/
 *.bak_*
 _backup_*/
+*.bak_*
+_backup_*/
