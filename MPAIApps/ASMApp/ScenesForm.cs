@@ -8,7 +8,7 @@ using Mpai.Cae.Ase;
 using Mpai.Cae.Asd;
 using Mpai.Aims.Audio;
 using Mpai.Core;
-using Mpai.Repository;
+using AIF.SharedStorage;
 
 namespace MPAIApps.ASMApp;
 
@@ -41,7 +41,7 @@ namespace MPAIApps.ASMApp;
 // editing isn't wired into the canvas yet.
 public sealed class ScenesForm : Form
 {
-    private readonly AssetRepository repository;
+    private readonly ISharedStorage storage;
     private readonly AoeAim aoe;
     private readonly AseAim ase;
     private ObjectsForm? sibling;
@@ -78,9 +78,9 @@ public sealed class ScenesForm : Form
         Orientation = new double[] { 0, 0, 0 }
     };
 
-    public ScenesForm(AssetRepository repository, AoeAim aoe, AseAim ase)
+    public ScenesForm(ISharedStorage storage, AoeAim aoe, AseAim ase)
     {
-        this.repository = repository;
+        this.storage = storage;
         this.aoe = aoe;
         this.ase = ase;
 
@@ -117,27 +117,27 @@ public sealed class ScenesForm : Form
         static Button Cell(string text) => new() { Text = text, Dock = DockStyle.Fill, Margin = new Padding(2) };
 
         // Row 0: Scene - Load | Clear
-        var sceneLoadButton = Cell("Load");
+        var sceneLoadButton = Cell("Load Scene");
         sceneLoadButton.Click += (_, _) => LoadSelectedScene();
-        var sceneClearButton = Cell("Clear");
+        var sceneClearButton = Cell("Clear Canvas");
         sceneClearButton.Click += (_, _) => ClearDraft();
         grid.Controls.Add(RowLabel("Scene"), 0, 0);
         grid.Controls.Add(sceneLoadButton, 1, 0);
         grid.Controls.Add(sceneClearButton, 2, 0);
 
         // Row 1: Edit - Add | Move
-        var editAddButton = Cell("Add");
+        var editAddButton = Cell("Add to Draft");
         editAddButton.Click += (_, _) => AddSelectedObjectToDraft();
-        var editMoveButton = Cell("Move");
+        var editMoveButton = Cell("Move Selected");
         editMoveButton.Click += (_, _) => MoveLastPlacedItem();
         grid.Controls.Add(RowLabel("Edit"), 0, 1);
         grid.Controls.Add(editAddButton, 1, 1);
         grid.Controls.Add(editMoveButton, 2, 1);
 
         // Row 2: Repository - Save | Clear
-        var repoSaveButton = Cell("Save");
+        var repoSaveButton = Cell("Save Scene");
         repoSaveButton.Click += (_, _) => SaveDraftAsScene();
-        var repoClearButton = Cell("Clear");
+        var repoClearButton = Cell("Discard Draft");
         repoClearButton.Click += (_, _) => ClearDraft();
         grid.Controls.Add(RowLabel("Repository"), 0, 2);
         grid.Controls.Add(repoSaveButton, 1, 2);
@@ -145,9 +145,9 @@ public sealed class ScenesForm : Form
 
         // Row 3: Deliver - File | Device (always panned - the unpanned
         // "Play Selected Scene" is retired, per the agreed simplification)
-        var deliverFileButton = Cell("File");
+        var deliverFileButton = Cell("To File");
         deliverFileButton.Click += (_, _) => DeliverSelectedScenePannedToFile();
-        var deliverDeviceButton = Cell("Device");
+        var deliverDeviceButton = Cell("To Speaker");
         deliverDeviceButton.Click += (_, _) => PlaySelectedScenePanned();
         grid.Controls.Add(RowLabel("Deliver"), 0, 3);
         grid.Controls.Add(deliverFileButton, 1, 3);
@@ -256,15 +256,15 @@ public sealed class ScenesForm : Form
     public void RefreshLists()
     {
         objectsList.Items.Clear();
-        foreach (var asset in repository.FindAssets(AssetType.AUO))
+        foreach (var assetId in storage.List("AUO"))
         {
-            objectsList.Items.Add(asset.AssetId);
+            objectsList.Items.Add(assetId);
         }
 
         scenesList.Items.Clear();
-        foreach (var asset in repository.FindAssets(AssetType.ASD))
+        foreach (var assetId in storage.List("ASD"))
         {
-            scenesList.Items.Add(asset.AssetId);
+            scenesList.Items.Add(assetId);
         }
     }
 

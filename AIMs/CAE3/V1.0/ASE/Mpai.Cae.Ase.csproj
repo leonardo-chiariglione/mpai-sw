@@ -12,4 +12,7 @@
     <ProjectReference Include="..\AOE\Mpai.Cae.Aoe.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\\..\\..\\..\\AIF\\V3.0\\src\\AIF.SharedStorage\\AIF.SharedStorage.csproj" />
+  </ItemGroup>
 </Project>

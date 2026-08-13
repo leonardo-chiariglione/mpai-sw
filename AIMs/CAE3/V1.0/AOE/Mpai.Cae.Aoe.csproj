@@ -11,4 +11,7 @@
     <ProjectReference Include="..\..\..\Repository\Repository\Mpai.Repository.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\\..\\..\\..\\AIF\\V3.0\\src\\AIF.SharedStorage\\AIF.SharedStorage.csproj" />
+  </ItemGroup>
 </Project>

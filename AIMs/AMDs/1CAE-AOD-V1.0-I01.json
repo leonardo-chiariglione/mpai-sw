@@ -1,20 +1,25 @@
-{ "Identifier":           {"ImplementerID": "1", "ImplementationID": "CAE-AOD-V1.0-I01", "AIMName": "CAE-AOD-V1.0"},
+{ "Identifier":       { "ImplementerID": "1", "ImplementationID": "CAE-AOD-V1.0-I01", "AIMName": "CAE-AOD-V1.0" },
 
-  "APIProfile":           "Basic",
-  "Description":          "Audio Object Delivery: delivers a Basic Audio Object to a device (loudspeaker, headset, network, disk).",
+  "APIProfile":       "Basic",
+  "Description":      "Audio Object Delivery: delivers a Basic Audio Object to a device (loudspeaker, headset, network, disk).",
 
-  "ExternalPorts":        [{ "Name": "InputAudio",  "Direction": "Input",  "DataType": "OSD-AUO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false },
-                           { "Name": "OutputAudio", "Direction": "Output", "DataType": "OSD-AUO-V1.5", "Technology": "Hardware", "Protocol": "", "IsRemote": false }],
+  "ExternalPorts":    [{"Name": "UserCommand", "Direction": "Input",  "DataType": "CAE-UCM-V1.0", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "InputAudio",  "Direction": "Input",  "DataType": "OSD-AUO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "OutputAudio", "Direction": "Output", "DataType": "OSD-AUO-V1.5", "Technology": "Hardware", "Protocol": "", "IsRemote": false}],
 
-  "SubAIMs":              [],
+  "SubAIMs":          [],
 
-  "Topology":             [],
+  "Topology":         [],
 
-  "Implementations":      [{ "ImplementationURI": "file:///D:/AI/AIMs/CAE-AOD-V1.0-I01", "BinaryName": "Mpai.Cae.Aod", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "1.0", "Source": "AIMStorage" }],
+  "Implementations":  [{"ImplementationURI": "file:///D:/AI/AIMs/CAE-AOD-V1.0-I01",
+                        "BinaryName":        "Mpai.Cae.Aod",
+                        "Architecture":      "x86-64",
+                        "OperatingSystem":   "Windows",
+                        "Version":           "1.0",
+                        "Source":            "AIMStorage"}],
 
-  "ResourcePolicies":     [{ "Name": "Memory", "Minimum": "0.1_GB", "Request": "0.2_GB", "Maximum": "0.5_GB" },
-                           { "Name": "CPU:Class", "Minimum": "Low", "Request": "Low", "Maximum": "Medium" }],
+  "ResourcePolicies": [{"Name": "Memory",    "Minimum": "0.1_GB", "Request": "0.2_GB", "Maximum": "0.5_GB"},
+                       {"Name": "CPU:Class", "Minimum": "Low",    "Request": "Low",    "Maximum": "Medium"}],
 
-  "DataXMData":           { },
-
-  "Documentation":        [{ "Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-mmc/" }] }
+  "DataXMData":       {},
+  "Documentation":    [{"Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-mmc/"}]}

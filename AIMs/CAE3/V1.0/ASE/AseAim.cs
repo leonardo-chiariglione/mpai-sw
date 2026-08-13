@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
+using AIF.SharedStorage;
 using Mpai.Cae.Aoe;
 using Mpai.Core;
 using Mpai.Core.OSD;
@@ -12,47 +16,51 @@ namespace Mpai.Cae.Ase;
 // ---------------------------------------------------------------------------
 //  CAE-ASE-V1.0 - Audio Scene Editing.
 //
+//  Ported directly onto the proposed MPAI-AIF Shared Storage API, same
+//  approach as AoeAim: no intermediate Repository class or method
+//  vocabulary, AssetId doubles as its own Shared Storage key.
+//
 //  Two real, separate paths, not one path pretending to cover both:
 //
 //   - CreateScene/AddObjectToScene/Materialize build AudioSceneDescriptors
 //     (ASD - the full/hierarchical scene type), composing AudioObjects.
 //   - CreateBasicScene/AddObjectToBasicScene/MaterializeBasicScene build
 //     BasicAudioSceneDescriptors (BAS), composing BasicAudioObjects
-//     directly. Use this path when what's being placed genuinely IS just a
-//     single sound, not an artificially-wrapped AudioObject standing in for
-//     one - "using ASD for everything, even a single basic object, is the
-//     degenerate notion" (direct correction received on this).
-//
-//  BasicAudioSceneDescriptors requires its own ListenerPointOfView at
-//  creation time (a real schema field ASD doesn't even have) and each
-//  entry requires its own PointOfView too - both are schema-required, not
-//  optional, unlike ASD's listener (which is only ever a delivery-time
-//  parameter, per ASD's own schema having no such field at all).
-//
-//  What's actually WRITTEN to the Repository is the standard schema, at
-//  rest: composition arrays are real, populated arrays in the stored
-//  Payload, each entry an "ID stub" (only AssetId set, resolved fully by
-//  Materialize()) with a genuine embedded SpaceTime carrying the
-//  placement's real SpatialAttitude/time when one is given - not
-//  reconstructed from a side channel only when read back. Repository
-//  References are still created alongside, for the generic graph
-//  operations (cycle prevention, GetReferrers, dependency tracking); they
-//  are not the source of truth for what a scene contains.
+//     directly - the genuinely simple case, not an artificially-wrapped
+//     AudioObject standing in for one.
 // ---------------------------------------------------------------------------
 public sealed class AseAim
 {
-    private readonly AssetRepository repository;
+    private readonly ISharedStorage storage;
     private readonly AoeAim aoe;
 
-    // Depends on AoeAim directly to reuse its recursive AudioObject
-    // materialization rather than duplicating that walk here - both AIMs
-    // are plain C# classes over the same Repository, so this is the same
-    // "call directly into the live instance" model ASMApp itself will use.
-    public AseAim(AssetRepository repository, AoeAim aoe)
+    public AseAim(ISharedStorage storage, AoeAim aoe)
     {
-        this.repository = repository;
+        this.storage = storage;
         this.aoe = aoe;
     }
+
+    private static readonly JsonSerializerOptions DataOptions = new() { Converters = { new JsonStringEnumConverter() } };
+    private static byte[] Serialize<T>(T value) => JsonSerializer.SerializeToUtf8Bytes(value, DataOptions);
+    private static T Deserialize<T>(byte[] bytes) => JsonSerializer.Deserialize<T>(bytes, DataOptions)!;
+
+    private string NextId(string typePrefix)
+    {
+        var counterKey = $"_counter:{typePrefix}";
+        long next = storage.Exists(counterKey)
+            ? long.Parse(Encoding.UTF8.GetString(storage.Get(counterKey))) + 1
+            : 1;
+        storage.Put(counterKey, Encoding.UTF8.GetBytes(next.ToString()));
+        return $"{typePrefix}{next:D6}";
+    }
+
+    private void PutReference(string fromId, string toId)
+    {
+        storage.Put($"ref:{fromId}:{toId}", Array.Empty<byte>());
+        storage.Put($"refby:{toId}:{fromId}", Array.Empty<byte>());
+    }
+
+    private static bool IsType(string assetId, string prefix) => assetId.StartsWith(prefix, StringComparison.Ordinal);
 
     // Wraps a single AudioObject into a new, minimal scene (the degenerate
     // case: one placement, no sub-scenes). placement is optional - null
@@ -60,59 +68,53 @@ public sealed class AseAim
     // is optional too - the scene can be created before the listener is placed.
     public RepositoryAsset CreateScene(string audioObjectAssetId, SpaceTime? placement = null, PointOfView? listenerPointOfView = null)
     {
-        var objectAsset = repository.GetAsset(audioObjectAssetId)
-            ?? throw new InvalidOperationException($"{audioObjectAssetId} does not exist.");
+        if (!storage.Exists(audioObjectAssetId))
+            throw new InvalidOperationException($"{audioObjectAssetId} does not exist.");
+        if (!IsType(audioObjectAssetId, "AUO"))
+            throw new InvalidOperationException($"{audioObjectAssetId} is not an AudioObject.");
 
-        if (objectAsset.AssetType != AssetType.AUO)
-            throw new InvalidOperationException($"{audioObjectAssetId} is not an AudioObject (it's {objectAsset.AssetType}).");
-
-        var sceneAsset = new RepositoryAsset { AssetId = repository.GenerateAssetId(AssetType.ASD), AssetType = AssetType.ASD };
-        sceneAsset.SetData(new AudioSceneDescriptors
+        var sceneId = NextId("ASD");
+        storage.Put(sceneId, Serialize(new AudioSceneDescriptors
         {
-            AudioSceneDescriptorsID = sceneAsset.AssetId,
+            AudioSceneDescriptorsID = sceneId,
             ListenerPointOfView = listenerPointOfView,
             AudioObjectCount = 1,
             AudioObjects = new() { MakeEntry(audioObjectAssetId, placement) }
-        });
-        repository.CreateAsset(sceneAsset);
+        }));
 
-        repository.CreateReference(sceneAsset.AssetId, audioObjectAssetId);
+        PutReference(sceneId, audioObjectAssetId);
 
-        return sceneAsset;
+        return new RepositoryAsset { AssetId = sceneId, AssetType = AssetType.ASD };
     }
 
     // Adds an existing AudioObject as a further placement in an existing
-    // scene. Produces a NEW version of the scene (no-cascade Save rule: the
-    // object being added is untouched). placement is optional - null means
-    // "no position/time recorded for this placement." listenerPointOfView,
-    // if given, updates the scene's listener at the same time; if null, the
-    // existing listener (if any) carries forward unchanged.
+    // scene. Produces a NEW key for the scene (no-cascade Save rule: the
+    // object being added is untouched). listenerPointOfView, if given,
+    // updates the scene's listener at the same time; if null, the existing
+    // listener (if any) carries forward unchanged.
     public RepositoryAsset AddObjectToScene(string sceneAssetId, string audioObjectAssetId, SpaceTime? placement = null, PointOfView? listenerPointOfView = null)
     {
-        var existing = repository.GetAsset(sceneAssetId)
-            ?? throw new InvalidOperationException($"{sceneAssetId} does not exist.");
+        if (!storage.Exists(sceneAssetId))
+            throw new InvalidOperationException($"{sceneAssetId} does not exist.");
+        if (!IsType(sceneAssetId, "ASD"))
+            throw new InvalidOperationException($"{sceneAssetId} is not a Scene.");
 
-        if (existing.AssetType != AssetType.ASD)
-            throw new InvalidOperationException($"{sceneAssetId} is not a Scene (it's {existing.AssetType}).");
+        if (!storage.Exists(audioObjectAssetId))
+            throw new InvalidOperationException($"{audioObjectAssetId} does not exist.");
+        if (!IsType(audioObjectAssetId, "AUO"))
+            throw new InvalidOperationException($"{audioObjectAssetId} is not an AudioObject.");
 
-        var obj = repository.GetAsset(audioObjectAssetId)
-            ?? throw new InvalidOperationException($"{audioObjectAssetId} does not exist.");
+        var existingData = Deserialize<AudioSceneDescriptors>(storage.Get(sceneAssetId));
 
-        if (obj.AssetType != AssetType.AUO)
-            throw new InvalidOperationException($"{audioObjectAssetId} is not an AudioObject (it's {obj.AssetType}).");
-
-        var existingData = existing.GetData<AudioSceneDescriptors>()
-            ?? throw new InvalidOperationException($"{sceneAssetId} has no stored scene data.");
-
-        var saved = repository.SaveAsset(existing);
-        repository.CreateReference(saved.AssetId, audioObjectAssetId);
+        var newId = NextId("ASD");
+        PutReference(newId, audioObjectAssetId);
 
         var entries = (existingData.AudioObjects ?? new List<AudioSceneObjectEntry>()).ToList();
         entries.Add(MakeEntry(audioObjectAssetId, placement));
 
-        saved.SetData(new AudioSceneDescriptors
+        storage.Put(newId, Serialize(new AudioSceneDescriptors
         {
-            AudioSceneDescriptorsID = saved.AssetId,
+            AudioSceneDescriptorsID = newId,
             AudioSceneDescriptorsTime = existingData.AudioSceneDescriptorsTime,
             AudioSceneDescriptorsSpaceTime = existingData.AudioSceneDescriptorsSpaceTime,
             ListenerPointOfView = listenerPointOfView ?? existingData.ListenerPointOfView,
@@ -120,31 +122,28 @@ public sealed class AseAim
             AudioObjects = entries,
             SubAudioSceneCount = existingData.SubAudioSceneCount,
             SubAudioScenes = existingData.SubAudioScenes
-        });
-        repository.UpdateAsset(saved);
+        }));
 
-        return saved;
+        return new RepositoryAsset { AssetId = newId, AssetType = AssetType.ASD };
     }
 
     // Updates just the scene's listener, without adding or moving any
     // object placement - what "drag the listener marker on the canvas"
-    // ultimately calls. Produces a new version, same no-cascade rule as
+    // ultimately calls. Produces a new key, same no-cascade rule as
     // everything else.
     public RepositoryAsset SetSceneListener(string sceneAssetId, PointOfView listenerPointOfView)
     {
-        var existing = repository.GetAsset(sceneAssetId)
-            ?? throw new InvalidOperationException($"{sceneAssetId} does not exist.");
+        if (!storage.Exists(sceneAssetId))
+            throw new InvalidOperationException($"{sceneAssetId} does not exist.");
+        if (!IsType(sceneAssetId, "ASD"))
+            throw new InvalidOperationException($"{sceneAssetId} is not a Scene.");
 
-        if (existing.AssetType != AssetType.ASD)
-            throw new InvalidOperationException($"{sceneAssetId} is not a Scene (it's {existing.AssetType}).");
+        var existingData = Deserialize<AudioSceneDescriptors>(storage.Get(sceneAssetId));
 
-        var existingData = existing.GetData<AudioSceneDescriptors>()
-            ?? throw new InvalidOperationException($"{sceneAssetId} has no stored scene data.");
-
-        var saved = repository.SaveAsset(existing);
-        saved.SetData(new AudioSceneDescriptors
+        var newId = NextId("ASD");
+        storage.Put(newId, Serialize(new AudioSceneDescriptors
         {
-            AudioSceneDescriptorsID = saved.AssetId,
+            AudioSceneDescriptorsID = newId,
             AudioSceneDescriptorsTime = existingData.AudioSceneDescriptorsTime,
             AudioSceneDescriptorsSpaceTime = existingData.AudioSceneDescriptorsSpaceTime,
             ListenerPointOfView = listenerPointOfView,
@@ -152,46 +151,36 @@ public sealed class AseAim
             AudioObjects = existingData.AudioObjects,
             SubAudioSceneCount = existingData.SubAudioSceneCount,
             SubAudioScenes = existingData.SubAudioScenes
-        });
-        repository.UpdateAsset(saved);
+        }));
 
-        return saved;
+        return new RepositoryAsset { AssetId = newId, AssetType = AssetType.ASD };
     }
 
     private static AudioSceneObjectEntry MakeEntry(string audioObjectAssetId, SpaceTime? placement) => new()
     {
-        // ID stub - only the identifying field set. A minimal but genuinely
-        // valid instance of the "object" branch of the schema's "object or
-        // id-string" oneOf; Materialize() resolves it into full content.
         ObjectIDOrObject = new AudioObject { AudioObjectID = audioObjectAssetId },
         AudioObjectSpaceTime = placement
     };
 
-    // Resolves a stored scene into a fully self-contained structure: its own
-    // fields, with every ID-stub AudioObject entry replaced by its full,
-    // live content (via AoeAim.Materialize), and each entry's real
-    // AudioObjectSpaceTime carried across unchanged. The stored Payload
-    // itself is already schema-valid before this resolution happens.
+    // Resolves a stored scene into a fully self-contained structure: its
+    // own fields, with every ID-stub AudioObject entry replaced by its
+    // full, live content (via AoeAim.Materialize), and each entry's real
+    // AudioObjectSpaceTime carried across unchanged.
     public AudioSceneDescriptors Materialize(string sceneAssetId)
     {
-        var asset = repository.GetAsset(sceneAssetId)
-            ?? throw new InvalidOperationException($"{sceneAssetId} does not exist.");
+        if (!storage.Exists(sceneAssetId))
+            throw new InvalidOperationException($"{sceneAssetId} does not exist.");
+        if (!IsType(sceneAssetId, "ASD"))
+            throw new InvalidOperationException($"{sceneAssetId} is not a Scene.");
 
-        if (asset.AssetType != AssetType.ASD)
-            throw new InvalidOperationException($"{sceneAssetId} is not a Scene (it's {asset.AssetType}).");
-
-        var scene = asset.GetData<AudioSceneDescriptors>()
-            ?? throw new InvalidOperationException($"{sceneAssetId} has no stored scene data.");
+        var scene = Deserialize<AudioSceneDescriptors>(storage.Get(sceneAssetId));
 
         var objectEntries = new List<AudioSceneObjectEntry>();
 
         foreach (var entry in scene.AudioObjects ?? new List<AudioSceneObjectEntry>())
         {
             var childId = entry.ObjectIDOrObject?.AudioObjectID;
-            if (string.IsNullOrEmpty(childId)) continue;
-
-            var childAsset = repository.GetAsset(childId);
-            if (childAsset is null || childAsset.AssetType != AssetType.AUO) continue;
+            if (string.IsNullOrEmpty(childId) || !storage.Exists(childId) || !IsType(childId, "AUO")) continue;
 
             objectEntries.Add(new AudioSceneObjectEntry
             {
@@ -202,10 +191,7 @@ public sealed class AseAim
 
         return new AudioSceneDescriptors
         {
-            // Same principle as AoeAim.Materialize: the current AssetId is
-            // always authoritative for identity, not whatever ID happens to
-            // be stored in the payload (which can go stale after a Save).
-            AudioSceneDescriptorsID = asset.AssetId,
+            AudioSceneDescriptorsID = sceneAssetId,
             AudioSceneDescriptorsTime = scene.AudioSceneDescriptorsTime,
             AudioSceneDescriptorsSpaceTime = scene.AudioSceneDescriptorsSpaceTime,
             ListenerPointOfView = scene.ListenerPointOfView,
@@ -225,84 +211,68 @@ public sealed class AseAim
     // all (there, the listener is only ever a delivery-time parameter).
     public RepositoryAsset CreateBasicScene(string basicAudioObjectAssetId, PointOfView listenerPointOfView, SpaceTime? placement = null)
     {
-        var baoAsset = repository.GetAsset(basicAudioObjectAssetId)
-            ?? throw new InvalidOperationException($"{basicAudioObjectAssetId} does not exist.");
+        if (!storage.Exists(basicAudioObjectAssetId))
+            throw new InvalidOperationException($"{basicAudioObjectAssetId} does not exist.");
+        if (!IsType(basicAudioObjectAssetId, "BAO"))
+            throw new InvalidOperationException($"{basicAudioObjectAssetId} is not a BasicAudioObject.");
 
-        if (baoAsset.AssetType != AssetType.BAO)
-            throw new InvalidOperationException($"{basicAudioObjectAssetId} is not a BasicAudioObject (it's {baoAsset.AssetType}).");
-
-        var sceneAsset = new RepositoryAsset { AssetId = repository.GenerateAssetId(AssetType.BAS), AssetType = AssetType.BAS };
-        sceneAsset.SetData(new BasicAudioSceneDescriptors
+        var sceneId = NextId("BAS");
+        storage.Put(sceneId, Serialize(new BasicAudioSceneDescriptors
         {
-            BasicAudioSceneDescriptorsID = sceneAsset.AssetId,
+            BasicAudioSceneDescriptorsID = sceneId,
             ListenerPointOfView = listenerPointOfView,
             AudioObjectCount = 1,
             BasicAudioSceneDescriptorsEntries = new() { MakeBasicEntry(basicAudioObjectAssetId, placement) }
-        });
-        repository.CreateAsset(sceneAsset);
+        }));
 
-        repository.CreateReference(sceneAsset.AssetId, basicAudioObjectAssetId);
+        PutReference(sceneId, basicAudioObjectAssetId);
 
-        return sceneAsset;
+        return new RepositoryAsset { AssetId = sceneId, AssetType = AssetType.BAS };
     }
 
     // Adds an existing BasicAudioObject as a further placement in an
-    // existing Basic scene. Produces a NEW version (no-cascade Save rule).
+    // existing Basic scene. Produces a NEW key (no-cascade Save rule).
     public RepositoryAsset AddObjectToBasicScene(string sceneAssetId, string basicAudioObjectAssetId, SpaceTime? placement = null)
     {
-        var existing = repository.GetAsset(sceneAssetId)
-            ?? throw new InvalidOperationException($"{sceneAssetId} does not exist.");
+        if (!storage.Exists(sceneAssetId))
+            throw new InvalidOperationException($"{sceneAssetId} does not exist.");
+        if (!IsType(sceneAssetId, "BAS"))
+            throw new InvalidOperationException($"{sceneAssetId} is not a Basic Scene.");
 
-        if (existing.AssetType != AssetType.BAS)
-            throw new InvalidOperationException($"{sceneAssetId} is not a Basic Scene (it's {existing.AssetType}).");
+        if (!storage.Exists(basicAudioObjectAssetId))
+            throw new InvalidOperationException($"{basicAudioObjectAssetId} does not exist.");
+        if (!IsType(basicAudioObjectAssetId, "BAO"))
+            throw new InvalidOperationException($"{basicAudioObjectAssetId} is not a BasicAudioObject.");
 
-        var bao = repository.GetAsset(basicAudioObjectAssetId)
-            ?? throw new InvalidOperationException($"{basicAudioObjectAssetId} does not exist.");
+        var existingData = Deserialize<BasicAudioSceneDescriptors>(storage.Get(sceneAssetId));
 
-        if (bao.AssetType != AssetType.BAO)
-            throw new InvalidOperationException($"{basicAudioObjectAssetId} is not a BasicAudioObject (it's {bao.AssetType}).");
-
-        var existingData = existing.GetData<BasicAudioSceneDescriptors>()
-            ?? throw new InvalidOperationException($"{sceneAssetId} has no stored scene data.");
-
-        var saved = repository.SaveAsset(existing);
-        repository.CreateReference(saved.AssetId, basicAudioObjectAssetId);
+        var newId = NextId("BAS");
+        PutReference(newId, basicAudioObjectAssetId);
 
         var entries = existingData.BasicAudioSceneDescriptorsEntries.ToList();
         entries.Add(MakeBasicEntry(basicAudioObjectAssetId, placement));
 
-        saved.SetData(new BasicAudioSceneDescriptors
+        storage.Put(newId, Serialize(new BasicAudioSceneDescriptors
         {
-            BasicAudioSceneDescriptorsID = saved.AssetId,
+            BasicAudioSceneDescriptorsID = newId,
             BasicAudioSceneDescriptorsTime = existingData.BasicAudioSceneDescriptorsTime,
             BASSpaceTime = existingData.BASSpaceTime,
             ListenerPointOfView = existingData.ListenerPointOfView,
             GravityValue = existingData.GravityValue,
             AudioObjectCount = entries.Count,
             BasicAudioSceneDescriptorsEntries = entries
-        });
-        repository.UpdateAsset(saved);
+        }));
 
-        return saved;
+        return new RepositoryAsset { AssetId = newId, AssetType = AssetType.BAS };
     }
 
     private static BasicAudioSceneEntry MakeBasicEntry(string basicAudioObjectAssetId, SpaceTime? placement)
     {
-        // The entry's own PointOfView is separately required by the schema
-        // (distinct from the scene-level ListenerPointOfView) but the
-        // schema doesn't clarify how it differs in intended use from the
-        // placement's own SpatialAttitude - reusing the same position here
-        // as a pragmatic default rather than inventing a second, unrelated
-        // meaning for it.
         var position = placement?.SpatialAttitude1?.Position?.CartPosition ?? new double[] { 0, 0, 0 };
         var orientation = placement?.SpatialAttitude1?.Orientation?.EulerAngles ?? new double[] { 0, 0, 0 };
 
         return new BasicAudioSceneEntry
         {
-            // ID stub - only the identifying field set. A minimal but
-            // genuinely valid instance of the "object" branch of the
-            // schema's "object or id-string" oneOf; MaterializeBasicScene()
-            // resolves it into full content.
             AudioObjectIDOrAudioObject = new BasicAudioObject { BasicAudioObjectID = basicAudioObjectAssetId },
             AudioObjectSpaceTime = placement,
             PointOfView = new PointOfView
@@ -316,29 +286,24 @@ public sealed class AseAim
 
     // Resolves a stored Basic scene into a fully self-contained structure:
     // its own fields, with every ID-stub BasicAudioObject entry replaced by
-    // its full, live content. The stored Payload itself is already
-    // schema-valid before this resolution happens.
+    // its full, live content.
     public BasicAudioSceneDescriptors MaterializeBasicScene(string sceneAssetId)
     {
-        var asset = repository.GetAsset(sceneAssetId)
-            ?? throw new InvalidOperationException($"{sceneAssetId} does not exist.");
+        if (!storage.Exists(sceneAssetId))
+            throw new InvalidOperationException($"{sceneAssetId} does not exist.");
+        if (!IsType(sceneAssetId, "BAS"))
+            throw new InvalidOperationException($"{sceneAssetId} is not a Basic Scene.");
 
-        if (asset.AssetType != AssetType.BAS)
-            throw new InvalidOperationException($"{sceneAssetId} is not a Basic Scene (it's {asset.AssetType}).");
-
-        var scene = asset.GetData<BasicAudioSceneDescriptors>()
-            ?? throw new InvalidOperationException($"{sceneAssetId} has no stored scene data.");
+        var scene = Deserialize<BasicAudioSceneDescriptors>(storage.Get(sceneAssetId));
 
         var resolvedEntries = new List<BasicAudioSceneEntry>();
 
         foreach (var entry in scene.BasicAudioSceneDescriptorsEntries)
         {
             var childId = entry.AudioObjectIDOrAudioObject?.BasicAudioObjectID;
-            if (string.IsNullOrEmpty(childId)) continue;
+            if (string.IsNullOrEmpty(childId) || !storage.Exists(childId)) continue;
 
-            var childAsset = repository.GetAsset(childId);
-            var bao = childAsset?.GetData<BasicAudioObject>();
-            if (bao is null) continue;
+            var bao = Deserialize<BasicAudioObject>(storage.Get(childId));
 
             resolvedEntries.Add(new BasicAudioSceneEntry
             {
@@ -351,10 +316,7 @@ public sealed class AseAim
 
         return new BasicAudioSceneDescriptors
         {
-            // Same principle as AoeAim.Materialize: the current AssetId is
-            // always authoritative for identity, not whatever ID happens to
-            // be stored in the payload (which can go stale after a Save).
-            BasicAudioSceneDescriptorsID = asset.AssetId,
+            BasicAudioSceneDescriptorsID = sceneAssetId,
             BasicAudioSceneDescriptorsTime = scene.BasicAudioSceneDescriptorsTime,
             BASSpaceTime = scene.BASSpaceTime,
             ListenerPointOfView = scene.ListenerPointOfView,

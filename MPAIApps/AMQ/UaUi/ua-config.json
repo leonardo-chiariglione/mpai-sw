@@ -1,5 +1,5 @@
 {
-  "MasServerUrl": "", "MpaiRoot": "D:\\AI",
+  "MasServerUrl": "http://localhost:5005/", "MpaiRoot": "D:\\AI",
   "AmdRepository": "%MpaiRoot%\\AIMs\\AMDs",
   "SettingsFile": "%MpaiRoot%\\AIMs\\aim-settings.json",
   "OutputFolder": "%MpaiRoot%\\MPAIApps\\AMQ\\Output"

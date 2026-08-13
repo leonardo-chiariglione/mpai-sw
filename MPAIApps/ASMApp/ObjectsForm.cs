@@ -8,7 +8,7 @@ using Mpai.Cae.Asd;
 using Mpai.Aims.Audio;
 using Mpai.Core;
 using Mpai.Core.OSD;
-using Mpai.Repository;
+using AIF.SharedStorage;
 
 namespace MPAIApps.ASMApp;
 
@@ -20,7 +20,7 @@ namespace MPAIApps.ASMApp;
 // multi-placement draft, and one Objects column instead of two.
 public sealed class ObjectsForm : Form
 {
-    private readonly AssetRepository repository;
+    private readonly ISharedStorage storage;
     private readonly AoeAim aoe;
     private ScenesForm? sibling;
 
@@ -49,9 +49,9 @@ public sealed class ObjectsForm : Form
     private string? objectDraftTargetId;
     private bool suppressSelectionSync;
 
-    public ObjectsForm(AssetRepository repository, AoeAim aoe)
+    public ObjectsForm(ISharedStorage storage, AoeAim aoe)
     {
-        this.repository = repository;
+        this.storage = storage;
         this.aoe = aoe;
 
         Text = "ASMApp - Objects (AUO editing)";
@@ -84,33 +84,33 @@ public sealed class ObjectsForm : Form
         static Label RowLabel(string text) => new() { Text = text, TextAlign = System.Drawing.ContentAlignment.MiddleLeft, Dock = DockStyle.Fill, Font = new System.Drawing.Font("Segoe UI", 8, System.Drawing.FontStyle.Bold) };
         static Button Cell(string text) => new() { Text = text, Dock = DockStyle.Fill, Margin = new Padding(2) };
 
-        var acquireFileButton = Cell("File");
+        var acquireFileButton = Cell("From File");
         acquireFileButton.Click += (_, _) => CreateObjectFromFile();
-        var acquireDeviceButton = Cell("Device");
+        var acquireDeviceButton = Cell("From Mic");
         acquireDeviceButton.Click += (_, _) => ToggleRecording(acquireDeviceButton);
         grid.Controls.Add(RowLabel("Acquire"), 0, 0);
         grid.Controls.Add(acquireFileButton, 1, 0);
         grid.Controls.Add(acquireDeviceButton, 2, 0);
 
-        var deliverFileButton = Cell("File");
+        var deliverFileButton = Cell("To File");
         deliverFileButton.Click += (_, _) => DeliverSelectedObjectToFile();
-        var deliverDeviceButton = Cell("Device");
+        var deliverDeviceButton = Cell("To Speaker");
         deliverDeviceButton.Click += (_, _) => PlaySelectedObject();
         grid.Controls.Add(RowLabel("Deliver"), 0, 1);
         grid.Controls.Add(deliverFileButton, 1, 1);
         grid.Controls.Add(deliverDeviceButton, 2, 1);
 
-        var editStageButton = Cell("Stage");
+        var editStageButton = Cell("Stage Edit");
         editStageButton.Click += (_, _) => StageObjectEdit();
-        var editClearButton = Cell("Clear");
+        var editClearButton = Cell("Discard Edit");
         editClearButton.Click += (_, _) => ClearObjectEdit();
         grid.Controls.Add(RowLabel("Edit"), 0, 2);
         grid.Controls.Add(editStageButton, 1, 2);
         grid.Controls.Add(editClearButton, 2, 2);
 
-        var repoSaveButton = Cell("Save");
+        var repoSaveButton = Cell("Save Changes");
         repoSaveButton.Click += (_, _) => SaveObjectEdit();
-        var repoClearButton = Cell("Clear");
+        var repoClearButton = Cell("Discard Changes");
         repoClearButton.Click += (_, _) => ClearObjectEdit();
         grid.Controls.Add(RowLabel("Repository"), 0, 3);
         grid.Controls.Add(repoSaveButton, 1, 3);
@@ -194,9 +194,9 @@ public sealed class ObjectsForm : Form
     {
         suppressSelectionSync = true;
         objectsList.Items.Clear();
-        foreach (var asset in repository.FindAssets(AssetType.AUO))
+        foreach (var assetId in storage.List("AUO"))
         {
-            objectsList.Items.Add(asset.AssetId);
+            objectsList.Items.Add(assetId);
         }
         suppressSelectionSync = false;
     }

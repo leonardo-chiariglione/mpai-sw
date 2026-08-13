@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using AIF.Store;
 
 namespace AIF.Controller;
@@ -112,14 +112,14 @@ public sealed class Controller
 
         // Topology
         // Convention in the instance JSON:
-        //   "Output" = the PRODUCING side (data leaves that AIM)
-        //   "Input"  = the RECEIVING side (data enters that AIM)
+        //   "Input"  = the PRODUCING side (data leaves that AIM 鈥?its port is InputOutput)
+        //   "Output" = the RECEIVING side (data enters that AIM 鈥?its port is OutputInput)
         if (root.TryGetProperty("Topology", out var topology))
         {
             foreach (var connection in topology.EnumerateArray())
             {
-                var producer = connection.GetProperty("Output");  // producing AIM
-                var consumer = connection.GetProperty("Input");   // receiving AIM
+                var producer = connection.GetProperty("Input");   // producing AIM
+                var consumer = connection.GetProperty("Output");  // receiving AIM
 
                 node.Connections.Add(new TopologyConnection
                 {

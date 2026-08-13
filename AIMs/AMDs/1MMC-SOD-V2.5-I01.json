@@ -1,20 +1,24 @@
-{ "Identifier":           {"ImplementerID": "1", "ImplementationID": "MMC-SOD-V2.5-I01", "AIMName": "MMC-SOD-V2.5"},
+{ "Identifier":       { "ImplementerID": "1", "ImplementationID": "MMC-SOD-V2.5-I01", "AIMName": "MMC-SOD-V2.5" },
 
-  "APIProfile":           "Basic",
-  "Description":          "Speech Object Delivery: delivers a Basic Speech Object to a device (loudspeaker, headset, network, disk).",
+  "APIProfile":       "Basic",
+  "Description":      "Speech Object Delivery: delivers a Basic Speech Object to a device (loudspeaker, headset, network, disk).",
 
-  "ExternalPorts":        [{ "Name": "InputSpeech",  "Direction": "Input",  "DataType": "OSD-SPO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false },
-                           { "Name": "OutputSpeech", "Direction": "Output", "DataType": "OSD-SPO-V1.5", "Technology": "Hardware", "Protocol": "", "IsRemote": false }],
+  "ExternalPorts":    [{"Name": "InputSpeech",  "Direction": "Input",  "DataType": "OSD-SPO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "OutputSpeech", "Direction": "Output", "DataType": "OSD-SPO-V1.5", "Technology": "Hardware", "Protocol": "", "IsRemote": false}],
 
-  "SubAIMs":              [],
+  "SubAIMs":          [],
 
-  "Topology":             [],
+  "Topology":         [],
 
-  "Implementations":      [{ "ImplementationURI": "file:///D:/AI/AIMs/MMC-SOD-V2.5-I01", "BinaryName": "Mpai.Mmc.Sod", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "1.0", "Source": "AIMStorage" }],
+  "Implementations":  [{"ImplementationURI": "file:///D:/AI/AIMs/MMC-SOD-V2.5-I01",
+                        "BinaryName":        "Mpai.Mmc.Sod",
+                        "Architecture":      "x86-64",
+                        "OperatingSystem":   "Windows",
+                        "Version":           "1.0",
+                        "Source":            "AIMStorage"}],
 
-  "ResourcePolicies":     [{ "Name": "Memory", "Minimum": "0.1_GB", "Request": "0.2_GB", "Maximum": "0.5_GB" },
-                           { "Name": "CPU:Class", "Minimum": "Low", "Request": "Low", "Maximum": "Medium" }],
+  "ResourcePolicies": [{"Name": "Memory",    "Minimum": "0.1_GB", "Request": "0.2_GB", "Maximum": "0.5_GB"},
+                       {"Name": "CPU:Class", "Minimum": "Low",    "Request": "Low",    "Maximum": "Medium"}],
 
-  "DataXMData":           { },
-
-  "Documentation":        [{ "Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-mmc/v2-5/" }] }
+  "DataXMData":       {},
+  "Documentation":    [{"Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-mmc/v2-5/"}]}

@@ -64,3 +64,6 @@ ASE_Test/
 MPAIApps/VisualIn/
 
 Assets/
+bin/
+obj/
+MPAIApps/AMQApp/_bin/
