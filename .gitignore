@@ -67,3 +67,5 @@ Assets/
 bin/
 obj/
 MPAIApps/AMQApp/_bin/
+*.bak_*
+_backup_*/
