@@ -77,7 +77,19 @@ public sealed class Controller
                     DataType  = port.GetProperty("DataType").GetString()   ?? string.Empty,
                     Technology= port.GetProperty("Technology").GetString() ?? string.Empty,
                     Protocol  = port.GetProperty("Protocol").GetString()   ?? string.Empty,
-                    IsRemote  = port.GetProperty("IsRemote").GetBoolean()
+                    IsRemote  = port.GetProperty("IsRemote").GetBoolean(),
+
+                    // Optional in the AMD; omitted means 1.
+                    PortNumber =
+                        port.TryGetProperty("PortNumber", out var declaredOrdinal) &&
+                        declaredOrdinal.TryGetInt32(out var portOrdinal)
+                            ? portOrdinal
+                            : null,
+
+                    // Omitted means false: absence of this input suspends.
+                    IsOptional =
+                        port.TryGetProperty("IsOptional", out var optional) &&
+                        optional.ValueKind == JsonValueKind.True
                 });
             }
         }
@@ -137,9 +149,20 @@ public sealed class Controller
     {
         var aimName  = port.GetProperty("AIMName").GetString()  ?? string.Empty;
         var portName = port.GetProperty("PortName").GetString() ?? string.Empty;
+
+        // A Topology PortID may carry a PortNumber, which selects WHICH port of
+        // that Direction and DataType is meant when the endpoint AIM declares
+        // more than one. It rides along in the endpoint string as "#n" and is
+        // read back by Endpoint.Parse. Omitted means 1.
+        var ordinal =
+            port.TryGetProperty("PortNumber", out var portNumber) &&
+            portNumber.TryGetInt32(out var parsedOrdinal)
+                ? $"#{parsedOrdinal}"
+                : string.Empty;
+
         return string.IsNullOrWhiteSpace(aimName)
-            ? portName
-            : $"{aimName}.{portName}";
+            ? $"{portName}{ordinal}"
+            : $"{aimName}.{portName}{ordinal}";
     }
 
     public IReadOnlyList<string> Instantiate(

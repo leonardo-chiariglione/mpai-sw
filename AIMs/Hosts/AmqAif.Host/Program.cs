@@ -31,6 +31,42 @@ internal static class Program
     {
         Application.EnableVisualStyles();
 
+        if (System.Array.Exists(args, a => string.Equals(a, "--translatetest", System.StringComparison.OrdinalIgnoreCase)))
+        {
+            TranslateTest.Run();
+            return;
+        }
+
+        if (System.Array.Exists(args, a => string.Equals(a, "--graphtest", System.StringComparison.OrdinalIgnoreCase)))
+        {
+            GraphTest.Run();
+            return;
+        }
+
+        if (System.Array.Exists(args, a => string.Equals(a, "--tokentest", System.StringComparison.OrdinalIgnoreCase)))
+        {
+            TokeniserTest.Run();
+            return;
+        }
+
+        if (System.Array.Exists(args, a => string.Equals(a, "--tstlive", System.StringComparison.OrdinalIgnoreCase)))
+        {
+            TstLiveTest.Run();
+            return;
+        }
+
+        if (System.Array.Exists(args, a => string.Equals(a, "--tstvoice", System.StringComparison.OrdinalIgnoreCase)))
+        {
+            TstVoiceTest.Run();
+            return;
+        }
+
+        if (System.Array.Exists(args, a => string.Equals(a, "--tsttest", System.StringComparison.OrdinalIgnoreCase)))
+        {
+            TstTest.Run();
+            return;
+        }
+
         if (System.Array.Exists(args, a => string.Equals(a, "--suspendtest", System.StringComparison.OrdinalIgnoreCase)))
         {
             SuspendResumeTest.Run();

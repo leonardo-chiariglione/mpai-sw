@@ -6,7 +6,7 @@ using AIF.Store;
 
 using Mpai.Core;
 
-namespace Mpai.Aims.Audio;
+namespace Mpai.Aims.Speech;
 
 // MMC-SOD-V2.5 — Speech Object Delivery. Self-contained IAimProcessor.
 // Reads its own port names from 1MMC-SOD-V2.5-I01.json at startup.
@@ -41,7 +41,18 @@ public sealed class SodAimProcessor : IAimProcessor
     public async Task<Message> ProcessAsync(Message message)
     {
         var speech = MpaiJson.FromJson<BasicSpeechObject>(message.Ports[_inputPort]);
-        await _aod.DeliverAsync(speech.AsAudio());   // acoustic delivery
+        // An EMPTY Speech Object means the synthesiser could not speak this text -
+        // a voice whose phoneme map the installed piper cannot read, for one. The
+        // translation still travelled; only the sound is missing. Handing zero
+        // bytes to a sound device would turn that into a second, unrelated error.
+        if (speech.Data.Length == 0)
+        {
+            System.Console.WriteLine("[MMC-SOD-V2.5] nothing to play - the Speech Object is empty.");
+        }
+        else
+        {
+            await _aod.DeliverAsync(speech.AsAudio());   // acoustic delivery
+        }
 
         return new Message
         {

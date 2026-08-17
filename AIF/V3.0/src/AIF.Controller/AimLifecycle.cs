@@ -12,12 +12,13 @@ public enum AimState
 // Per-AIM lifecycle controller held by AimHost.
 // Provides the CancellationToken (for Stop) and pause gate (for Pause/Resume)
 // that an AIM's ProcessAsync uses to honour lifecycle signals from the Controller.
-// The AIM never holds this directly — it is given a snapshot (AimContext) per call.
+// The AIM never holds this directly â€” it is given a snapshot (AimContext) per call.
 internal sealed class AimLifecycle : IDisposable
 {
     private CancellationTokenSource _cts = new();
     private TaskCompletionSource    _pauseGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private AimState                _state = AimState.Idle;
+    private int                     _pauseRequests;
     private readonly object         _lock = new();
 
     public AimState State
@@ -25,7 +26,7 @@ internal sealed class AimLifecycle : IDisposable
         get { lock (_lock) return _state; }
     }
 
-    // Called by AimHost.StartAimAsync — resets the lifecycle for a new run.
+    // Called by AimHost.StartAimAsync â€” resets the lifecycle for a new run.
     public AimContext Start()
     {
         lock (_lock)
@@ -35,12 +36,23 @@ internal sealed class AimLifecycle : IDisposable
 
             _pauseGate = new TaskCompletionSource(
                 TaskCreationOptions.RunContinuationsAsynchronously);
-            _pauseGate.TrySetResult();   // not paused — gate is open
+            _pauseGate.TrySetResult();   // not paused â€” gate is open
 
+            _pauseRequests = 0;
             _state = AimState.Running;
         }
 
-        return new AimContext(_cts.Token, _pauseGate.Task);
+        // The AIM is given ACCESSORS, not a snapshot.
+        //
+        // It used to receive _pauseGate.Task as it stood at Start - already
+        // completed. Pause() then replaced the field with a fresh uncompleted
+        // source, which the AIM never saw, so awaiting its copy returned at once
+        // and a Pause was invisible to a running AIM. Stop was the only signal
+        // that reached one, which is why press-to-stop capture had to abuse it.
+        return new AimContext(
+            _cts.Token,
+            () => { lock (_lock) return _pauseGate.Task; },
+            () => { lock (_lock) return _pauseRequests; });
     }
 
     // Called by AimHost.StopAimAsync.
@@ -61,7 +73,13 @@ internal sealed class AimLifecycle : IDisposable
         {
             if (_state != AimState.Running) return;
             _state = AimState.Paused;
-            // Replace gate with a new uncompleted TCS — AIM will block on it.
+
+            // The counter, not the gate, is what an AIM should test to learn that
+            // a Pause was ASKED FOR. The gate says whether it is paused right now,
+            // which a quick Pause-then-Resume can pass through unseen; the counter
+            // cannot be missed however briefly the pause lasts.
+            _pauseRequests++;
+
             _pauseGate = new TaskCompletionSource(
                 TaskCreationOptions.RunContinuationsAsynchronously);
         }
@@ -89,15 +107,41 @@ internal sealed class AimLifecycle : IDisposable
 // honour a Pause. Neither field exposes the AimLifecycle itself.
 public readonly struct AimContext
 {
+    private readonly Func<Task>? _pauseGate;
+    private readonly Func<int>?  _pauseRequests;
+
     public static readonly AimContext None = new(CancellationToken.None, Task.CompletedTask);
 
     public CancellationToken StopToken { get; }
-    public Task              PauseGate { get; }
+
+    // Read afresh each time: a Pause after this context was handed out must be
+    // visible to the AIM holding it.
+    public Task PauseGate => _pauseGate?.Invoke() ?? Task.CompletedTask;
+
+    // How many times a Pause has been asked for during this run. An AIM that
+    // wants to be interrupted - a microphone waiting to be told "that is enough"
+    // - watches this for a change rather than watching the gate.
+    public int PauseRequests => _pauseRequests?.Invoke() ?? 0;
+
+    // True when this context can carry a Pause at all. AimContext.None cannot,
+    // and an AIM should not wait for a signal that will never come.
+    public bool CanBePaused => _pauseRequests is not null;
 
     public AimContext(CancellationToken stopToken, Task pauseGate)
     {
-        StopToken = stopToken;
-        PauseGate = pauseGate;
+        StopToken      = stopToken;
+        _pauseGate     = () => pauseGate;
+        _pauseRequests = null;
+    }
+
+    public AimContext(
+        CancellationToken stopToken,
+        Func<Task> pauseGate,
+        Func<int> pauseRequests)
+    {
+        StopToken      = stopToken;
+        _pauseGate     = pauseGate;
+        _pauseRequests = pauseRequests;
     }
 
     // Convenience: await this to honour both Pause and Stop.

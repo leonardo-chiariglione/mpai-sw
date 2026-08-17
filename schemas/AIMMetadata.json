@@ -1,0 +1,76 @@
+{ "$schema":              "https://json-schema.org/draft/2020-12/schema",
+  "$id":                  "https://schemas.mpai.community/AIF/V3.0/data/AIMMetadata.json",
+  "title":                "AIM Metadata V3.0",
+  "type":                 "object",
+  "additionalProperties": false,
+  "required":             ["Identifier","APIProfile", "Description", "ExternalPorts", "SubAIMs", "Topology", "Implementations", "DataXMData" ],
+  "properties":           {
+
+    "Header":             { "type": "string", "const": "AIF-AMD-V3.0" },
+
+    "Identifier":         { "type": "object", "$anchor": "identifier", "additionalProperties": false,
+                            "required": [ "ImplementerID", "ImplementationID", "AIMName" ], "properties": {
+      "ImplementerID":    { "type": "string", "description": "String assigned by IIDRA" },
+      "ImplementationID": { "type": "string", "description": "String assigned by Implementer" },
+      "AIMName":          { "type": "string", "pattern": "^[A-Z]{3}-[A-Z]{3}-V[0-9]+\\.[0-9]+$" } } },
+
+    "APIProfile":         { "type": "string", "enum": ["Basic", "Secure"] },
+
+    "Description":        { "type": "string" },
+
+    "InternalTypes":      { "type": "array", "items": { "type": "object", "additionalProperties": false,
+                            "required": [ "Name", "DataType" ], "properties": {
+      "Name":             { "type": "string" },
+      "DataType":         { "type": "string" } } } },
+
+    "ExternalPorts":      { "type": "array", "items": { "$ref": "#/$defs/PortOptions" } },
+
+    "SubAIMs":            { "type": "array", "items": { "type": "object", "additionalProperties": false,
+                            "required": [ "Identifier" ], "properties": {
+      "Identifier":       { "$ref": "#/properties/Identifier" } } } },
+
+    "Topology":           { "type": "array", "items": { "type": "object", "additionalProperties": false,
+                            "required": [ "Input", "Output" ], "properties": {
+      "Input":            { "$ref": "#/$defs/PortID" },
+      "Output":           { "$ref": "#/$defs/PortID" } } } },
+
+    "Implementations":    { "type": "array", "items": { "type": "object", "additionalProperties": false,
+                            "required": [ "BinaryName", "Architecture", "OperatingSystem", "Version", "Source" ], "properties": {
+      "ImplementationURI":{ "type": "string", "format": "uri" },
+      "BinaryName":       { "type": "string" },
+      "Architecture":     { "type": "string", "enum": [ "x86", "x86-64", "ARM", "ARM64", "MIPS", "RISC-V" ] },
+      "OperatingSystem":  { "type": "string", "enum": [ "Windows", "Linux", "MacOS", "Debian", "Ubuntu", "RedHat",
+                                                         "Android", "Zephyr", "RTOS", "Oniro", "iOS" ] },
+      "Version":          { "type": "string" },
+      "Source":           { "type": "string", "enum": [ "AIMStorage", "MPAIStore", "AIMURL" ] },
+      "Destination":      { "type": "string" } } } },
+
+    "ResourcePolicies":   { "$comment": "Unchanged from V3.0" },
+
+    "Documentation":      { "type": "array", "items": { "type": "object", "additionalProperties": false,
+                            "required": [ "Type", "URI" ], "properties": {
+      "Type":             { "type": "string", "enum": [ "Specification", "Manual", "Tutorial", "Video" ] },
+      "URI":              { "type": "string", "format": "uri" } } } },
+
+    "DataXMData":         { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
+    "DescrMetadata":      { "type": "string", "maxLength": 2048 } },
+
+  "$defs":                {
+
+    "PortOptions":        { "type": "object", "additionalProperties": false,
+                            "required": [ "Name", "Direction", "DataType", "Technology", "Protocol", "IsRemote" ], "properties": {
+      "Name":             { "type": "string" },
+      "Direction":        { "type": "string", "enum": [ "Input", "Output" ] },
+      "DataType":         { "type": "string" },
+      "RecordType":       { "type": "string", "description": "Optional compatibility alias" },
+      "Technology":       { "type": "string", "enum": [ "Hardware", "Software" ] },
+      "Protocol":         { "type": "string", "enum": [ "UDP", "TCP", "HTTP", "HTTPS", "CoAP", "CoAPS", "L2CAP", "BNEP",
+                                                         "RFCOMM", "SDP", "RPC", "RTP", "RTCP", "OCCI", "" ] },
+      "PortNumber":       { "type": "integer", "minimum": 1, "description": "1-based ordinal among ports of the same Direction and DataType on this AIM; omitted when that pair occurs once (implicitly 1); written only when an AIM has more than one port of the same Direction and DataType" },
+      "IsRemote":         { "type": "boolean" } } },
+
+    "PortID":             { "type": "object", "additionalProperties": false,
+                            "required": [ "AIMName", "PortName" ], "properties": {
+      "AIMName":          { "type": "string", "pattern": "^$|^[A-Z]{3}-[A-Z]{3}-V[0-9]+\\.[0-9]+$" },
+      "PortName":         { "type": "string" },
+      "PortNumber":       { "type": "integer", "minimum": 1, "description": "Selects which port of this endpoint's DataType is meant when the AIM has more than one of that Direction and DataType; omitted => 1" } } } } }

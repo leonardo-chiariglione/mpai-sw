@@ -17,7 +17,10 @@
     <ProjectReference Include="..\..\CVE\V1.0\VOA.Windows\Mpai.Cve.Voa.Windows.csproj" />
     <ProjectReference Include="..\..\CAE3\V1.0\AOA.Windows\Mpai.Cae.Aoa.Windows.csproj" />
     <ProjectReference Include="..\..\CAE3\V1.0\AOD.Windows\Mpai.Cae.Aod.Windows.csproj" />
-    <ProjectReference Include="..\..\MMC\V2.5\ASR\Mpai.Mmc.Asr.csproj" />
+    <ProjectReference Include="..\..\MMC\V2.5\ASR\Mpai.Mmc.Asr.csproj" />
+    <ProjectReference Include="..\..\MMC\V2.5\TTT\Mpai.Mmc.Ttt.csproj" />
+    <ProjectReference Include="..\..\MMC\V2.5\SOA\Mpai.Mmc.Soa.csproj" />
+    <ProjectReference Include="..\..\MMC\V2.5\SOD\Mpai.Mmc.Sod.csproj" />
     <ProjectReference Include="..\..\MMC\V2.5\TIQ\Mpai.Mmc.Tiq.csproj" />
     <ProjectReference Include="..\..\MMC\V2.5\TTS\Mpai.Mmc.Tts.csproj" />
     <ProjectReference Include="..\..\MMC\V2.5\AMQ\Mpai.Mmc.Amq.csproj" />

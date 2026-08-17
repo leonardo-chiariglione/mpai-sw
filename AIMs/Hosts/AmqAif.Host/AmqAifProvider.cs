@@ -6,8 +6,10 @@ using AIF.Store;
 
 using Mpai.Aims.Asr;
 using Mpai.Aims.Audio;
+using Mpai.Aims.Speech;
 using Mpai.Aims.Ocr;
 using Mpai.Aims.Tiq;
+using Mpai.Aims.Ttt;
 using Mpai.Aims.Tts;
 using Mpai.Aims.Visual;
 
@@ -94,6 +96,30 @@ public sealed class AmqAifProvider : IAimProvider
                         Setting(settings, "OutputFolder", @"D:\AI\Output")),
                     _store),
 
+            "MMC-SOA-V2.5" =>
+                new SoaAimProcessor(
+                    aimName,
+                    _headless
+                        ? new FileAudioAcquisition(
+                              Setting(settings, "QuestionAudio", @"D:\AI\MPAIApps\AudioIn\question.wav"))
+                        : new WasapiAudioAcquisition(),
+                    _store,
+                    TimeSpan.FromSeconds(Number(settings, "DurationSeconds", 5))),
+
+            "MMC-SOD-V2.5" =>
+                new SodAimProcessor(
+                    aimName,
+                    _headless
+                        ? new FileAudioDelivery(
+                              Setting(settings, "OutputFolder", @"D:\AI\MPAIApps\AudioOut"))
+                        : new WinmmAudioDelivery(),
+                    _store),
+            "MMC-TTT-V2.5" =>
+                new TttAimProcessor(
+                    aimName,
+                    TttFactory.Create(settings),
+                    _store),
+
             _ => throw new NotSupportedException(
                      $"No implementation available for {aimName}.")
         };

@@ -8,6 +8,7 @@ using Mpai.Core;
 
 using Mpai.Aims.Asr;
 using Mpai.Aims.Audio;
+using Mpai.Aims.Speech;
 using Mpai.Aims.Tiq;
 using Mpai.Aims.Tts;
 using Mpai.Aims.Visual;

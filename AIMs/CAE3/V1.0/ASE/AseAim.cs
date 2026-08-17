@@ -325,4 +325,34 @@ public sealed class AseAim
             BasicAudioSceneDescriptorsEntries = resolvedEntries
         };
     }
+
+    // --- Deletion (surfaces the sixth Shared Storage primitive, Delete) ---
+    // One-level reference set for an asset: every id it references
+    // (ref:{id}:*) and every id that references it (refby:{id}:*). Used by
+    // the UI to decide whether a Delete is safe and, if not, to show and
+    // optionally cascade over exactly the assets involved - one level only.
+    public IReadOnlyList<string> ReferencedBy(string assetId) =>
+        storage.List($"refby:{assetId}:").Select(k => k[$"refby:{assetId}:".Length..]).ToList();
+
+    public IReadOnlyList<string> References(string assetId) =>
+        storage.List($"ref:{assetId}:").Select(k => k[$"ref:{assetId}:".Length..]).ToList();
+
+    // Deletes a single asset key together with its own ref:/refby: bookkeeping
+    // (both directions), per Section 4.3 of the Shared Storage proposal.
+    // Deleting a non-existent key is not an error (Section 4.10.3). Does NOT
+    // itself cascade - the caller decides, one level, with user consent.
+    public void Delete(string assetId)
+    {
+        foreach (var toId in References(assetId))
+        {
+            storage.Delete($"ref:{assetId}:{toId}");
+            storage.Delete($"refby:{toId}:{assetId}");
+        }
+        foreach (var fromId in ReferencedBy(assetId))
+        {
+            storage.Delete($"ref:{fromId}:{assetId}");
+            storage.Delete($"refby:{assetId}:{fromId}");
+        }
+        storage.Delete(assetId);
+    }
 }

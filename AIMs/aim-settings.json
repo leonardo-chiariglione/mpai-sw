@@ -1,16 +1,32 @@
 ﻿{
+    "MMC-SOA-V2.5":  {
+                         "DurationSeconds":  "5",
+                         "QuestionAudio":  "D:\\AI\\MPAIApps\\AudioIn\\question-spoken.wav"
+                     },
+    "MMC-SOD-V2.5":  {
+                         "OutputFolder":  "D:\\AI\\MPAIApps\\AudioOut"
+                     },
     "CVE-VOA-V1.0":  {
                          "SourceHint":  "D:\\AI\\MPAIApps\\VisualIn",
                          "ImageFile":  "D:\\AI\\MPAIApps\\VisualIn\\zebra.jpg"
                      },
     "CAE-AOA-V1.0":  {
                          "DurationSeconds":  "5",
-                         "QuestionAudio":  "D:\\AI\\MPAIApps\\AudioIn\\question.wav"
+                         "QuestionAudio":  "D:\\AI\\MPAIApps\\AudioIn\\question-spoken.wav"
                      },
     "MMC-ASR-V2.5":  {
                          "ExecutablePath":  "D:\\AI\\Models\\Whisper\\bin\\whisper-cli.exe",
-                         "ModelPath":  "D:\\AI\\Models\\Whisper\\models\\ggml-base.en.bin",
+                         "ModelPath":  "D:\\AI\\Models\\Whisper\\models\\ggml-small.bin",
                          "LanguageCode":  "en"
+                     },
+    "MMC-TTT-V2.5":  {
+                         "TttEncoderModel":  "D:\\AI\\Models\\Whisper\\M2M100\\encoder_model_quantized.onnx",
+                         "TttDecoderModel":  "D:\\AI\\Models\\Whisper\\M2M100\\decoder_model_merged_quantized.onnx",
+                         "TttDecoderFirstModel":  "D:\\AI\\Models\\Whisper\\M2M100\\decoder_model_quantized.onnx",
+                         "TttDecoderPastModel":  "D:\\AI\\Models\\Whisper\\M2M100\\decoder_with_past_model_quantized.onnx",
+                         "TttSpmModel":  "D:\\AI\\Models\\Whisper\\M2M100\\sentencepiece.bpe.model",
+                         "TttSpecialTokens":  "D:\\AI\\Models\\Whisper\\M2M100\\special_tokens_map.json",
+                         "TttVocab":  "D:\\AI\\Models\\Whisper\\M2M100\\vocab.json"
                      },
     "MMC-TIQ-V2.5":  {
                          "VisionModel":  "D:\\AI\\Models\\BLIP\\onnx\\blip_vision_model.onnx",
@@ -21,7 +37,17 @@
     "MMC-TTS-V2.5":  {
                          "PiperExecutable":  "D:\\AI\\Models\\Piper\\piper_windows_amd64\\piper\\piper.exe",
                          "VoiceModel":  "D:\\AI\\Models\\Piper\\voices\\en_US-lessiac-medium\\en_US-lessiac-medium.onnx",
-                         "VoiceConfig":  "D:\\AI\\Models\\Piper\\voices\\en_US-lessiac-medium\\en_US-lessiac-medium.onnx.json"
+                         "VoiceConfig":  "D:\\AI\\Models\\Piper\\voices\\en_US-lessiac-medium\\en_US-lessiac-medium.onnx.json",
+                         "Voice:ja":  "D:\\AI\\Models\\Piper\\voices\\ja_JA-hi_fi_captain-medium\\ja_JA-hi_fi_captain-medium.onnx",
+                         "VoiceConfig:ja":  "D:\\AI\\Models\\Piper\\voices\\ja_JA-hi_fi_captain-medium\\ja_JA-hi_fi_captain-medium.onnx.json",
+                         "Voice:zh":  "D:\\AI\\Models\\Piper\\voices\\zh_CN-huayan-medium\\zh_CN-huayan-medium.onnx",
+                         "VoiceConfig:zh":  "D:\\AI\\Models\\Piper\\voices\\zh_CN-huayan-medium\\zh_CN-huayan-medium.onnx.json",
+                         "Voice:de":  "D:\\AI\\Models\\Piper\\voices\\de_DE-thorsten-medium\\de_DE-thorsten-medium.onnx",
+                         "VoiceConfig:de":  "D:\\AI\\Models\\Piper\\voices\\de_DE-thorsten-medium\\de_DE-thorsten-medium.onnx.json",
+                         "Voice:fr":  "D:\\AI\\Models\\Piper\\voices\\fr_FR-siwis-medium\\fr_FR-siwis-medium.onnx",
+                         "VoiceConfig:fr":  "D:\\AI\\Models\\Piper\\voices\\fr_FR-siwis-medium\\fr_FR-siwis-medium.onnx.json",
+                         "Voice:it":  "D:\\AI\\Models\\Piper\\voices\\it_IT-riccardo-x_low\\it_IT-riccardo-x_low.onnx",
+                         "VoiceConfig:it":  "D:\\AI\\Models\\Piper\\voices\\it_IT-riccardo-x_low\\it_IT-riccardo-x_low.onnx.json"
                      },
     "CAE-AOD-V1.0":  {
                          "OutputFolder":  "D:\\AI\\MPAIApps\\AudioOut"

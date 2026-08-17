@@ -1,0 +1,21 @@
+{ "$schema":                  "https://json-schema.org/draft/2020-12/schema",
+  "$id":                      "https://schemas.mpai.community/MMC/V2.5/data/TextPersonalStatus.json",
+  "title":                    "Text Personal Status V2.5",
+  "description":              "Describes the text-related cognitive, emotional, and social state of an Entity.",
+  "type":                     "object",
+  "additionalProperties":     false,
+  "required":                 [ "Header", "TextPersonalStatusID" ],
+  "properties":               {
+
+    "Header":                 { "type": "string", "const": "MMC-TPS-V2.5" },
+    "MInstanceID":            { "type": "string", "description": "M-Instance identifier." },
+    "UEnvironmentID":         { "type": "string", "description": "U-Environment identifier." },
+    "TextPersonalStatusID":   { "type": "string", "description": "Unique Text Personal Status identifier." },
+    "TextPersonalStatusTime": { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SimpleTime.json" },
+
+    "TextCognitiveState":     { "type": "object", "additionalProperties": false, "required": [ "Value" ], "properties": { "Value": { "type": "number", "minimum": 0, "maximum": 1 } } },
+    "TextEmotion":            { "type": "object", "additionalProperties": false, "required": [ "Value" ], "properties": { "Value": { "type": "number", "minimum": 0, "maximum": 1 } } },
+    "TextSocialAttitude":     { "type": "object", "additionalProperties": false, "required": [ "Value" ], "properties": { "Value": { "type": "number", "minimum": 0, "maximum": 1 } } },
+
+    "DataXMData":             { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
+    "DescrMetadata":          { "type": "string", "maxLength": 2048 } } }

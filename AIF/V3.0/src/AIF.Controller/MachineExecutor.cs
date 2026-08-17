@@ -133,6 +133,16 @@ public sealed class MachineExecutor
                 return ExecutionResult.Suspend(suspended);
             }
 
+            // Nothing suspended us, but this AIM may have nothing to work on -
+            // e.g. ASR in a text-only request, where InputSpeech is declared
+            // IsOptional and was not supplied. Skip it and carry on; its
+            // consumers take their input from the other branch.
+            if (HasNoInputAvailable(node, child, boundary, outputs))
+            {
+                Console.WriteLine($"[AIF] {aimName}: skipped (no input available)");
+                continue;
+            }
+
             var inbox =
                 BuildInbox(node, child, outputs, boundary);
 
@@ -283,12 +293,42 @@ public sealed class MachineExecutor
     }
 
     // The input port name on 'aim' that carries the given DataType.
-    private static string? InputPortForDataType(DescriptorNode aim, string dataType) =>
-        aim.Ports.FirstOrDefault(p => p.Direction == "Input" && p.DataType == dataType)?.Name;
+    private static string? InputPortForDataType(
+        DescriptorNode aim, string dataType, int ordinal = 1) =>
+        PortForDataType(aim, "Input", dataType, ordinal);
 
     // The output port name on 'aim' that carries the given DataType.
-    private static string? OutputPortForDataType(DescriptorNode aim, string dataType) =>
-        aim.Ports.FirstOrDefault(p => p.Direction == "Output" && p.DataType == dataType)?.Name;
+    private static string? OutputPortForDataType(
+        DescriptorNode aim, string dataType, int ordinal = 1) =>
+        PortForDataType(aim, "Output", dataType, ordinal);
+
+    // Routing is by DataType. When that is unambiguous - one port of this
+    // Direction and DataType - the ordinal is irrelevant and ignored, so every
+    // existing AMD keeps working unchanged.
+    //
+    // When an AIM declares SEVERAL ports of the same Direction and DataType,
+    // DataType alone cannot say which is meant and the ordinal decides:
+    // the port whose AMD PortNumber equals it, or failing that the n-th such
+    // port in declaration order. Returning null (rather than the first port)
+    // when the ordinal is out of range is deliberate: silently delivering to
+    // the wrong port of the right type is the failure this exists to prevent.
+    private static string? PortForDataType(
+        DescriptorNode aim, string direction, string dataType, int ordinal)
+    {
+        var candidates = aim.Ports
+            .Where(p => p.Direction == direction && p.DataType == dataType)
+            .ToList();
+
+        if (candidates.Count == 0) return null;
+        if (candidates.Count == 1) return candidates[0].Name;
+
+        var declared = candidates.FirstOrDefault(p => p.PortNumber == ordinal);
+        if (declared is not null) return declared.Name;
+
+        return ordinal >= 1 && ordinal <= candidates.Count
+            ? candidates[ordinal - 1].Name
+            : null;
+    }
 
     // Returns the boundary (port, DataType) that 'aim' requires but which is not
     // yet present, or null if all its boundary-sourced inputs are ready.
@@ -323,11 +363,66 @@ public sealed class MachineExecutor
                 if (InternallySatisfied(node, aim, dt, outputs))
                     continue;   // fed by an AIM that has produced this DataType
 
+                // An OPTIONAL boundary input that was not supplied is not a
+                // reason to wait: nobody is coming. Report it as skippable and
+                // let the caller decide, rather than suspending forever.
+                if (BoundaryPortIsOptional(node, source.PortName))
+                    continue;
+
                 return (source.PortName, dt);
             }
         }
 
         return null;
+    }
+
+    // True if the named composite boundary INPUT port is declared IsOptional.
+    private static bool BoundaryPortIsOptional(DescriptorNode node, string portName) =>
+        node.Ports.Any(p =>
+            p.Direction == "Input" && p.Name == portName && p.IsOptional);
+
+    // True if 'aim' would run with NO input at all: every one of its inputs is
+    // either an unsupplied optional boundary port, or an internal connection
+    // whose producer has not produced. Such an AIM is skipped.
+    //
+    // This is deliberately narrow. An AIM with even one input available RUNS;
+    // only a wholly starved AIM is skipped. Combined with IsOptional, that is
+    // what lets ASR sit out a text-only request while still being suspended for
+    // in a workflow that really is waiting on speech.
+    private bool HasNoInputAvailable(
+        DescriptorNode node,
+        DescriptorNode aim,
+        IReadOnlyDictionary<string, string> boundary,
+        IReadOnlyDictionary<string, Dictionary<string, RoutedObject>> outputs)
+    {
+        var children = node.Children.ToDictionary(c => c.AIMName, c => c);
+        var any      = false;
+
+        foreach (var connection in node.Connections)
+        {
+            var destination = Endpoint.Parse(connection.Destination);
+            if (destination.AimName != aim.AIMName) continue;
+
+            var source = Endpoint.Parse(connection.Source);
+
+            if (source.AimName is null)
+            {
+                if (boundary.ContainsKey(source.PortName)) { any = true; break; }
+                continue;
+            }
+
+            var dataType = ConnectionDataType(node, connection, children);
+            if (dataType is null) continue;
+
+            if (outputs.TryGetValue(source.AimName, out var produced) &&
+                FindProduced(produced, dataType) is not null)
+            {
+                any = true;
+                break;
+            }
+        }
+
+        return !any;
     }
 
     // True if 'aim' has an AIM-to-AIM input connection carrying 'dataType' whose
@@ -439,7 +534,9 @@ public sealed class MachineExecutor
             var dataType = ConnectionDataType(node, connection, children);
             if (dataType is null) continue;
 
-            var destPort = InputPortForDataType(aim, dataType) ?? destination.PortName;
+            var destPort =
+                InputPortForDataType(aim, dataType, destination.PortNumber)
+                ?? destination.PortName;
             if (boundary.TryGetValue(source.PortName, out var supplied))
             {
                 inbox[destPort] = supplied;
@@ -460,7 +557,9 @@ public sealed class MachineExecutor
             var dataType = ConnectionDataType(node, connection, children);
             if (dataType is null) continue;
 
-            var destPort = InputPortForDataType(aim, dataType) ?? destination.PortName;
+            var destPort =
+                InputPortForDataType(aim, dataType, destination.PortNumber)
+                ?? destination.PortName;
             if (fromBoundary.Contains(destPort)) continue;   // boundary wins
 
             if (outputs.TryGetValue(source.AimName, out var producedPorts))
@@ -523,8 +622,13 @@ public sealed class MachineExecutor
 
     private readonly record struct Endpoint(
         string? AimName,
-        string PortName)
+        string PortName,
+        int PortNumber = 1)
     {
+        // Accepts "Port", "AIM.Port", "Port#2", "AIM.Port#2".
+        // The '#n' suffix is the Topology PortNumber; absent means 1.
+        // Note AIM names themselves contain '.' (as in "MMC-TTT-V2.5"), which
+        // is why the AIM/port split is on the LAST dot.
         public static Endpoint Parse(
             string endpoint)
         {
@@ -533,14 +637,25 @@ public sealed class MachineExecutor
                 return new Endpoint(null, string.Empty);
             }
 
+            var ordinal = 1;
+            var hash    = endpoint.LastIndexOf('#');
+            if (hash > 0 &&
+                int.TryParse(endpoint[(hash + 1)..], out var parsedOrdinal) &&
+                parsedOrdinal >= 1)
+            {
+                ordinal  = parsedOrdinal;
+                endpoint = endpoint[..hash];
+            }
+
             var separator =
                 endpoint.LastIndexOf('.');
 
             return separator <= 0
-                ? new Endpoint(null, endpoint)
+                ? new Endpoint(null, endpoint, ordinal)
                 : new Endpoint(
                       endpoint[..separator],
-                      endpoint[(separator + 1)..]);
+                      endpoint[(separator + 1)..],
+                      ordinal);
         }
     }
 }

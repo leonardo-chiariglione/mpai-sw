@@ -101,11 +101,15 @@ internal static class SuspendResumeTest
         }
         Console.WriteLine($"[AIF] Suspended again; composite needs boundary port '{o2.WaitingPort}'.");
 
-        // Step 5: write the spoken question to InputAudio; resume -> answer pipeline.
+        // Step 5: write the spoken question to InputSpeech; resume -> answer pipeline.
+        // The composite's boundary port is InputSpeech (OSD-SPO-V1.5), feeding
+        // MMC-SOA, not InputAudio: SOA produces a Speech Object where AOA produced
+        // an Audio Object. Writing InputAudio left the run suspended for ever,
+        // waiting on a port nobody was filling.
         if (!File.Exists(QuestionAudio)) { Console.WriteLine($"Missing: {QuestionAudio}"); return; }
-        var audio = BasicAudioObject.FromData(File.ReadAllBytes(QuestionAudio));
+        var speech = BasicSpeechObject.FromData(File.ReadAllBytes(QuestionAudio));
         Console.WriteLine($"[UA] Port_Input_Write question audio ({Path.GetFileName(QuestionAudio)}) " +
-                          "-> InputAudio; resume.");
+                          "-> InputSpeech; resume.");
 
         // "Ask your question as speech or text; the machine uses the one available."
         // The user chose speech, so supply the audio and an EMPTY text object on
@@ -113,7 +117,7 @@ internal static class SuspendResumeTest
         var emptyText = BasicTextObject.FromText(string.Empty);
         var (e3, o3) = ua.ResumeAsync(aiwId, new Dictionary<string, string>
         {
-            ["InputAudio"] = MpaiJson.ToJson(audio),
+            ["InputSpeech"] = MpaiJson.ToJson(speech),
             ["InputText"]  = MpaiJson.ToJson(emptyText)
         }).GetAwaiter().GetResult();
         if (e3 != AifError.OK || o3 is null) { Console.WriteLine($"Resume failed: {e3}"); return; }

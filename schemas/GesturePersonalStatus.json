@@ -1,0 +1,21 @@
+{ "$schema":                          "https://json-schema.org/draft/2020-12/schema",
+  "$id":                              "https://schemas.mpai.community/MMC/V2.5/data/GesturePersonalStatus.json",
+  "title":                            "Gesture Personal Status V2.5",
+  "description":                      "Describes the gesture-related cognitive, emotional, and social state of an Entity.",
+  "type":                             "object",
+  "additionalProperties":             false,
+  "required":                         [ "Header", "GesturePersonalStatusID" ],
+  "properties":                       {
+
+    "Header":                         { "type": "string", "const": "MMC-GPS-V2.5" },
+    "MInstanceID":                    { "type": "string", "description": "M-Instance identifier." },
+    "UEnvironmentID":                 { "type": "string", "description": "U-Environment identifier." },
+    "GesturePersonalStatusID":        { "type": "string", "description": "Unique Gesture Personal Status identifier." },
+    "GesturePersonalStatusSpaceTime": { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SpaceTime.json" },
+
+    "GestureCognitiveState":          { "type": "object", "additionalProperties": false, "required": [ "Value" ], "properties": { "Value": { "type": "number", "minimum": 0, "maximum": 1 } } },
+    "GestureEmotion":                 { "type": "object", "additionalProperties": false, "required": [ "Value" ], "properties": { "Value": { "type": "number", "minimum": 0, "maximum": 1 } } },
+    "GestureSocialAttitude":          { "type": "object", "additionalProperties": false, "required": [ "Value" ], "properties": { "Value": { "type": "number", "minimum": 0, "maximum": 1 } } },
+
+    "DataXMData":                     { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
+    "DescrMetadata":                  { "type": "string", "maxLength": 2048 } } }

@@ -71,50 +71,56 @@ public sealed class ObjectsForm : Form
         var grid = new TableLayoutPanel
         {
             Dock = DockStyle.Top,
-            ColumnCount = 3,
-            RowCount = 4,
-            Height = 32 * 4 + 12,
+            ColumnCount = 5,
+            RowCount = 3,
+            Height = 32 * 3 + 12,
             Padding = new Padding(4, 4, 4, 4)
         };
         grid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80));
-        grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-        grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-        for (var i = 0; i < 4; i++) grid.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+        for (var c = 0; c < 4; c++) grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
+        for (var i = 0; i < 3; i++) grid.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
 
         static Label RowLabel(string text) => new() { Text = text, TextAlign = System.Drawing.ContentAlignment.MiddleLeft, Dock = DockStyle.Fill, Font = new System.Drawing.Font("Segoe UI", 8, System.Drawing.FontStyle.Bold) };
         static Button Cell(string text) => new() { Text = text, Dock = DockStyle.Fill, Margin = new Padding(2) };
 
+        // Row 0: Acquire/Deliver - From File | From Mic | To File | To Speaker
         var acquireFileButton = Cell("From File");
         acquireFileButton.Click += (_, _) => CreateObjectFromFile();
         var acquireDeviceButton = Cell("From Mic");
         acquireDeviceButton.Click += (_, _) => ToggleRecording(acquireDeviceButton);
-        grid.Controls.Add(RowLabel("Acquire"), 0, 0);
-        grid.Controls.Add(acquireFileButton, 1, 0);
-        grid.Controls.Add(acquireDeviceButton, 2, 0);
-
         var deliverFileButton = Cell("To File");
         deliverFileButton.Click += (_, _) => DeliverSelectedObjectToFile();
         var deliverDeviceButton = Cell("To Speaker");
         deliverDeviceButton.Click += (_, _) => PlaySelectedObject();
-        grid.Controls.Add(RowLabel("Deliver"), 0, 1);
-        grid.Controls.Add(deliverFileButton, 1, 1);
-        grid.Controls.Add(deliverDeviceButton, 2, 1);
+        grid.Controls.Add(RowLabel("Acq/Deliver"), 0, 0);
+        grid.Controls.Add(acquireFileButton, 1, 0);
+        grid.Controls.Add(acquireDeviceButton, 2, 0);
+        grid.Controls.Add(deliverFileButton, 3, 0);
+        grid.Controls.Add(deliverDeviceButton, 4, 0);
 
+        // Row 1: Edit - Stage | Discard
         var editStageButton = Cell("Stage Edit");
         editStageButton.Click += (_, _) => StageObjectEdit();
         var editClearButton = Cell("Discard Edit");
         editClearButton.Click += (_, _) => ClearObjectEdit();
-        grid.Controls.Add(RowLabel("Edit"), 0, 2);
-        grid.Controls.Add(editStageButton, 1, 2);
-        grid.Controls.Add(editClearButton, 2, 2);
+        grid.Controls.Add(RowLabel("Edit"), 0, 1);
+        grid.Controls.Add(editStageButton, 1, 1);
+        grid.Controls.Add(editClearButton, 2, 1);
 
+        // Row 2: Repository - Save | Discard | Delete | Info
         var repoSaveButton = Cell("Save Changes");
         repoSaveButton.Click += (_, _) => SaveObjectEdit();
         var repoClearButton = Cell("Discard Changes");
         repoClearButton.Click += (_, _) => ClearObjectEdit();
-        grid.Controls.Add(RowLabel("Repository"), 0, 3);
-        grid.Controls.Add(repoSaveButton, 1, 3);
-        grid.Controls.Add(repoClearButton, 2, 3);
+        var repoDeleteButton = Cell("Delete");
+        repoDeleteButton.Click += (_, _) => DeleteSelectedObject();
+        var repoInfoButton = Cell("Info");
+        repoInfoButton.Click += (_, _) => ShowSelectedObjectInfo();
+        grid.Controls.Add(RowLabel("Repository"), 0, 2);
+        grid.Controls.Add(repoSaveButton, 1, 2);
+        grid.Controls.Add(repoClearButton, 2, 2);
+        grid.Controls.Add(repoDeleteButton, 3, 2);
+        grid.Controls.Add(repoInfoButton, 4, 2);
 
         var positionPanel = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 28, FlowDirection = FlowDirection.LeftToRight };
         positionPanel.Controls.Add(new Label { Text = "Position (X,Y,Z):", AutoSize = true, Padding = new Padding(4, 6, 2, 0) });
@@ -147,9 +153,8 @@ public sealed class ObjectsForm : Form
             ForeColor = System.Drawing.Color.DimGray
         });
 
-        var logPanel = new Panel { Dock = DockStyle.Fill };
-        logPanel.Controls.Add(logBox);
-        logPanel.Controls.Add(new Label { Text = "Log:", Dock = DockStyle.Top, Height = 16, Font = new System.Drawing.Font("Segoe UI", 7.5f) });
+        // Log removed from the UI (kept alive but hidden so Log(...) calls still work).
+        logBox.Visible = false;
 
         var refreshButton = new Button { Text = "Refresh", Dock = DockStyle.Top, Height = 22 };
         refreshButton.Click += (_, _) => RefreshList();
@@ -162,28 +167,15 @@ public sealed class ObjectsForm : Form
         namesPanel.Controls.Add(listPanel);
         namesPanel.Controls.Add(refreshButton);
 
-        var canvasAndLogSplit = new SplitContainer
-        {
-            Dock = DockStyle.Fill,
-            Orientation = System.Windows.Forms.Orientation.Horizontal,
-            FixedPanel = FixedPanel.Panel1   // canvas (Panel1) stays exactly this size; only Log (Panel2) absorbs any change in available space
-        };
-        canvasAndLogSplit.Panel1.Controls.Add(canvasPanel);
-        canvasAndLogSplit.Panel2.Controls.Add(logPanel);
-
-        Controls.Add(canvasAndLogSplit);
+        Controls.Add(canvasPanel);   // canvas fills the whole central area now
         Controls.Add(namesPanel);
+        Controls.Add(logBox);        // hidden; present only so AppendText has a target
 
         var switchPanel = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 32, FlowDirection = FlowDirection.RightToLeft, Padding = new Padding(4) };
         switchPanel.Controls.Add(bringScenesToFrontButton);
         Controls.Add(switchPanel);
         Controls.Add(topPanel);
 
-        // Set AFTER the control hierarchy has its real, Dock-resolved size -
-        // setting this during construction silently clamps against the
-        // control's tiny pre-layout default size, which combined with
-        // FixedPanel then locks in that wrong small value permanently.
-        Load += (_, _) => canvasAndLogSplit.SplitterDistance = 280;
 
         RefreshList();
     }
@@ -519,6 +511,62 @@ public sealed class ObjectsForm : Form
         objectDraft.Clear();
         objectDraftTargetId = null;
         Log(hadTarget is null ? "Nothing was staged." : $"Discarded staged edit for {hadTarget} - it was never saved.");
+    }
+
+    private void DeleteSelectedObject()
+    {
+        if (objectsList.SelectedItem is not string objectId)
+        {
+            MessageBox.Show(this, "Select an Object first.", "Nothing selected", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        try
+        {
+            var referrers = aoe.ReferencedBy(objectId);
+            if (referrers.Count > 0)
+            {
+                var list = string.Join(", ", referrers);
+                var answer = MessageBox.Show(this,
+                    $"{objectId} is referenced by: {list}.\n\nDelete {objectId} together with those {referrers.Count} referencing item(s)?",
+                    "Delete referenced object", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (answer != DialogResult.Yes) { Log($"Delete of {objectId} cancelled."); return; }
+
+                foreach (var referrer in referrers) aoe.Delete(referrer);
+                aoe.Delete(objectId);
+                Log($"Deleted {objectId} and {referrers.Count} referencing item(s): {list}.");
+            }
+            else
+            {
+                aoe.Delete(objectId);
+                Log($"Deleted {objectId} (was not referenced).");
+            }
+
+            RefreshList();
+        }
+        catch (Exception failure)
+        {
+            Log($"ERROR deleting {objectId}: {failure.Message}");
+        }
+    }
+
+    private void ShowSelectedObjectInfo()
+    {
+        if (objectsList.SelectedItem is not string objectId)
+        {
+            MessageBox.Show(this, "Select an Object first.", "Nothing selected", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        try
+        {
+            var info = storage.GetKeyInfo(objectId);
+            Log($"{objectId} - StoredBy={info.StoredBy}, RequestedBy={info.RequestedBy}, StoredAt={info.StoredAt:yyyy-MM-dd HH:mm:ss} UTC");
+        }
+        catch (Exception failure)
+        {
+            Log($"ERROR reading info for {objectId}: {failure.Message}");
+        }
     }
 
     private void Log(string line)

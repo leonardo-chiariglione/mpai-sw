@@ -1,9 +1,4 @@
-{ "$schema":              "https://json-schema.org/draft/2020-12/schema",
-  "$comment":             "https://schemas.mpai.community/AIF/V3.0/AIMMetadata.json",
-  "$id":                  "https://schemas.mpai.community/MMC/V2.5/AIMs/AnswerToMultimodalQuestion.json",
-  "title":                "Answer to Multimodal Question V2.5",
-
-  "Identifier":           { "ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "MMC-AMQ-V2.5" },
+{ "Identifier":           { "ImplementerID": "1", "ImplementationID": "MMC-AMQ-V2.5-I01", "AIMName": "MMC-AMQ-V2.5" },
 
   "APIProfile":           "Basic",
   "Description":          "This AIM receives a question as Text or Speech and an Image and produces Text and/or Speech in response.",
@@ -22,13 +17,13 @@
                            {"Name": "OutputVisual",   "Direction": "Output", "DataType": "OSD-VIO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "OutputText",     "Direction": "Output", "DataType": "OSD-TXO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
-  "SubAIMs":              [{ "Identifier": { "ImplementerID": "/* from IIDRA */", "ImplementationID": "/* from Implementer */", "AIMName": "CVE-VOA-V1.0" } },
-                           { "Identifier": { "ImplementerID": "/* from IIDRA */", "ImplementationID": "/* from Implementer */", "AIMName": "MMC-SOA-V2.5" } },
-                           { "Identifier": { "ImplementerID": "/* from IIDRA */", "ImplementationID": "/* from Implementer */", "AIMName": "MMC-ASR-V2.5" } },
-                           { "Identifier": { "ImplementerID": "/* from IIDRA */", "ImplementationID": "/* from Implementer */", "AIMName": "MMC-TIQ-V2.5" } },
-                           { "Identifier": { "ImplementerID": "/* from IIDRA */", "ImplementationID": "/* from Implementer */", "AIMName": "MMC-TTS-V2.5" } },
-                           { "Identifier": { "ImplementerID": "/* from IIDRA */", "ImplementationID": "/* from Implementer */", "AIMName": "MMC-SOD-V2.5" } },
-                           { "Identifier": { "ImplementerID": "/* from IIDRA */", "ImplementationID": "/* from Implementer */", "AIMName": "CVE-VOD-V1.0" } } ],
+  "SubAIMs":              [{ "Identifier": { "ImplementerID": "1", "ImplementationID": "CVE-VOA-V1.0-I01", "AIMName": "CVE-VOA-V1.0" } },
+                           { "Identifier": { "ImplementerID": "1", "ImplementationID": "MMC-SOA-V2.5-I01", "AIMName": "MMC-SOA-V2.5" } },
+                           { "Identifier": { "ImplementerID": "1", "ImplementationID": "MMC-ASR-V2.5-I01", "AIMName": "MMC-ASR-V2.5" } },
+                           { "Identifier": { "ImplementerID": "1", "ImplementationID": "MMC-TIQ-V2.5-I01", "AIMName": "MMC-TIQ-V2.5" } },
+                           { "Identifier": { "ImplementerID": "1", "ImplementationID": "MMC-TTS-V2.5-I01", "AIMName": "MMC-TTS-V2.5" } },
+                           { "Identifier": { "ImplementerID": "1", "ImplementationID": "MMC-SOD-V2.5-I01", "AIMName": "MMC-SOD-V2.5" } },
+                           { "Identifier": { "ImplementerID": "1", "ImplementationID": "CVE-VOD-V1.0-I01", "AIMName": "CVE-VOD-V1.0" } } ],
 
   "Topology":             [{ "Output": { "AIMName": "",             "PortName": "InputSpeech"   }, "Input": { "AIMName": "MMC-SOA-V2.5", "PortName": "InputSpeech"   } },
                            { "Output": { "AIMName": "",             "PortName": "InputVisual"   }, "Input": { "AIMName": "CVE-VOA-V1.0", "PortName": "InputVisual"   } },

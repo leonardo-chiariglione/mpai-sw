@@ -103,55 +103,56 @@ public sealed class ScenesForm : Form
         var grid = new TableLayoutPanel
         {
             Dock = DockStyle.Top,
-            ColumnCount = 3,
-            RowCount = 4,
-            Height = 32 * 4 + 12,
+            ColumnCount = 5,
+            RowCount = 3,
+            Height = 32 * 3 + 12,
             Padding = new Padding(4, 4, 4, 4)
         };
         grid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80));
-        grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-        grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-        for (var i = 0; i < 4; i++) grid.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+        for (var c = 0; c < 4; c++) grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
+        for (var i = 0; i < 3; i++) grid.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
 
         static Label RowLabel(string text) => new() { Text = text, TextAlign = System.Drawing.ContentAlignment.MiddleLeft, Dock = DockStyle.Fill, Font = new System.Drawing.Font("Segoe UI", 8, System.Drawing.FontStyle.Bold) };
         static Button Cell(string text) => new() { Text = text, Dock = DockStyle.Fill, Margin = new Padding(2) };
 
-        // Row 0: Scene - Load | Clear
+        // Row 0: Scene/Edit - Load Scene | Add to Draft | Discard Draft | Save Scene
         var sceneLoadButton = Cell("Load Scene");
         sceneLoadButton.Click += (_, _) => LoadSelectedScene();
-        var sceneClearButton = Cell("Clear Canvas");
-        sceneClearButton.Click += (_, _) => ClearDraft();
-        grid.Controls.Add(RowLabel("Scene"), 0, 0);
-        grid.Controls.Add(sceneLoadButton, 1, 0);
-        grid.Controls.Add(sceneClearButton, 2, 0);
-
-        // Row 1: Edit - Add | Move
         var editAddButton = Cell("Add to Draft");
         editAddButton.Click += (_, _) => AddSelectedObjectToDraft();
-        var editMoveButton = Cell("Move Selected");
-        editMoveButton.Click += (_, _) => MoveLastPlacedItem();
-        grid.Controls.Add(RowLabel("Edit"), 0, 1);
-        grid.Controls.Add(editAddButton, 1, 1);
-        grid.Controls.Add(editMoveButton, 2, 1);
-
-        // Row 2: Repository - Save | Clear
-        var repoSaveButton = Cell("Save Scene");
-        repoSaveButton.Click += (_, _) => SaveDraftAsScene();
         var repoClearButton = Cell("Discard Draft");
         repoClearButton.Click += (_, _) => ClearDraft();
-        grid.Controls.Add(RowLabel("Repository"), 0, 2);
-        grid.Controls.Add(repoSaveButton, 1, 2);
-        grid.Controls.Add(repoClearButton, 2, 2);
+        var repoSaveButton = Cell("Save Scene");
+        repoSaveButton.Click += (_, _) => SaveDraftAsScene();
+        grid.Controls.Add(RowLabel("Scene/Edit"), 0, 0);
+        grid.Controls.Add(sceneLoadButton, 1, 0);
+        grid.Controls.Add(editAddButton, 2, 0);
+        grid.Controls.Add(repoClearButton, 3, 0);
+        grid.Controls.Add(repoSaveButton, 4, 0);
 
-        // Row 3: Deliver - File | Device (always panned - the unpanned
-        // "Play Selected Scene" is retired, per the agreed simplification)
+        // Row 1: Canvas - Clear Canvas | Move Selected
+        var sceneClearButton = Cell("Clear Canvas");
+        sceneClearButton.Click += (_, _) => ClearDraft();
+        var editMoveButton = Cell("Move Selected");
+        editMoveButton.Click += (_, _) => MoveLastPlacedItem();
+        grid.Controls.Add(RowLabel("Canvas"), 0, 1);
+        grid.Controls.Add(sceneClearButton, 1, 1);
+        grid.Controls.Add(editMoveButton, 2, 1);
+
+        // Row 2: Deliver - To File | To Speaker | Delete | Info
         var deliverFileButton = Cell("To File");
         deliverFileButton.Click += (_, _) => DeliverSelectedScenePannedToFile();
         var deliverDeviceButton = Cell("To Speaker");
         deliverDeviceButton.Click += (_, _) => PlaySelectedScenePanned();
-        grid.Controls.Add(RowLabel("Deliver"), 0, 3);
-        grid.Controls.Add(deliverFileButton, 1, 3);
-        grid.Controls.Add(deliverDeviceButton, 2, 3);
+        var sceneDeleteButton = Cell("Delete");
+        sceneDeleteButton.Click += (_, _) => DeleteSelectedScene();
+        var sceneInfoButton = Cell("Info");
+        sceneInfoButton.Click += (_, _) => ShowSelectedSceneInfo();
+        grid.Controls.Add(RowLabel("Deliver"), 0, 2);
+        grid.Controls.Add(deliverFileButton, 1, 2);
+        grid.Controls.Add(deliverDeviceButton, 2, 2);
+        grid.Controls.Add(sceneDeleteButton, 3, 2);
+        grid.Controls.Add(sceneInfoButton, 4, 2);
 
         var positionPanel = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 28, FlowDirection = FlowDirection.LeftToRight };
         positionPanel.Controls.Add(new Label { Text = "Position (X,Y,Z):", AutoSize = true, Padding = new Padding(4, 6, 2, 0) });
@@ -207,45 +208,21 @@ public sealed class ScenesForm : Form
         namesPanel.Controls.Add(namesSplit);
         namesPanel.Controls.Add(refreshButton);
 
-        var logPanel = new Panel { Dock = DockStyle.Fill };
-        logPanel.Controls.Add(logBox);
-        logPanel.Controls.Add(new Label { Text = "Log:", Dock = DockStyle.Top, Height = 16, Font = new System.Drawing.Font("Segoe UI", 7.5f) });
+        // Log removed from the UI (kept alive but hidden so Log(...) still works).
+        logBox.Visible = false;
 
-        // Order, top to bottom: Log, then Names (two columns) below it.
-        // NOTE: Panel1MinSize/Panel2MinSize were tried here as safety
-        // floors and caused an immediate crash - SplitContainer validates
-        // SplitterDistance against its size AT CONSTRUCTION TIME, before
-        // Dock=Fill has resized it to the real window, so the control's
-        // tiny default pre-layout size made 60+120 already exceed it.
-        // Plain SplitterDistance with no MinSize is what actually works.
-        // Fixed, guaranteed height at the bottom - not dependent on
-        // SplitContainer proportional math, which kept producing the wrong
-        // result. This can never be squeezed by anything else above it.
         namesPanel.Dock = DockStyle.Bottom;
         namesPanel.Height = 200;
 
-        var canvasAndLogSplit = new SplitContainer
-        {
-            Dock = DockStyle.Fill,
-            Orientation = System.Windows.Forms.Orientation.Horizontal,
-            FixedPanel = FixedPanel.Panel1   // canvas (Panel1) stays exactly this size; only Log (Panel2) absorbs any change in available space
-        };
-        canvasAndLogSplit.Panel1.Controls.Add(canvasPanel);
-        canvasAndLogSplit.Panel2.Controls.Add(logPanel);
-
-        Controls.Add(canvasAndLogSplit);
+        Controls.Add(canvasPanel);   // canvas fills the whole central area now
         Controls.Add(namesPanel);
+        Controls.Add(logBox);        // hidden; present only so AppendText has a target
 
         var switchPanel = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 32, FlowDirection = FlowDirection.RightToLeft, Padding = new Padding(4) };
         switchPanel.Controls.Add(bringObjectsToFrontButton);
         Controls.Add(switchPanel);
         Controls.Add(topPanel);
 
-        // Set AFTER the control hierarchy has its real, Dock-resolved size -
-        // setting this during construction silently clamps against the
-        // control's tiny pre-layout default size, which combined with
-        // FixedPanel then locks in that wrong small value permanently.
-        Load += (_, _) => canvasAndLogSplit.SplitterDistance = 280;
 
         RefreshLists();
         RedrawListenerOnCanvas();
@@ -596,6 +573,62 @@ public sealed class ScenesForm : Form
         catch (Exception failure)
         {
             Log($"ERROR playing panned scene: {failure.Message}");
+        }
+    }
+
+    private void DeleteSelectedScene()
+    {
+        if (scenesList.SelectedItem is not string sceneId)
+        {
+            MessageBox.Show(this, "Select a Scene first.", "Nothing selected", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        try
+        {
+            var referrers = ase.ReferencedBy(sceneId);
+            if (referrers.Count > 0)
+            {
+                var list = string.Join(", ", referrers);
+                var answer = MessageBox.Show(this,
+                    $"{sceneId} is referenced by: {list}.\n\nDelete {sceneId} together with those {referrers.Count} referencing item(s)?",
+                    "Delete referenced scene", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (answer != DialogResult.Yes) { Log($"Delete of {sceneId} cancelled."); return; }
+
+                foreach (var referrer in referrers) ase.Delete(referrer);
+                ase.Delete(sceneId);
+                Log($"Deleted {sceneId} and {referrers.Count} referencing item(s): {list}.");
+            }
+            else
+            {
+                ase.Delete(sceneId);
+                Log($"Deleted {sceneId} (was not referenced).");
+            }
+
+            RefreshLists();
+        }
+        catch (Exception failure)
+        {
+            Log($"ERROR deleting {sceneId}: {failure.Message}");
+        }
+    }
+
+    private void ShowSelectedSceneInfo()
+    {
+        if (scenesList.SelectedItem is not string sceneId)
+        {
+            MessageBox.Show(this, "Select a Scene first.", "Nothing selected", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        try
+        {
+            var info = storage.GetKeyInfo(sceneId);
+            Log($"{sceneId} - StoredBy={info.StoredBy}, RequestedBy={info.RequestedBy}, StoredAt={info.StoredAt:yyyy-MM-dd HH:mm:ss} UTC");
+        }
+        catch (Exception failure)
+        {
+            Log($"ERROR reading info for {sceneId}: {failure.Message}");
         }
     }
 

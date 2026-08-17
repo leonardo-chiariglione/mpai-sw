@@ -6,7 +6,7 @@ using AIF.Store;
 
 using Mpai.Core;
 
-namespace Mpai.Aims.Audio;
+namespace Mpai.Aims.Speech;
 
 // MMC-SOA-V2.5 — Speech Object Acquisition. Self-contained IAimProcessor.
 // Reads its own port names from 1MMC-SOA-V2.5-I01.json at startup.
@@ -26,6 +26,7 @@ public sealed class SoaAimProcessor : IAimProcessor
     private readonly IAudioAcquisitionAim   _aoa;
     private readonly IStartStopAcquisition? _startStop;
     private readonly System.TimeSpan        _duration;
+    private readonly bool                   _pressToStop;
 
     public string InstanceId { get; }
 
@@ -33,12 +34,14 @@ public sealed class SoaAimProcessor : IAimProcessor
         string               instanceId,
         IAudioAcquisitionAim aoa,
         AmdStore             store,
-        System.TimeSpan?     duration = null)
+        System.TimeSpan?     duration = null,
+        bool                 pressToStop = false)
     {
         InstanceId  = instanceId;
         _aoa        = aoa;
         _startStop  = aoa as IStartStopAcquisition;
-        _duration   = duration ?? System.TimeSpan.FromSeconds(5);
+        _duration    = duration ?? System.TimeSpan.FromSeconds(5);
+        _pressToStop = pressToStop;
         var ports   = AimPortReader.Load(store, instanceId);
         _inputPort  = ports.InputOrDefault("OSD-SPO-V1.5", "InputSpeech");
         _outputPort = ports.Output("OSD-SPO-V1.5");
@@ -46,17 +49,29 @@ public sealed class SoaAimProcessor : IAimProcessor
 
     public async Task<Message> ProcessAsync(Message message)
     {
-        // Use a piped speech input if the Controller delivered one.
-        if (message.Ports.TryGetValue(_inputPort, out var suppliedJson) &&
-            !string.IsNullOrWhiteSpace(suppliedJson))
+        // Use a piped speech input if the Controller delivered one WITH DATA.
+        //
+        // An EMPTY Speech Object is not nothing: it is how a caller asks this AIM
+        // to acquire from the device, without needing an extra port. Omitting the
+        // port altogether leaves the AIM with no input at all, and the Controller
+        // skips it - which is how a text-only request keeps the speech branch idle.
+        var supplied = message.Ports.TryGetValue(_inputPort, out var suppliedJson) &&
+                       !string.IsNullOrWhiteSpace(suppliedJson)
+                           ? MpaiJson.FromJson<BasicSpeechObject>(suppliedJson)
+                           : null;
+
+        if (supplied is not null && supplied.Data.Length > 0)
         {
             return new Message
             {
                 MessageId   = message.MessageId,
                 MessageType = "BasicSpeechObject",
                 DataType    = "OSD-SPO-V1.5",
-                Payload     = suppliedJson,
-                Ports       = new Dictionary<string, string> { [_outputPort] = suppliedJson }
+                // suppliedJson is provably non-null here: 'supplied' was parsed
+                // from it. The compiler lost that when the test moved from the
+                // string to the parsed object, hence the two CS8601 warnings.
+                Payload     = suppliedJson!,
+                Ports       = new Dictionary<string, string> { [_outputPort] = suppliedJson! }
             };
         }
 
@@ -64,16 +79,68 @@ public sealed class SoaAimProcessor : IAimProcessor
         var context = message.Context;
         BasicAudioObject audio;
 
-        if (_startStop is not null &&
-            context.StopToken != System.Threading.CancellationToken.None)
+        // Press-to-stop is left switched off. It waits for the Stop token, and the
+        // AIF Basic API gives the User Agent no way to signal a running AIM -
+        // only Pause and Stop, which end the run. So it would wait for ever.
+        // Fixed-duration capture is used instead; restoring press-to-stop needs a
+        // UA-to-AIM signal that does not exist yet.
+        // Press-to-stop, driven by PAUSE rather than by Stop.
+        //
+        // Stop is the wrong signal: it ends the AIW, so the recording would be
+        // captured and then thrown away with the run. Pause is the right one -
+        // the User Agent says "that is enough" and the pipeline carries on - and
+        // it is what MPAI_AIFU_AIW_Pause and _Resume are for.
+        //
+        // The PauseRequests COUNT is watched, not the gate: a Pause followed
+        // promptly by a Resume can open and shut the gate between two polls,
+        // while the count cannot be missed. _duration is then a safety net rather
+        // than the interaction - if nobody ever says stop, recording ends anyway.
+        if (_startStop is not null && context.CanBePaused)
         {
-            _startStop.StartAcquire();
-            try
+            // _duration belongs to the OTHER branch: a device that cannot be
+            // interrupted has to stop by the clock, so five seconds is its whole
+            // window. Here the CALLER says when to stop, and a five second limit
+            // was cutting people off mid-sentence for no reason.
+            //
+            // A limit still has to exist, but its job changes: it is now only a
+            // runaway guard, so that a microphone nobody stops does not record
+            // for ever. Five minutes is far longer than any sentence and far
+            // shorter than a forgotten session.
+            var runawayGuard    = System.TimeSpan.FromMinutes(5);
+            var requestsAtStart = context.PauseRequests;
+            var deadline        = System.DateTime.UtcNow + runawayGuard;
+
+            System.Console.WriteLine(
+                "[MMC-SOA-V2.5] recording - speak after the beep, then press Stop " +
+                $"(gives up after {runawayGuard.TotalMinutes:N0} minutes if nobody does)");
+            // Console.Beep is Windows-only; the guard silences CA1416 and keeps
+            // the catch for a console that has no beeper attached.
+            if (System.OperatingSystem.IsWindows())
             {
-                await Task.Delay(System.Threading.Timeout.Infinite, context.StopToken);
+                try { System.Console.Beep(880, 200); } catch { /* no beeper */ }
             }
-            catch (System.OperationCanceledException) { /* StopToken fired - expected */ }
+
+            _startStop.StartAcquire();
+
+            while (context.PauseRequests == requestsAtStart &&
+                   !context.StopToken.IsCancellationRequested &&
+                   System.DateTime.UtcNow < deadline)
+            {
+                await Task.Delay(25);
+            }
+
             audio = await _startStop.StopAcquireAsync();
+
+            if (System.OperatingSystem.IsWindows())
+            {
+                try { System.Console.Beep(440, 150); } catch { /* no beeper */ }
+            }
+            System.Console.WriteLine(
+                $"[MMC-SOA-V2.5] captured {audio.Data.Length:N0} bytes");
+
+            // Honour the pause itself: if the User Agent has not resumed yet,
+            // wait here rather than running on while the AIW is paused.
+            await context.CheckAsync();
         }
         else
         {
@@ -81,7 +148,87 @@ public sealed class SoaAimProcessor : IAimProcessor
         }
 
         // Re-interpret the captured audio as a Basic Speech Object (OSD-SPO).
-        var speech = audio.AsSpeech();
+        //
+        // The trigger object's Qualifier is carried onto what was captured. It is
+        // the only thing that knows what language is about to be spoken: the
+        // microphone cannot say, and MMC-ASR reads the language from the Speech
+        // Qualifier - which is why MMC-TST has no Input Language Selector. Without
+        // this, live speech reached ASR unlabelled, ASR fell back to its
+        // configured default, and Italian speech came back as
+        // "(speaking in foreign language)".
+        var requestQualifier = supplied?.SpeechQualifier;
+
+        // The claim, made explicitly.
+        //
+        // A microphone yields an AUDIO Object and has no idea whether it caught
+        // speech, music or a door closing. Asserting that it is SPEECH is what
+        // this AIM is FOR - and the assertion belongs in the Qualifier, where
+        // MMC-ASR and everything downstream can see it, rather than being implied
+        // by the Data Type alone.
+        //
+        //   inherit    Language, from the Speech Qualifier on the request: only
+        //              the caller knows what is about to be spoken
+        //   determine  Source = Real and SpeakerType = Human - this came off a
+        //              live microphone, not out of a synthesiser, which is the
+        //              same distinction MMC-TTS records in the other direction
+        //              when it writes Synthetic and Agent
+        //
+        // What this REPLACES is AsSpeech(), whose comment reads "Audio == Speech
+        // at this level" and which relabels the object and carries the audio
+        // qualifier across. That records nothing about where the sound came from
+        // or why a consumer should believe it contains speech - and if the two
+        // really were equal at that level, OSD-AUO and OSD-SPO would not need to
+        // be separate Data Types.
+        //
+        // Note this remains an ASSERTION, not a verification: nothing here
+        // detects whether anyone actually spoke. That is why a room noise
+        // recording still reaches MMC-ASR and comes back as
+        // "(speaking in foreign language)". Voice activity detection would make
+        // the claim checkable, and belongs in this AIM if it is wanted.
+        var speech = BasicSpeechObject.FromData(
+            audio.Data,
+            new SpeechQualifier
+            {
+                SpeechQualifierID = System.Guid.NewGuid().ToString(),
+                Attributes = new SpeechAttributes
+                {
+                    Source = SpeechSource.Real,
+                    Metadata = new SpeechMetadata
+                    {
+                        Language = requestQualifier?.Attributes?.Metadata?.Language,
+                        SpeakerProperties = new SpeakerProperties
+                        {
+                            SpeakerType  = SpeakerType.Human,
+                            SpeakerCount = 1
+                        }
+                    }
+                }
+            });
+
+        // Keep what was captured, and say where. When a transcription comes back
+        // as a sentence the speaker never said, the only way to tell a deaf
+        // microphone from a deaf model is to LISTEN to the recording - and by
+        // then the bytes are inside a Message and gone. Written unconditionally
+        // rather than behind a setting: it is a few seconds of audio, and the one
+        // time it is wanted is the time nobody thought to switch it on.
+        try
+        {
+            var captureFolder = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(), "mpai-captures");
+
+            System.IO.Directory.CreateDirectory(captureFolder);
+
+            var capturePath = System.IO.Path.Combine(
+                captureFolder,
+                $"captured-{System.DateTime.Now:yyyyMMdd-HHmmss}.wav");
+
+            System.IO.File.WriteAllBytes(capturePath, audio.Data);
+            System.Console.WriteLine($"[MMC-SOA-V2.5] saved {capturePath}");
+        }
+        catch (System.Exception failure)
+        {
+            System.Console.WriteLine($"[MMC-SOA-V2.5] could not save the capture: {failure.Message}");
+        }
         var json   = MpaiJson.ToJson(speech);
 
         return new Message

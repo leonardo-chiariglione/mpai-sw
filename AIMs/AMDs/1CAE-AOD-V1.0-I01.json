@@ -22,4 +22,4 @@
                        {"Name": "CPU:Class", "Minimum": "Low",    "Request": "Low",    "Maximum": "Medium"}],
 
   "DataXMData":       {},
-  "Documentation":    [{"Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-mmc/"}]}
+  "Documentation":    [{"Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-cae/ai-modules/audio-object-delivery/"}]}

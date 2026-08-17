@@ -71,3 +71,5 @@ MPAIApps/AMQApp/_bin/
 _backup_*/
 *.bak_*
 _backup_*/
+
+MPAIApps/ASMApp/_bin/
