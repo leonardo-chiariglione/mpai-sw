@@ -96,6 +96,8 @@ public sealed class WasapiAudioAcquisition : IAudioAcquisitionAim, IStartStopAcq
 
         _writer = new WaveFileWriter(_activePath, format);
         _stopped = new TaskCompletionSource();
+        ReportDevice();
+
         _waveIn = new WaveInEvent { WaveFormat = format };
 
         _waveIn.DataAvailable += (_, a) => _writer?.Write(a.Buffer, 0, a.BytesRecorded);
@@ -145,7 +147,29 @@ public sealed class WasapiAudioAcquisition : IAudioAcquisitionAim, IStartStopAcq
     // Deliberately one-directional: only amplifies recordings BELOW
     // triggerBelow, and only up to targetPeak - already-healthy recordings
     // are left untouched, never turned down.
-    private static void NormalizeIfQuiet(string wavPath, float targetPeak = 0.85f, float triggerBelow = 0.5f)
+    // Which microphone Windows actually handed over. WaveInEvent takes the
+    // DEFAULT capture device, which is not necessarily the one in front of the
+    // speaker - a webcam, a monitor, a disconnected headset - and nothing said
+    // so until a recording came back as noise.
+    private static void ReportDevice()
+    {
+        try
+        {
+            if (WaveInEvent.DeviceCount == 0)
+            {
+                Console.WriteLine("[AOA] no capture device at all.");
+                return;
+            }
+
+            var capabilities = WaveInEvent.GetCapabilities(0);
+            Console.WriteLine($"[AOA] recording from '{capabilities.ProductName}'" +
+                              $" ({WaveInEvent.DeviceCount} device(s) available)");
+        }
+        catch (Exception failure)
+        {
+            Console.WriteLine($"[AOA] could not identify the capture device: {failure.Message}");
+        }
+    }    private static void NormalizeIfQuiet(string wavPath, float targetPeak = 0.85f, float triggerBelow = 0.5f)
     {
         WaveFormat format;
         var samples = new List<float>();
@@ -170,7 +194,26 @@ public sealed class WasapiAudioAcquisition : IAudioAcquisitionAim, IStartStopAcq
         // Already loud enough, or genuinely silent (nothing meaningful to
         // amplify, and amplifying noise/silence would be actively wrong) -
         // leave it alone either way.
+        // Say how loud it was, and how much gain is being applied.
+        //
+        // This normalisation exists to rescue a quiet microphone, but it also
+        // DISGUISES a microphone that heard nothing: hiss at -40 dBFS lifted to
+        // -1.4 dBFS is loud hiss, and whisper answers loud hiss with "(music)"
+        // or an invented sentence rather than with silence. Reporting the peak
+        // turns that from a mystery into a number.
+        var dbfs = peak > 0 ? 20.0 * Math.Log10(peak) : -99.0;
+        Console.WriteLine($"[AOA] recorded peak {dbfs:F1} dBFS");
+
+        if (peak > 0.001f && peak < 0.02f)
+        {
+            Console.WriteLine(
+                "[AOA] that is close to silence - the microphone caught almost nothing. " +
+                "Check that Windows is recording from the microphone you are speaking into.");
+        }
+
         if (peak <= 0.001f || peak >= triggerBelow) return;
+
+        Console.WriteLine($"[AOA] quiet recording: applying {targetPeak / peak:F1}x gain");
 
         var scale = targetPeak / peak;
         for (var i = 0; i < samples.Count; i++)

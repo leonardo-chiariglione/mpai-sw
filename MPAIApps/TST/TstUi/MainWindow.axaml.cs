@@ -37,6 +37,18 @@ public partial class MainWindow : Window
     private bool       _recording;
     private string     _lastHeard = string.Empty;
 
+    // Remote mode: the AIWs run on an MPAI-MAS server and this window becomes a
+    // Remote Client Application, holding the microphone, the loudspeaker and
+    // nothing else. Both are null when running locally.
+    private Mpai.Mas.Rca.TstMasBackend? _mas;
+    private LocalAudio?                 _audio;
+    private byte[]?                     _lastSpokenAnswer;
+
+    // What the last exchange actually asked for. Shown with the result, because
+    // a translation that looks wrong is often a translation of the wrong thing,
+    // asked in the wrong language - and nothing in the window said which.
+    private string _lastRequest = string.Empty;
+
     public MainWindow()
     {
         // InitializeComponent() is GENERATED from MainWindow.axaml, and it does
@@ -69,9 +81,28 @@ public partial class MainWindow : Window
 
     private async Task StartAsync()
     {
-        SetBusy(true, "loading models...");
-
         Console.SetOut(new PaneWriter(AppendLog));
+
+        var config = TstConfig.Load();
+
+        if (!string.IsNullOrWhiteSpace(config.MasServerUrl))
+        {
+            if (await StartRemoteAsync(config)) return;
+
+            // The server named in the configuration did not answer. Falling back
+            // to local is better than leaving a window whose language lists are
+            // empty and whose buttons do nothing, which is what happened before:
+            // an unreachable server produced a UI that could not even be used to
+            // find out why.
+            Console.WriteLine("[UA] falling back to local: everything runs in this process.");
+        }
+
+        await StartLocalAsync();
+    }
+
+    private async Task StartLocalAsync()
+    {
+        SetBusy(true, "loading models...");
 
         var repoRoot = FindRepoRoot();
         if (repoRoot is null)
@@ -130,6 +161,48 @@ public partial class MainWindow : Window
         SetBusy(false, "ready");
     }
 
+    // Remote: no models load here, so this is quick. What takes the time is the
+    // SERVER starting the AIW, which happens on the first request rather than
+    // now - so "ready" here means "the server answered", not "the server has
+    // loaded Whisper".
+    private async Task<bool> StartRemoteAsync(TstConfig config)
+    {
+        SetBusy(true, $"connecting to {config.MasServerUrl} ...");
+
+        _audio = new LocalAudio();
+
+        var backend = new Mpai.Mas.Rca.TstMasBackend(config.MasServerUrl);
+
+        try
+        {
+            await backend.PrepareAsync();
+            _mas = backend;
+        }
+        catch (Exception failure)
+        {
+            Console.WriteLine($"[UA] the MAS server did not answer: {failure.Message}");
+            return false;
+        }
+
+        // Extended the same way the local list is, so the two modes offer the
+        // same languages. A Remote Client Application cannot see the server's
+        // voices - and should not, since what a server can speak is its own
+        // business - so its list starts from the configuration; but taking it
+        // verbatim meant es appeared standalone and not remotely, which is a
+        // difference with no reason behind it.
+        var offered = Common(config.Languages);
+
+        SourceLanguage.ItemsSource  = new List<string>(offered);
+        TargetLanguage.ItemsSource  = new List<string>(offered);
+        SourceLanguage.SelectedItem = "en";
+        TargetLanguage.SelectedItem = offered.Contains("it") ? "it" : "en";
+
+        VoiceNote.Text = "remote: " + config.MasServerUrl;
+
+        SetBusy(false, "ready (remote)");
+        return true;
+    }
+
     private static List<string> Voices(AimSettings settings)
     {
         var codes = new SortedSet<string>(StringComparer.Ordinal);
@@ -159,6 +232,13 @@ public partial class MainWindow : Window
 
     private void Shutdown()
     {
+        if (_mas is not null)
+        {
+            try { _mas.StopAsync().GetAwaiter().GetResult(); } catch { }
+            _mas.Dispose();
+            _mas = null;
+        }
+
         if (_ua is null) return;
 
         try
@@ -176,11 +256,18 @@ public partial class MainWindow : Window
         var typed = (InputBox.Text ?? string.Empty).Trim();
         if (typed.Length == 0) { SetStatus("type something first"); return; }
 
+        HeardBox.Text = string.Empty;
+        _lastRequest  = $"{Code(SourceLanguage)} to {Code(TargetLanguage)}, typed";
+        SetBusy(true, "translating...");
+
+        if (_mas is not null)
+        {
+            await ShowRemoteAsync(() => _mas.TranslateTextAsync(typed, Code(SourceLanguage), Code(TargetLanguage)));
+            return;
+        }
+
         var boundary = Boundary();
         boundary["InputText"] = MpaiJson.ToJson(BasicTextObject.FromText(typed));
-
-        HeardBox.Text = string.Empty;
-        SetBusy(true, "translating...");
 
         var completed = await Task.Run(() => Run(boundary));
         Show(completed, spoken: false);
@@ -188,6 +275,40 @@ public partial class MainWindow : Window
 
     private async Task SpeakAsync()
     {
+        // Remote: the microphone is HERE, so the second press stops the local
+        // recorder rather than pausing a remote AIW. The server is asked to
+        // translate only once the bytes exist - there is nothing running there
+        // to pause in the meantime.
+        if (_mas is not null && _audio is not null)
+        {
+            if (!_recording)
+            {
+                _recording          = true;
+                SpeakButton.Content = "Stop";
+                TranslateButton.IsEnabled = false;
+                HeardBox.Text  = string.Empty;
+                OutputBox.Text = string.Empty;
+                SetStatus("recording - press Stop when you have finished");
+
+                _audio.StartRecording();
+                return;
+            }
+
+            _recording          = false;
+            SpeakButton.Content = "Speak";
+            _lastRequest        = $"{Code(SourceLanguage)} to {Code(TargetLanguage)}, spoken";
+            SetBusy(true, "sending to the server...");
+
+            var wav = await _audio.StopRecordingAsync();
+            Console.WriteLine($"[UA] captured {wav.Length:N0} bytes");
+
+            await ShowRemoteAsync(() =>
+                _mas.TranslateSpeechAsync(wav, Code(SourceLanguage), Code(TargetLanguage)));
+
+            TranslateButton.IsEnabled = true;
+            return;
+        }
+
         if (_ua is null) return;
 
         // The second press is "that is enough". Pause reaches MMC-SOA, which
@@ -275,9 +396,38 @@ public partial class MainWindow : Window
         return outcome.Completed;
     }
 
+    // One place where a remote answer is displayed and played, so the typed and
+    // spoken paths cannot drift apart.
+    private async Task ShowRemoteAsync(Func<Task<Mpai.Mas.Rca.TstMasBackend.Translation>> exchange)
+    {
+        try
+        {
+            var translation = await exchange();
+
+            OutputBox.Text    = translation.Text;
+            _lastSpokenAnswer = translation.Speech;
+
+            SetBusy(false, translation.Speech is null
+                ? $"{_lastRequest} - no speech came back"
+                : $"{_lastRequest} - remote");
+
+            // Played HERE: the server's MMC-SOD delivered to a file on the
+            // server, where nobody is listening.
+            if (translation.Speech is not null && _audio is not null)
+            {
+                await _audio.PlayAsync(translation.Speech);
+            }
+        }
+        catch (Exception failure)
+        {
+            Console.WriteLine($"[UA] the exchange failed: {failure.Message}");
+            SetBusy(false, "the server did not answer - see the log");
+        }
+    }
+
     private void Show(AIF.Controller.Message? completed, bool spoken)
     {
-        SetBusy(false, "ready");
+        SetBusy(false, _lastRequest.Length > 0 ? _lastRequest : "ready");
 
         if (spoken) HeardBox.Text = _lastHeard;
 
@@ -302,8 +452,10 @@ public partial class MainWindow : Window
 
     private void SetBusy(bool busy, string status)
     {
-        TranslateButton.IsEnabled = !busy && _ua is not null;
-        SpeakButton.IsEnabled     = (!busy || _recording) && _ua is not null;
+        var live = _ua is not null || _mas is not null;
+
+        TranslateButton.IsEnabled = !busy && live;
+        SpeakButton.IsEnabled     = (!busy || _recording) && live;
         SetStatus(status);
     }
 

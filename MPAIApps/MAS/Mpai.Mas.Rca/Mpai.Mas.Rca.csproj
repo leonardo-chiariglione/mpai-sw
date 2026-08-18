@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Mpai.Mas.Rca</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\AIMs\Core\Mpai.Core.csproj" />
+  </ItemGroup>
+
+  <!-- The MAS client and the port-data translator are LINKED from UaUi rather
+       than copied. MpaiPortData's own comment says "A shared library would avoid
+       duplicating this; copied here to keep the demo self-contained" - and by
+       now it exists twice, in UaUi and in SciHost. A third copy for TST would be
+       the point at which they start to drift.
+
+       Linking gives one source of truth without touching either working
+       application. Moving the files here and having UaUi and SciHost reference
+       this project is the tidier end state, and can be done when there is time
+       to re-test them. -->
+  <ItemGroup>
+    <Compile Include="..\..\AMQ\UaUi\MasApiClient.cs" Link="MasApiClient.cs" />
+    <Compile Include="..\..\AMQ\UaUi\MpaiPortData.cs" Link="MpaiPortData.cs" />
+  </ItemGroup>
+
+</Project>

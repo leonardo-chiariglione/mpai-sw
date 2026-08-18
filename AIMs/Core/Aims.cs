@@ -61,6 +61,27 @@ public interface ITiqAim : IAim
 }
 
 // ---- Text to Speech (MMC-TTS) — environment-independent
+// ---- Text-to-Text Translation (MMC-TTT) — environment-independent
+//
+// Declared HERE, with the other AIM interfaces, rather than beside its engine.
+// ITtsAim, IAsrAim and IAudioAcquisitionAim all live in Mpai.Core; ITttAim was
+// put in Mmc.Ttt when it was written, which made it the odd one out and meant
+// anyone declaring a field of this type needed a using nobody expected.
+public interface ITttAim : IAim
+{
+    string IAim.AimName        => "Text-to-Text Translation";
+    string IAim.AimNameCompact => "TextToTextTranslation";
+    string IAim.AimIdentifier  => "MMC-TTT-V2.5";
+
+    // CancellationToken is qualified: Aims.cs imports System and
+    // System.Threading.Tasks, not System.Threading, and one interface is a poor
+    // reason to widen what the whole file imports.
+    Task<BasicTextObject> ProcessAsync(
+        BasicTextObject     text,
+        BasicSelectorObject languages,
+        System.Threading.CancellationToken token = default);
+}
+
 public interface ITtsAim : IAim
 {
     string IAim.AimName        => "Text to Speech";

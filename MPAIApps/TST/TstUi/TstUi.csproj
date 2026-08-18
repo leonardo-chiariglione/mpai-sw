@@ -39,6 +39,13 @@
     <ProjectReference Include="..\..\..\AIMs\MMC\V2.5\TTT\Mpai.Mmc.Ttt.csproj" />
     <ProjectReference Include="..\..\..\AIMs\MMC\V2.5\TTS\Mpai.Mmc.Tts.csproj" />
     <ProjectReference Include="..\..\..\AIMs\MMC\V2.5\SOD\Mpai.Mmc.Sod.csproj" />
+    <ProjectReference Include="..\..\MAS\Mpai.Mas.Rca\Mpai.Mas.Rca.csproj" />
+  </ItemGroup>
+
+  <!-- Read at startup to decide local or remote, so it has to be beside the
+       executable as well as beside the project. -->
+  <ItemGroup>
+    <None Update="tst-config.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">

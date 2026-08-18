@@ -1,0 +1,4 @@
+{
+  "MasServerUrl": "http://localhost:5005/",
+  "Languages": [ "en", "it", "fr", "de", "es", "pt", "zh", "ja" ]
+}

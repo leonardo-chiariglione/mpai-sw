@@ -1,4 +1,4 @@
-﻿{
+{
     "MMC-SOA-V2.5":  {
                          "DurationSeconds":  "5",
                          "QuestionAudio":  "D:\\AI\\MPAIApps\\AudioIn\\question-spoken.wav"
@@ -20,10 +20,10 @@
                          "LanguageCode":  "en"
                      },
     "MMC-TTT-V2.5":  {
-                         "TttEncoderModel":  "D:\\AI\\Models\\Whisper\\M2M100\\encoder_model_quantized.onnx",
+                         "TttEncoderModel":  "D:\\AI\\Models\\Whisper\\M2M100\\encoder_model.onnx",
                          "TttDecoderModel":  "D:\\AI\\Models\\Whisper\\M2M100\\decoder_model_merged_quantized.onnx",
-                         "TttDecoderFirstModel":  "D:\\AI\\Models\\Whisper\\M2M100\\decoder_model_quantized.onnx",
-                         "TttDecoderPastModel":  "D:\\AI\\Models\\Whisper\\M2M100\\decoder_with_past_model_quantized.onnx",
+                         "TttDecoderFirstModel":  "D:\\AI\\Models\\Whisper\\M2M100\\decoder_model.onnx",
+                         "TttDecoderPastModel":  "D:\\AI\\Models\\Whisper\\M2M100\\decoder_with_past_model.onnx",
                          "TttSpmModel":  "D:\\AI\\Models\\Whisper\\M2M100\\sentencepiece.bpe.model",
                          "TttSpecialTokens":  "D:\\AI\\Models\\Whisper\\M2M100\\special_tokens_map.json",
                          "TttVocab":  "D:\\AI\\Models\\Whisper\\M2M100\\vocab.json"
@@ -38,6 +38,12 @@
                          "PiperExecutable":  "D:\\AI\\Models\\Piper\\piper_windows_amd64\\piper\\piper.exe",
                          "VoiceModel":  "D:\\AI\\Models\\Piper\\voices\\en_US-lessiac-medium\\en_US-lessiac-medium.onnx",
                          "VoiceConfig":  "D:\\AI\\Models\\Piper\\voices\\en_US-lessiac-medium\\en_US-lessiac-medium.onnx.json",
+                         "Voice:en":  "D:\\AI\\Models\\Piper\\voices\\en_GB-alan-medium\\en_GB-alan-medium.onnx",
+                         "VoiceConfig:en":  "D:\\AI\\Models\\Piper\\voices\\en_GB-alan-medium\\en_GB-alan-medium.onnx.json",
+                         "Voice:pt":  "D:\\AI\\Models\\Piper\\voices\\pt_BR-cadu-medium\\pt_BR-cadu-medium.onnx",
+                         "VoiceConfig:pt":  "D:\\AI\\Models\\Piper\\voices\\pt_BR-cadu-medium\\pt_BR-cadu-medium.onnx.json",
+                         "Voice:es":  "D:\\AI\\Models\\Piper\\voices\\es_ES-davefx-medium\\es_ES-davefx-medium.onnx",
+                         "VoiceConfig:es":  "D:\\AI\\Models\\Piper\\voices\\es_ES-davefx-medium\\es_ES-davefx-medium.onnx.json",
                          "Voice:ja":  "D:\\AI\\Models\\Piper\\voices\\ja_JA-hi_fi_captain-medium\\ja_JA-hi_fi_captain-medium.onnx",
                          "VoiceConfig:ja":  "D:\\AI\\Models\\Piper\\voices\\ja_JA-hi_fi_captain-medium\\ja_JA-hi_fi_captain-medium.onnx.json",
                          "Voice:zh":  "D:\\AI\\Models\\Piper\\voices\\zh_CN-huayan-medium\\zh_CN-huayan-medium.onnx",

@@ -11,6 +11,7 @@ using Mpai.Aims.Audio;
 using Mpai.Aims.Speech;
 using Mpai.Aims.Tiq;
 using Mpai.Aims.Tts;
+using Mpai.Aims.Ttt;
 using Mpai.Aims.Visual;
 
 namespace Mpai.Mas.Sci;
@@ -27,6 +28,10 @@ public sealed class UaProviderBridge : IAimProvider
     private ITiqAim?       _tiq;
     private WhisperAsrAim? _asr;
     private PiperTtsAim?   _tts;
+    // Translation is the heaviest of the lot - an encoder and two decoder
+    // sessions, close to a gigabyte - so it is cached like the others.
+    // Without this every fresh AIW would reload M2M-100 from disk.
+    private ITttAim?       _ttt;
 
     public UaProviderBridge(AmdStore store, string outputFolder)
     {
@@ -43,6 +48,7 @@ public sealed class UaProviderBridge : IAimProvider
             "MMC-TIQ-V2.5" => new TiqAimProcessor(aimName, _tiq ??= TiqFactory.Create(settings), _store),
             "MMC-TTS-V2.5" => new TtsAimProcessor(aimName, _tts ??= TtsFactory.Create(settings), _store),
             "MMC-SOA-V2.5" => new SoaAimProcessor(aimName, new FileAudioAcquisition(string.Empty), _store, TimeSpan.FromSeconds(5)),
+            "MMC-TTT-V2.5" => new TttAimProcessor(aimName, _ttt ??= TttFactory.Create(settings), _store),
             "MMC-SOD-V2.5" => new SodAimProcessor(aimName, new FileAudioDelivery(_outputFolder), _store),
             "CAE-AOD-V1.0" => new AodAimProcessor(aimName, new FileAudioDelivery(_outputFolder), _store),
             "CVE-VOD-V1.0" => new VodAimProcessor(aimName, new FileVisualDelivery(_outputFolder), _store),

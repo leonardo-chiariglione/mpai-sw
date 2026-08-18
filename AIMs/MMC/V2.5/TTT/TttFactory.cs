@@ -4,6 +4,7 @@ using System.IO;
 
 using Mmc.Ttt;
 using Mmc.Ttt.Onnx;
+using Mpai.Core;   // ITttAim, with the other AIM interfaces
 
 namespace Mpai.Aims.Ttt;
 

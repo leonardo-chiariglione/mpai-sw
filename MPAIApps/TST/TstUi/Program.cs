@@ -17,6 +17,9 @@ internal static class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        // So TstConfig can be told the server on the command line.
+        TstConfig.CommandLine = args;
+
         AppDomain.CurrentDomain.UnhandledException += (_, e) =>
             Record("unhandled", e.ExceptionObject as Exception);
 

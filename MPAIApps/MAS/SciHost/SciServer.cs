@@ -232,10 +232,37 @@ public sealed class SciServer
         {
             "InputVisual" => MpaiJson.ToJson(MpaiPortData.ToVisual(bytes)),
             "InputText"   => MpaiJson.ToJson(MpaiPortData.ToText(bytes)),
-            "InputSpeech" => MpaiJson.ToJson(MpaiPortData.ToSpeech(bytes)),
+            // Re-attach the Speech Qualifier, which MpaiPortData.ToSpeech drops.
+            // MMC-ASR takes the input language from it, so without this every
+            // remote utterance was recognised in whatever language the server
+            // had configured, whatever the client asked for.
+            "InputSpeech" => MpaiJson.ToJson(
+                                 BasicSpeechObject.FromData(
+                                     MpaiPortData.ToSpeech(bytes).Data,
+                                     MpaiQualifierData.SpeechQualifierFrom(bytes))),
             "InputAudio"  => MpaiJson.ToJson(MpaiPortData.ToAudio(bytes)),
+
+            // MMC-TST introduced Selector ports; AMQ has none, so the switch
+            // had no case for them and they fell to the pass-through below.
+            // That happened to work - the client could send internal JSON - but
+            // only by accident, and it put the wire format at the mercy of
+            // whatever the client chose to send.
+            "LanguageSelector" or "MediaSelector"
+                          => MpaiJson.ToJson(MpaiSelectorData.ToSelector(bytes)),
             _             => Encoding.UTF8.GetString(bytes)   // unknown port: pass through
         };
+
+        // The first input AFTER a completed run starts a NEW round.
+        //
+        // Without this the session accumulates. A German sentence posted to
+        // InputText in one exchange was still sitting in Inputs when the next
+        // exchange posted InputSpeech, so the AIW ran with both and translated
+        // the stale text. Locally that cannot happen - every RunAsync is handed
+        // a fresh boundary dictionary and sees only what that run supplied - but
+        // over MAS the inputs arrive one request at a time and nothing in the
+        // API says when a round has ended. The first input after a result is the
+        // only moment that can mean it.
+        if (s.Outputs is not null) s.Inputs.Clear();
 
         s.Inputs[pid] = internalJson;
         s.Outputs = null;   // new input invalidates any prior run
@@ -268,25 +295,60 @@ public sealed class SciServer
     // Run the AIW once with all buffered boundary inputs; collect boundary outputs.
     private async Task<Dictionary<string, string>> RunAiwAsync(Session s)
     {
-        // For the current (Audio) AMQ, the executor's "boundary wins / internally
-        // satisfied" rules handle text-vs-voice. We pass whatever inputs the RCA
-        // supplied; for text mode we also supply an empty speech so SOA runs.
         var ports = new Dictionary<string, string>(s.Inputs);
-        if (ports.ContainsKey("InputText") && !ports.ContainsKey("InputSpeech"))
-            ports["InputSpeech"] = MpaiJson.ToJson(BasicSpeechObject.FromData(Array.Empty<byte>()));
 
-        // Two-step to match the AMQ suspend/resume: image first, then question.
-        // We split the buffered inputs: InputVisual runs first (suspends), the
-        // rest resume.
-        var visual = new Dictionary<string, string>();
-        if (ports.TryGetValue("InputVisual", out var v)) visual["InputVisual"] = v;
+        // AMQ suspends; TST does not, and the difference decides how the AIW is
+        // run.
+        //
+        // The two-step below is AMQ's choreography: the image goes in first, the
+        // AIW suspends waiting for the question, and the rest of the inputs
+        // resume it. Applied to an AIW that never suspends, it is destructive -
+        // the first call runs with an EMPTY dictionary, nothing suspends, the
+        // resume never happens, and every input the client sent is discarded.
+        // That is what made MMC-SOA report "skipped (no input available)" for a
+        // request that had posted InputSpeech moments earlier.
+        //
+        // The presence of InputVisual is what distinguishes them, and it is a
+        // property of the request rather than a hard-coded module name.
+        var isTwoStep = ports.ContainsKey("InputVisual");
 
-        var (e1, o1) = await _ua.RunAsync(s.AiwId, visual);
-        var question = ports.Where(kv => kv.Key != "InputVisual")
-                            .ToDictionary(kv => kv.Key, kv => kv.Value);
-        var (e2, o2) = (o1 is not null && o1.Suspended)
-            ? await _ua.ResumeAsync(s.AiwId, question)
-            : (e1, o1);
+        AifError e2;
+        UserAgent.RunOutcome? o2;
+
+        if (isTwoStep)
+        {
+            // AMQ: for text mode also supply an empty speech so SOA runs.
+            //
+            // Note this means something ELSE for TST, where an empty Speech
+            // Object is how a caller asks MMC-SOA to acquire from a microphone -
+            // which a server does not have. Another reason to keep the two paths
+            // apart rather than share one.
+            if (ports.ContainsKey("InputText") && !ports.ContainsKey("InputSpeech"))
+                ports["InputSpeech"] = MpaiJson.ToJson(BasicSpeechObject.FromData(Array.Empty<byte>()));
+
+            var visual = new Dictionary<string, string>();
+            visual["InputVisual"] = ports["InputVisual"];
+
+            var (e1, o1) = await _ua.RunAsync(s.AiwId, visual);
+
+            var question = ports.Where(kv => kv.Key != "InputVisual")
+                                .ToDictionary(kv => kv.Key, kv => kv.Value);
+
+            (e2, o2) = (o1 is not null && o1.Suspended)
+                ? await _ua.ResumeAsync(s.AiwId, question)
+                : (e1, o1);
+        }
+        else
+        {
+            // One run, every buffered input, which is what the local host does.
+            (e2, o2) = await _ua.RunAsync(s.AiwId, ports);
+        }
+
+        if (e2 != AifError.OK)
+            Console.WriteLine($"[SCI] run returned {e2}");
+
+        if (o2?.Completed is { IsError: true } failed)
+            Console.WriteLine($"[SCI] {failed.FailedAim}: {failed.Payload}");
 
         var outputs = new Dictionary<string, string>();
         if (o2?.Completed is not null)
