@@ -43,7 +43,7 @@ public sealed class AmqAifProvider : IAimProvider
                         ? new FileVisualAcquisition(
                               Setting(settings, "ImageFile", @"D:\AI\Images\zebra.jpg"))
                         : new WinFormsVisualAcquisition(),
-                    _store,
+                    AimPortReader.Load(_store, aimName),
                     Setting(settings, "SourceHint", @"D:\")),
 
             "CAE-AOA-V1.0" =>
@@ -53,32 +53,32 @@ public sealed class AmqAifProvider : IAimProvider
                         ? new FileAudioAcquisition(
                               Setting(settings, "QuestionAudio", @"D:\AI\Audio\question.wav"))
                         : new WasapiAudioAcquisition(),
-                    _store,
+                    AimPortReader.Load(_store, aimName),
                     TimeSpan.FromSeconds(Number(settings, "DurationSeconds", 5))),
 
             "MMC-ASR-V2.5" =>
                 new AsrAimProcessor(
                     aimName,
                     AsrFactory.Create(settings),
-                    _store),
+                    AimPortReader.Load(_store, aimName)),
 
             "MMC-OCR-V2.5" =>
                 new OcrAimProcessor(
                     aimName,
                     OcrFactory.Create(settings),
-                    _store),
+                    AimPortReader.Load(_store, aimName)),
 
             "MMC-TIQ-V2.5" =>
                 new TiqAimProcessor(
                     aimName,
                     TiqFactory.Create(settings),
-                    _store),
+                    AimPortReader.Load(_store, aimName)),
 
             "MMC-TTS-V2.5" =>
                 new TtsAimProcessor(
                     aimName,
                     TtsFactory.Create(settings),
-                    _store),
+                    AimPortReader.Load(_store, aimName)),
 
             "CAE-AOD-V1.0" =>
                 new AodAimProcessor(
@@ -87,14 +87,14 @@ public sealed class AmqAifProvider : IAimProvider
                         ? new FileAudioDelivery(
                               Setting(settings, "OutputFolder", @"D:\AI\Output"))
                         : new WinmmAudioDelivery(),
-                    _store),
+                    AimPortReader.Load(_store, aimName)),
 
             "CVE-VOD-V1.0" =>
                 new VodAimProcessor(
                     aimName,
                     new FileVisualDelivery(
                         Setting(settings, "OutputFolder", @"D:\AI\Output")),
-                    _store),
+                    AimPortReader.Load(_store, aimName)),
 
             "MMC-SOA-V2.5" =>
                 new SoaAimProcessor(
@@ -103,7 +103,7 @@ public sealed class AmqAifProvider : IAimProvider
                         ? new FileAudioAcquisition(
                               Setting(settings, "QuestionAudio", @"D:\AI\MPAIApps\AudioIn\question.wav"))
                         : new WasapiAudioAcquisition(),
-                    _store,
+                    AimPortReader.Load(_store, aimName),
                     TimeSpan.FromSeconds(Number(settings, "DurationSeconds", 5))),
 
             "MMC-SOD-V2.5" =>
@@ -113,12 +113,12 @@ public sealed class AmqAifProvider : IAimProvider
                         ? new FileAudioDelivery(
                               Setting(settings, "OutputFolder", @"D:\AI\MPAIApps\AudioOut"))
                         : new WinmmAudioDelivery(),
-                    _store),
+                    AimPortReader.Load(_store, aimName)),
             "MMC-TTT-V2.5" =>
                 new TttAimProcessor(
                     aimName,
                     TttFactory.Create(settings),
-                    _store),
+                    AimPortReader.Load(_store, aimName)),
 
             _ => throw new NotSupportedException(
                      $"No implementation available for {aimName}.")

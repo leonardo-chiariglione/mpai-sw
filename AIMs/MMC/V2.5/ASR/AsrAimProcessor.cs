@@ -2,8 +2,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using AIF.Controller;
-using AIF.Store;
-
 using Mpai.Core;
 
 namespace Mpai.Aims.Asr;
@@ -25,11 +23,10 @@ public sealed class AsrAimProcessor : IAimProcessor
     public AsrAimProcessor(
         string        instanceId,
         WhisperAsrAim asr,
-        AmdStore      store)
+        AimPortReader      ports)
     {
         InstanceId   = instanceId;
         _asr         = asr;
-        var ports    = AimPortReader.Load(store, instanceId);
         _inputPort   = ports.Input("OSD-SPO-V1.5");
         _outputPort  = ports.Output("OSD-TXO-V1.5");
     }

@@ -2,8 +2,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using AIF.Controller;
-using AIF.Store;
-
 using Mpai.Core;
 
 namespace Mpai.Aims.Speech;
@@ -33,7 +31,7 @@ public sealed class SoaAimProcessor : IAimProcessor
     public SoaAimProcessor(
         string               instanceId,
         IAudioAcquisitionAim aoa,
-        AmdStore             store,
+        AimPortReader             ports,
         System.TimeSpan?     duration = null,
         bool                 pressToStop = false)
     {
@@ -42,7 +40,6 @@ public sealed class SoaAimProcessor : IAimProcessor
         _startStop  = aoa as IStartStopAcquisition;
         _duration    = duration ?? System.TimeSpan.FromSeconds(5);
         _pressToStop = pressToStop;
-        var ports   = AimPortReader.Load(store, instanceId);
         _inputPort  = ports.InputOrDefault("OSD-SPO-V1.5", "InputSpeech");
         _outputPort = ports.Output("OSD-SPO-V1.5");
     }

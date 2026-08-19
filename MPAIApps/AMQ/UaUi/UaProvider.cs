@@ -60,21 +60,21 @@ public sealed class UaProvider : IAimProvider
                 new AsrAimProcessor(
                     aimName,
                     _asr ??= AsrFactory.Create(settings),
-                    _store),
+                    AimPortReader.Load(_store, aimName)),
 
             // Cache the heavy in-process BLIP model.
             "MMC-TIQ-V2.5" =>
                 new TiqAimProcessor(
                     aimName,
                     _tiq ??= TiqFactory.Create(settings),
-                    _store),
+                    AimPortReader.Load(_store, aimName)),
 
             // Cache the process-backed TTS core.
             "MMC-TTS-V2.5" =>
                 new TtsAimProcessor(
                     aimName,
                     _tts ??= TtsFactory.Create(settings),
-                    _store),
+                    AimPortReader.Load(_store, aimName)),
 
             _ => throw new NotSupportedException($"No implementation for {aimName}.")
         };

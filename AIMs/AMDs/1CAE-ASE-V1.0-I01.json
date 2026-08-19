@@ -1,23 +1,21 @@
-{ "Identifier":           {"ImplementerID": "1", "ImplementationID": "CAE-ASE-V1.0-I01", "AIMName": "CAE-ASE-V1.0"},
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-ASE-V1.0-I01", "AIMName": "CAE-ASE-V1.0"},
 
-  "APIProfile":           "Basic",
-  "Description":          "Audio Scene Editing: composes AudioObjects into an AudioSceneDescriptors in the Repository. Invoked directly (CreateScene/AddObjectToScene/Materialize) by ASMApp, not through port-based streaming execution - the Ports/Topology below describe the logical data flow, not the actual call interface.",
+  "APIProfile":       "Basic",
+  "Description":      "Audio Scene Editing: composes AudioObjects into an AudioScene, places them, and sets the listener's Point of View. One scene is open at a time. OPENING IS DONE BY PORT: an existing scene arrives on AudioSceneDescriptors, by identifier or in full; creation opens implicitly. ACTING IS DONE BY COMMAND on the UserCommand Port, against the open scene, which is why no Command needs to name it. Receives AudioObjects from CAE-AOE across the Topology; it does not call that AIM.",
 
-  "Types":                [{ "Name": "AudioObject_t",           "Type": "uint8[]" },
-                           { "Name": "AudioSceneDescriptors_t", "Type": "uint8[]" }],
+  "ExternalPorts":    [{"Name": "UserCommand", "Direction": "Input", "DataType": "CAE-UCM-V1.0", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "AudioObject", "Direction": "Input", "DataType": "OSD-AUO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "AudioScene", "Direction": "Input", "DataType": "OSD-ASD-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "ListenerPointOfView", "Direction": "Input", "DataType": "OSD-OPV-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "AudioSceneDescriptors", "Direction": "Output", "DataType": "OSD-ASD-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
-  "Ports":                [{ "Name": "AudioObject",           "Direction": "InputOutput", "RecordType": "AudioObject_t",           "Technology": "Software", "Protocol": "", "IsRemote": false },
-                           { "Name": "AudioSceneDescriptors", "Direction": "OutputInput", "RecordType": "AudioSceneDescriptors_t", "Technology": "Software", "Protocol": "", "IsRemote": false }],
+  "SubAIMs":          [],
+  "Topology":         [],
 
-  "SubAIMs":              [],
+  "Implementations":  [],
 
-  "Topology":             [],
+  "ResourcePolicies": [{"Name": "Memory", "Minimum": "256_MB", "Request": "512_MB", "Maximum": "1_GB"}],
 
-  "Implementations":      [{ "ImplementationURI": "file:///D:/AI/AIMs/CAE3/V1.0/ASE", "BinaryName": "Mpai.Cae.Ase", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "1.0", "Source": "AIMStorage" }],
+  "DataXMData":       {},
 
-  "ResourcePolicies":     [{ "Name": "Memory", "Minimum": "0.1_GB", "Request": "0.2_GB", "Maximum": "0.5_GB" },
-                           { "Name": "CPU:Class", "Minimum": "Low", "Request": "Low", "Maximum": "Medium" }],
-
-  "DataXMData":           { },
-
-  "Documentation":        [{ "Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-cae/" }] }
+  "Documentation":    [{"Type": "Specification", "URI": "https://mpai.community/standards/mpai-cae/"}]}

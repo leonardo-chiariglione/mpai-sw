@@ -1,6 +1,4 @@
 using AIF.Controller;
-using AIF.Store;
-
 using Mmc.Ttt;
 using Mpai.Core;
 
@@ -36,13 +34,10 @@ public sealed class TttAimProcessor : IAimProcessor
     public TttAimProcessor(
         string   instanceId,
         ITttAim  ttt,
-        AmdStore store)
+        AimPortReader ports)
     {
         InstanceId = instanceId;
         _ttt       = ttt;
-
-        var ports = AimPortReader.Load(store, instanceId);
-
         _inputTextPort      = ports.Input(TextType, 1);
         _recognisedTextPort = ports.Input(TextType, 2);
         _languageSelectorPort   = ports.Input(SelectorType, 1);

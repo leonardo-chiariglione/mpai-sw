@@ -2,8 +2,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using AIF.Controller;
-using AIF.Store;
-
 using Mpai.Core;
 
 namespace Mpai.Aims.Tiq;
@@ -26,11 +24,10 @@ public sealed class TiqAimProcessor : IAimProcessor
     public TiqAimProcessor(
         string   instanceId,
         ITiqAim  tiq,
-        AmdStore store)
+        AimPortReader ports)
     {
         InstanceId        = instanceId;
         _tiq              = tiq;
-        var ports         = AimPortReader.Load(store, instanceId);
         _textInputPort    = ports.Input("OSD-TXO-V1.5");
         _visualInputPort  = ports.Input("OSD-VIO-V1.5");
         _textOutputPort   = ports.Output("OSD-TXO-V1.5");

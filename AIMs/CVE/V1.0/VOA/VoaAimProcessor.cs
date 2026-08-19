@@ -2,8 +2,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using AIF.Controller;
-using AIF.Store;
-
 using Mpai.Core;
 
 namespace Mpai.Aims.Visual;
@@ -27,14 +25,12 @@ public sealed class VoaAimProcessor : IAimProcessor
     public VoaAimProcessor(
         string                instanceId,
         IVisualAcquisitionAim voa,
-        AmdStore              store,
+        AimPortReader              ports,
         string                sourceHint = "")
     {
         InstanceId   = instanceId;
         _voa         = voa;
         _sourceHint  = sourceHint;
-
-        var ports    = AimPortReader.Load(store, instanceId);
         _inputPort   = ports.InputOrDefault("OSD-VIO-V1.5", "InputVisual");
         _outputPort  = ports.Output("OSD-VIO-V1.5");
     }

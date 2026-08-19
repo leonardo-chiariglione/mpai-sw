@@ -1,23 +1,19 @@
-{ "Identifier":           {"ImplementerID": "1", "ImplementationID": "CAE-ASD-V1.0-I01", "AIMName": "CAE-ASD-V1.0"},
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-ASD-V1.0-I01", "AIMName": "CAE-ASD-V1.0"},
 
-  "APIProfile":           "Basic",
-  "Description":          "Audio Scene Delivery: delivers a materialized AudioSceneDescriptors by walking it and handing each leaf BasicAudioObject to an audio delivery backend (file or device). Read-only with respect to the Repository - it is the one constituent AIM that never creates or edits an Asset. Invoked directly (DeliverSceneAsync) by ASMApp, not through port-based streaming execution.",
+  "APIProfile":       "Basic",
+  "Description":      "Audio Scene Delivery: renders Audio Scene Descriptors to a device - headphones or loudspeakers. The output Port is Hardware: this AIM sits at the boundary between the AIF and the physical world, which is why it is legitimately an AIM here and not a User Agent module, unlike Speech Object Delivery in MMC-AMQ and MMC-TST. It renders a scene, not a reply to the user.",
 
-  "Types":                [{ "Name": "AudioSceneDescriptors_t", "Type": "uint8[]" },
-                           { "Name": "AudioDestination_t",      "Type": "uint8[]" }],
+  "ExternalPorts":    [{"Name": "UserCommand", "Direction": "Input", "DataType": "CAE-UCM-V1.0", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "AudioSceneDescriptors", "Direction": "Input", "DataType": "OSD-ASD-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "AudioDestination", "Direction": "Output", "DataType": "OSD-AUO-V1.5", "Technology": "Hardware", "Protocol": "", "IsRemote": false}],
 
-  "Ports":                [{ "Name": "AudioSceneDescriptors", "Direction": "InputOutput", "RecordType": "AudioSceneDescriptors_t", "Technology": "Software", "Protocol": "", "IsRemote": false },
-                           { "Name": "AudioDestination",      "Direction": "OutputInput", "RecordType": "AudioDestination_t",      "Technology": "Hardware", "Protocol": "", "IsRemote": false }],
+  "SubAIMs":          [],
+  "Topology":         [],
 
-  "SubAIMs":              [],
+  "Implementations":  [],
 
-  "Topology":             [],
+  "ResourcePolicies": [{"Name": "Memory", "Minimum": "256_MB", "Request": "512_MB", "Maximum": "1_GB"}],
 
-  "Implementations":      [{ "ImplementationURI": "file:///D:/AI/AIMs/CAE3/V1.0/ASD", "BinaryName": "Mpai.Cae.Asd", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "1.0", "Source": "AIMStorage" }],
+  "DataXMData":       {},
 
-  "ResourcePolicies":     [{ "Name": "Memory", "Minimum": "0.1_GB", "Request": "0.2_GB", "Maximum": "0.5_GB" },
-                           { "Name": "CPU:Class", "Minimum": "Low", "Request": "Low", "Maximum": "Medium" }],
-
-  "DataXMData":           { },
-
-  "Documentation":        [{ "Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-cae/" }] }
+  "Documentation":    [{"Type": "Specification", "URI": "https://mpai.community/standards/mpai-cae/"}]}

@@ -32,12 +32,20 @@ namespace Mpai.Cae.Ase;
 public sealed class AseAim
 {
     private readonly ISharedStorage storage;
-    private readonly AoeAim aoe;
 
-    public AseAim(ISharedStorage storage, AoeAim aoe)
+    // NO AoeAim HERE ANY MORE.
+    //
+    // This class used to hold one and call aoe.Materialize() to expand each
+    // child object of a scene - one AIM invoking another directly, with no
+    // Controller between them and nothing in any AMD saying it happened. The
+    // Topology has always said CAE-AOE feeds CAE-ASE; the code went around it.
+    //
+    // Materialize now takes a resolver, so whoever runs this AIM decides where
+    // an expanded object comes from. AseAimProcessor supplies one backed by what
+    // has arrived on its AudioObject Port - which is the Topology, honoured.
+    public AseAim(ISharedStorage storage)
     {
         this.storage = storage;
-        this.aoe = aoe;
     }
 
     private static readonly JsonSerializerOptions DataOptions = new() { Converters = { new JsonStringEnumConverter() } };
@@ -166,7 +174,12 @@ public sealed class AseAim
     // own fields, with every ID-stub AudioObject entry replaced by its
     // full, live content (via AoeAim.Materialize), and each entry's real
     // AudioObjectSpaceTime carried across unchanged.
-    public AudioSceneDescriptors Materialize(string sceneAssetId)
+    // resolveObject supplies the expanded form of a child AudioObject. Passing
+    // null leaves each child as the identifier it already is, which
+    // AudioSceneObjectEntry permits - it carries an ObjectOrID.
+    public AudioSceneDescriptors Materialize(
+        string sceneAssetId,
+        Func<string, AudioObject?>? resolveObject = null)
     {
         if (!storage.Exists(sceneAssetId))
             throw new InvalidOperationException($"{sceneAssetId} does not exist.");
@@ -184,7 +197,8 @@ public sealed class AseAim
 
             objectEntries.Add(new AudioSceneObjectEntry
             {
-                ObjectIDOrObject = aoe.Materialize(childId),
+                ObjectIDOrObject = resolveObject?.Invoke(childId)
+                                   ?? new AudioObject { AudioObjectID = childId },
                 AudioObjectSpaceTime = entry.AudioObjectSpaceTime
             });
         }

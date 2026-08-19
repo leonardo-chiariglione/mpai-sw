@@ -2,8 +2,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using AIF.Controller;
-using AIF.Store;
-
 using Mpai.Core;
 
 namespace Mpai.Aims.Audio;
@@ -29,14 +27,13 @@ public sealed class AoaAimProcessor : IAimProcessor
     public AoaAimProcessor(
         string               instanceId,
         IAudioAcquisitionAim aoa,
-        AmdStore             store,
+        AimPortReader             ports,
         System.TimeSpan?     duration = null)
     {
         InstanceId  = instanceId;
         _aoa        = aoa;
         _startStop  = aoa as IStartStopAcquisition;
         _duration   = duration ?? System.TimeSpan.FromSeconds(5);
-        var ports   = AimPortReader.Load(store, instanceId);
         _inputPort  = ports.InputOrDefault("OSD-AUO-V1.5", "InputAudio");
         _outputPort = ports.Output("OSD-AUO-V1.5");
     }

@@ -43,7 +43,12 @@ internal static class Program
 
         var storage = new FileSharedStorage(AssetsRootPath, topAim: "CAE-ASM", requestedBy: "ASMApp-Desktop-UA");
         var aoe = new AoeAim(storage);
-        var ase = new AseAim(storage, aoe);
+
+        // AseAim no longer holds an AoeAim. Until ASMApp is itself driven
+        // through the Controller, it passes the expansion explicitly - the same
+        // behaviour as before, but as an argument at the call site rather than a
+        // dependency inside the AIM.
+        var ase = new AseAim(storage);
 
         var objectsForm = new ObjectsForm(storage, aoe);
         var scenesForm = new ScenesForm(storage, aoe, ase);

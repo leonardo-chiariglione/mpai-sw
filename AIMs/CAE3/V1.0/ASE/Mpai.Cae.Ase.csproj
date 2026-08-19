@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\Mpai.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\AIF\V3.0\src\AIF.Controller\AIF.Controller.csproj" />
     <ProjectReference Include="..\..\..\Repository\Repository\Mpai.Repository.csproj" />
     <ProjectReference Include="..\AOE\Mpai.Cae.Aoe.csproj" />
   </ItemGroup>

@@ -2,8 +2,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using AIF.Controller;
-using AIF.Store;
-
 using Mpai.Core;
 
 namespace Mpai.Aims.Ocr;
@@ -22,11 +20,10 @@ public sealed class OcrAimProcessor : IAimProcessor
     public OcrAimProcessor(
         string   instanceId,
         IOcrAim  ocr,
-        AmdStore store)
+        AimPortReader ports)
     {
         InstanceId  = instanceId;
         _ocr        = ocr;
-        var ports   = AimPortReader.Load(store, instanceId);
         _inputPort  = ports.Input("OSD-VIO-V1.5");
         _outputPort = ports.Output("MMC-RTX-V2.5");
     }

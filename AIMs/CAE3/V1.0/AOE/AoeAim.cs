@@ -268,6 +268,13 @@ public sealed class AoeAim
     // content. The stored value itself is already schema-valid before this
     // resolution happens; this is what an external consumer (ASD delivery,
     // export) needs.
+    // Does this asset exist? Needed by the AIF-facing half to tell an OPEN from a
+    // CREATE: a Basic Audio Object arriving with an identifier already in the
+    // repository is being opened for editing; one without is new. Without this,
+    // an existing Basic Audio Object could never be edited, only replaced.
+    public bool Has(string assetId) =>
+        !string.IsNullOrWhiteSpace(assetId) && storage.Exists(assetId);
+
     public AudioObject Materialize(string audioObjectAssetId)
     {
         if (!storage.Exists(audioObjectAssetId))

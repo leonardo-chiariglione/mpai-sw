@@ -2,8 +2,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using AIF.Controller;
-using AIF.Store;
-
 using Mpai.Core;
 
 namespace Mpai.Aims.Audio;
@@ -25,11 +23,10 @@ public sealed class AodAimProcessor : IAimProcessor
     public AodAimProcessor(
         string            instanceId,
         IAudioDeliveryAim aod,
-        AmdStore          store)
+        AimPortReader          ports)
     {
         InstanceId  = instanceId;
         _aod        = aod;
-        var ports   = AimPortReader.Load(store, instanceId);
         _inputPort  = ports.Input("OSD-AUO-V1.5");
         _outputPort = ports.Output("OSD-AUO-V1.5");
     }

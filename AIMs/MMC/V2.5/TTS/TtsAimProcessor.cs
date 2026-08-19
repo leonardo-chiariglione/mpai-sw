@@ -2,8 +2,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using AIF.Controller;
-using AIF.Store;
-
 using Mpai.Core;
 
 namespace Mpai.Aims.Tts;
@@ -25,11 +23,10 @@ public sealed class TtsAimProcessor : IAimProcessor
     public TtsAimProcessor(
         string      instanceId,
         PiperTtsAim tts,
-        AmdStore    store)
+        AimPortReader    ports)
     {
         InstanceId  = instanceId;
         _tts        = tts;
-        var ports   = AimPortReader.Load(store, instanceId);
         _inputPort  = ports.Input("OSD-TXO-V1.5");
         _outputPort = ports.Output("OSD-SPO-V1.5");
     }

@@ -2,8 +2,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using AIF.Controller;
-using AIF.Store;
-
 using Mpai.Core;
 
 namespace Mpai.Aims.Speech;
@@ -29,11 +27,10 @@ public sealed class SodAimProcessor : IAimProcessor
     public SodAimProcessor(
         string            instanceId,
         IAudioDeliveryAim aod,
-        AmdStore          store)
+        AimPortReader          ports)
     {
         InstanceId  = instanceId;
         _aod        = aod;
-        var ports   = AimPortReader.Load(store, instanceId);
         _inputPort  = ports.Input("OSD-SPO-V1.5");
         _outputPort = ports.Output("OSD-SPO-V1.5");
     }

@@ -42,16 +42,16 @@ public sealed class UaProviderBridge : IAimProvider
     public IAimProcessor Create(string aimName, IReadOnlyDictionary<string, string> settings) =>
         aimName switch
         {
-            "CVE-VOA-V1.0" => new VoaAimProcessor(aimName, new FileVisualAcquisition(string.Empty), _store, string.Empty),
-            "CAE-AOA-V1.0" => new AoaAimProcessor(aimName, new FileAudioAcquisition(string.Empty), _store, TimeSpan.FromSeconds(5)),
-            "MMC-ASR-V2.5" => new AsrAimProcessor(aimName, _asr ??= AsrFactory.Create(settings), _store),
-            "MMC-TIQ-V2.5" => new TiqAimProcessor(aimName, _tiq ??= TiqFactory.Create(settings), _store),
-            "MMC-TTS-V2.5" => new TtsAimProcessor(aimName, _tts ??= TtsFactory.Create(settings), _store),
-            "MMC-SOA-V2.5" => new SoaAimProcessor(aimName, new FileAudioAcquisition(string.Empty), _store, TimeSpan.FromSeconds(5)),
-            "MMC-TTT-V2.5" => new TttAimProcessor(aimName, _ttt ??= TttFactory.Create(settings), _store),
-            "MMC-SOD-V2.5" => new SodAimProcessor(aimName, new FileAudioDelivery(_outputFolder), _store),
-            "CAE-AOD-V1.0" => new AodAimProcessor(aimName, new FileAudioDelivery(_outputFolder), _store),
-            "CVE-VOD-V1.0" => new VodAimProcessor(aimName, new FileVisualDelivery(_outputFolder), _store),
+            "CVE-VOA-V1.0" => new VoaAimProcessor(aimName, new FileVisualAcquisition(string.Empty), AimPortReader.Load(_store, aimName), string.Empty),
+            "CAE-AOA-V1.0" => new AoaAimProcessor(aimName, new FileAudioAcquisition(string.Empty), AimPortReader.Load(_store, aimName), TimeSpan.FromSeconds(5)),
+            "MMC-ASR-V2.5" => new AsrAimProcessor(aimName, _asr ??= AsrFactory.Create(settings), AimPortReader.Load(_store, aimName)),
+            "MMC-TIQ-V2.5" => new TiqAimProcessor(aimName, _tiq ??= TiqFactory.Create(settings), AimPortReader.Load(_store, aimName)),
+            "MMC-TTS-V2.5" => new TtsAimProcessor(aimName, _tts ??= TtsFactory.Create(settings), AimPortReader.Load(_store, aimName)),
+            "MMC-SOA-V2.5" => new SoaAimProcessor(aimName, new FileAudioAcquisition(string.Empty), AimPortReader.Load(_store, aimName), TimeSpan.FromSeconds(5)),
+            "MMC-TTT-V2.5" => new TttAimProcessor(aimName, _ttt ??= TttFactory.Create(settings), AimPortReader.Load(_store, aimName)),
+            "MMC-SOD-V2.5" => new SodAimProcessor(aimName, new FileAudioDelivery(_outputFolder), AimPortReader.Load(_store, aimName)),
+            "CAE-AOD-V1.0" => new AodAimProcessor(aimName, new FileAudioDelivery(_outputFolder), AimPortReader.Load(_store, aimName)),
+            "CVE-VOD-V1.0" => new VodAimProcessor(aimName, new FileVisualDelivery(_outputFolder), AimPortReader.Load(_store, aimName)),
             _ => throw new NotSupportedException($"No implementation for {aimName}.")
         };
 }

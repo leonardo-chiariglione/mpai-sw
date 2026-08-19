@@ -38,20 +38,20 @@ internal sealed class TstProvider : IAimProvider
                 new SoaAimProcessor(
                     aimName,
                     Microphone(),
-                    _store,
+                    AimPortReader.Load(_store, aimName),
                     TimeSpan.FromSeconds(Number(settings, "DurationSeconds", 15))),
 
             "MMC-ASR-V2.5" =>
-                new AsrAimProcessor(aimName, AsrFactory.Create(settings), _store),
+                new AsrAimProcessor(aimName, AsrFactory.Create(settings), AimPortReader.Load(_store, aimName)),
 
             "MMC-TTT-V2.5" =>
-                new TttAimProcessor(aimName, TttFactory.Create(settings), _store),
+                new TttAimProcessor(aimName, TttFactory.Create(settings), AimPortReader.Load(_store, aimName)),
 
             "MMC-TTS-V2.5" =>
-                new TtsAimProcessor(aimName, TtsFactory.Create(settings), _store),
+                new TtsAimProcessor(aimName, TtsFactory.Create(settings), AimPortReader.Load(_store, aimName)),
 
             "MMC-SOD-V2.5" =>
-                new SodAimProcessor(aimName, Loudspeaker(), _store),
+                new SodAimProcessor(aimName, Loudspeaker(), AimPortReader.Load(_store, aimName)),
 
             _ => throw new NotSupportedException($"No implementation available for {aimName}.")
         };
