@@ -297,58 +297,25 @@ public sealed class SciServer
     {
         var ports = new Dictionary<string, string>(s.Inputs);
 
-        // AMQ suspends; TST does not, and the difference decides how the AIW is
-        // run.
+        // ONE run, whatever the AIW.
         //
-        // The two-step below is AMQ's choreography: the image goes in first, the
-        // AIW suspends waiting for the question, and the rest of the inputs
-        // resume it. Applied to an AIW that never suspends, it is destructive -
-        // the first call runs with an EMPTY dictionary, nothing suspends, the
-        // resume never happens, and every input the client sent is discarded.
-        // That is what made MMC-SOA report "skipped (no input available)" for a
-        // request that had posted InputSpeech moments earlier.
+        // There used to be two paths here. The AMQ path ran the AIW with the
+        // image alone, expecting it to suspend waiting for the question, then
+        // resumed with the rest - and for text mode it also injected an EMPTY
+        // Speech Object so that MMC-SOA would run without suspending.
         //
-        // The presence of InputVisual is what distinguishes them, and it is a
-        // property of the request rather than a hard-coded module name.
-        var isTwoStep = ports.ContainsKey("InputVisual");
+        // Neither survives the User Agent taking over acquisition and
+        // presentation. AMQ no longer suspends: the User Agent shows the image
+        // and invites the question itself, so image and question arrive
+        // together, in one exchange. And the empty Speech Object would now reach
+        // MMC-ASR directly, which answers silence with an invented sentence.
+        //
+        // What is left is what the local host does: run the AIW with everything
+        // the client sent.
+        var (e2, o2) = await _ua.RunAsync(s.AiwId, ports);
 
-        AifError e2;
-        UserAgent.RunOutcome? o2;
-
-        if (isTwoStep)
-        {
-            // AMQ: for text mode also supply an empty speech so SOA runs.
-            //
-            // Note this means something ELSE for TST, where an empty Speech
-            // Object is how a caller asks MMC-SOA to acquire from a microphone -
-            // which a server does not have. Another reason to keep the two paths
-            // apart rather than share one.
-            if (ports.ContainsKey("InputText") && !ports.ContainsKey("InputSpeech"))
-                ports["InputSpeech"] = MpaiJson.ToJson(BasicSpeechObject.FromData(Array.Empty<byte>()));
-
-            var visual = new Dictionary<string, string>();
-            visual["InputVisual"] = ports["InputVisual"];
-
-            var (e1, o1) = await _ua.RunAsync(s.AiwId, visual);
-
-            var question = ports.Where(kv => kv.Key != "InputVisual")
-                                .ToDictionary(kv => kv.Key, kv => kv.Value);
-
-            (e2, o2) = (o1 is not null && o1.Suspended)
-                ? await _ua.ResumeAsync(s.AiwId, question)
-                : (e1, o1);
-        }
-        else
-        {
-            // One run, every buffered input, which is what the local host does.
-            (e2, o2) = await _ua.RunAsync(s.AiwId, ports);
-        }
-
-        if (e2 != AifError.OK)
-            Console.WriteLine($"[SCI] run returned {e2}");
-
-        if (o2?.Completed is { IsError: true } failed)
-            Console.WriteLine($"[SCI] {failed.FailedAim}: {failed.Payload}");
+        if (o2 is not null && o2.Suspended)
+            Console.WriteLine($"[SCI] unexpectedly waiting for {o2.WaitingPort}");
 
         var outputs = new Dictionary<string, string>();
         if (o2?.Completed is not null)

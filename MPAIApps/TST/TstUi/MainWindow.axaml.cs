@@ -85,6 +85,10 @@ public partial class MainWindow : Window
 
         var config = TstConfig.Load();
 
+        // Needed in either mode now: the User Agent holds the microphone and the
+        // loudspeaker whether the AIF is in this process or on a server.
+        _audio = new LocalAudio();
+
         if (!string.IsNullOrWhiteSpace(config.MasServerUrl))
         {
             if (await StartRemoteAsync(config)) return;
@@ -168,8 +172,6 @@ public partial class MainWindow : Window
     private async Task<bool> StartRemoteAsync(TstConfig config)
     {
         SetBusy(true, $"connecting to {config.MasServerUrl} ...");
-
-        _audio = new LocalAudio();
 
         var backend = new Mpai.Mas.Rca.TstMasBackend(config.MasServerUrl);
 
@@ -275,33 +277,45 @@ public partial class MainWindow : Window
 
     private async Task SpeakAsync()
     {
-        // Remote: the microphone is HERE, so the second press stops the local
-        // recorder rather than pausing a remote AIW. The server is asked to
-        // translate only once the bytes exist - there is nothing running there
-        // to pause in the meantime.
-        if (_mas is not null && _audio is not null)
+        // ONE path for both modes.
+        //
+        // The microphone belongs to the User Agent now, in both. MMC-SOA is no
+        // longer a SubAIM of MMC-TST: acquisition interacts with the user
+        // directly, so it travels with the User Agent when it becomes a Remote
+        // Client Application - which is the test of whether it was ever part of
+        // the composite.
+        //
+        // What this replaces, locally, was an EMPTY Speech Object sent as a
+        // trigger meaning "MMC-SOA, acquire", with press-to-stop implemented by
+        // PAUSING the running AIW. Both are gone: there is nothing inside the
+        // composite to trigger or to pause. The remote path already worked this
+        // way, so the two have converged rather than one being rewritten.
+        if (_audio is null) return;
+
+        if (!_recording)
         {
-            if (!_recording)
-            {
-                _recording          = true;
-                SpeakButton.Content = "Stop";
-                TranslateButton.IsEnabled = false;
-                HeardBox.Text  = string.Empty;
-                OutputBox.Text = string.Empty;
-                SetStatus("recording - press Stop when you have finished");
+            _recording          = true;
+            SpeakButton.Content = "Stop";
+            TranslateButton.IsEnabled = false;
+            _lastHeard     = string.Empty;
+            HeardBox.Text  = string.Empty;
+            OutputBox.Text = string.Empty;
+            SetStatus("recording - press Stop when you have finished");
 
-                _audio.StartRecording();
-                return;
-            }
+            _audio.StartRecording();
+            return;
+        }
 
-            _recording          = false;
-            SpeakButton.Content = "Speak";
-            _lastRequest        = $"{Code(SourceLanguage)} to {Code(TargetLanguage)}, spoken";
-            SetBusy(true, "sending to the server...");
+        _recording          = false;
+        SpeakButton.Content = "Speak";
+        _lastRequest        = $"{Code(SourceLanguage)} to {Code(TargetLanguage)}, spoken";
+        SetBusy(true, _mas is not null ? "sending to the server..." : "translating...");
 
-            var wav = await _audio.StopRecordingAsync();
-            Console.WriteLine($"[UA] captured {wav.Length:N0} bytes");
+        var wav = await _audio.StopRecordingAsync();
+        Console.WriteLine($"[UA] captured {wav.Length:N0} bytes");
 
+        if (_mas is not null)
+        {
             await ShowRemoteAsync(() =>
                 _mas.TranslateSpeechAsync(wav, Code(SourceLanguage), Code(TargetLanguage)));
 
@@ -311,30 +325,18 @@ public partial class MainWindow : Window
 
         if (_ua is null) return;
 
-        // The second press is "that is enough". Pause reaches MMC-SOA, which
-        // closes the microphone; the Resume immediately after lets the rest of
-        // the pipeline run. Stop would end the AIW and discard the recording.
-        if (_recording)
-        {
-            _ua.MPAI_AIFU_AIW_Pause(_tstAiwId);
-            _ua.MPAI_AIFU_AIW_Resume(_tstAiwId);
-            SpeakButton.Content = "Speak";
-            SetStatus("finishing...");
-            return;
-        }
-
+        // The Speech Qualifier carries the source language, which is how MMC-ASR
+        // knows what to expect. That has not changed - only who fills it in.
         var boundary = Boundary();
-
-        // An EMPTY Speech Object asks MMC-SOA to acquire; its Qualifier carries
-        // the source language, which is how MMC-ASR learns what to expect.
         boundary["InputSpeech"] = MpaiJson.ToJson(
             BasicSpeechObject.FromData(
-                Array.Empty<byte>(),
+                wav,
                 new SpeechQualifier
                 {
                     SpeechQualifierID = Guid.NewGuid().ToString(),
                     Attributes = new SpeechAttributes
                     {
+                        Source = SpeechSource.Real,
                         Metadata = new SpeechMetadata
                         {
                             Language = new Language
@@ -346,20 +348,9 @@ public partial class MainWindow : Window
                     }
                 }));
 
-        _recording          = true;
-        _lastHeard          = string.Empty;
-        HeardBox.Text       = string.Empty;
-        OutputBox.Text      = string.Empty;
-        SpeakButton.Content = "Stop";
-        TranslateButton.IsEnabled = false;
-        SetStatus("recording - press Stop when you have finished");
-
         var completed = await Task.Run(() => Run(boundary));
 
-        _recording          = false;
-        SpeakButton.Content = "Speak";
         TranslateButton.IsEnabled = true;
-
         Show(completed, spoken: true);
     }
 
@@ -445,6 +436,23 @@ public partial class MainWindow : Window
         {
             OutputBox.Text = string.Empty;
             SetStatus("no translation was produced");
+        }
+
+        // Delivery is the User Agent's too. MMC-TTS writes to the boundary and
+        // the loudspeaker is here - the same arrangement the remote path has
+        // always had, where the server could not have played it anyway.
+        if (completed.Ports.TryGetValue("OutputSpeech", out var speechJson) && _audio is not null)
+        {
+            var speech = MpaiJson.FromJson<BasicSpeechObject>(speechJson);
+
+            if (speech.Data is { Length: > 0 })
+            {
+                _ = _audio.PlayAsync(speech.Data);
+            }
+            else
+            {
+                Console.WriteLine("[UA] no speech came back - the language may have no voice.");
+            }
         }
     }
 

@@ -39,7 +39,6 @@ public partial class MainWindow : Window
     private readonly IAudioRecorder _recorder = new WindowsAudioRecorder();
     private readonly IAudioPlayer _player = new WindowsAudioPlayer();
     private byte[]? _recordedQuestion;
-    private string? _lastAnswerWav;
 
     // RCA mode: the MAS backend, created lazily when MasServerUrl is configured.
     private Mpai.Mas.Rca.MasAmqBackend? _masBackend;
@@ -274,7 +273,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        var (ok, msg, answer, frame) = await Task.Run(() =>
+        var (ok, msg, answer, frameBytes, answerWav) = await Task.Run(() =>
         {
             try
             {
@@ -286,104 +285,121 @@ public partial class MainWindow : Window
                 // and reload BLIP on every question — the main latency cause.
                 var provider = _provider!;
                 var e0 = ua.MPAI_AIFU_AIW_Start("MMC-AMQ-V2.5", provider, _settings!, out var aiwId);
-                if (e0 != AifError.OK) return (false, $"Start failed: {e0}", (string?)null, (string?)null);
+                if (e0 != AifError.OK)
+                    return (false, $"Start failed: {e0}", (string?)null, (byte[]?)null, (byte[]?)null);
                 Log($"[UA-UI] AIW_Start: {sw.ElapsedMilliseconds} ms");
 
                 Log($"[UA-UI] Image={Path.GetFileName(selected)}  Question=\"{question}\"");
 
+                // ONE run, image and question together.
+                //
+                // This used to be two: RunAsync(image), which suspended, then
+                // ResumeAsync(question). The suspension existed so the AIW could
+                // ASK for the question - but the workflow shows the user a FRAME
+                // first, built by TIQ, and an AIM appears once in a Topology.
+                // Showing an image and inviting a question are user-facing acts,
+                // so they belong here, before the AIW is started at all.
+                //
+                // That also disposes of the worst hack in this file: text mode
+                // used to send an EMPTY Speech Object alongside the typed
+                // question, so that MMC-SOA would run without suspending. With
+                // acquisition gone from the composite, that empty object would
+                // reach MMC-ASR directly and Whisper would invent a sentence
+                // from silence. Text mode now simply omits InputSpeech, and the
+                // executor skips MMC-ASR because the Port is optional.
                 var bytes = File.ReadAllBytes(selected!);
                 var image = BasicVisualObject.FromFile(selected!, bytes);
-                var (e1, o1) = ua.RunAsync(aiwId, new Dictionary<string, string>
+
+                var ports = new Dictionary<string, string>
                 {
                     ["InputVisual"] = MpaiJson.ToJson(image)
-                }).GetAwaiter().GetResult();
-                Log($"[UA-UI] RunAsync(image): {sw.ElapsedMilliseconds} ms total");
-                if (e1 != AifError.OK || o1 is null || !o1.Suspended)
-                    return (false, "Pipeline did not reach the question step.", null, null);
+                };
 
-                // TIQ has one text input, fed by EITHER the boundary InputText OR
-                // ASR (from the speech branch). To avoid the two colliding:
-                //  * TEXT mode: supply the typed InputText AND an empty InputSpeech.
-                //    The empty speech lets SOA run without suspending; ASR yields
-                //    no real text; TIQ uses the typed InputText.
-                //  * VOICE mode: supply ONLY InputSpeech. ASR produces the text and
-                //    feeds TIQ; the boundary InputText is left unset. The executor
-                //    does not suspend for it because TIQ is satisfied internally
-                //    by ASR (InternallySatisfied).
-                Dictionary<string, string> questionPorts;
                 if (useText)
                 {
                     Log($"[UA-UI] TEXT question: \"{question}\"");
-                    questionPorts = new Dictionary<string, string>
-                    {
-                        ["InputText"]   = MpaiJson.ToJson(BasicTextObject.FromText(question)),
-                        ["InputSpeech"] = MpaiJson.ToJson(BasicSpeechObject.FromData(Array.Empty<byte>()))
-                    };
+                    ports["InputText"] = MpaiJson.ToJson(BasicTextObject.FromText(question));
                 }
                 else
                 {
                     Log($"[UA-UI] SPEECH question: {audioQuestion!.Length} bytes");
-                    questionPorts = new Dictionary<string, string>
-                    {
-                        ["InputSpeech"] = MpaiJson.ToJson(BasicSpeechObject.FromData(audioQuestion!))
-                    };
+                    ports["InputSpeech"] = MpaiJson.ToJson(BasicSpeechObject.FromData(audioQuestion!));
                 }
 
-                Log($"[UA-UI] Resuming with ports: {string.Join(",", questionPorts.Keys)}");
-                var (e2, o2) = ua.ResumeAsync(aiwId, questionPorts).GetAwaiter().GetResult();
-                Log($"[UA-UI] ResumeAsync(answer): {sw.ElapsedMilliseconds} ms total");
-                if (o2 is not null && o2.Completed is not null)
-                    Log($"[UA-UI] Completed ports: {string.Join(",", o2.Completed.Ports.Keys)}");
-                if (e2 != AifError.OK || o2 is null) return (false, $"Answer failed: {e2}", null, null);
-                if (o2.Suspended) return (false, $"Still waiting for {o2.WaitingPort}.", null, null);
+                Log($"[UA-UI] Running with ports: {string.Join(",", ports.Keys)}");
+                var (e1, o1) = ua.RunAsync(aiwId, ports).GetAwaiter().GetResult();
+                Log($"[UA-UI] RunAsync: {sw.ElapsedMilliseconds} ms total");
+
+                if (e1 != AifError.OK || o1 is null)
+                    return (false, $"Answer failed: {e1}", (string?)null, (byte[]?)null, (byte[]?)null);
+
+                if (o1.Suspended)
+                    return (false, $"Unexpectedly waiting for {o1.WaitingPort}.", (string?)null, (byte[]?)null, (byte[]?)null);
+
+                if (o1.Completed is null)
+                    return (false, "No result.", (string?)null, (byte[]?)null, (byte[]?)null);
+
+                Log($"[UA-UI] Completed ports: {string.Join(",", o1.Completed.Ports.Keys)}");
+
+                if (o1.Completed.IsError)
+                    return (false, $"{o1.Completed.FailedAim}: {o1.Completed.Payload}",
+                            (string?)null, (byte[]?)null, (byte[]?)null);
 
                 string? answerText = null;
-                if (o2.Completed is not null &&
-                    o2.Completed.Ports.TryGetValue("OutputText", out var ansJson))
+                if (o1.Completed.Ports.TryGetValue("OutputText", out var ansJson))
                 {
                     try { answerText = MpaiJson.FromJson<BasicTextObject>(ansJson).GetText(); }
                     catch { answerText = "(answer produced)"; }
                 }
                 Log($"[UA-UI] TIQ answer = \"{answerText}\"");
 
-                string? framePath = null;
-                string? answerWav = null;
-                try
+                // The frame and the spoken answer come back ON THE BOUNDARY
+                // PORTS. They used to be found by scanning the output folder for
+                // the newest .wav and image, because CVE-VOD and MMC-SOD wrote
+                // them there - which is delivery done by AIMs that had no
+                // business doing it, and a race whenever two runs overlapped.
+                byte[]? frame = null;
+                if (o1.Completed.Ports.TryGetValue("OutputVisual", out var frameJson))
                 {
-                    framePath = Directory.EnumerateFiles(OutputFolder)
-                        .Where(f => { var e = Path.GetExtension(f).ToLowerInvariant();
-                                      return e is ".png" or ".jpg" or ".jpeg" or ".bmp"; })
-                        .OrderByDescending(File.GetLastWriteTimeUtc)
-                        .FirstOrDefault();
-                    answerWav = Directory.EnumerateFiles(OutputFolder, "*.wav")
-                        .OrderByDescending(File.GetLastWriteTimeUtc)
-                        .FirstOrDefault();
+                    try { frame = MpaiJson.FromJson<BasicVisualObject>(frameJson).Data; }
+                    catch (Exception ex) { Log("[UA-UI] frame decode failed: " + ex.Message); }
                 }
-                catch { }
 
-                _lastAnswerWav = answerWav;
-                return (true, answerText ?? "(no text answer)", answerText, framePath);
+                byte[]? spoken = null;
+                if (o1.Completed.Ports.TryGetValue("OutputSpeech", out var speechJson))
+                {
+                    try { spoken = MpaiJson.FromJson<BasicSpeechObject>(speechJson).Data; }
+                    catch (Exception ex) { Log("[UA-UI] speech decode failed: " + ex.Message); }
+                }
+
+                return (true, answerText ?? "(no text answer)", answerText, frame, spoken);
             }
             catch (Exception ex)
             {
                 Log("[UA-UI] ANSWER EXCEPTION: " + ex);
-                return (false, "Answer failed: " + ex.Message, (string?)null, (string?)null);
+                return (false, "Answer failed: " + ex.Message, (string?)null, (byte[]?)null, (byte[]?)null);
             }
         });
 
         Dispatcher.UIThread.Post(() =>
         {
             StatusText.Text = ok ? $"Answer: {answer}" : msg;
-            if (ok && frame is not null && File.Exists(frame))
+
+            if (ok && frameBytes is { Length: > 0 })
             {
-                try { using var s = File.OpenRead(frame); FrameImage.Source = new Bitmap(s); FrameCaption.Text = "Answer frame"; }
-                catch { }
+                try { using var s = new MemoryStream(frameBytes);
+                      FrameImage.Source = new Bitmap(s); FrameCaption.Text = "Answer frame"; }
+                catch (Exception ex) { Log("[UA-UI] FRAME FAILED: " + ex); }
             }
-            if (ok && _lastAnswerWav is not null && File.Exists(_lastAnswerWav))
+
+            // Playback is the User Agent's: MMC-TTS writes to the boundary and
+            // the loudspeaker is here.
+            if (ok && answerWav is { Length: > 0 })
             {
-                try { _player.PlayWav(File.ReadAllBytes(_lastAnswerWav)); }
+                try { _player.PlayWav(answerWav); }
                 catch (Exception ex) { Log("[UA-UI] PLAY FAILED: " + ex); }
             }
+
             RefreshAnswerButton();
         });
     }

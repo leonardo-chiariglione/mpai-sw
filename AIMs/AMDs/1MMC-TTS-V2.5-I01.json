@@ -1,7 +1,7 @@
 { "Identifier":       { "ImplementerID": "1", "ImplementationID": "MMC-TTS-V2.5-I01", "AIMName": "MMC-TTS-V2.5" },
 
   "APIProfile":       "Basic",
-  "Description":      "Text to Speech: converts a Basic Text Object into a Basic Speech Object.",
+  "Description":      "Text to Speech: converts a Basic Text Object into a Basic Speech Object. Within MMC-AMQ-V2.5 and MMC-TST-V2.5 its Output Speech goes to the User Agent across the Composite AIM boundary: Speech Object Delivery is a User Agent module there, not a SubAIM.",
 
   "ExternalPorts":    [{"Name": "InputText",    "Direction": "Input",  "DataType": "OSD-TXO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
                        {"Name": "OutputSpeech", "Direction": "Output", "DataType": "OSD-SPO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],

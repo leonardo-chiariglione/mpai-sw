@@ -59,7 +59,7 @@
                          "OutputFolder":  "D:\\AI\\MPAIApps\\AudioOut"
                      },
     "MMC-OCR-V2.5":  {
-                         "DetModel":  "D:\\AI\\Models\\OCR\\ch_PP-OCRv5_mobile_det.onnx",
+                         "DetModel":  "D:\\AI\\Models\\OCR\\ch_PP-OCRv5_server_det.onnx",
                          "ClsModel":  "D:\\AI\\Models\\OCR\\ch_ppocr_mobile_v2.0_cls_infer.onnx",
                          "RecModel":  "D:\\AI\\Models\\OCR\\latin_PP-OCRv5_rec_mobile_infer.onnx",
                          "KeysFile":  "D:\\AI\\Models\\OCR\\ppocrv5_latin_dict.txt"

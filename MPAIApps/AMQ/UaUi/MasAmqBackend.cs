@@ -62,12 +62,15 @@ public sealed class MasAmqBackend : IAmqBackend
         // 2. Send the question on exactly one branch.
         if (questionText is not null)
         {
+            // ONLY the typed text. An empty Speech Object used to go with it, so
+            // that AMQ's speech branch would run without suspending - MMC-SOA
+            // received the empty object and acquired nothing. With acquisition
+            // out of the composite that object reaches MMC-ASR directly, and
+            // whisper answers silence with an invented sentence. InputSpeech is
+            // optional, so leaving it out skips MMC-ASR, which is what was
+            // wanted all along.
             await _api.SendInputAsync(_moduleId, PortInText,
                 MpaiPortData.FromText(questionText), ct);
-            // AMQ's speech branch needs a (possibly empty) InputSpeech to run
-            // without suspending; TIQ uses the typed InputText for the answer.
-            await _api.SendInputAsync(_moduleId, PortInSpeech,
-                MpaiPortData.FromSpeech(BasicSpeechObject.FromData(Array.Empty<byte>())), ct);
         }
         else if (questionAudio is not null)
             await _api.SendInputAsync(_moduleId, PortInSpeech,

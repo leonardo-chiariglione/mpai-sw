@@ -1,7 +1,7 @@
 { "Identifier":       { "ImplementerID": "1", "ImplementationID": "MMC-ASR-V2.5-I01", "AIMName": "MMC-ASR-V2.5" },
 
   "APIProfile":       "Basic",
-  "Description":      "Automatic Speech Recognition: converts a Basic Speech Object into a Basic Text Object.",
+  "Description":      "Automatic Speech Recognition: converts a Basic Speech Object into a Basic Text Object. Within MMC-AMQ-V2.5 and MMC-TST-V2.5 its Input Speech arrives from the User Agent across the Composite AIM boundary: Speech Object Acquisition is a User Agent module there, not a SubAIM.",
 
   "ExternalPorts":    [{"Name": "InputSpeech", "Direction": "Input",  "DataType": "OSD-SPO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
                        {"Name": "OutputText",  "Direction": "Output", "DataType": "OSD-TXO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],

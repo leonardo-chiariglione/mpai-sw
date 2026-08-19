@@ -228,17 +228,17 @@ public sealed class UserAgent
         });
     }
 
-    // Access to the host+executor for driving the internal pipeline.
-    // (Used by the workflow runner; not part of the public MPAI_AIFU_* surface.)
-    public bool TryGetRuntime(int aiwId, out AimHost host, out PortRegistry ports)
-    {
-        host  = null!;
-        ports = null!;
-        if (!_running.TryGetValue(aiwId, out var aiw)) return false;
-        host  = aiw.Host;
-        ports = aiw.Ports;
-        return true;
-    }
+    // TryGetRuntime USED to live here, handing an AIW's AimHost and PortRegistry
+    // to whoever asked. Its own comment said "not part of the public MPAI_AIFU_*
+    // surface", which was the warning: it let a User Agent register an AIM into a
+    // running AIW and invoke it outside the Topology that governs it. Nothing in
+    // the AMD would mention that AIM, and nothing could refuse it.
+    //
+    // Its one caller, AmqWorkflow, needed MMC-OCR - which is not a SubAIM of
+    // MMC-AMQ. That is now an AIW of the User Agent's own, UAG-OCR-V1.0, started
+    // and run through this same public API. Removing the method is what makes the
+    // guarantee real: an escape hatch that exists is an escape hatch that will be
+    // used.
 }
 
 // Standard-style error codes.

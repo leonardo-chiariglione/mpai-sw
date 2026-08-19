@@ -75,7 +75,7 @@ internal static class Program
 
         if (System.Array.Exists(args, a => string.Equals(a, "--workflowtest", System.StringComparison.OrdinalIgnoreCase)))
         {
-            WorkflowTest.Run();
+            WorkflowTest.Run(args);
             return;
         }
 
