@@ -1,11 +1,12 @@
 { "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-AOE-V1.0-I01", "AIMName": "CAE-AOE-V1.0"},
 
   "APIProfile":       "Basic",
-  "Description":      "Audio Object Editing: creates and composes AudioObjects (a Basic Audio Object plus its editing properties). One object is open at a time. OPENING IS DONE BY PORT, not by Command: an object arrives on BasicAudioObject or on AudioObject, and which Data Type delivered it tells this AIM whether it is editing a Basic Audio Object or a composed one. Since ManagedObject is an ObjectOrID, an open may carry only the identifier and the content is fetched from Shared Storage. Creation opens implicitly. ACTING IS DONE BY COMMAND: each user action is one User Command on the UserCommand Port, acting on whatever is open, so an interactive session is a sequence of runs rather than one long one.",
+  "Description":      "Audio Object Editing: creates and composes Audio Objects, and edits their properties. One object is open at a time, so no User Command names its target. BASIC AND FULL ARE EXPLICIT: which Port delivered says whether a Basic Audio Object or a composed Audio Object is being edited, and the corresponding output Port says which kind was produced - the executor routes by Data Type, so a distinction left implicit in the data would have to be recovered by inspecting it. Opening is done by Port; creation opens implicitly. Acting is done by User Command, one per user action.",
 
   "ExternalPorts":    [{"Name": "UserCommand", "Direction": "Input", "DataType": "CAE-UCM-V1.0", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
                        {"Name": "BasicAudioObject", "Direction": "Input", "DataType": "OSD-BAO-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
                        {"Name": "AudioObject", "Direction": "Input", "DataType": "OSD-AUO-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "EditedBasicAudioObject", "Direction": "Output", "DataType": "OSD-BAO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
                        {"Name": "EditedAudioObject", "Direction": "Output", "DataType": "OSD-AUO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":          [],

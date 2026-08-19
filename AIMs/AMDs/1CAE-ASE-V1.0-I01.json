@@ -1,12 +1,15 @@
 { "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-ASE-V1.0-I01", "AIMName": "CAE-ASE-V1.0"},
 
   "APIProfile":       "Basic",
-  "Description":      "Audio Scene Editing: composes AudioObjects into an AudioScene, places them, and sets the listener's Point of View. One scene is open at a time. OPENING IS DONE BY PORT: an existing scene arrives on AudioSceneDescriptors, by identifier or in full; creation opens implicitly. ACTING IS DONE BY COMMAND on the UserCommand Port, against the open scene, which is why no Command needs to name it. Receives AudioObjects from CAE-AOE across the Topology; it does not call that AIM.",
+  "Description":      "Audio Scene Editing: composes Audio Objects into an Audio Scene, places them, and sets the listener's Point of View. One scene is open at a time. BASIC AND FULL ARE EXPLICIT on both sides, as for CAE-AOE: objects arrive as OSD-BAO or OSD-AUO, scenes as OSD-BAS or OSD-ASD, and the produced kind leaves on its own Port. Receives Audio Objects from CAE-AOE across the Topology; it does not call that AIM.",
 
   "ExternalPorts":    [{"Name": "UserCommand", "Direction": "Input", "DataType": "CAE-UCM-V1.0", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
-                       {"Name": "AudioObject", "Direction": "Input", "DataType": "OSD-AUO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                       {"Name": "AudioScene", "Direction": "Input", "DataType": "OSD-ASD-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
                        {"Name": "ListenerPointOfView", "Direction": "Input", "DataType": "OSD-OPV-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "BasicAudioObject", "Direction": "Input", "DataType": "OSD-BAO-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "AudioObject", "Direction": "Input", "DataType": "OSD-AUO-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "BasicAudioScene", "Direction": "Input", "DataType": "OSD-BAS-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "AudioScene", "Direction": "Input", "DataType": "OSD-ASD-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "BasicAudioSceneDescriptors", "Direction": "Output", "DataType": "OSD-BAS-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
                        {"Name": "AudioSceneDescriptors", "Direction": "Output", "DataType": "OSD-ASD-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":          [],
