@@ -12,7 +12,7 @@
                             "required": [ "ImplementerID", "ImplementationID", "AIMName" ], "properties": {
       "ImplementerID":    { "type": "string", "description": "String assigned by IIDRA" },
       "ImplementationID": { "type": "string", "description": "String assigned by Implementer" },
-      "AIMName":          { "type": "string", "pattern": "^[A-Z]{3}-[A-Z]{3}-V[0-9]+\\.[0-9]+$" } } },
+      "AIMName":          { "type": "string", "pattern": "^[A-Z0-9]{3}-[A-Z0-9]{3}-V[0-9]+\\.[0-9]+$" } } },
 
     "APIProfile":         { "type": "string", "enum": ["Basic", "Secure"] },
 
@@ -21,7 +21,7 @@
     "InternalTypes":      { "type": "array", "items": { "type": "object", "additionalProperties": false,
                             "required": [ "Name", "DataType" ], "properties": {
       "Name":             { "type": "string" },
-      "DataType":         { "type": "string" } } } },
+      "DataType":         { "$ref": "#/$defs/DataTypeOrSet" } } } },
 
     "ExternalPorts":      { "type": "array", "items": { "$ref": "#/$defs/PortOptions" } },
 
@@ -34,21 +34,18 @@
       "Input":            { "$ref": "#/$defs/PortID" },
       "Output":           { "$ref": "#/$defs/PortID" } } } },
 
-    "Implementations":    { "type": "array", "items": { "type": "object", "additionalProperties": false,
-                            "required": [ "BinaryName", "Architecture", "OperatingSystem", "Version", "Source" ], "properties": {
+    "Implementations":    { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": [ "BinaryName", "Architecture", "OperatingSystem", "Version", "Source" ], "properties": {
       "ImplementationURI":{ "type": "string", "format": "uri" },
       "BinaryName":       { "type": "string" },
       "Architecture":     { "type": "string", "enum": [ "x86", "x86-64", "ARM", "ARM64", "MIPS", "RISC-V" ] },
-      "OperatingSystem":  { "type": "string", "enum": [ "Windows", "Linux", "MacOS", "Debian", "Ubuntu", "RedHat",
-                                                         "Android", "Zephyr", "RTOS", "Oniro", "iOS" ] },
+      "OperatingSystem":  { "type": "string", "enum": [ "Windows", "Linux", "MacOS", "Debian", "Ubuntu", "RedHat", "Android", "Zephyr", "RTOS", "Oniro", "iOS" ] },
       "Version":          { "type": "string" },
       "Source":           { "type": "string", "enum": [ "AIMStorage", "MPAIStore", "AIMURL" ] },
       "Destination":      { "type": "string" } } } },
 
     "ResourcePolicies":   { "$comment": "Unchanged from V3.0" },
 
-    "Documentation":      { "type": "array", "items": { "type": "object", "additionalProperties": false,
-                            "required": [ "Type", "URI" ], "properties": {
+    "Documentation":      { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": [ "Type", "URI" ], "properties": {
       "Type":             { "type": "string", "enum": [ "Specification", "Manual", "Tutorial", "Video" ] },
       "URI":              { "type": "string", "format": "uri" } } } },
 
@@ -57,11 +54,15 @@
 
   "$defs":                {
 
+    "DataTypeOrSet":      { "description": "The Data Type a Port carries, or the SET of Data Types it accepts when more than one is admissible - a Port receiving either a Basic or a full Audio Object declares both. A value carries its own Header, so the receiving AIM knows which of the set it was given, and no separate 'exactly one of' constraint is needed: one value arrives on one Port. A Controller routes a value to a Port whose Data Type set CONTAINS the value's Data Type.",
+                            "oneOf": [ { "type": "string" },
+                                       { "type": "array", "minItems": 2, "uniqueItems": true, "items": { "type": "string" } } ] },
+
     "PortOptions":        { "type": "object", "additionalProperties": false,
                             "required": [ "Name", "Direction", "DataType", "Technology", "Protocol", "IsRemote" ], "properties": {
       "Name":             { "type": "string" },
       "Direction":        { "type": "string", "enum": [ "Input", "Output" ] },
-      "DataType":         { "type": "string" },
+      "DataType":         { "$ref": "#/$defs/DataTypeOrSet" },
       "RecordType":       { "type": "string", "description": "Optional compatibility alias" },
       "Technology":       { "type": "string", "enum": [ "Hardware", "Software" ] },
       "Protocol":         { "type": "string", "enum": [ "UDP", "TCP", "HTTP", "HTTPS", "CoAP", "CoAPS", "L2CAP", "BNEP",
@@ -71,6 +72,6 @@
 
     "PortID":             { "type": "object", "additionalProperties": false,
                             "required": [ "AIMName", "PortName" ], "properties": {
-      "AIMName":          { "type": "string", "pattern": "^$|^[A-Z]{3}-[A-Z]{3}-V[0-9]+\\.[0-9]+$" },
+      "AIMName":          { "type": "string", "pattern": "^$|^[A-Z0-9]{3}-[A-Z0-9]{3}-V[0-9]+\\.[0-9]+$" },
       "PortName":         { "type": "string" },
       "PortNumber":       { "type": "integer", "minimum": 1, "description": "Selects which port of this endpoint's DataType is meant when the AIM has more than one of that Direction and DataType; omitted => 1" } } } } }

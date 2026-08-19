@@ -1,12 +1,11 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-ASD-V1.0-I01", "AIMName": "CAE-ASD-V1.0"},
+{ "Identifier":       { "ImplementerID": "1", "ImplementationID": "CAE-ASD-V1.0-I01", "AIMName": "CAE-ASD-V1.0" },
 
   "APIProfile":       "Basic",
-  "Description":      "Audio Scene Delivery: renders an Audio Scene to a device - headphones, loudspeakers, a dome. Accepts either kind of scene, Basic or full, on its own Port. Its output is HARDWARE and its consumer is the LISTENER, not the User Agent: the Audio Scene Descriptors reach the User Agent directly from CAE-ASE without crossing this AIM, because they are data flowing back into a control loop while this is a rendering leaving the system for a human ear. That difference of consumer, more than the device, is why acquisition and delivery are AIMs in CAE-ASM and User Agent modules in MMC-AMQ and MMC-TST.",
+  "Description":      "Audio Scene Delivery: renders an Audio Scene of either kind to a device. Its output is Hardware and its consumer is the listener; the Descriptors reach the User Agent from CAE-ASE without crossing this AIM. That difference of consumer, more than the device, is why acquisition and delivery are SubAIMs of CAE-ASM and User Agent modules in MMC-AMQ and MMC-TST.",
 
-  "ExternalPorts":    [{"Name": "UserCommand", "Direction": "Input", "DataType": "CAE-UCM-V1.0", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
-                       {"Name": "BasicAudioScene", "Direction": "Input", "DataType": "OSD-BAS-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
-                       {"Name": "AudioSceneDescriptors", "Direction": "Input", "DataType": "OSD-ASD-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
-                       {"Name": "AudioDestination", "Direction": "Output", "DataType": "OSD-AUO-V1.5", "Technology": "Hardware", "Protocol": "", "IsRemote": false}],
+  "ExternalPorts":    [{"Name": "UserCommand",           "Direction": "Input",  "DataType": "CAE-UCM-V1.0",                    "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "AudioSceneDescriptors", "Direction": "Input",  "DataType": ["OSD-BAS-V1.5", "OSD-ASD-V1.5"], "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "AudioDestination",      "Direction": "Output", "DataType": "OSD-AUO-V1.5",                                       "Technology": "Hardware", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":          [],
   "Topology":         [],
@@ -15,6 +14,6 @@
 
   "ResourcePolicies": [{"Name": "Memory", "Minimum": "256_MB", "Request": "512_MB", "Maximum": "1_GB"}],
 
-  "DataXMData":       {},
+  "DataXMData":       { },
 
   "Documentation":    [{"Type": "Specification", "URI": "https://mpai.community/standards/mpai-cae/"}]}

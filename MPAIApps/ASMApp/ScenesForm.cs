@@ -564,11 +564,44 @@ public sealed class ScenesForm : Form
             Log($"Rendering panned audio for scene {sceneId} ({materialized.AudioObjectCount} object(s)) ...");
             await asd.DeliverSceneAsync(materialized, listener);
 
-            foreach (var file in Directory.GetFiles(pannedFolder, "*.wav"))
+            // PLAY, rather than hand to the shell.
+            //
+            // This used to call Process.Start with UseShellExecute, which asks
+            // Windows to open each file in whatever application is associated
+            // with .wav - a media player window, or nothing at all if no
+            // association exists. "To Speaker" should reach the speaker.
+            //
+            // The rendered files stay on disk either way, so "To File" still
+            // shows the same result without playing it.
+            var rendered = Directory.GetFiles(pannedFolder, "*.wav");
+
+            if (rendered.Length == 0)
             {
-                Log($"Playing panned file: {Path.GetFileName(file)}");
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(file) { UseShellExecute = true });
+                Log("Nothing was rendered - the objects may carry no audio.");
+                return;
             }
+
+            foreach (var file in rendered)
+            {
+                var length = new FileInfo(file).Length;
+                Log($"Playing {Path.GetFileName(file)} ({length:N0} bytes)");
+
+                if (length <= 44)
+                {
+                    Log("  ... header only, no samples - nothing to hear.");
+                    continue;
+                }
+
+                // One after another. Simultaneous playback would need the files
+                // mixed, which is the renderer's job and not this button's.
+                await Task.Run(() =>
+                {
+                    using var player = new System.Media.SoundPlayer(file);
+                    player.PlaySync();
+                });
+            }
+
+            Log($"Rendered files kept in {pannedFolder}");
         }
         catch (Exception failure)
         {

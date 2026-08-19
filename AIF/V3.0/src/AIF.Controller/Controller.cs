@@ -70,11 +70,14 @@ public sealed class Controller
         {
             foreach (var port in externalPorts.EnumerateArray())
             {
+                var declared = DataTypesOf(port);
+
                 node.Ports.Add(new RuntimePort
                 {
                     Name      = port.GetProperty("Name").GetString()      ?? string.Empty,
                     Direction = port.GetProperty("Direction").GetString()  ?? string.Empty,
-                    DataType  = port.GetProperty("DataType").GetString()   ?? string.Empty,
+                    DataType  = declared.Count > 0 ? declared[0] : string.Empty,
+                    DataTypes = declared,
                     Technology= port.GetProperty("Technology").GetString() ?? string.Empty,
                     Protocol  = port.GetProperty("Protocol").GetString()   ?? string.Empty,
                     IsRemote  = port.GetProperty("IsRemote").GetBoolean(),
@@ -94,15 +97,51 @@ public sealed class Controller
             }
         }
 
+        // A Port's DataType is a string, or an ARRAY of strings when the Port
+        // accepts more than one - a Port taking either a Basic or a full Audio
+        // Object declares both. Reading it with GetString() throws on the array,
+        // so every reader of an AMD has to go through here.
+        static IReadOnlyList<string> DataTypesOf(JsonElement port)
+        {
+            if (!port.TryGetProperty("DataType", out var dt))
+                return Array.Empty<string>();
+
+            if (dt.ValueKind == JsonValueKind.String)
+            {
+                var one = dt.GetString();
+                return string.IsNullOrWhiteSpace(one) ? Array.Empty<string>() : new[] { one };
+            }
+
+            if (dt.ValueKind == JsonValueKind.Array)
+                return dt.EnumerateArray()
+                         .Select(e => e.GetString())
+                         .Where(s => !string.IsNullOrWhiteSpace(s))
+                         .Select(s => s!)
+                         .ToArray();
+
+            return Array.Empty<string>();
+        }
+
         // InternalTypes  (InternalType name -> DataType)
         if (root.TryGetProperty("InternalTypes", out var internalTypes))
         {
             foreach (var it in internalTypes.EnumerateArray())
             {
-                var name     = it.GetProperty("Name").GetString()     ?? string.Empty;
-                var dataType = it.GetProperty("DataType").GetString() ?? string.Empty;
-                if (!string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(dataType))
-                    node.InternalTypes[name] = dataType;
+                var name = it.GetProperty("Name").GetString() ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(name)) continue;
+
+                // An InternalType names a Data Type, or a SET of them - it is
+                // the same kind of declaration as a Port's, so it takes the same
+                // form. This loop read it with GetString() and threw on the
+                // array: the schema was extended and this reader was not.
+                //
+                // InternalTypes maps a name to ONE Data Type, so the first of a
+                // set stands for it. That is enough for what the map is for -
+                // resolving an InternalType name in a Topology - and a set here
+                // says the flow may be of either kind, not that it is two flows.
+                var declared = DataTypesOf(it);
+                if (declared.Count > 0)
+                    node.InternalTypes[name] = declared[0];
             }
         }
 

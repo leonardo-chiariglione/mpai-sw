@@ -78,13 +78,20 @@ internal static class AsmTest
 
             var first = Run(ua, aiwId, new Dictionary<string, string>
             {
-                ["BasicAudioObject"] = MpaiJson.ToJson(basic)
+                // The boundary Port is AudioObject and it accepts BOTH kinds:
+                // a Port declares the SET of Data Types it takes, so there is no
+                // longer a separate Port for the Basic case. This wrote
+                // "BasicAudioObject", which no longer exists, so nothing arrived
+                // and every AIM was skipped - the test lagging the metadata, for
+                // the third time, because renaming a Port means revisiting what
+                // writes to it.
+                ["AudioObject"] = MpaiJson.ToJson(basic)
             });
 
             // Nothing comes back at the boundary here, BY DESIGN: CAE-ASM's
             // outputs are the Audio Scene Descriptors and the audio itself. The
-            // edited AudioObject is internal - CAE-AOE feeds CAE-ASE - so the
-            // object is looked for where it actually lives.
+            // edited Object is internal - CAE-AOE feeds CAE-ASE - so it is
+            // looked for where it actually lives.
             var created = storage.List("AUO").FirstOrDefault();
             created1 = created is not null;
             Console.WriteLine($"   -> object {created ?? "(none)"}");

@@ -44,9 +44,8 @@ public sealed class AimPortReader
         {
             var name      = port.GetProperty("Name").GetString()      ?? string.Empty;
             var direction = port.GetProperty("Direction").GetString() ?? string.Empty;
-            var dataType  = port.GetProperty("DataType").GetString()  ?? string.Empty;
 
-            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(dataType))
+            if (string.IsNullOrWhiteSpace(name))
                 continue;
 
             var ordinal =
@@ -60,16 +59,52 @@ public sealed class AimPortReader
                        : null;
             if (target is null) continue;
 
-            if (!target.TryGetValue(dataType, out var list))
-            {
-                list = new List<Entry>();
-                target[dataType] = list;
-            }
+            // A Port may accept SEVERAL Data Types - a Port taking either a
+            // Basic or a full Audio Object declares both - so it is indexed
+            // under each of them. Asking for OSD-BAO-V1.5 or for OSD-AUO-V1.5
+            // then finds the one Port that takes either.
+            //
+            // One position in declaration order per PORT, not per Data Type, so
+            // that a multi-typed Port does not consume several ordinals.
+            var position = declared++;
 
-            list.Add(new Entry(name, ordinal, declared++));
+            foreach (var dataType in DataTypesOf(port))
+            {
+                if (!target.TryGetValue(dataType, out var list))
+                {
+                    list = new List<Entry>();
+                    target[dataType] = list;
+                }
+
+                list.Add(new Entry(name, ordinal, position));
+            }
         }
 
         return reader;
+    }
+
+    // A Port's DataType is a string, or an ARRAY of strings when the Port
+    // accepts more than one. Reading it with GetString() throws on the array, so
+    // every reader of an AMD goes through here.
+    private static IReadOnlyList<string> DataTypesOf(JsonElement port)
+    {
+        if (!port.TryGetProperty("DataType", out var dt))
+            return Array.Empty<string>();
+
+        if (dt.ValueKind == JsonValueKind.String)
+        {
+            var one = dt.GetString();
+            return string.IsNullOrWhiteSpace(one) ? Array.Empty<string>() : new[] { one };
+        }
+
+        if (dt.ValueKind == JsonValueKind.Array)
+            return dt.EnumerateArray()
+                     .Select(e => e.GetString())
+                     .Where(s => !string.IsNullOrWhiteSpace(s))
+                     .Select(s => s!)
+                     .ToArray();
+
+        return Array.Empty<string>();
     }
 
     // Return the Input port name for the given DataType and ordinal.

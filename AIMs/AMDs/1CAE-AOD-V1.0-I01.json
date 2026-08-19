@@ -1,25 +1,19 @@
 { "Identifier":       { "ImplementerID": "1", "ImplementationID": "CAE-AOD-V1.0-I01", "AIMName": "CAE-AOD-V1.0" },
 
   "APIProfile":       "Basic",
-  "Description":      "Audio Object Delivery: delivers a Basic Audio Object to a device (loudspeaker, headset, network, disk).",
+  "Description":      "Audio Object Delivery: delivers an Audio Object to a device - loudspeaker, headset, network or disk. The input Port accepts either kind, a full Object being rendered from the Objects it holds. Its Description used to say it delivered a Basic Audio Object while its Port declared OSD-AUO-V1.5; the Port now says what it accepts and the Header of what arrives says which it was.",
 
-  "ExternalPorts":    [{"Name": "UserCommand", "Direction": "Input",  "DataType": "CAE-UCM-V1.0", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                       {"Name": "InputAudio",  "Direction": "Input",  "DataType": "OSD-AUO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                       {"Name": "OutputAudio", "Direction": "Output", "DataType": "OSD-AUO-V1.5", "Technology": "Hardware", "Protocol": "", "IsRemote": false}],
+  "ExternalPorts":    [{"Name": "UserCommand", "Direction": "Input",  "DataType": "CAE-UCM-V1.0",                    "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "InputAudio",  "Direction": "Input",  "DataType": ["OSD-BAO-V1.5", "OSD-AUO-V1.5"], "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "OutputAudio", "Direction": "Output", "DataType": "OSD-AUO-V1.5",                                       "Technology": "Hardware", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":          [],
-
   "Topology":         [],
 
-  "Implementations":  [{"ImplementationURI": "file:///D:/AI/AIMs/CAE-AOD-V1.0-I01",
-                        "BinaryName":        "Mpai.Cae.Aod",
-                        "Architecture":      "x86-64",
-                        "OperatingSystem":   "Windows",
-                        "Version":           "1.0",
-                        "Source":            "AIMStorage"}],
+  "Implementations":  [],
 
-  "ResourcePolicies": [{"Name": "Memory",    "Minimum": "0.1_GB", "Request": "0.2_GB", "Maximum": "0.5_GB"},
-                       {"Name": "CPU:Class", "Minimum": "Low",    "Request": "Low",    "Maximum": "Medium"}],
+  "ResourcePolicies": [{"Name": "Memory", "Minimum": "256_MB", "Request": "512_MB", "Maximum": "1_GB"}],
 
-  "DataXMData":       {},
-  "Documentation":    [{"Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-cae/ai-modules/audio-object-delivery/"}]}
+  "DataXMData":       { },
+
+  "Documentation":    [{"Type": "Specification", "URI": "https://mpai.community/standards/mpai-cae/"}]}

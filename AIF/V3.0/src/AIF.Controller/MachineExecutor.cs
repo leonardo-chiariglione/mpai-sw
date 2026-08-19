@@ -264,9 +264,16 @@ public sealed class MachineExecutor
         // 2. Fall back: the DataType the source outputs and the dest consumes.
         if (dest.AimName is not null && children.TryGetValue(dest.AimName, out var dstNode))
         {
+            // Over the SETS a Port accepts, not over one Data Type each: a
+            // source emitting either kind and a destination accepting either
+            // share both, and the connection is ambiguous only if they share
+            // more than one AND nothing else settles it.
             var shared = srcNode.Ports.Where(p => p.Direction == "Output")
-                .Select(p => p.DataType)
-                .Intersect(dstNode.Ports.Where(p => p.Direction == "Input").Select(p => p.DataType))
+                .SelectMany(p => p.DataTypes.Count > 0 ? p.DataTypes : new[] { p.DataType })
+                .Distinct()
+                .Intersect(dstNode.Ports.Where(p => p.Direction == "Input")
+                    .SelectMany(p => p.DataTypes.Count > 0 ? p.DataTypes : new[] { p.DataType })
+                    .Distinct())
                 .ToList();
             if (shared.Count == 1) return shared[0];
         }
@@ -276,12 +283,14 @@ public sealed class MachineExecutor
         {
             var dtype = PortDataType(node, dest.PortName, "Output");
             if (dtype is not null &&
-                srcNode.Ports.Any(p => p.Direction == "Output" && p.DataType == dtype))
+                srcNode.Ports.Any(p => p.Direction == "Output" && p.Accepts(dtype)))
                 return dtype;
         }
 
         // 4. Single output DataType — unambiguous.
-        var outs = srcNode.Ports.Where(p => p.Direction == "Output").Select(p => p.DataType).Distinct().ToList();
+        var outs = srcNode.Ports.Where(p => p.Direction == "Output")
+            .SelectMany(p => p.DataTypes.Count > 0 ? p.DataTypes : new[] { p.DataType })
+            .Distinct().ToList();
         return outs.Count == 1 ? outs[0] : null;
     }
 
@@ -315,8 +324,13 @@ public sealed class MachineExecutor
     private static string? PortForDataType(
         DescriptorNode aim, string direction, string dataType, int ordinal)
     {
+        // ACCEPTS, not equals. A Port may declare the SET of Data Types it
+        // takes - a Port receiving either a Basic or a full Audio Object
+        // declares both - and the AIM Metadata states the rule: a value routes
+        // to a Port whose set CONTAINS its Data Type. Equality was the rule
+        // while a Port could carry only one.
         var candidates = aim.Ports
-            .Where(p => p.Direction == direction && p.DataType == dataType)
+            .Where(p => p.Direction == direction && p.Accepts(dataType))
             .ToList();
 
         if (candidates.Count == 0) return null;

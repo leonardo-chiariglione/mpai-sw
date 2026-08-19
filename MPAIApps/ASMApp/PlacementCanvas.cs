@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -94,7 +95,26 @@ public sealed class PlacementCanvas : Panel
             g.DrawLine(worldY == 0 ? originPen : axisPen, left, right);
         }
 
-        // Listener marker, always at the world origin.
+        // The listener at the origin - drawn ONLY when nobody else is drawing one.
+        //
+        // This marker assumed the listener was always at the world origin, which
+        // is true in the Objects window: an object's placement there is where it
+        // sits RELATIVE to the listener, so the listener is the origin by
+        // definition. It is NOT true in the Scenes window, where the listener has
+        // a Point of View of its own that the user can move, and which
+        // AseAim.SetSceneListener persists.
+        //
+        // With both drawn, moving the listener produced two of them - the real
+        // one following the mouse and this one staying behind. The data was never
+        // wrong; the picture contradicted itself.
+        //
+        // So: if the form has supplied a listener among the Items, that one is
+        // the listener, and this marker stands aside.
+        var suppliedByForm = Items.Any(i =>
+            string.Equals(i.Label, "Listener", StringComparison.OrdinalIgnoreCase));
+
+        if (suppliedByForm) return;
+
         using var listenerBrush = new SolidBrush(Color.Black);
         var originScreen = PlacementCanvasMath.WorldToScreen(0, 0, Size, metresPerPixel);
         g.FillRectangle(listenerBrush, originScreen.X - 5, originScreen.Y - 5, 10, 10);

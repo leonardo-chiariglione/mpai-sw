@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 namespace AIF.Controller;
 
 // Runtime representation of an AIM ExternalPort.
@@ -9,8 +12,28 @@ public sealed class RuntimePort
     public string Direction { get; init; } =
         string.Empty;
 
+    // The Data Type this Port carries. When a Port accepts more than one - a
+    // Port taking either a Basic or a full Audio Object - this is the FIRST of
+    // the set, kept so that everything reading a single Data Type still reads
+    // something sensible. Matching should use Accepts.
     public string DataType { get; init; } =
         string.Empty;
+
+    // Every Data Type this Port accepts. A single-typed Port has one entry, so
+    // there is no separate case to handle: the set is always the truth and
+    // DataType is a convenience over it.
+    public IReadOnlyList<string> DataTypes { get; init; } =
+        Array.Empty<string>();
+
+    // Does this Port accept values of that Data Type?
+    //
+    // This is the rule the AIM Metadata states: a Controller routes a value to a
+    // Port whose Data Type set CONTAINS the value's Data Type. Equality was the
+    // rule while a Port could carry only one.
+    public bool Accepts(string dataType) =>
+        DataTypes.Count > 0
+            ? DataTypes.Contains(dataType)
+            : DataType == dataType;
 
     public string Technology { get; init; } =
         string.Empty;
