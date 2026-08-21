@@ -215,7 +215,7 @@ public sealed class PersonalStatus { }            // MMC/V2.5/data/PersonalStatu
 // VisualQualifier is now defined in VisualQualifier.cs (TFA/V1.5 schema).
 
 // ---------------------------------------------------------------------------
-//  Basic Text Object â€�?the ATOMIC unit: Basic Text Data + a Text Qualifier.
+//  Basic Text Object â€�?the ATOMIC unit: Basic Text Data + a Text Qualifier.
 //  OSD/V1.5/data/BasicTextObject.json
 // ---------------------------------------------------------------------------
 public sealed class BasicTextObject
@@ -251,7 +251,7 @@ public sealed record ReferencedData(long Length, string DataURI) : BasicTextData
 public sealed record IdentifiedData(string ID) : BasicTextDataItem;
 
 // ---------------------------------------------------------------------------
-//  Basic Speech Object â€�?atomic speech unit (Data + Speech Qualifier).
+//  Basic Speech Object â€�?atomic speech unit (Data + Speech Qualifier).
 //  Projected by analogy to BasicTextObject; the audio schema is not yet shared.
 // ---------------------------------------------------------------------------
 public sealed class BasicSpeechObject
@@ -280,7 +280,7 @@ public sealed class BasicSpeechObject
 }
 
 // ---------------------------------------------------------------------------
-//  Basic Audio Object â€�?OSD/V1.5/data/BasicAudioObject.json, schema-correct.
+//  Basic Audio Object â€�?OSD/V1.5/data/BasicAudioObject.json, schema-correct.
 //
 //  The stored shape now matches the real schema: BasicAudioObjectData is the
 //  array-of-variants the schema specifies (inline/reference/id), not a raw
@@ -294,7 +294,7 @@ public sealed class BasicSpeechObject
 //  schema-correct fields underneath.
 //
 //  AudioQualifier is typed as AudioQualifier (TFA/V1.5/data/
-//  AudioQualifier.json) â€�?a schema not yet provided. Rather than an empty
+//  AudioQualifier.json) â€�?a schema not yet provided. Rather than an empty
 //  placeholder that would discard the real sample-rate/format/device data
 //  every backend already determines, AudioQualifier (see Qualifiers.cs)
 //  reuses the same Format/Attributes shape already used for Speech, so no
@@ -313,6 +313,16 @@ public sealed class BasicAudioObject
     public List<ChildObjectRef>? ChildObjects { get; init; }
 
     public List<BasicAudioObjectDataItem> BasicAudioObjectData { get; init; } = new();
+    // OSD/V1.5/data/BasicAudioObject.json has carried this at top level all
+    // along; the class did not, so nothing could store a listener for a single
+    // Object and CAE-AOE had nowhere to put one.
+    //
+    // A lone Basic Object sits at the origin - it is what is being auditioned.
+    // What moves is the EAR. When the Object is later placed in a Scene, the
+    // Scene's ListenerPointOfView overrides this one, per the rule that an
+    // entity keeps its own attributes unless the context provides them.
+    public PointOfView? ListenerPointOfView { get; init; }
+
     public BasicAudioObjectProperties? BasicAudioObjectProperties { get; init; }
     public AudioQualifier? AudioQualifier { get; init; }
 
@@ -364,6 +374,28 @@ public sealed class BasicAudioObject
         ParentObjects = ParentObjects,
         ChildObjects = ChildObjects,
         BasicAudioObjectData = BasicAudioObjectData,
+        ListenerPointOfView = ListenerPointOfView,
+        BasicAudioObjectProperties = BasicAudioObjectProperties,
+        AudioQualifier = AudioQualifier,
+        DataXMData = DataXMData,
+        DescrMetadata = DescrMetadata
+    };
+
+    // ListenerPointOfView was added to this class after WithId was written, and
+    // WithId did not copy it - so a listener set before storing was silently
+    // dropped on the way in. Adding a field to a hand-written copy method means
+    // finding every such method; there was one, and it had been missed.
+    public BasicAudioObject WithListener(PointOfView? listener) => new()
+    {
+        Header = Header,
+        MInstanceID = MInstanceID,
+        UEnvironmentID = UEnvironmentID,
+        BasicAudioObjectID = BasicAudioObjectID,
+        BasicAudioObjectTime = BasicAudioObjectTime,
+        ParentObjects = ParentObjects,
+        ChildObjects = ChildObjects,
+        BasicAudioObjectData = BasicAudioObjectData,
+        ListenerPointOfView = listener,
         BasicAudioObjectProperties = BasicAudioObjectProperties,
         AudioQualifier = AudioQualifier,
         DataXMData = DataXMData,
@@ -407,7 +439,7 @@ public sealed class BasicAudioObjectProperties
 }
 
 // ---------------------------------------------------------------------------
-//  Acoustic Profile â€�?OSD/V1.5/data/AcousticProfile.json
+//  Acoustic Profile â€�?OSD/V1.5/data/AcousticProfile.json
 // ---------------------------------------------------------------------------
 public sealed class AcousticProfile
 {
@@ -440,10 +472,10 @@ public sealed class Timbre
 public sealed class Reflectivity { public double EarlyReflectionTime { get; init; } public double LateReflectionTime { get; init; } }
 public sealed class Reverberation { public Plot? RT60 { get; init; } public Plot? RT30 { get; init; } public Plot? RT20 { get; init; } public double? EDT { get; init; } }
 public sealed class Doppler { public double? DirectSoundFactor { get; init; } public double? IndirectSound { get; init; } }
-public sealed class Plot { }   // OSD/V1.5/data/Plot.json â€�?not yet provided
+public sealed class Plot { }   // OSD/V1.5/data/Plot.json â€�?not yet provided
 
 // ---------------------------------------------------------------------------
-//  Basic Visual Object â€�?atomic visual unit (Data + Visual Qualifier).
+//  Basic Visual Object â€�?atomic visual unit (Data + Visual Qualifier).
 //  Projected by analogy; the visual schema is not yet shared.
 // ---------------------------------------------------------------------------
 public sealed class BasicVisualObject
@@ -473,7 +505,7 @@ public sealed class BasicVisualObject
 }
 
 // ---------------------------------------------------------------------------
-//  Text Object â€�?the recursive COLLECTION (Basic Text Objects + nested Text
+//  Text Object â€�?the recursive COLLECTION (Basic Text Objects + nested Text
 //  Objects). A one-element Text Object is exactly a Basic Text Object.
 //  OSD/V1.5/data/TextObject.json
 // ---------------------------------------------------------------------------

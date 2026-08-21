@@ -100,6 +100,11 @@ public sealed class AudioObject
     public SimpleTime? AudioObjectTime { get; init; }
     public SpaceTime? AudioObjectSpaceTime { get; init; }   // fixed: confirmed SpaceTime by the corrected schema
 
+    // OSD/V1.5/data/AudioObject.json carries this and the class did not - the
+    // same gap BasicAudioObject had. Without it a composed Object has nowhere to
+    // record where it is being listened FROM.
+    public PointOfView? UserPoV { get; init; }
+
     public AcousticProfile? AudioObjectProperties { get; init; }
 
     public List<string>? ParentAudioObjectIDs { get; init; }

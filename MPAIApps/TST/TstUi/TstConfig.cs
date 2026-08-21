@@ -52,7 +52,24 @@ public sealed class TstConfig
 
         var names = new[] { executable + "-config.json", "tst-config.json" };
 
-        foreach (var directory in new[] { AppContext.BaseDirectory, Directory.GetCurrentDirectory() })
+        // bin\ as well as beside the executable.
+        //
+        // The application folder should hold only what a person LAUNCHES - two
+        // executables - so the configs live in bin\ with the server and the
+        // client. A config is data; nobody opens it, and it has no business
+        // sitting next to the thing you double-click.
+        //
+        // Beside the executable still comes first, so a config placed there
+        // deliberately still wins, and the client - which lives in bin\ itself -
+        // finds its own without any of this mattering.
+        var searchIn = new[]
+        {
+            AppContext.BaseDirectory,
+            Path.Combine(AppContext.BaseDirectory, "bin"),
+            Directory.GetCurrentDirectory()
+        };
+
+        foreach (var directory in searchIn)
         foreach (var name in names)
         {
             var path = Path.Combine(directory, name);

@@ -24,8 +24,14 @@ namespace Asm.Test.Host;
 //
 //   1  create an object      a Basic Audio Object arrives, no Command
 //   2  modify it             ModifiedObjects - INTERNAL attributes
-//   3  place it in a scene   AddedObjects on the scene Command Port
-//   4  move the listener     a Point of View, no Command at all
+//   3  compose two           AddedObjects on the OBJECT Command Port
+//   4  place it in a scene   AddedObjects on the SCENE Command Port
+//   5  move the listener     a Point of View, no Command at all
+//
+// Runs 3 and 4 carry the SAME Command field to different AIMs, which is the
+// clearest demonstration of the design: which Port a Command arrives on decides
+// what the operation means. Composing mints an AudioObject; placing builds a
+// Scene.
 //
 // What each run proves is stated as it runs, because a test that only says PASS
 // tells you nothing about what was actually established.
@@ -65,7 +71,7 @@ internal static class AsmTest
         Console.WriteLine();
 
         var created1 = false; var commandReachedAoe = false; var modifiedBasic = false;
-        var commandReachedAse = false; var listenerRun = false;
+        var commandReachedAse = false; var listenerRun = false; var composedObject = false;
 
         try
         {
@@ -92,7 +98,13 @@ internal static class AsmTest
             // outputs are the Audio Scene Descriptors and the audio itself. The
             // edited Object is internal - CAE-AOE feeds CAE-ASE - so it is
             // looked for where it actually lives.
-            var created = storage.List("AUO").FirstOrDefault();
+            //
+            // A BASIC Object, not a full one. Acquiring yields a BAO and stops:
+            // an Object holding one Object IS Basic, and it becomes an
+            // AudioObject only when a second is composed into it. This asked for
+            // an AUO and reported failure while the trace plainly said
+            // "created and opened BAO000001" - the test lagging the rule.
+            var created = storage.List("BAO").FirstOrDefault();
             created1 = created is not null;
             Console.WriteLine($"   -> object {created ?? "(none)"}");
             Console.WriteLine();
@@ -137,8 +149,50 @@ internal static class AsmTest
             Console.WriteLine($"   -> {basics} basic object revision(s) in the repository");
             Console.WriteLine();
 
-            // ---- 3. place it in a scene ----------------------------------
-            Console.WriteLine("3  AddedObjects on the scene Command Port.");
+            // ---- 3. compose two into one ---------------------------------
+            Console.WriteLine("3  a second Object arrives, then AddedObjects on the OBJECT Port.");
+            Console.WriteLine("   proves: composing is what mints an AudioObject - an Object");
+            Console.WriteLine("           holding one Object is Basic, one holding two is full.");
+
+            // A second Basic Object, by the same Port as the first.
+            Run(ua, aiwId, new Dictionary<string, string>
+            {
+                ["AudioObject"] = MpaiJson.ToJson(new BasicAudioObject { BasicAudioObjectID = "" })
+            });
+
+            var secondBasic = storage.List("BAO").LastOrDefault();
+
+            // AddedObjects on the OBJECT Command Port - PortNumber 2 - joins it
+            // to whatever CAE-AOE has open. The same field on the SCENE Port
+            // places an Object in a Scene instead: which AIM receives the
+            // Command is what distinguishes the two, not the Command itself.
+            var compose = new UserCommand
+            {
+                UserCommandID   = Guid.NewGuid().ToString(),
+                UserCommandData = new UserCommandData
+                {
+                    AddedObjects = new ObjectPlacements
+                    {
+                        Objects = { new ObjectPlacement
+                        {
+                            ObjectID = new ManagedObject { ObjectID = secondBasic }
+                        } }
+                    }
+                }
+            };
+
+            Run(ua, aiwId, new Dictionary<string, string>
+            {
+                ["ObjectCommand"] = MpaiJson.ToJson(compose)
+            });
+
+            var composed = storage.List("AUO").FirstOrDefault();
+            composedObject = composed is not null;
+            Console.WriteLine($"   -> composed {composed ?? "(none)"}");
+            Console.WriteLine();
+
+            // ---- 4. place it in a scene ----------------------------------
+            Console.WriteLine("4  AddedObjects on the scene Command Port.");
             Console.WriteLine("   proves: four Command Ports of ONE Data Type are told apart by");
             Console.WriteLine("           PortNumber - this one reaches CAE-ASE, not CAE-AOE.");
 
@@ -151,7 +205,7 @@ internal static class AsmTest
                     {
                         Objects = { new ObjectPlacement
                         {
-                            ObjectID = new ManagedObject { ObjectID = created }
+                            ObjectID = new ManagedObject { ObjectID = composed ?? created }
                         } }
                     }
                 }
@@ -168,8 +222,8 @@ internal static class AsmTest
                               $" with {scene?.AudioObjects?.Count ?? 0} object(s)");
             Console.WriteLine();
 
-            // ---- 4. move the listener ------------------------------------
-            Console.WriteLine("4  a Point of View, with no Command at all.");
+            // ---- 5. move the listener ------------------------------------
+            Console.WriteLine("5  a Point of View, with no Command at all.");
             Console.WriteLine("   proves: the listener is a SCENE attribute, set once, and a run");
             Console.WriteLine("           carrying no Command is still a legitimate run.");
 
@@ -191,16 +245,18 @@ internal static class AsmTest
             // failure is worse than no test: it converts an absence of evidence
             // into a false claim.
             Console.WriteLine("=== results ===");
-            Report("an object was created and opened",            created1);
-            Report("a Command reached CAE-AOE and produced an object", commandReachedAoe);
-            Report("a Command reached CAE-ASE and produced a scene",   commandReachedAse);
-            Report("a run carrying only a Point of View worked",       listenerRun);
+            Report("a BASIC object was created and opened",              created1);
+            Report("a Command reached CAE-AOE and modified it",          commandReachedAoe);
+            Report("composing two objects minted an AudioObject",        composedObject);
+            Report("a Command reached CAE-ASE and produced a scene",     commandReachedAse);
+            Report("a run carrying only a Point of View worked",         listenerRun);
 
-            var all = created1 && commandReachedAoe && commandReachedAse && listenerRun;
+            var all = created1 && commandReachedAoe && composedObject &&
+                      commandReachedAse && listenerRun;
 
             Console.WriteLine();
             Console.WriteLine(all
-                ? "All four established. An interactive session is a sequence of runs."
+                ? "All five established. An interactive session is a sequence of runs."
                 : "NOT everything worked - read the trace above, not this line.");
         }
         finally

@@ -196,7 +196,65 @@ public sealed class M2M100Tokeniser
             pieces.Add(token);
         }
 
-        return string.Concat(pieces).Replace('\u2581', ' ').Trim();
+        var text = string.Concat(pieces).Replace('\u2581', ' ').Trim();
+
+        return SeparateSentences(text);
+    }
+
+    // A space after sentence-final punctuation, where SentencePiece left none.
+    //
+    // Concatenation is faithful: a space appears only where the model marked one
+    // with U+2581. After a full stop the next word often carries NO marker, so
+    // the pieces join as "disperare.Vedi" - nothing is dropped, the boundary was
+    // never there to drop.
+    //
+    // On the page that is a typographic blemish. Spoken it is worse: Piper reads
+    // "disperare.Vedi" as ONE token, so two sentences run together and the full
+    // stop is not heard at all. That is why this belongs here and not in the
+    // speech AIM - the TEXT is wrong, and everything downstream inherits it,
+    // including what the reader sees.
+    //
+    // A decimal point is not a sentence end, so digits on both sides are left
+    // alone: "3.14" must not become "3. 14". An ellipsis is not three sentence
+    // ends, so a run of stops counts once. Closing quotes and brackets belong to
+    // the sentence just finished, so they are skipped - which does leave
+    // \"citata.\"Poi joined, rare enough to prefer over splitting inside a
+    // quotation.
+    private static string SeparateSentences(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return text;
+
+        var separated = new System.Text.StringBuilder(text.Length + 8);
+
+        for (var index = 0; index < text.Length; index++)
+        {
+            var current = text[index];
+            separated.Append(current);
+
+            if (index + 1 >= text.Length) continue;
+
+            // Commas, semicolons and colons too, not only sentence ends.
+            //
+            // The first version covered . ! ? and left "anno,caccia" and
+            // "miniera,c'e" joined - the same missing boundary at a different
+            // mark. A comma with no space after it is a typographic error in the
+            // text whatever follows, so it belongs here for the same reason.
+            if (current is not ('.' or '!' or '?' or ',' or ';' or ':')) continue;
+
+            var next = text[index + 1];
+
+            if (char.IsWhiteSpace(next)) continue;
+            if (next is '.' or '!' or '?' or ',' or ';' or ':' or ')' or ']' or '}' or '"' or '\'' or '\u00bb' or '\u201d') continue;
+
+            // Digits on both sides: a decimal point, a thousands separator, a
+            // time. "3.14", "1,000" and "12:30" must survive intact - which is
+            // why the test is on the NEIGHBOURS and not on the mark.
+            if (char.IsDigit(next) && index > 0 && char.IsDigit(text[index - 1])) continue;
+
+            separated.Append(' ');
+        }
+
+        return separated.ToString();
     }
 
     public int UnknownCount(string text) =>

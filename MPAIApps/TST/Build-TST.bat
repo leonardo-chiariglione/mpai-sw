@@ -3,26 +3,35 @@ setlocal EnableExtensions
 rem ===========================================================================
 rem  Build-TST.bat  -  builds MPAI Text and Speech Translation as SINGLE FILES.
 rem
-rem  Everything lands in this folder, with no subfolders to dig through:
+rem  The folder holds ONLY what a person launches:
 rem
 rem    TSTStandalone.exe    one process, no server
-rem    TSTServer.exe        the MPAI-MAS server
-rem    TSTClient.exe        the Remote Client Application
-rem    TSTNetworked.bat     starts the server, waits, then the client
+rem    TSTNetworked.exe     starts the server, waits, then the client
+rem    bin\                 everything those two need and nobody opens
 rem
-rem  Single-file publish is what keeps it to four items instead of four hundred:
-rem  the runtime assemblies and the native libraries are packed inside each .exe.
-rem  Framework-dependent, so the .NET 10 runtime is still required.
+rem  This script and the launcher source live HERE, under MPAIApps\TST, with the
+rem  other source - they build the application, they do not launch it.
 rem
-rem  The two client copies would otherwise fight over one tst-config.json, so
-rem  each reads a file named after itself - TSTClient-config.json - which is why
-rem  they can share a folder at all.
+rem  TSTNetworked.exe replaces the old TSTNetworked.bat. It WAITS for the server
+rem  to answer instead of sleeping ten seconds - too long on a warm machine, too
+rem  short on a cold one loading full-precision models - and it stops the server
+rem  when the client closes, which the .bat never did. The server keeps its own
+rem  window: for a demonstration, watching the AIMs run is most of the point.
+rem
+rem  Single-file publish is what keeps this to a handful of items instead of four
+rem  hundred: the runtime assemblies and the native libraries are packed inside
+rem  each .exe. Framework-dependent, so the .NET 10 runtime is still required.
+rem
+rem  The two copies of the same application would otherwise fight over one
+rem  tst-config.json, so each reads a file named after itself.
 rem ===========================================================================
 
 set "ROOT=D:\AI"
 set "DEST=%ROOT%\MPAIApps\TSTApp"
+set "BIN=%DEST%\bin"
 set "TSTUI=%ROOT%\MPAIApps\TST\TstUi\TstUi.csproj"
 set "SCI=%ROOT%\MPAIApps\MAS\SciHost\SciHost.csproj"
+set "LAUNCHER=%ROOT%\MPAIApps\TST\Launcher\MpaiNetworked.csproj"
 
 set "SINGLE=-c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None"
 set "STAGE=%TEMP%\tst-publish"
@@ -33,6 +42,8 @@ rem  references were renamed at once and NuGet reported an ambiguous project
 rem  name. Each application is therefore published under its own name into a
 rem  staging folder and the single file is renamed on the way out. That is safe:
 rem  a single-file apphost finds its bundle inside itself, not by its filename.
+
+if not exist "%BIN%" mkdir "%BIN%"
 
 echo(
 echo ============================================
@@ -75,7 +86,7 @@ if errorlevel 1 ( echo. & echo STANDALONE BUILD FAILED. & exit /b 1 )
 copy /y "%STAGE%\standalone\TstUi.exe" "%DEST%\TSTStandalone.exe" >nul
 if errorlevel 1 ( echo. & echo Could not place TSTStandalone.exe. & exit /b 1 )
 
-call :WRITECFG "%DEST%\TSTStandalone-config.json" ""
+call :WRITECFG "%BIN%\TSTStandalone-config.json" ""
 call :SHORTCUT "MPAI TST (standalone)" "%DEST%\TSTStandalone.exe" "%DEST%"
 echo   TSTStandalone.exe done.
 exit /b 0
@@ -87,7 +98,7 @@ echo Building TSTServer.exe ...
 if exist "%STAGE%\server" rmdir /s /q "%STAGE%\server"
 dotnet publish "%SCI%" %SINGLE% -o "%STAGE%\server"
 if errorlevel 1 ( echo. & echo SERVER BUILD FAILED. & exit /b 1 )
-copy /y "%STAGE%\server\SciHost.exe" "%DEST%\TSTServer.exe" >nul
+copy /y "%STAGE%\server\SciHost.exe" "%BIN%\TSTServer.exe" >nul
 if errorlevel 1 ( echo. & echo Could not place TSTServer.exe. & exit /b 1 )
 
 echo(
@@ -95,20 +106,28 @@ echo Building TSTClient.exe ...
 if exist "%STAGE%\client" rmdir /s /q "%STAGE%\client"
 dotnet publish "%TSTUI%" %SINGLE% -o "%STAGE%\client"
 if errorlevel 1 ( echo. & echo CLIENT BUILD FAILED. & exit /b 1 )
-copy /y "%STAGE%\client\TstUi.exe" "%DEST%\TSTClient.exe" >nul
+copy /y "%STAGE%\client\TstUi.exe" "%BIN%\TSTClient.exe" >nul
 if errorlevel 1 ( echo. & echo Could not place TSTClient.exe. & exit /b 1 )
 
-call :WRITECFG "%DEST%\TSTClient-config.json" "http://localhost:5005/"
+rem The config must sit beside the executable that reads it - both are in bin.
+call :WRITECFG "%BIN%\TSTClient-config.json" "http://localhost:5005/"
 
-rem The client alone would find no server, so the launcher imposes the order.
-> "%DEST%\TSTNetworked.bat" echo @echo off
->>"%DEST%\TSTNetworked.bat" echo start "MPAI-MAS SERVER" "%%~dp0TSTServer.exe"
->>"%DEST%\TSTNetworked.bat" echo echo Waiting for the server to load its models...
->>"%DEST%\TSTNetworked.bat" echo timeout /t 10 /nobreak ^>nul
->>"%DEST%\TSTNetworked.bat" echo start "" "%%~dp0TSTClient.exe"
+echo(
+echo Building TSTNetworked.exe ...
+if exist "%STAGE%\launcher" rmdir /s /q "%STAGE%\launcher"
+dotnet publish "%LAUNCHER%" %SINGLE% -o "%STAGE%\launcher"
+if errorlevel 1 ( echo. & echo LAUNCHER BUILD FAILED. & exit /b 1 )
+copy /y "%STAGE%\launcher\MpaiNetworked.exe" "%DEST%\TSTNetworked.exe" >nul
+if errorlevel 1 ( echo. & echo Could not place TSTNetworked.exe. & exit /b 1 )
 
-call :SHORTCUT "MPAI TST (networked)" "%DEST%\TSTNetworked.bat" "%DEST%"
-echo   TSTServer.exe and TSTClient.exe done.
+rem What older builds left at the top, now that only the two executables
+rem belong there.
+if exist "%DEST%\TSTNetworked.bat"          del /q "%DEST%\TSTNetworked.bat"
+if exist "%DEST%\TSTStandalone-config.json" del /q "%DEST%\TSTStandalone-config.json"
+if exist "%DEST%\README.md"                 move /y "%DEST%\README.md" "%BIN%\README.md" >nul
+
+call :SHORTCUT "MPAI TST (networked)" "%DEST%\TSTNetworked.exe" "%DEST%"
+echo   TSTServer.exe, TSTClient.exe and TSTNetworked.exe done.
 exit /b 0
 
 rem ---------------------------------------------------------------------------
@@ -131,18 +150,26 @@ pause
 exit /b 1
 
 :FINISHED
-rem Publishing leaves a few loose files behind; the demo folder should hold the
-rem executables and nothing else.
+rem Publishing leaves a few loose files behind, in both folders.
 del /q "%DEST%\*.pdb"       2>nul
 del /q "%DEST%\*.deps.json" 2>nul
 del /q "%DEST%\*.xml"       2>nul
+del /q "%BIN%\*.pdb"        2>nul
+del /q "%BIN%\*.deps.json"  2>nul
+del /q "%BIN%\*.xml"        2>nul
 if exist "%STAGE%" rmdir /s /q "%STAGE%"
 
 echo(
 echo ============================================
-echo   DONE - everything is in this folder:
+echo   DONE
 echo(
+echo   Double-click one of these:
 dir /b "%DEST%\*.exe"
+echo(
+echo   Nothing else is in that folder - the rest is in bin\.
+echo(
+echo   In bin\, which nobody needs to open:
+dir /b "%BIN%" 2>nul
 echo(
 echo   Desktop shortcuts were created too.
 echo ============================================

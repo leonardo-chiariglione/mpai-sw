@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
@@ -38,11 +40,30 @@ public sealed class UaConfig
 
     public static UaConfig Load()
     {
-        // Look for ua-config.json next to the executable.
-        var dir  = AppContext.BaseDirectory;
-        var path = Path.Combine(dir, "ua-config.json");
+        // A config named after THIS executable, then the shared one; beside the
+        // executable, then in bin.
+        //
+        // Two copies of this application are published side by side - a
+        // standalone one and a MAS client - and they would otherwise read the
+        // same ua-config.json and one of them would be wrong. Each now reads a
+        // file named after itself, which is how they can share a folder at all.
+        //
+        // And the application folder should hold only what a person LAUNCHES, so
+        // the configs live in bin with the server and the client. Beside the
+        // executable is still tried first, so a config placed there deliberately
+        // still wins and no existing setup changes.
+        var executable = Path.GetFileNameWithoutExtension(Environment.ProcessPath ?? "UaUi");
 
-        if (!File.Exists(path))
+        var candidates = new List<string>();
+        foreach (var directory in new[] { AppContext.BaseDirectory,
+                                          Path.Combine(AppContext.BaseDirectory, "bin") })
+        foreach (var name in new[] { executable + "-config.json", "ua-config.json" })
+        {
+            candidates.Add(Path.Combine(directory, name));
+        }
+
+        var path = candidates.FirstOrDefault(File.Exists);
+        if (path is null)
             return new UaConfig();   // built-in D:\AI defaults
 
         try
