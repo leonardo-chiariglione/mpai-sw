@@ -68,10 +68,10 @@ public sealed class ObjectsForm : Form
 
     private readonly List<(string ChildId, SpaceTime Placement)> draftChildren = new();
 
-    // positionAimed was here to stop a selection overwriting a deliberate aim.
-    // Selection then stopped touching the Position fields at all, so there was
-    // nothing left to protect them from and the field was set and never read.
-    // Removed rather than left as residue that later reads as meaningful.
+    // Nothing overwrites the Position fields now: they are the aim, set by
+    // clicking the canvas or by typing, and consumed by Place. Selecting an
+    // Object no longer touches them, so there is nothing to protect them from.
+    private bool positionAimed;
 
     // ONE STEP BACK.
     //
@@ -361,6 +361,7 @@ public sealed class ObjectsForm : Form
         }
 
         draftChildren.Add((objectId, placement));
+        positionAimed = false;
 
         var placedAt = draftChildren.Count - 1;
 
@@ -538,6 +539,7 @@ public sealed class ObjectsForm : Form
     {
         positionX.Value = (decimal)Math.Clamp(worldX, (double)positionX.Minimum, (double)positionX.Maximum);
         positionY.Value = (decimal)Math.Clamp(worldY, (double)positionY.Minimum, (double)positionY.Maximum);
+        positionAimed = true;
 
         Log($"Aimed at ({positionX.Value},{positionY.Value}) - select an Object and press Place.");
     }

@@ -192,24 +192,13 @@ public sealed class PlacementCanvas : Panel
     // A fourth medium adds a line.
     private static Color ColourOf(string label) => label switch
     {
-        // ONE CHANNEL EACH, so the medium is unmistakable: blue is audio, green
-        // is speech. Bright for a Basic Object, dark for a full one.
-        //
-        // The first attempt used shades a little either side of SteelBlue, which
-        // were correct and illegible: the dots looked exactly as they had. 240
-        // against 128 cannot be confused at twelve pixels.
-        //
-        // 128 rather than 64 for the dark pair: at 64 both read as black, and
-        // dark blue beside dark green on a small dot next to black text is a
-        // distinction nobody can make.
-        _ when label.StartsWith("BAO", StringComparison.Ordinal) => Color.FromArgb(0, 0, 240),
-        _ when label.StartsWith("AUO", StringComparison.Ordinal) => Color.FromArgb(0, 0, 128),
-        _ when label.StartsWith("BSO", StringComparison.Ordinal) => Color.FromArgb(0, 240, 0),
-        _ when label.StartsWith("SPO", StringComparison.Ordinal) => Color.FromArgb(0, 128, 0),
+        _ when label.StartsWith("BAO", StringComparison.Ordinal) => Color.FromArgb(0x6C, 0xA6, 0xE0),   // light blue
+        _ when label.StartsWith("AUO", StringComparison.Ordinal) => Color.FromArgb(0x1F, 0x4E, 0x8C),   // dark blue
+        _ when label.StartsWith("BSO", StringComparison.Ordinal) => Color.FromArgb(0x7C, 0xC2, 0x7C),   // light green
+        _ when label.StartsWith("SPO", StringComparison.Ordinal) => Color.FromArgb(0x1E, 0x6B, 0x33),   // dark green
 
-        // The listener is not an Object and should not compete with them for a
-        // colour. Red, and 220 rather than 255 - full red on white is harsh.
-        _ => Color.FromArgb(220, 0, 0)
+        // The listener, and anything else the window supplies.
+        _ => Color.SteelBlue
     };
 
     // An ARROW, not a bar. A bar through the object shows an axis and is
