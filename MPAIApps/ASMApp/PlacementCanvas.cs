@@ -43,6 +43,12 @@ public sealed class PlacementCanvas : Panel
         // unset until something needs them.
         public double Yaw { get; set; }
 
+        // The two angles a plan view cannot show. Yaw is the arrow; these are
+        // set in the details dialog, which is where everything the canvas cannot
+        // reach now lives.
+        public double Pitch { get; set; }
+        public double Roll { get; set; }
+
         // Shown, hovered and rotated - but not dragged.
         //
         // A lone Object IS the origin: it is the thing being auditioned, and
