@@ -68,23 +68,6 @@ public sealed class ObjectsForm : Form
 
     private readonly List<(string ChildId, SpaceTime Placement)> draftChildren = new();
 
-    // Nothing overwrites the Position fields now: they are the aim, set by
-    // clicking the canvas or by typing, and consumed by Place. Selecting an
-    // Object no longer touches them, so there is nothing to protect them from.
-    private bool positionAimed;
-
-    // ONE STEP BACK.
-    //
-    // Undo knew only about placements, so moving a child and pressing Ctrl+Z
-    // removed the child rather than putting it back: it took back the last thing
-    // it understood, not the last thing that happened.
-    //
-    // What is remembered is the last ACTION and what it changed - a placement to
-    // remove, or a position to restore. One step, deliberately: a stack would
-    // have to decide what a Save does to the steps before it, and one step needs
-    // no such answer.
-    private Action? undoLastAction;
-
     // THE WINDOW'S LISTENER.
     //
     // A listener is a fact about the environment, not about any Object: it sits
@@ -258,36 +241,6 @@ public sealed class ObjectsForm : Form
 
     public void SetSibling(ScenesForm scenesForm) => sibling = scenesForm;
 
-    // Ctrl+Z takes back the last Place.
-    //
-    // Only within the DRAFT. A saved Object is saved - undoing one is not a thing
-    // a document does either - and every edit mints a new key, so the previous
-    // version is still in the Repository and selecting it is the way back.
-    protected override bool ProcessCmdKey(ref System.Windows.Forms.Message message, Keys keyData)
-    {
-        if (keyData == (Keys.Control | Keys.Z))
-        {
-            UndoLastPlace();
-            return true;
-        }
-
-        return base.ProcessCmdKey(ref message, keyData);
-    }
-
-    private void UndoLastPlace()
-    {
-        if (undoLastAction is null)
-        {
-            Log("Nothing to take back.");
-            return;
-        }
-
-        undoLastAction();
-        undoLastAction = null;   // one step, and it has been used
-
-        RedrawDraft();
-    }
-
     // Put the selected Object into the editing space.
     //
     // The FIRST one goes to the origin and becomes the container: bringing an
@@ -308,30 +261,8 @@ public sealed class ObjectsForm : Form
             draftContainerId = objectId;
             draftChildren.Clear();
 
-            // The container sets the space, so its listener becomes the one in
-            // the room - unless one has been moved and not yet saved, which was
-            // a deliberate act. Selection no longer does this, because selection
-            // no longer does anything but choose.
-            try
-            {
-                if (!listenerMoved && ListenerOf(aoe.Materialize(objectId)) is PointOfView stored)
-                {
-                    listener = stored;
-                }
-            }
-            catch (Exception failure)
-            {
-                Log($"ERROR reading {objectId}: {failure.Message}");
-            }
-
-            undoLastAction = () =>
-            {
-                draftContainerId = null;
-                Log($"Took back {objectId} - the editing space is empty.");
-            };
-
             Log($"{objectId} placed at the origin - it is the container now. " +
-                "Choose a position, select another Object, and press Place.");
+                "Choose a position and place another into it.");
 
             RedrawDraft();
             return;
@@ -346,32 +277,20 @@ public sealed class ObjectsForm : Form
 
         // NEVER ON TOP OF THE CONTAINER. Zero means "where the container is",
         // which the schema permits and which puts the child exactly under it -
-        // two names on one dot, and the container locked so the click refuses.
+        // two names on one dot, and nothing to drag apart.
         var chosen = positionX.Value != 0 || positionY.Value != 0 || positionZ.Value != 0;
 
         var placement = chosen
             ? BuildPlacementFromFields()
-            : BuildPlacementFrom(2 + draftChildren.Count * 0.5, 0, 0,
+            : BuildPlacementFrom(2, 0, 0,
                 (double)startTimeSeconds.Value, (double)endTimeSeconds.Value);
 
         if (!chosen)
         {
-            Log("No position chosen - placing it clear of the container so it can be seen.");
+            Log("No position chosen - placing it 2 m to the side so it can be seen.");
         }
 
         draftChildren.Add((objectId, placement));
-        positionAimed = false;
-
-        var placedAt = draftChildren.Count - 1;
-
-        undoLastAction = () =>
-        {
-            if (placedAt < draftChildren.Count && draftChildren[placedAt].ChildId == objectId)
-            {
-                draftChildren.RemoveAt(placedAt);
-                Log($"Took back {objectId}.");
-            }
-        };
 
         Log($"{objectId} placed in the draft ({draftChildren.Count} so far) - " +
             "nothing is in the Repository until Save Changes.");
@@ -476,52 +395,94 @@ public sealed class ObjectsForm : Form
         return (segment?.StartTime ?? 0, segment?.EndTime ?? 5);
     }
 
-    // SELECTING DRAWS NOTHING.
-    //
-    // This used to show the selected Object as a locked dot at the origin, which
-    // is EXACTLY how the draft's container is drawn - so there was no way to tell
-    // whether you had placed something or merely looked at it. Selecting one
-    // Object and then placing another made the second the container, the first
-    // vanished, and Ctrl+Z left an empty canvas that had never held anything.
-    //
-    // Nothing appears until Place is pressed. The canvas shows the editing space
-    // and only that; the list shows what exists; and right-clicking an entry will
-    // show what it IS, which is the proper way to look before placing.
-    //
-    // The Position fields are likewise left alone: they are your AIM, not a
-    // property of whatever happens to be highlighted.
+    // Shows the selected object's CURRENT stored position (if any) as the
+    // single dot on the canvas, and pre-fills the fields to match - so
+    // selecting an object shows where it already is, not a blank canvas.
     private void LoadSelectedObjectOntoCanvas()
     {
-        // The editing space, whatever is selected. With no draft that is the
-        // listener alone - a silent room with someone in it.
-        RedrawDraft();
+        // A DRAFT IS NOT DISTURBED BY A SELECTION. Selecting picks what to place
+        // next, and nothing else - clicking a filename in a folder does not
+        // replace what you are typing.
+        if (draftContainerId is not null)
+        {
+            RedrawDraft();
+            return;
+        }
+
+        canvas.Items.Clear();
+
+        // The listener is drawn whether or not anything else exists - an empty
+        // window is a silent room with someone in it, not a blank canvas.
+        ShowListener();
+
+        if (objectsList.SelectedItem is not string objectId)
+        {
+            canvas.RefreshDisplay();
+            return;
+        }
+
+        try
+        {
+            var materialized = aoe.Materialize(objectId);
+            var (x, y, z) = ExtractPosition(materialized.AudioObjectSpaceTime);
+            var (start, end) = ExtractTimeRange(materialized.AudioObjectSpaceTime);
+
+            positionX.Value = (decimal)x;
+            positionY.Value = (decimal)y;
+            positionZ.Value = (decimal)z;
+            startTimeSeconds.Value = (decimal)start;
+            endTimeSeconds.Value = (decimal)end;
+
+            // THE SELECTED OBJECT IS THE ORIGIN, and locked there. It is the
+            // thing being auditioned; there is nothing to move it relative to.
+            // What moves is the ear - the opposite of a Scene, where Objects are
+            // placed around a listener.
+            canvas.Items.Add(new PlacementCanvas.Item
+            {
+                Label = objectId, X = 0, Y = 0, Z = 0,
+                StartTime = start, EndTime = end, Locked = true
+            });
+
+            // ITS CHILDREN, where the container says they sit.
+            //
+            // A composition could be arranged once, by typing into the Position
+            // fields before pressing Add to Open, and then never seen: the canvas
+            // drew the container alone. Its children are drawn now, and each may
+            // be dragged - which is what makes composing an arrangement rather
+            // than a list.
+            foreach (var child in ChildrenOf(materialized))
+            {
+                canvas.Items.Add(child);
+            }
+
+            // This Object is now the containing entity, so its listener becomes
+            // the one in the room - unless one has been moved and not yet saved,
+            // which is a deliberate act and should not be silently discarded.
+            if (!listenerMoved && ListenerOf(materialized) is PointOfView stored)
+            {
+                listener = stored;
+                ShowListener();
+            }
+
+            canvas.RefreshDisplay();
+        }
+        catch (Exception failure)
+        {
+            Log($"ERROR loading {objectId} onto canvas: {failure.Message}");
+        }
     }
 
     private void OnCanvasEmptySpaceClicked(double worldX, double worldY)
     {
         positionX.Value = (decimal)Math.Clamp(worldX, (double)positionX.Minimum, (double)positionX.Maximum);
         positionY.Value = (decimal)Math.Clamp(worldY, (double)positionY.Minimum, (double)positionY.Maximum);
-        positionAimed = true;
-
-        Log($"Aimed at ({positionX.Value},{positionY.Value}) - select an Object and press Place.");
+        Log($"Canvas aimed at ({positionX.Value},{positionY.Value}) - click 'Stage' to apply, then 'Save' to commit.");
     }
 
     private void OnCanvasItemMoved(PlacementCanvas.Item item)
     {
         if (item.Label == ListenerLabel)
         {
-            var wasListener = listener;
-            var wasMoved    = listenerMoved;
-
-            undoLastAction = () =>
-            {
-                listener      = wasListener;
-                listenerMoved = wasMoved;
-
-                var (x, y, _) = PositionOf(wasListener);
-                Log($"Listener put back at ({x},{y}).");
-            };
-
             listener      = ListenerAt(item.X, item.Y, item.Z);
             listenerMoved = true;
 
@@ -539,22 +500,7 @@ public sealed class ObjectsForm : Form
 
             if (pending >= 0)
             {
-                var wasAt = draftChildren[pending].Placement;
-                var label = item.Label;
-
-                draftChildren[pending] = (label, placement);
-
-                undoLastAction = () =>
-                {
-                    var still = draftChildren.FindIndex(c => c.ChildId == label);
-                    if (still < 0) return;
-
-                    draftChildren[still] = (label, wasAt);
-
-                    var (x, y, _) = ExtractPosition(wasAt);
-                    Log($"{label} put back at ({x},{y}).");
-                };
-
+                draftChildren[pending] = (item.Label, placement);
                 Log($"{item.Label} moved to ({item.X},{item.Y}) in the draft.");
                 return;
             }
@@ -953,11 +899,6 @@ public sealed class ObjectsForm : Form
                 draftContainerId = composed.AssetId;
                 draftChildren.Clear();
                 listenerMoved = false;
-
-                // Saved: the step before it referred to a draft that no longer
-                // exists. A saved Object is undone by selecting its previous
-                // version, which is still in the Repository.
-                undoLastAction = null;
 
                 RefreshList();
                 suppressSelectionSync = true;

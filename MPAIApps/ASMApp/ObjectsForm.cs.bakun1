@@ -73,18 +73,6 @@ public sealed class ObjectsForm : Form
     // Object no longer touches them, so there is nothing to protect them from.
     private bool positionAimed;
 
-    // ONE STEP BACK.
-    //
-    // Undo knew only about placements, so moving a child and pressing Ctrl+Z
-    // removed the child rather than putting it back: it took back the last thing
-    // it understood, not the last thing that happened.
-    //
-    // What is remembered is the last ACTION and what it changed - a placement to
-    // remove, or a position to restore. One step, deliberately: a stack would
-    // have to decide what a Save does to the steps before it, and one step needs
-    // no such answer.
-    private Action? undoLastAction;
-
     // THE WINDOW'S LISTENER.
     //
     // A listener is a fact about the environment, not about any Object: it sits
@@ -276,16 +264,25 @@ public sealed class ObjectsForm : Form
 
     private void UndoLastPlace()
     {
-        if (undoLastAction is null)
+        if (draftChildren.Count > 0)
         {
-            Log("Nothing to take back.");
+            var (childId, _) = draftChildren[^1];
+            draftChildren.RemoveAt(draftChildren.Count - 1);
+
+            Log($"Took back {childId}.");
+            RedrawDraft();
             return;
         }
 
-        undoLastAction();
-        undoLastAction = null;   // one step, and it has been used
+        if (draftContainerId is not null)
+        {
+            Log($"Took back {draftContainerId} - the editing space is empty.");
+            draftContainerId = null;
+            RedrawDraft();
+            return;
+        }
 
-        RedrawDraft();
+        Log("Nothing to take back.");
     }
 
     // Put the selected Object into the editing space.
@@ -324,12 +321,6 @@ public sealed class ObjectsForm : Form
                 Log($"ERROR reading {objectId}: {failure.Message}");
             }
 
-            undoLastAction = () =>
-            {
-                draftContainerId = null;
-                Log($"Took back {objectId} - the editing space is empty.");
-            };
-
             Log($"{objectId} placed at the origin - it is the container now. " +
                 "Choose a position, select another Object, and press Place.");
 
@@ -361,17 +352,6 @@ public sealed class ObjectsForm : Form
 
         draftChildren.Add((objectId, placement));
         positionAimed = false;
-
-        var placedAt = draftChildren.Count - 1;
-
-        undoLastAction = () =>
-        {
-            if (placedAt < draftChildren.Count && draftChildren[placedAt].ChildId == objectId)
-            {
-                draftChildren.RemoveAt(placedAt);
-                Log($"Took back {objectId}.");
-            }
-        };
 
         Log($"{objectId} placed in the draft ({draftChildren.Count} so far) - " +
             "nothing is in the Repository until Save Changes.");
@@ -510,18 +490,6 @@ public sealed class ObjectsForm : Form
     {
         if (item.Label == ListenerLabel)
         {
-            var wasListener = listener;
-            var wasMoved    = listenerMoved;
-
-            undoLastAction = () =>
-            {
-                listener      = wasListener;
-                listenerMoved = wasMoved;
-
-                var (x, y, _) = PositionOf(wasListener);
-                Log($"Listener put back at ({x},{y}).");
-            };
-
             listener      = ListenerAt(item.X, item.Y, item.Z);
             listenerMoved = true;
 
@@ -539,22 +507,7 @@ public sealed class ObjectsForm : Form
 
             if (pending >= 0)
             {
-                var wasAt = draftChildren[pending].Placement;
-                var label = item.Label;
-
-                draftChildren[pending] = (label, placement);
-
-                undoLastAction = () =>
-                {
-                    var still = draftChildren.FindIndex(c => c.ChildId == label);
-                    if (still < 0) return;
-
-                    draftChildren[still] = (label, wasAt);
-
-                    var (x, y, _) = ExtractPosition(wasAt);
-                    Log($"{label} put back at ({x},{y}).");
-                };
-
+                draftChildren[pending] = (item.Label, placement);
                 Log($"{item.Label} moved to ({item.X},{item.Y}) in the draft.");
                 return;
             }
@@ -953,11 +906,6 @@ public sealed class ObjectsForm : Form
                 draftContainerId = composed.AssetId;
                 draftChildren.Clear();
                 listenerMoved = false;
-
-                // Saved: the step before it referred to a draft that no longer
-                // exists. A saved Object is undone by selecting its previous
-                // version, which is still in the Repository.
-                undoLastAction = null;
 
                 RefreshList();
                 suppressSelectionSync = true;

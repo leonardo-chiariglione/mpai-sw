@@ -23,7 +23,6 @@
     <ProjectReference Include="..\..\MMC\V2.5\SOD\Mpai.Mmc.Sod.csproj" />
     <ProjectReference Include="..\..\MMC\V2.5\TIQ\Mpai.Mmc.Tiq.csproj" />
     <ProjectReference Include="..\..\MMC\V2.5\TTS\Mpai.Mmc.Tts.csproj" />
-    <ProjectReference Include="..\..\MMC\V2.5\AMQ\Mpai.Mmc.Amq.csproj" />
     <ProjectReference Include="..\..\CVE\V1.0\VOD\Mpai.Cve.Vod.csproj" />
     <ProjectReference Include="..\..\MMC\V2.5\OCR\Mpai.Mmc.Ocr.csproj" />
   </ItemGroup>
