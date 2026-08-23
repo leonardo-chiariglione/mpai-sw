@@ -56,36 +56,6 @@ public sealed class PlacementCanvas : Panel
         // Objects window locks the Object and lets the listener travel, which is
         // the opposite of what happens in a Scene.
         public bool Locked { get; set; }
-
-        // WHAT THIS DOT IS, not merely what it is called.
-        //
-        // The same Object can appear twice: once as itself and once as a
-        // component of something. The label is identical in both, so a handler
-        // matching by name cannot tell which dot was grabbed - and the two must
-        // behave differently, because moving an Object is not moving a
-        // component of one.
-        //
-        // ASM knows which is which; the view has to carry it.
-        public ItemRole Role { get; set; } = ItemRole.Standalone;
-    }
-
-    public enum ItemRole
-    {
-        // An Object in its own right. Moving it changes its own Space/Time,
-        // which is INTERNAL to it: a new version of the Object.
-        Standalone,
-
-        // A component of what is being composed. Moving it changes where the
-        // CONTAINER says it sits - external to the child, which is untouched.
-        DraftComponent,
-
-        // A component of an Object already saved. It does not move: touching a
-        // saved thing makes a new thing, so a saved composition is a record and
-        // not a workspace.
-        SavedComponent,
-
-        // The listener, and anything else the window supplies.
-        Listener
     }
 
     public List<Item> Items { get; } = new();

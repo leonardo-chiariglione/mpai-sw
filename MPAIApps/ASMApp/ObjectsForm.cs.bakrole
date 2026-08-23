@@ -405,14 +405,6 @@ public sealed class ObjectsForm : Form
         {
             var contents = ComponentsOf(aoe.Materialize(draftContainerId)).ToList();
 
-            // COMPONENTS OF WHAT IS ALREADY SAVED do not move. The container was
-            // stored with its arrangement decided; touching it makes a new
-            // thing, so this is a record rather than a workspace.
-            foreach (var component in contents)
-            {
-                component.Role = PlacementCanvas.ItemRole.SavedComponent;
-            }
-
             if (contents.Count > 0)
             {
                 contents[0].X = 0;
@@ -440,10 +432,7 @@ public sealed class ObjectsForm : Form
 
             canvas.Items.Add(new PlacementCanvas.Item
             {
-                Label = childId, X = x, Y = y, Z = z, StartTime = start, EndTime = end,
-
-                // Placed but not yet saved: these are the ones that move.
-                Role = PlacementCanvas.ItemRole.DraftComponent
+                Label = childId, X = x, Y = y, Z = z, StartTime = start, EndTime = end
             });
         }
 
@@ -577,26 +566,15 @@ public sealed class ObjectsForm : Form
             return;
         }
 
-        // WHAT MOVES DEPENDS ON WHAT THE DOT IS, not on what it is called.
-        //
-        // The same Object can appear twice - once as itself, once as a component
-        // - with the same label on both. Matching by name moved the wrong one.
-        switch (item.Role)
+        // A CHILD in the draft: moving it changes where it will sit, and changes
+        // nothing in the Repository until Save.
+        if (draftContainerId is not null && item.Label != draftContainerId)
         {
-            // A component of what is being composed. Moving it changes where the
-            // CONTAINER says it sits: external to the child, which is untouched.
-            // Nothing reaches the Repository until Save.
-            case PlacementCanvas.ItemRole.DraftComponent:
+            var placement = BuildPlacementFrom(item.X, item.Y, item.Z, item.StartTime, item.EndTime);
+            var pending   = draftChildren.FindIndex(c => c.ChildId == item.Label);
+
+            if (pending >= 0)
             {
-                var placement = BuildPlacementFrom(item.X, item.Y, item.Z, item.StartTime, item.EndTime);
-                var pending   = draftChildren.FindIndex(c => c.ChildId == item.Label);
-
-                if (pending < 0)
-                {
-                    Log($"{item.Label} is not in the draft.");
-                    return;
-                }
-
                 var wasAt = draftChildren[pending].Placement;
                 var label = item.Label;
 
@@ -617,34 +595,34 @@ public sealed class ObjectsForm : Form
                 return;
             }
 
-            // A component of an Object ALREADY SAVED. It does not move: touching
-            // a saved thing makes a new thing, so a stored composition is a
-            // record and not a workspace. Its arrangement was decided when it
-            // was made.
-            case PlacementCanvas.ItemRole.SavedComponent:
+            // Already inside a saved container: moving it is an edit to that
+            // container, and mints a new version of it.
+            try
             {
-                Log($"{item.Label} is part of {draftContainerId}, which is saved: " +
-                    "its arrangement cannot be changed. Place its components into " +
-                    "a new Object instead.");
+                var moved = aoe.MoveSubObject(draftContainerId, item.Label, placement);
+
+                Log($"Moved {item.Label} to ({item.X},{item.Y}) within {draftContainerId} -> {moved.AssetId}");
+
+                draftContainerId = moved.AssetId;
+
+                RefreshList();
+                suppressSelectionSync = true;
+                objectsList.SelectedItem = moved.AssetId;
+                suppressSelectionSync = false;
 
                 RedrawDraft();
-                return;
             }
-
-            // An Object in its own right. Its Space/Time is INTERNAL to it -
-            // part of what it is - so moving it mints a new version, which is
-            // the iron rule. A component's placement is external to the child
-            // and mints nothing.
-            default:
+            catch (Exception failure)
             {
-                positionX.Value = (decimal)item.X;
-                positionY.Value = (decimal)item.Y;
-
-                Log($"{item.Label} moved to ({item.X},{item.Y}). Its own Space/Time is " +
-                    "internal to it, so saving this makes a new version of the Object.");
-                return;
+                Log($"ERROR moving {item.Label}: {failure.Message}");
             }
+
+            return;
         }
+
+        positionX.Value = (decimal)item.X;
+        positionY.Value = (decimal)item.Y;
+        Log($"Moved to ({item.X},{item.Y}) on canvas - click 'Stage' to apply, then 'Save' to commit.");
     }
 
     // What an Audio Object CONTAINS, at the placements it gives them.
@@ -696,7 +674,7 @@ public sealed class ObjectsForm : Form
 
         canvas.Items.Add(new PlacementCanvas.Item
         {
-            Label = ListenerLabel, X = x, Y = y, Z = z, Role = PlacementCanvas.ItemRole.Listener
+            Label = ListenerLabel, X = x, Y = y, Z = z
         });
     }
 
