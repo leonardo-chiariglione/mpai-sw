@@ -28,14 +28,21 @@ public sealed class ObjectsForm : Form
 
     private readonly ListBox objectsList = new() { Dock = DockStyle.Fill };
     private readonly PlacementCanvas canvas = new() { Dock = DockStyle.Fill };
-    private readonly NumericUpDown positionX = new() { Minimum = -50, Maximum = 50, DecimalPlaces = 1, Increment = 0.5M, Width = 70 };
-    private readonly NumericUpDown positionY = new() { Minimum = -50, Maximum = 50, DecimalPlaces = 1, Increment = 0.5M, Width = 70 };
-    private readonly NumericUpDown positionZ = new() { Minimum = -50, Maximum = 50, DecimalPlaces = 1, Increment = 0.5M, Width = 70 };
-    private readonly NumericUpDown startTimeSeconds = new() { Minimum = 0, Maximum = 3600, DecimalPlaces = 1, Increment = 0.5M, Width = 70 };
-    private readonly NumericUpDown endTimeSeconds = new() { Minimum = 0, Maximum = 3600, DecimalPlaces = 1, Increment = 0.5M, Width = 70, Value = 5 };
-    private readonly NumericUpDown minFrequencyHz = new() { Minimum = 0, Maximum = 22000, DecimalPlaces = 0, Increment = 100, Width = 80, Value = 80 };
-    private readonly NumericUpDown maxFrequencyHz = new() { Minimum = 0, Maximum = 22000, DecimalPlaces = 0, Increment = 100, Width = 80, Value = 12000 };
-    private readonly NumericUpDown loudnessLufs = new() { Minimum = -60, Maximum = 0, DecimalPlaces = 1, Increment = 0.5M, Width = 70, Value = -16 };
+    // THE AIM, and no longer a row of controls.
+    //
+    // These were NumericUpDowns in the window. ASM is a 2D editing space
+    // extended to 3D: you place an Object graphically and refine it in figures
+    // afterwards, so the fields were a third way of doing what the canvas and
+    // Object Edit already do between them.
+    //
+    // What remains is the aim itself - where the next Place will put something -
+    // set by clicking empty canvas.
+    private double aimX;
+    private double aimY;
+    private double aimZ;
+    private double aimStartTime;
+    private double aimEndTime = 5;
+
     private readonly TextBox logBox = new()
     {
         Dock = DockStyle.Fill,
@@ -128,9 +135,14 @@ public sealed class ObjectsForm : Form
         canvas.LockedItemClicked += OnCanvasLockedItemClicked;
         objectsList.SelectedIndexChanged += (_, _) => { if (!suppressSelectionSync) LoadSelectedObjectOntoCanvas(); };
 
-        // LEFT CLICK SELECTS, RIGHT CLICK SHOWS WHAT IT IS. The list shows
-        // identifiers, which say nothing: AUO000004 is not a thing anyone can
-        // recognise, and you want to know what something is BEFORE placing it.
+        // LEFT CLICK SELECTS, RIGHT CLICK OFFERS WHAT CAN BE DONE. The list
+        // shows identifiers, which say nothing: AUO000004 is not a thing anyone
+        // can recognise, and you want to know what something is BEFORE placing
+        // it.
+        //
+        // Delete lives here rather than on a button: it acts on the entry you
+        // clicked, and it is not something to press by accident while reaching
+        // for something else.
         objectsList.MouseDown += (_, e) =>
         {
             if (e.Button != MouseButtons.Right) return;
@@ -138,7 +150,15 @@ public sealed class ObjectsForm : Form
             var index = objectsList.IndexFromPoint(e.Location);
             if (index == ListBox.NoMatches) return;
 
-            ShowObjectDetails((string)objectsList.Items[index]);
+            var assetId = (string)objectsList.Items[index];
+
+            var menu = new ContextMenuStrip();
+
+            menu.Items.Add("Details...", null, (_, _) => ShowObjectDetails(assetId));
+            menu.Items.Add(new ToolStripSeparator());
+            menu.Items.Add("Delete", null, (_, _) => DeleteObject(assetId));
+
+            menu.Show(objectsList, e.Location);
         };
 
         var bringScenesToFrontButton = new Button { Text = "Show Scenes Window", Width = 160, Height = 26 };
@@ -148,81 +168,69 @@ public sealed class ObjectsForm : Form
         {
             Dock = DockStyle.Top,
             ColumnCount = 5,
-            RowCount = 3,
-            Height = 32 * 3 + 12,
+            RowCount = 2,
+            Height = 32 * 2 + 12,
             Padding = new Padding(4, 4, 4, 4)
         };
         grid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80));
         for (var c = 0; c < 4; c++) grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
-        for (var i = 0; i < 3; i++) grid.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+        for (var i = 0; i < 2; i++) grid.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
 
         static Label RowLabel(string text) => new() { Text = text, TextAlign = System.Drawing.ContentAlignment.MiddleLeft, Dock = DockStyle.Fill, Font = new System.Drawing.Font("Segoe UI", 8, System.Drawing.FontStyle.Bold) };
         static Button Cell(string text) => new() { Text = text, Dock = DockStyle.Fill, Margin = new Padding(2) };
 
-        // Row 0: Acquire/Deliver - From File | From Mic | To File | To Speaker
+        // TWO ROWS, and each is one kind of thing.
+        //
+        // Making: bring audio in, change what an Object is, put it in the
+        // editing space.
         var acquireFileButton = Cell("From File");
         acquireFileButton.Click += (_, _) => CreateObjectFromFile();
-        var acquireDeviceButton = Cell("From Mic");
+        var acquireDeviceButton = Cell("From Device");
         acquireDeviceButton.Click += (_, _) => ToggleRecording(acquireDeviceButton);
+
+        var objectEditButton = Cell("Object Edit");
+        objectEditButton.Click += (_, _) => EditSelectedObject();
+
+        var placeButton = Cell("Place");
+        placeButton.Click += (_, _) => PlaceSelectedObject();
+
+        grid.Controls.Add(RowLabel("Make"), 0, 0);
+        grid.Controls.Add(acquireFileButton, 1, 0);
+        grid.Controls.Add(acquireDeviceButton, 2, 0);
+        grid.Controls.Add(objectEditButton, 3, 0);
+        grid.Controls.Add(placeButton, 4, 0);
+
+        // Keeping and hearing. SAVE DRAFT puts the composition in the
+        // Repository, where it stays an Object and can be placed into another.
+        // TO FILE and TO SPEAKER hand it to CAE-ASD, which delivers it as audio
+        // - the arrangement rendered rather than kept.
+        var repoSaveButton = Cell("Save Draft");
+        repoSaveButton.Click += (_, _) => SaveObjectEdit();
+        var repoClearButton = Cell("Discard Draft");
+        repoClearButton.Click += (_, _) => ClearObjectEdit();
+
         var deliverFileButton = Cell("To File");
         deliverFileButton.Click += (_, _) => DeliverSelectedObjectToFile();
         var deliverDeviceButton = Cell("To Speaker");
         deliverDeviceButton.Click += (_, _) => PlaySelectedObject();
-        grid.Controls.Add(RowLabel("Acq/Deliver"), 0, 0);
-        grid.Controls.Add(acquireFileButton, 1, 0);
-        grid.Controls.Add(acquireDeviceButton, 2, 0);
-        grid.Controls.Add(deliverFileButton, 3, 0);
-        grid.Controls.Add(deliverDeviceButton, 4, 0);
 
-        // Row 1: Edit - Stage | Discard
-        var editStageButton = Cell("Stage Edit");
-        editStageButton.Click += (_, _) => StageObjectEdit();
-        var editClearButton = Cell("Discard Edit");
-        editClearButton.Click += (_, _) => ClearObjectEdit();
+        grid.Controls.Add(RowLabel("Keep"), 0, 1);
+        grid.Controls.Add(repoSaveButton, 1, 1);
+        grid.Controls.Add(repoClearButton, 2, 1);
+        grid.Controls.Add(deliverFileButton, 3, 1);
+        grid.Controls.Add(deliverDeviceButton, 4, 1);
 
-        // ONE button. Select an Object, choose a position, press Place: the
-        // first goes to the origin and is the container, each further one goes
-        // where the Position fields say.
-        var placeButton = Cell("Place");
-        placeButton.Click += (_, _) => PlaceSelectedObject();
-        grid.Controls.Add(RowLabel("Edit"), 0, 1);
-        grid.Controls.Add(editStageButton, 1, 1);
-        grid.Controls.Add(editClearButton, 2, 1);
-        grid.Controls.Add(placeButton, 3, 1);
+        // The Position row is gone.
+        //
+        // ASM is a 2D editing space extended to 3D: you place an Object
+        // GRAPHICALLY, and if the position or the plan-view orientation is not
+        // what you wanted, you refine it in figures. Height, the other two
+        // angles and the times were only ever settable here, and they are
+        // refinements - which is where they now live.
+        //
+        // Place uses the last click on empty canvas as its aim.
 
-        // Row 2: Repository - Save | Discard | Delete | Info
-        var repoSaveButton = Cell("Save Changes");
-        repoSaveButton.Click += (_, _) => SaveObjectEdit();
-        var repoClearButton = Cell("Discard Changes");
-        repoClearButton.Click += (_, _) => ClearObjectEdit();
-        var repoDeleteButton = Cell("Delete");
-        repoDeleteButton.Click += (_, _) => DeleteSelectedObject();
-        var repoInfoButton = Cell("Info");
-        repoInfoButton.Click += (_, _) => ShowSelectedObjectInfo();
-        grid.Controls.Add(RowLabel("Repository"), 0, 2);
-        grid.Controls.Add(repoSaveButton, 1, 2);
-        grid.Controls.Add(repoClearButton, 2, 2);
-        grid.Controls.Add(repoDeleteButton, 3, 2);
-        grid.Controls.Add(repoInfoButton, 4, 2);
-
-        var positionPanel = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 28, FlowDirection = FlowDirection.LeftToRight };
-        positionPanel.Controls.Add(new Label { Text = "Position (X,Y,Z):", AutoSize = true, Padding = new Padding(4, 6, 2, 0) });
-        positionPanel.Controls.Add(positionX);
-        positionPanel.Controls.Add(positionY);
-        positionPanel.Controls.Add(positionZ);
-        positionPanel.Controls.Add(new Label { Text = "  t (s):", AutoSize = true, Padding = new Padding(8, 6, 2, 0) });
-        positionPanel.Controls.Add(startTimeSeconds);
-        positionPanel.Controls.Add(endTimeSeconds);
-
-        var acousticPanel = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 28, FlowDirection = FlowDirection.LeftToRight };
-        acousticPanel.Controls.Add(new Label { Text = "AcousticProfile Hz/LUFS:", AutoSize = true, Padding = new Padding(4, 6, 2, 0) });
-        acousticPanel.Controls.Add(minFrequencyHz);
-        acousticPanel.Controls.Add(maxFrequencyHz);
-        acousticPanel.Controls.Add(loudnessLufs);
-
-        var topPanel = new Panel { Dock = DockStyle.Top, Height = grid.Height + 28 + 28 };
-        topPanel.Controls.Add(acousticPanel);
-        topPanel.Controls.Add(positionPanel);
+        var topPanel = new Panel { Dock = DockStyle.Top, Height = grid.Height };
         topPanel.Controls.Add(grid);
 
         var canvasPanel = new Panel { Dock = DockStyle.Fill };
@@ -330,12 +338,11 @@ public sealed class ObjectsForm : Form
         // OBJECTS, all equal. The container comes into existence at Save, and
         // its own spatial attitude - the origin, unrotated - is the frame they
         // are placed in.
-        var chosen = positionX.Value != 0 || positionY.Value != 0 || positionZ.Value != 0;
+        var chosen = aimX != 0 || aimY != 0 || aimZ != 0;
 
         var placement = chosen
             ? BuildPlacementFromFields()
-            : BuildPlacementFrom(draftChildren.Count * 2.0, 0, 0,
-                (double)startTimeSeconds.Value, (double)endTimeSeconds.Value);
+            : BuildPlacementFrom(draftChildren.Count * 2.0, 0, 0, aimStartTime, aimEndTime);
 
         if (!chosen && draftChildren.Count > 0)
         {
@@ -476,13 +483,21 @@ public sealed class ObjectsForm : Form
         }
     }
 
-    private SpaceTime BuildPlacementFrom(double x, double y, double z, double startTime, double endTime) => new()
+    // Orientation was three zeroes here, and nothing anywhere could set it: the
+    // canvas arrow reaches yaw alone and never stored it. Object Edit does, so
+    // the angles are carried.
+    //
+    // ROLL, PITCH, YAW - the aerospace order, read as rotations about X, Y and Z.
+    private SpaceTime BuildPlacementFrom(
+        double x, double y, double z,
+        double startTime, double endTime,
+        double roll = 0, double pitch = 0, double yaw = 0) => new()
     {
         SpatialAttitude1 = new SpatialAttitude
         {
             ObjectSpatialAttitudeID = Guid.NewGuid().ToString(),
             Position = new Position { PositionID = Guid.NewGuid().ToString(), CartPosition = new double[] { x, y, z } },
-            Orientation = new Mpai.Core.Orientation { OrientationID = Guid.NewGuid().ToString(), EulerAngles = new double[] { 0, 0, 0 } }
+            Orientation = new Mpai.Core.Orientation { OrientationID = Guid.NewGuid().ToString(), EulerAngles = new double[] { roll, pitch, yaw } }
         },
         Time = new SimpleTime
         {
@@ -491,12 +506,18 @@ public sealed class ObjectsForm : Form
     };
 
     private SpaceTime BuildPlacementFromFields() =>
-        BuildPlacementFrom((double)positionX.Value, (double)positionY.Value, (double)positionZ.Value, (double)startTimeSeconds.Value, (double)endTimeSeconds.Value);
+        BuildPlacementFrom(aimX, aimY, aimZ, aimStartTime, aimEndTime);
 
     private static (double X, double Y, double Z) ExtractPosition(SpaceTime? spaceTime)
     {
         var pos = spaceTime?.SpatialAttitude1?.Position?.CartPosition;
         return pos is { Length: >= 3 } ? (pos[0], pos[1], pos[2]) : (0, 0, 0);
+    }
+
+    private static (double Roll, double Pitch, double Yaw) ExtractAngles(SpaceTime? spaceTime)
+    {
+        var angles = spaceTime?.SpatialAttitude1?.Orientation?.EulerAngles;
+        return angles is { Length: >= 3 } ? (angles[0], angles[1], angles[2]) : (0, 0, 0);
     }
 
     private static (double Start, double End) ExtractTimeRange(SpaceTime? spaceTime)
@@ -528,10 +549,10 @@ public sealed class ObjectsForm : Form
 
     private void OnCanvasEmptySpaceClicked(double worldX, double worldY)
     {
-        positionX.Value = (decimal)Math.Clamp(worldX, (double)positionX.Minimum, (double)positionX.Maximum);
-        positionY.Value = (decimal)Math.Clamp(worldY, (double)positionY.Minimum, (double)positionY.Maximum);
+        aimX = Math.Clamp(worldX, -50, 50);
+        aimY = Math.Clamp(worldY, -50, 50);
 
-        Log($"Aimed at ({positionX.Value},{positionY.Value}) - select an Object and press Place.");
+        Log($"Aimed at ({aimX:0.0},{aimY:0.0}) - select an Object and press Place.");
     }
 
     private void OnCanvasItemMoved(PlacementCanvas.Item item)
@@ -628,8 +649,6 @@ public sealed class ObjectsForm : Form
             // and mints nothing.
             default:
             {
-                positionX.Value = (decimal)item.X;
-                positionY.Value = (decimal)item.Y;
 
                 Log($"{item.Label} moved to ({item.X},{item.Y}). Its own Space/Time is " +
                     "internal to it, so saving this makes a new version of the Object.");
@@ -788,9 +807,6 @@ public sealed class ObjectsForm : Form
         item.EndTime = dialog.EndTime;
         item.Pitch = dialog.Pitch;
         item.Roll = dialog.Roll;
-        positionZ.Value = (decimal)item.Z;
-        startTimeSeconds.Value = (decimal)item.StartTime;
-        endTimeSeconds.Value = (decimal)item.EndTime;
 
         canvas.RefreshDisplay();
         Log($"Z/time updated on canvas - click 'Stage' to apply, then 'Save' to commit.");
@@ -959,42 +975,99 @@ public sealed class ObjectsForm : Form
         }
     }
 
-    private void StageObjectEdit()
+    // WHAT AN OBJECT IS - internal characteristics, and the only place they
+    // are edited. Changing any of them mints a new version.
+    private void EditSelectedObject()
     {
-        if (objectsList.SelectedItem is not string objectId)
+        if (objectsList.SelectedItem is not string assetId)
         {
-            MessageBox.Show(this, "Select an Object first.", "Nothing selected", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show(this, "Select an Object to edit.", "Nothing selected",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
             return;
         }
 
-        objectDraftTargetId = objectId;
-        objectDraft.Clear();
-        objectDraft.AddPlacement(objectId, BuildPlacementFromFields());
-        objectDraft.PendingAcousticProfile = new AcousticProfile
+        AudioObject materialized;
+
+        try
         {
-            AcousticProfileID = Guid.NewGuid().ToString(),
-            FrequencyRange = new FrequencyRange
+            materialized = aoe.Materialize(assetId);
+        }
+        catch (Exception failure)
+        {
+            MessageBox.Show(this, $"Could not read {assetId}: {failure.Message}",
+                "Unreadable", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        var firstBasic = materialized.BasicAudioObjects?.FirstOrDefault()?.BAObjectIDOrBAObject;
+
+        var profile = materialized.AudioObjectProperties
+                      ?? firstBasic?.BasicAudioObjectProperties?.AcousticProfile;
+
+        // Its components, with where the Object says each of them sits. Only the
+        // immediate ones: a component that is itself composed is refined by
+        // editing THAT Object, which keeps every dialog to one level.
+        var components = ComponentsOfDirectly(materialized).ToList();
+
+        using var dialog = new ObjectEditDialog(
+            assetId,
+            DescriptionOf(materialized, firstBasic),
+            profile,
+            components);
+
+        if (dialog.ShowDialog(this) != DialogResult.OK) return;
+
+        try
+        {
+            // ONE EDIT, ONE VERSION.
+            //
+            // This called EditObjectProperties, then EditObjectDescription, then
+            // Rearrange - three keys for one press of OK, which is the very
+            // fault Rearrange was added to avoid, committed one level up.
+            var updated = assetId.StartsWith("BAO", StringComparison.Ordinal)
+                ? aoe.EditBasicObject(
+                      assetId,
+                      dialog.EditedAcousticProfile,
+                      dialog.EditedDescrMetadata)
+                : aoe.EditObject(
+                      assetId,
+                      dialog.EditedAcousticProfile,
+                      dialog.EditedDescrMetadata,
+                      dialog.EditedPlacements.Count == 0
+                          ? null
+                          : dialog.EditedPlacements.ToDictionary(
+                                p => p.Id,
+                                p => (SpaceTime?)BuildPlacementFrom(
+                                         p.X, p.Y, p.Z, p.StartTime, p.EndTime,
+                                         p.Roll, p.Pitch, p.Yaw)));
+
+            Log($"Edited {assetId} -> {updated.AssetId}");
+
+            RefreshList();
+            suppressSelectionSync = true;
+            objectsList.SelectedItem = updated.AssetId;
+            suppressSelectionSync = false;
+        }
+        catch (Exception failure)
+        {
+            Log($"ERROR editing {assetId}: {failure.Message}");
+        }
+    }
+
+    // THE EDITING SPACE, seen as a whole - the Object being made, which could
+    // not be examined at all while every saved one could.
+    private void ShowDraftInfo()
+    {
+        var placed = draftChildren
+            .Select(c =>
             {
-                MinFrequencyHz = (double)minFrequencyHz.Value,
-                MaxFrequencyHz = (double)maxFrequencyHz.Value
-            },
-            Loudness = (double)loudnessLufs.Value
-        };
+                var (x, y, z) = ExtractPosition(c.Placement);
+                return (c.ChildId, x, y, z);
+            })
+            .ToList();
 
-        canvas.Items.Clear();
-        canvas.Items.Add(new PlacementCanvas.Item
-        {
-            Label = objectId,
-            X = (double)positionX.Value,
-            Y = (double)positionY.Value,
-            Z = (double)positionZ.Value,
-            StartTime = (double)startTimeSeconds.Value,
-            EndTime = (double)endTimeSeconds.Value
-        });
-        canvas.RefreshDisplay();
-
-        Log($"Staged edit for {objectId}: position ({positionX.Value},{positionY.Value},{positionZ.Value}), " +
-            $"AcousticProfile {minFrequencyHz.Value}-{maxFrequencyHz.Value} Hz, {loudnessLufs.Value} LUFS - not saved yet.");
+        using var dialog = new DraftInfoDialog(placed, PositionOf(listener));
+        dialog.ShowDialog(this);
     }
 
     private void SaveObjectEdit()
@@ -1125,14 +1198,11 @@ public sealed class ObjectsForm : Form
         Log(hadTarget is null ? "Nothing was staged." : $"Discarded staged edit for {hadTarget} - it was never saved.");
     }
 
-    private void DeleteSelectedObject()
+    // Deletes the Object named, rather than whatever happens to be selected:
+    // it is reached from the right-click menu, which knows which entry was
+    // clicked.
+    private void DeleteObject(string objectId)
     {
-        if (objectsList.SelectedItem is not string objectId)
-        {
-            MessageBox.Show(this, "Select an Object first.", "Nothing selected", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            return;
-        }
-
         try
         {
             var referrers = aoe.ReferencedBy(objectId);
@@ -1161,6 +1231,7 @@ public sealed class ObjectsForm : Form
             Log($"ERROR deleting {objectId}: {failure.Message}");
         }
     }
+
 
     // What an Object is, and the one thing about it a person can write.
     private void ShowObjectDetails(string assetId)
@@ -1218,9 +1289,43 @@ public sealed class ObjectsForm : Form
             format,
             duration);
 
-        if (dialog.ShowDialog(this) != DialogResult.OK) return;
+        dialog.ShowDialog(this);
+    }
 
-        SaveDescription(assetId, dialog.EditedDescrMetadata);
+    // The IMMEDIATE components of an Object, with everything about where each
+    // one sits. ComponentsOf descends the whole tree for the canvas; this stops
+    // at one level, because that is what an Object's own placements are.
+    private static IEnumerable<ObjectEditDialog.ComponentPlacement> ComponentsOfDirectly(AudioObject container)
+    {
+        foreach (var entry in container.BasicAudioObjects ?? new List<BasicAudioObjectEntry>())
+        {
+            var id = entry.BAObjectIDOrBAObject?.BasicAudioObjectID;
+            if (string.IsNullOrWhiteSpace(id)) continue;
+
+            yield return Placement(id, entry.BasicAudioObjectSpaceTime);
+        }
+
+        foreach (var entry in container.SubAudioObjects ?? new List<SubAudioObjectEntry>())
+        {
+            var id = entry.SubAObjectIDOrSubAObject?.AudioObjectID;
+            if (string.IsNullOrWhiteSpace(id)) continue;
+
+            yield return Placement(id, entry.SubAudioObjectSpaceTime);
+        }
+    }
+
+    private static ObjectEditDialog.ComponentPlacement Placement(string id, SpaceTime? spaceTime)
+    {
+        var (x, y, z) = ExtractPosition(spaceTime);
+        var (roll, pitch, yaw) = ExtractAngles(spaceTime);
+        var (start, end) = ExtractTimeRange(spaceTime);
+
+        return new ObjectEditDialog.ComponentPlacement
+        {
+            Id = id, X = x, Y = y, Z = z,
+            Roll = roll, Pitch = pitch, Yaw = yaw,
+            StartTime = start, EndTime = end
+        };
     }
 
     private static string? DescriptionOf(AudioObject materialized, BasicAudioObject? firstBasic) =>
@@ -1267,28 +1372,10 @@ public sealed class ObjectsForm : Form
 
     // The name and description a person wrote, both in DescrMetadata. Editing
     // them changes what the Object IS, so it mints a new version - the iron rule.
-    private void SaveDescription(string assetId, string? descrMetadata)
-    {
-        if (descrMetadata == null) return;
+    // SaveDescription is gone: a name and a description are what an Object IS,
+    // so they are edited in Object Edit with the rest of what it is, and the
+    // details view only shows them.
 
-        try
-        {
-            var updated = assetId.StartsWith("BAO", StringComparison.Ordinal)
-                ? aoe.EditBasicObjectDescription(assetId, descrMetadata)
-                : aoe.EditObjectDescription(assetId, descrMetadata);
-
-            Log($"Described {assetId} -> {updated.AssetId}");
-
-            RefreshList();
-            suppressSelectionSync = true;
-            objectsList.SelectedItem = updated.AssetId;
-            suppressSelectionSync = false;
-        }
-        catch (Exception failure)
-        {
-            Log($"ERROR describing {assetId}: {failure.Message}");
-        }
-    }
 
     private void ShowSelectedObjectInfo()
     {

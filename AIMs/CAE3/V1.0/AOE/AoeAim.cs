@@ -303,6 +303,197 @@ public sealed class AoeAim
     }
 
 
+    // EVERYTHING Object Edit can change, in ONE new version.
+    //
+    // The window called EditObjectProperties, then EditObjectDescription, then
+    // Rearrange - three keys for one press of OK, which is the very fault
+    // Rearrange was added to avoid, committed one level up. An edit is one act
+    // and costs one Object.
+    //
+    // A null argument means "leave it alone", as everywhere else here.
+    public RepositoryAsset EditObject(
+        string audioObjectAssetId,
+        AcousticProfile? acousticProfile = null,
+        string? descrMetadata = null,
+        IReadOnlyDictionary<string, SpaceTime?>? placements = null,
+        PointOfView? listenerPointOfView = null)
+    {
+        if (!storage.Exists(audioObjectAssetId))
+            throw new InvalidOperationException($"{audioObjectAssetId} does not exist.");
+        if (!IsType(audioObjectAssetId, "AUO"))
+            throw new InvalidOperationException($"{audioObjectAssetId} is not an AudioObject.");
+
+        var existingData = Deserialize<AudioObject>(storage.Get(audioObjectAssetId));
+
+        var basicEntries = (existingData.BasicAudioObjects ?? new List<BasicAudioObjectEntry>())
+            .Select(entry =>
+            {
+                var childId = entry.BAObjectIDOrBAObject?.BasicAudioObjectID ?? "";
+
+                return placements is not null && placements.TryGetValue(childId, out var placement)
+                    ? new BasicAudioObjectEntry
+                      {
+                          BasicAudioObjectSpaceTime = placement,
+                          BAObjectIDOrBAObject      = entry.BAObjectIDOrBAObject
+                      }
+                    : entry;
+            })
+            .ToList();
+
+        var subEntries = (existingData.SubAudioObjects ?? new List<SubAudioObjectEntry>())
+            .Select(entry =>
+            {
+                var childId = entry.SubAObjectIDOrSubAObject?.AudioObjectID ?? "";
+
+                return placements is not null && placements.TryGetValue(childId, out var placement)
+                    ? new SubAudioObjectEntry
+                      {
+                          SubAudioObjectSpaceTime  = placement,
+                          SubAObjectIDOrSubAObject = entry.SubAObjectIDOrSubAObject
+                      }
+                    : entry;
+            })
+            .ToList();
+
+        var newId = NextId("AUO");
+
+        storage.Put(newId, Serialize(new AudioObject
+        {
+            AudioObjectID = newId,
+            AudioObjectTime = existingData.AudioObjectTime,
+            AudioObjectSpaceTime = existingData.AudioObjectSpaceTime,
+            UserPoV = listenerPointOfView ?? existingData.UserPoV,
+            AudioObjectProperties = acousticProfile ?? existingData.AudioObjectProperties,
+            ParentAudioObjectIDs = existingData.ParentAudioObjectIDs,
+            DescrMetadata = descrMetadata ?? existingData.DescrMetadata,
+            BasicAudioObjectCount = basicEntries.Count,
+            BasicAudioObjects = basicEntries.Count > 0 ? basicEntries : null,
+            SubAudioObjectCount = subEntries.Count,
+            SubAudioObjects = subEntries.Count > 0 ? subEntries : null
+        }));
+
+        foreach (var referenced in References(audioObjectAssetId))
+            PutReference(newId, referenced);
+
+        return new RepositoryAsset { AssetId = newId, AssetType = AssetType.AUO };
+    }
+
+    // The same for a Basic Object, which has no placements to rewrite.
+    public RepositoryAsset EditBasicObject(
+        string basicAudioObjectAssetId,
+        AcousticProfile? acousticProfile = null,
+        string? descrMetadata = null,
+        PointOfView? listenerPointOfView = null)
+    {
+        if (!storage.Exists(basicAudioObjectAssetId))
+            throw new InvalidOperationException($"{basicAudioObjectAssetId} does not exist.");
+        if (!IsType(basicAudioObjectAssetId, "BAO"))
+            throw new InvalidOperationException($"{basicAudioObjectAssetId} is not a BasicAudioObject.");
+
+        var existingData = Deserialize<BasicAudioObject>(storage.Get(basicAudioObjectAssetId));
+        var existingProps = existingData.BasicAudioObjectProperties ?? new BasicAudioObjectProperties();
+
+        var newId = NextId("BAO");
+
+        storage.Put(newId, Serialize(new BasicAudioObject
+        {
+            Header = existingData.Header,
+            MInstanceID = existingData.MInstanceID,
+            UEnvironmentID = existingData.UEnvironmentID,
+            BasicAudioObjectID = newId,
+            BasicAudioObjectTime = existingData.BasicAudioObjectTime,
+            ParentObjects = existingData.ParentObjects,
+            ChildObjects = existingData.ChildObjects,
+            BasicAudioObjectData = existingData.BasicAudioObjectData,
+            ListenerPointOfView = listenerPointOfView ?? existingData.ListenerPointOfView,
+            BasicAudioObjectProperties = new BasicAudioObjectProperties
+            {
+                BasicAudioObjectSpaceTime = existingProps.BasicAudioObjectSpaceTime,
+                Level = existingProps.Level,
+                PerceptStatus = existingProps.PerceptStatus,
+                AcousticProfile = acousticProfile ?? existingProps.AcousticProfile,
+                BasicAudioObjectIdentifier = existingProps.BasicAudioObjectIdentifier
+            },
+            AudioQualifier = existingData.AudioQualifier,
+            DataXMData = existingData.DataXMData,
+            DescrMetadata = descrMetadata ?? existingData.DescrMetadata
+        }));
+
+        return new RepositoryAsset { AssetId = newId, AssetType = AssetType.BAO };
+    }
+
+    // Rewrites EVERY child's placement at once, producing ONE new version.
+    //
+    // MoveSubObject mints a key per call, so adjusting four components through
+    // it would leave three versions nobody asked for. Refining an arrangement is
+    // one act and should cost one Object.
+    //
+    // The children themselves are untouched: what changes is where the container
+    // says each of them sits.
+    public RepositoryAsset Rearrange(
+        string audioObjectAssetId,
+        IReadOnlyDictionary<string, SpaceTime?> placements)
+    {
+        if (!storage.Exists(audioObjectAssetId))
+            throw new InvalidOperationException($"{audioObjectAssetId} does not exist.");
+        if (!IsType(audioObjectAssetId, "AUO"))
+            throw new InvalidOperationException($"{audioObjectAssetId} is not an AudioObject.");
+
+        var existingData = Deserialize<AudioObject>(storage.Get(audioObjectAssetId));
+
+        var basicEntries = (existingData.BasicAudioObjects ?? new List<BasicAudioObjectEntry>())
+            .Select(entry =>
+            {
+                var childId = entry.BAObjectIDOrBAObject?.BasicAudioObjectID ?? "";
+
+                return placements.TryGetValue(childId, out var placement)
+                    ? new BasicAudioObjectEntry
+                      {
+                          BasicAudioObjectSpaceTime = placement,
+                          BAObjectIDOrBAObject      = entry.BAObjectIDOrBAObject
+                      }
+                    : entry;
+            })
+            .ToList();
+
+        var subEntries = (existingData.SubAudioObjects ?? new List<SubAudioObjectEntry>())
+            .Select(entry =>
+            {
+                var childId = entry.SubAObjectIDOrSubAObject?.AudioObjectID ?? "";
+
+                return placements.TryGetValue(childId, out var placement)
+                    ? new SubAudioObjectEntry
+                      {
+                          SubAudioObjectSpaceTime  = placement,
+                          SubAObjectIDOrSubAObject = entry.SubAObjectIDOrSubAObject
+                      }
+                    : entry;
+            })
+            .ToList();
+
+        var newId = NextId("AUO");
+
+        storage.Put(newId, Serialize(new AudioObject
+        {
+            AudioObjectID = newId,
+            AudioObjectTime = existingData.AudioObjectTime,
+            AudioObjectSpaceTime = existingData.AudioObjectSpaceTime,
+            UserPoV = existingData.UserPoV,
+            AudioObjectProperties = existingData.AudioObjectProperties,
+            ParentAudioObjectIDs = existingData.ParentAudioObjectIDs,
+            DescrMetadata = existingData.DescrMetadata,
+            BasicAudioObjectCount = basicEntries.Count,
+            BasicAudioObjects = basicEntries.Count > 0 ? basicEntries : null,
+            SubAudioObjectCount = subEntries.Count,
+            SubAudioObjects = subEntries.Count > 0 ? subEntries : null
+        }));
+
+        foreach (var referenced in References(audioObjectAssetId))
+            PutReference(newId, referenced);
+
+        return new RepositoryAsset { AssetId = newId, AssetType = AssetType.AUO };
+    }
+
     // Moves a child WITHIN its container, producing a new version of the
     // container. The child itself is untouched: what changes is where the
     // container says it sits, which is the entry's own SpaceTime.

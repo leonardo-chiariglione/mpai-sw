@@ -13,29 +13,16 @@ namespace MPAIApps.ASMApp;
 // before placing something, which is why it is a right-click on the list rather
 // than a button that acts on a selection.
 //
-// TWO LINES ARE EDITABLE and the rest is derived. Name and Description are both
-// DescrMetadata, whose first line serves as the name: the schemas have no Name
-// field, and adding one to every Data Type a person handles is a question for
-// MPAI rather than a change to make here. Storing a name in the identifier would
-// be worse - an identifier is machine-assigned and stable, a name is human and
-// changeable, and conflating them means renaming breaks every reference.
+// IT SHOWS AND DOES NOT EDIT. Object Edit is where an Object is changed; this is
+// where it is examined. The two used to overlap - both offering a name and a
+// description - which is two dialogs editing one thing and differing only in
+// which fields they happen to carry.
 //
-// Everything else is read from the Object and cannot be typed into. Derived
-// facts should be derived, or they go stale the moment the Object changes.
+// Name and Description are the first line and the rest of DescrMetadata: the
+// schemas have no Name field, and adding one to every Data Type a person handles
+// is a question for MPAI rather than a change to make here.
 public sealed class ObjectDetailsDialog : Form
 {
-    // The whole of DescrMetadata as edited: first line the name, the rest the
-    // description. Null when nothing was changed.
-    public string? EditedDescrMetadata { get; private set; }
-
-    private readonly TextBox nameBox = new() { Width = 300 };
-    private readonly TextBox descriptionBox = new()
-    {
-        Width = 300,
-        Height = 60,
-        Multiline = true,
-        ScrollBars = ScrollBars.Vertical
-    };
 
     public ObjectDetailsDialog(
         string assetId,
@@ -55,8 +42,6 @@ public sealed class ObjectDetailsDialog : Form
         MinimizeBox = false;
 
         var (name, description) = SplitDescrMetadata(descrMetadata);
-        nameBox.Text = name;
-        descriptionBox.Text = description;
 
         var layout = new TableLayoutPanel
         {
@@ -90,8 +75,8 @@ public sealed class ObjectDetailsDialog : Form
             layout.Controls.Add(control);
         }
 
-        Row("Name", nameBox);
-        Row("Description", descriptionBox);
+        Row("Name", Value(name.Length > 0 ? name : "unnamed"));
+        Row("Description", Value(description.Length > 0 ? description : "none"));
 
         // WHAT IS ABSENT SAYS SO. A Qualifier nothing filled is worth seeing:
         // omitting the line would hide the gap rather than report it.
@@ -140,19 +125,14 @@ public sealed class ObjectDetailsDialog : Form
             Padding = new Padding(8)
         };
 
-        var okButton = new Button { Text = "OK", DialogResult = DialogResult.OK, Width = 90, Height = 28 };
-        okButton.Click += (_, _) => EditedDescrMetadata = JoinDescrMetadata(nameBox.Text, descriptionBox.Text);
-
-        var cancelButton = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel, Width = 90, Height = 28 };
-
-        buttons.Controls.Add(cancelButton);
-        buttons.Controls.Add(okButton);
+        var closeButton = new Button { Text = "Close", DialogResult = DialogResult.OK, Width = 90, Height = 28 };
+        buttons.Controls.Add(closeButton);
 
         Controls.Add(layout);
         Controls.Add(buttons);
 
-        AcceptButton = okButton;
-        CancelButton = cancelButton;
+        AcceptButton = closeButton;
+        CancelButton = closeButton;
 
         Width  = 460;
         Height = layout.PreferredSize.Height + buttons.Height + 46;
@@ -170,14 +150,5 @@ public sealed class ObjectDetailsDialog : Form
         return (name, rest);
     }
 
-    private static string? JoinDescrMetadata(string name, string description)
-    {
-        name = name.Trim();
-        description = description.Trim();
 
-        if (name.Length == 0 && description.Length == 0) return null;
-        if (description.Length == 0) return name;
-
-        return name + Environment.NewLine + description;
-    }
 }
