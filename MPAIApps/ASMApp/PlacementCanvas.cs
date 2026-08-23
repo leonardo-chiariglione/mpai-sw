@@ -57,6 +57,10 @@ public sealed class PlacementCanvas : Panel
         // the opposite of what happens in a Scene.
         public bool Locked { get; set; }
 
+        // Whether anything is inside. Drawn as a ring, so a composed Object can
+        // be told from a Basic one without opening it.
+        public bool HasContents { get; set; }
+
         // WHAT THIS DOT IS, not merely what it is called.
         //
         // The same Object can appear twice: once as itself and once as a
@@ -207,6 +211,15 @@ public sealed class PlacementCanvas : Panel
             using var itemBrush = new SolidBrush(ColourOf(item.Label));
 
             g.FillEllipse(itemBrush, screen.X - 6, screen.Y - 6, 12, 12);
+
+            // THE COLOUR ALREADY SAYS IT. A ring was drawn around anything with
+            // contents, and once the Basic Object became pale against a deep
+            // composed one the ring said nothing the colour did not - while
+            // taking twenty pixels where the dot takes twelve, which blurs two
+            // Objects placed close together.
+            //
+            // HasContents remains on the Item: it is a fact about the dot that
+            // something may want later, and it costs nothing to carry.
             g.DrawString(item.Label, font, textBrush, screen.X + 8, screen.Y - 6);
         }
     }
@@ -232,10 +245,15 @@ public sealed class PlacementCanvas : Panel
         // 128 rather than 64 for the dark pair: at 64 both read as black, and
         // dark blue beside dark green on a small dot next to black text is a
         // distinction nobody can make.
-        _ when label.StartsWith("BAO", StringComparison.Ordinal) => Color.FromArgb(0, 0, 240),
-        _ when label.StartsWith("AUO", StringComparison.Ordinal) => Color.FromArgb(0, 0, 128),
-        _ when label.StartsWith("BSO", StringComparison.Ordinal) => Color.FromArgb(0, 240, 0),
-        _ when label.StartsWith("SPO", StringComparison.Ordinal) => Color.FromArgb(0, 128, 0),
+        // PALE against DEEP, not bright against dark. Two saturated blues -
+        // 0,0,240 and 0,0,128 - are nearly indistinguishable at twelve pixels,
+        // because both are as blue as blue gets and only differ in how much.
+        // Lightening by DESATURATING moves the Basic towards white, which the
+        // eye separates at any size.
+        _ when label.StartsWith("BAO", StringComparison.Ordinal) => Color.FromArgb(120, 170, 255),
+        _ when label.StartsWith("AUO", StringComparison.Ordinal) => Color.FromArgb(  0,   0, 160),
+        _ when label.StartsWith("BSO", StringComparison.Ordinal) => Color.FromArgb(140, 220, 140),
+        _ when label.StartsWith("SPO", StringComparison.Ordinal) => Color.FromArgb(  0, 110,   0),
 
         // The listener is not an Object and should not compete with them for a
         // colour. Red, and 220 rather than 255 - full red on white is harsh.

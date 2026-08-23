@@ -64,7 +64,9 @@ public sealed class ObjectsForm : Form
     // This replaces an "open Object" with two buttons and a state label - a mode
     // borrowed from CAE-AOE, which does edit one Object at a time, and put in
     // front of a person who thinks "this object, at this place, goes in".
-    private string? draftContainerId;
+    // draftContainerId is gone. The editing space held a container and its
+    // children; it holds a LIST OF PLACED OBJECTS, all equal. The Object that
+    // holds them comes into existence at Save.
 
     private readonly List<(string ChildId, SpaceTime Placement)> draftChildren = new();
 
@@ -125,6 +127,19 @@ public sealed class ObjectsForm : Form
         canvas.ItemRightClicked += OnCanvasItemRightClicked;
         canvas.LockedItemClicked += OnCanvasLockedItemClicked;
         objectsList.SelectedIndexChanged += (_, _) => { if (!suppressSelectionSync) LoadSelectedObjectOntoCanvas(); };
+
+        // LEFT CLICK SELECTS, RIGHT CLICK SHOWS WHAT IT IS. The list shows
+        // identifiers, which say nothing: AUO000004 is not a thing anyone can
+        // recognise, and you want to know what something is BEFORE placing it.
+        objectsList.MouseDown += (_, e) =>
+        {
+            if (e.Button != MouseButtons.Right) return;
+
+            var index = objectsList.IndexFromPoint(e.Location);
+            if (index == ListBox.NoMatches) return;
+
+            ShowObjectDetails((string)objectsList.Items[index]);
+        };
 
         var bringScenesToFrontButton = new Button { Text = "Show Scenes Window", Width = 160, Height = 26 };
         bringScenesToFrontButton.Click += (_, _) => { sibling?.BringToFront(); sibling?.Activate(); };
@@ -303,18 +318,38 @@ public sealed class ObjectsForm : Form
             return;
         }
 
-        if (draftContainerId is null)
-        {
-            draftContainerId = objectId;
-            draftChildren.Clear();
+        // THE FIRST PLACEMENT IS LIKE THE Nth.
+        //
+        // There used to be a container and its children: the first Object placed
+        // became the container, sat at the origin, and could not be moved. That
+        // was wrong twice over - it could not be positioned, and when such a
+        // composition was later nested, the composed Object and its first
+        // component occupied the same point by construction.
+        //
+        // There is no container in the editing space. There is a LIST OF PLACED
+        // OBJECTS, all equal. The container comes into existence at Save, and
+        // its own spatial attitude - the origin, unrotated - is the frame they
+        // are placed in.
+        var chosen = positionX.Value != 0 || positionY.Value != 0 || positionZ.Value != 0;
 
-            // The container sets the space, so its listener becomes the one in
-            // the room - unless one has been moved and not yet saved, which was
-            // a deliberate act. Selection no longer does this, because selection
-            // no longer does anything but choose.
+        var placement = chosen
+            ? BuildPlacementFromFields()
+            : BuildPlacementFrom(draftChildren.Count * 2.0, 0, 0,
+                (double)startTimeSeconds.Value, (double)endTimeSeconds.Value);
+
+        if (!chosen && draftChildren.Count > 0)
+        {
+            Log("No position chosen - placing it clear of what is already there.");
+        }
+
+        // The Object's own listener becomes the one in the room, for the FIRST
+        // thing placed: it is the space being entered. Later placements do not
+        // move the ear.
+        if (draftChildren.Count == 0 && !listenerMoved)
+        {
             try
             {
-                if (!listenerMoved && ListenerOf(aoe.Materialize(objectId)) is PointOfView stored)
+                if (ListenerOf(aoe.Materialize(objectId)) is PointOfView stored)
                 {
                     listener = stored;
                 }
@@ -323,41 +358,6 @@ public sealed class ObjectsForm : Form
             {
                 Log($"ERROR reading {objectId}: {failure.Message}");
             }
-
-            undoLastAction = () =>
-            {
-                draftContainerId = null;
-                Log($"Took back {objectId} - the editing space is empty.");
-            };
-
-            Log($"{objectId} placed at the origin - the first component, and the " +
-                "fixed point the rest are placed against. Choose a position, " +
-                "select another Object, and press Place.");
-
-            RedrawDraft();
-            return;
-        }
-
-        if (objectId == draftContainerId)
-        {
-            MessageBox.Show(this, "That Object is the container. Select another to place in it.",
-                "Same Object", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            return;
-        }
-
-        // NEVER ON TOP OF THE CONTAINER. Zero means "where the container is",
-        // which the schema permits and which puts the child exactly under it -
-        // two names on one dot, and the container locked so the click refuses.
-        var chosen = positionX.Value != 0 || positionY.Value != 0 || positionZ.Value != 0;
-
-        var placement = chosen
-            ? BuildPlacementFromFields()
-            : BuildPlacementFrom(2 + draftChildren.Count * 0.5, 0, 0,
-                (double)startTimeSeconds.Value, (double)endTimeSeconds.Value);
-
-        if (!chosen)
-        {
-            Log("No position chosen - placing it clear of the container so it can be seen.");
         }
 
         draftChildren.Add((objectId, placement));
@@ -370,10 +370,11 @@ public sealed class ObjectsForm : Form
             {
                 draftChildren.RemoveAt(placedAt);
                 Log($"Took back {objectId}.");
+                RedrawDraft();
             }
         };
 
-        Log($"{objectId} placed in the draft ({draftChildren.Count} so far) - " +
+        Log($"{objectId} placed ({draftChildren.Count} in the editing space) - " +
             "nothing is in the Repository until Save Changes.");
 
         RedrawDraft();
@@ -386,65 +387,45 @@ public sealed class ObjectsForm : Form
         canvas.Items.Clear();
         ShowListener();
 
-        if (draftContainerId is null)
-        {
-            canvas.RefreshDisplay();
-            return;
-        }
-
-        // THE CONTAINER IS NOT DRAWN. An Audio Object made of two Basic Objects
-        // IS those two at their positions: a third dot for the Object itself is a
-        // phantom that is not a sound, cannot be moved, and takes clicks meant
-        // for what is under it.
-        //
-        // What IS drawn at the origin is its FIRST COMPONENT, locked - the fixed
-        // point everything else is placed against, and the point a listener's
-        // Point of View is set relative to. Move it and nothing else would mean
-        // anything.
-        try
-        {
-            var contents = ComponentsOf(aoe.Materialize(draftContainerId)).ToList();
-
-            // COMPONENTS OF WHAT IS ALREADY SAVED do not move. The container was
-            // stored with its arrangement decided; touching it makes a new
-            // thing, so this is a record rather than a workspace.
-            foreach (var component in contents)
-            {
-                component.Role = PlacementCanvas.ItemRole.SavedComponent;
-            }
-
-            if (contents.Count > 0)
-            {
-                contents[0].X = 0;
-                contents[0].Y = 0;
-                contents[0].Z = 0;
-                contents[0].Locked = true;
-            }
-
-            foreach (var component in contents)
-            {
-                canvas.Items.Add(component);
-            }
-        }
-        catch (Exception failure)
-        {
-            Log($"ERROR reading {draftContainerId}: {failure.Message}");
-        }
-
-        // And what has been placed since the last save. These are never the
-        // first component - the first was placed before them - so none is locked.
+        // EVERYTHING PLACED, ALL EQUAL. There is no container here: the editing
+        // space is a list of Objects at positions, and the Object that holds
+        // them comes into existence at Save.
         foreach (var (childId, placement) in draftChildren)
         {
             var (x, y, z) = ExtractPosition(placement);
             var (start, end) = ExtractTimeRange(placement);
 
+            var isComposed = childId.StartsWith("AUO", StringComparison.Ordinal);
+
             canvas.Items.Add(new PlacementCanvas.Item
             {
                 Label = childId, X = x, Y = y, Z = z, StartTime = start, EndTime = end,
 
-                // Placed but not yet saved: these are the ones that move.
-                Role = PlacementCanvas.ItemRole.DraftComponent
+                // Placed and not yet saved: every one of these moves.
+                Role = PlacementCanvas.ItemRole.DraftComponent,
+
+                HasContents = isComposed
             });
+
+            // A composed Object shows its parts too, at offsets from where it
+            // sits - the same representation at every depth. They belong to
+            // something already saved, so they do not move; dragging the Object
+            // itself carries them along.
+            if (!isComposed) continue;
+
+            try
+            {
+                foreach (var deeper in ComponentsOf(
+                             aoe.Materialize(childId), x, y, z,
+                             PlacementCanvas.ItemRole.SavedComponent))
+                {
+                    canvas.Items.Add(deeper);
+                }
+            }
+            catch (Exception failure)
+            {
+                Log($"ERROR reading {childId}: {failure.Message}");
+            }
         }
 
         canvas.RefreshDisplay();
@@ -611,9 +592,19 @@ public sealed class ObjectsForm : Form
 
                     var (x, y, _) = ExtractPosition(wasAt);
                     Log($"{label} put back at ({x},{y}).");
+
+                    RedrawDraft();
                 };
 
                 Log($"{item.Label} moved to ({item.X},{item.Y}) in the draft.");
+
+                // REDRAWN FROM THE DATA, not left as the dot the mouse dropped.
+                //
+                // A composed Object's components are drawn at offsets from where
+                // IT sits, so moving it changes where they belong - and dragging
+                // one dot moves one dot. Recomputing the whole canvas is the only
+                // thing that is always right, and at this size it costs nothing.
+                RedrawDraft();
                 return;
             }
 
@@ -623,9 +614,9 @@ public sealed class ObjectsForm : Form
             // was made.
             case PlacementCanvas.ItemRole.SavedComponent:
             {
-                Log($"{item.Label} is part of {draftContainerId}, which is saved: " +
-                    "its arrangement cannot be changed. Place its components into " +
-                    "a new Object instead.");
+                Log($"{item.Label} belongs to an Object already saved: its " +
+                    "arrangement cannot be changed. Place its components into a " +
+                    "new Object instead.");
 
                 RedrawDraft();
                 return;
@@ -656,7 +647,28 @@ public sealed class ObjectsForm : Form
     //
     // A component with no placement of its own sits where the containing Object
     // sits, which the schema names as its default - here, the origin.
-    private static IEnumerable<PlacementCanvas.Item> ComponentsOf(AudioObject container)
+    // ALL THE WAY DOWN, and in one representation.
+    //
+    // A nested Object used to be a single dot while the containing Object was
+    // drawn by its parts - the same kind of thing shown two ways, purely because
+    // one happened to be the container. Now every Audio Object is drawn by its
+    // components, at whatever depth.
+    //
+    // THE NESTED OBJECT KEEPS ITS OWN DOT, alongside its expanded parts. It is
+    // what you take hold of: its components are placed RELATIVE to it, so moving
+    // it moves them, rigidly - you can move a thing without rearranging its
+    // insides.
+    //
+    // Positions accumulate. A component's placement is within its immediate
+    // container, so where it actually sounds is that offset added to everything
+    // above it. Materialize has already resolved the whole tree, so this reads
+    // no storage.
+    private static IEnumerable<PlacementCanvas.Item> ComponentsOf(
+        AudioObject container,
+        double offsetX = 0,
+        double offsetY = 0,
+        double offsetZ = 0,
+        PlacementCanvas.ItemRole role = PlacementCanvas.ItemRole.SavedComponent)
     {
         foreach (var entry in container.BasicAudioObjects ?? new List<BasicAudioObjectEntry>())
         {
@@ -668,22 +680,42 @@ public sealed class ObjectsForm : Form
 
             yield return new PlacementCanvas.Item
             {
-                Label = id, X = x, Y = y, Z = z, StartTime = start, EndTime = end
+                Label = id,
+                X = offsetX + x, Y = offsetY + y, Z = offsetZ + z,
+                StartTime = start, EndTime = end,
+                Role = role
             };
         }
 
         foreach (var entry in container.SubAudioObjects ?? new List<SubAudioObjectEntry>())
         {
-            var id = entry.SubAObjectIDOrSubAObject?.AudioObjectID;
-            if (string.IsNullOrWhiteSpace(id)) continue;
+            var nested = entry.SubAObjectIDOrSubAObject;
+            var id = nested?.AudioObjectID;
+            if (nested is null || string.IsNullOrWhiteSpace(id)) continue;
 
             var (x, y, z) = ExtractPosition(entry.SubAudioObjectSpaceTime);
             var (start, end) = ExtractTimeRange(entry.SubAudioObjectSpaceTime);
 
+            // The nested Object itself - the handle by which it moves.
             yield return new PlacementCanvas.Item
             {
-                Label = id, X = x, Y = y, Z = z, StartTime = start, EndTime = end
+                Label = id,
+                X = offsetX + x, Y = offsetY + y, Z = offsetZ + z,
+                StartTime = start, EndTime = end,
+                Role = role,
+                HasContents = true
             };
+
+            // And what it holds, at offsets from where it sits. These belong to
+            // an Object already saved, so they do not move: you can move the
+            // Object, not rearrange it.
+            foreach (var deeper in ComponentsOf(
+                         nested,
+                         offsetX + x, offsetY + y, offsetZ + z,
+                         PlacementCanvas.ItemRole.SavedComponent))
+            {
+                yield return deeper;
+            }
         }
     }
 
@@ -975,9 +1007,9 @@ public sealed class ObjectsForm : Form
         // that followed left the editing space EMPTY. The work was not merely
         // unrecorded, it was discarded.
         //
-        // Compose already takes a listener as its third argument, so there is
-        // nothing to choose between: a save does both.
-        if (draftContainerId is not null && draftChildren.Count > 0)
+        // Compose takes a listener as well, so there is nothing to choose
+        // between: a save does both.
+        if (draftChildren.Count > 0)
         {
             SaveDraft();
             return;
@@ -997,14 +1029,6 @@ public sealed class ObjectsForm : Form
 
                 listenerMoved = false;
 
-                // If the container itself was the target, it moves on with it -
-                // and the draft is left alone otherwise. A save that is not the
-                // draft's save must not empty the editing space.
-                if (draftContainerId == listenerTarget)
-                {
-                    draftContainerId = updated.AssetId;
-                }
-
                 RefreshList();
                 suppressSelectionSync = true;
                 objectsList.SelectedItem = updated.AssetId;
@@ -1018,44 +1042,6 @@ public sealed class ObjectsForm : Form
                 Log($"ERROR saving listener: {failure.Message}");
                 return;
             }
-        }
-
-        // THE DRAFT: one Object out, however many were placed.
-        if (draftContainerId is not null && draftChildren.Count > 0)
-        {
-            try
-            {
-                var children = draftChildren
-                    .Select(c => (c.ChildId, (SpaceTime?)c.Placement))
-                    .ToList();
-
-                var composed = aoe.Compose(draftContainerId, children,
-                    listenerMoved ? listener : null);
-
-                Log($"Saved -> {composed.AssetId}, holding {children.Count + 1} Object(s).");
-
-                draftContainerId = composed.AssetId;
-                draftChildren.Clear();
-                listenerMoved = false;
-
-                // Saved: the step before it referred to a draft that no longer
-                // exists. A saved Object is undone by selecting its previous
-                // version, which is still in the Repository.
-                undoLastAction = null;
-
-                RefreshList();
-                suppressSelectionSync = true;
-                objectsList.SelectedItem = composed.AssetId;
-                suppressSelectionSync = false;
-
-                RedrawDraft();
-            }
-            catch (Exception failure)
-            {
-                Log($"ERROR saving: {failure.Message}");
-            }
-
-            return;
         }
 
         if (objectDraftTargetId is null || objectDraft.IsEmpty)
@@ -1086,17 +1072,18 @@ public sealed class ObjectsForm : Form
     {
         try
         {
-            var children = draftChildren
+            var placed = draftChildren
                 .Select(c => (c.ChildId, (SpaceTime?)c.Placement))
                 .ToList();
 
-            var composed = aoe.Compose(draftContainerId!, children,
-                listenerMoved ? listener : null);
+            var composed = aoe.Compose(placed, listenerMoved ? listener : null);
 
-            Log($"Saved -> {composed.AssetId}, holding {children.Count + 1} Object(s)" +
+            // An Object holding ONE Object is Basic, and saving a draft of one
+            // is how you clone something to a different place: a new identity,
+            // because it is a new thing.
+            Log($"Saved -> {composed.AssetId}, holding {placed.Count} Object(s)" +
                 (listenerMoved ? ", with the listener where you left it." : "."));
 
-            draftContainerId = composed.AssetId;
             draftChildren.Clear();
             listenerMoved = false;
 
@@ -1122,14 +1109,12 @@ public sealed class ObjectsForm : Form
 
     private void ClearObjectEdit()
     {
-        if (draftContainerId is not null || draftChildren.Count > 0)
+        if (draftChildren.Count > 0)
         {
-            Log(draftChildren.Count > 0
-                ? $"Discarded the draft - {draftChildren.Count} placement(s) were never saved."
-                : "Editing space cleared.");
+            Log($"Discarded the editing space - {draftChildren.Count} placement(s) were never saved.");
 
-            draftContainerId = null;
             draftChildren.Clear();
+            undoLastAction = null;
             RedrawDraft();
             return;
         }
@@ -1174,6 +1159,134 @@ public sealed class ObjectsForm : Form
         catch (Exception failure)
         {
             Log($"ERROR deleting {objectId}: {failure.Message}");
+        }
+    }
+
+    // What an Object is, and the one thing about it a person can write.
+    private void ShowObjectDetails(string assetId)
+    {
+        AudioObject materialized;
+
+        try
+        {
+            materialized = aoe.Materialize(assetId);
+        }
+        catch (Exception failure)
+        {
+            MessageBox.Show(this, $"Could not read {assetId}: {failure.Message}",
+                "Unreadable", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        DateTime? storedAt = null;
+        try { storedAt = storage.GetKeyInfo(assetId).StoredAt; } catch { }
+
+        var basicCount = materialized.BasicAudioObjectCount ?? 0;
+        var subCount   = materialized.SubAudioObjectCount ?? 0;
+        var total      = basicCount + subCount;
+
+        // An Object holding one Object is Basic; one holding more than one is
+        // full. The kind is a fact about the content.
+        var kind = total > 1
+            ? $"Audio Object, {total} components"
+            : "Basic Audio Object";
+
+        var components = ComponentsOf(materialized)
+            .Select(item => (item.Label, item.X, item.Y, item.Z))
+            .ToList();
+
+        // Only meaningful for something composed: a Basic Object materialises as
+        // an Object of one, and that one is itself rather than a component.
+        if (total <= 1) components.Clear();
+
+        var firstBasic = materialized.BasicAudioObjects?.FirstOrDefault()?.BAObjectIDOrBAObject;
+
+        var listenerPoint = ListenerOf(materialized) is PointOfView stored
+            ? PositionOf(stored)
+            : ((double, double, double)?)null;
+
+        var (format, duration) = DescribeAudio(firstBasic);
+
+        using var dialog = new ObjectDetailsDialog(
+            assetId,
+            DescriptionOf(materialized, firstBasic),
+            storedAt,
+            kind,
+            SizeOf(firstBasic),
+            listenerPoint,
+            components,
+            format,
+            duration);
+
+        if (dialog.ShowDialog(this) != DialogResult.OK) return;
+
+        SaveDescription(assetId, dialog.EditedDescrMetadata);
+    }
+
+    private static string? DescriptionOf(AudioObject materialized, BasicAudioObject? firstBasic) =>
+        materialized.DescrMetadata ?? firstBasic?.DescrMetadata;
+
+    private static long? SizeOf(BasicAudioObject? basic) =>
+        basic is null ? null : basic.Data.Length;
+
+    // Format and duration, from the Qualifier acquisition now fills. Both say
+    // "not recorded" rather than being omitted when they are absent: a Qualifier
+    // nothing filled is worth seeing.
+    private static (string? Format, double? Seconds) DescribeAudio(BasicAudioObject? basic)
+    {
+        var pcm = basic?.AudioQualifier?.Formats?.ContentFormat?.RawData?.SampleSpace;
+        if (pcm is null) return (null, null);
+
+        var file     = basic?.AudioQualifier?.Formats?.TransportFormat?.FileFormats;
+        var channels = basic?.AudioQualifier?.Attributes?.Device?.CaptureConfiguration?.ChannelCount;
+
+        var parts = new List<string>();
+        if (file is not null) parts.Add(file);
+        if (pcm.SamplingFrequency is double hz) parts.Add($"{hz:N0} Hz");
+        if (channels is int count) parts.Add(count == 1 ? "mono" : $"{count} channels");
+        if (pcm.Precision is int bits) parts.Add($"{bits} bit");
+
+        var format = parts.Count > 0 ? string.Join(", ", parts) : null;
+
+        // Duration from the stored bytes and the format: a WAV's data is its
+        // length less the header, over the bytes per second.
+        double? seconds = null;
+
+        if (basic is not null &&
+            pcm.SamplingFrequency is double rate && rate > 0 &&
+            pcm.Precision is int depth && depth > 0)
+        {
+            var perSecond = rate * (channels ?? 1) * (depth / 8.0);
+            var payload   = Math.Max(0, basic.Data.Length - 44);   // the canonical WAV header
+
+            if (perSecond > 0) seconds = payload / perSecond;
+        }
+
+        return (format, seconds);
+    }
+
+    // The name and description a person wrote, both in DescrMetadata. Editing
+    // them changes what the Object IS, so it mints a new version - the iron rule.
+    private void SaveDescription(string assetId, string? descrMetadata)
+    {
+        if (descrMetadata == null) return;
+
+        try
+        {
+            var updated = assetId.StartsWith("BAO", StringComparison.Ordinal)
+                ? aoe.EditBasicObjectDescription(assetId, descrMetadata)
+                : aoe.EditObjectDescription(assetId, descrMetadata);
+
+            Log($"Described {assetId} -> {updated.AssetId}");
+
+            RefreshList();
+            suppressSelectionSync = true;
+            objectsList.SelectedItem = updated.AssetId;
+            suppressSelectionSync = false;
+        }
+        catch (Exception failure)
+        {
+            Log($"ERROR describing {assetId}: {failure.Message}");
         }
     }
 

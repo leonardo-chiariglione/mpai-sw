@@ -92,6 +92,18 @@ public sealed class AoeAim
             {
                 PositionID   = Guid.NewGuid().ToString(),
                 CartPosition = new double[] { 0, 0, 0 }
+            },
+
+            // The composed Object's own frame, completely specified: at the
+            // origin and unrotated. Everything it holds is placed relative to
+            // this, which is why no component has to serve as the reference.
+            //
+            // Roll, pitch, yaw - the aerospace order, read as rotations about
+            // X, Y and Z.
+            Orientation = new Orientation
+            {
+                OrientationID = Guid.NewGuid().ToString(),
+                EulerAngles   = new double[] { 0, 0, 0 }
             }
         }
     };
@@ -216,46 +228,34 @@ public sealed class AoeAim
         return new RepositoryAsset { AssetId = newId, AssetType = AssetType.AUO };
     }
 
-    // Composes a container with SEVERAL children at once, producing ONE new
-    // Audio Object.
+    // Composes SEVERAL Objects into ONE new Audio Object.
     //
-    // AddSubObject mints a new key per call, so building an Object of four by
-    // calling it three times left two intermediate AUOs in the repository that
-    // nobody asked for. An editing space is a draft - like an unsaved document -
-    // and saving it should produce one Object, not a trail of them.
+    // NO CONTAINER, and no first among them. This took a container plus
+    // children, so the first Object placed in an editing space became the
+    // container: it sat at the origin, could not be positioned, and - when such
+    // a composition was later nested - occupied exactly the same point as the
+    // Object holding it.
     //
-    // The container may be Basic: that is the case which makes the first full
-    // Audio Object, exactly as in AddSubObject.
+    // What the placed Objects are placed IN is the new Object's own spatial
+    // attitude: the origin, unrotated. That is the frame, and nothing among them
+    // has to serve as it.
+    //
+    // Composing ONE Object is legitimate and produces a Basic Object holding it:
+    // a new identity for a new thing, which is how something is cloned to a
+    // different place.
     public RepositoryAsset Compose(
-        string containerAssetId,
-        IReadOnlyList<(string ChildId, SpaceTime? Placement)> children,
+        IReadOnlyList<(string ChildId, SpaceTime? Placement)> placed,
         PointOfView? listenerPointOfView = null)
     {
-        if (!storage.Exists(containerAssetId))
-            throw new InvalidOperationException($"{containerAssetId} does not exist.");
+        if (placed.Count == 0)
+            throw new InvalidOperationException("Nothing was placed.");
 
-        var containerIsBao = IsType(containerAssetId, "BAO");
-        var containerIsAuo = IsType(containerAssetId, "AUO");
-        if (!containerIsBao && !containerIsAuo)
-            throw new InvalidOperationException($"{containerAssetId} is not a BAO or an AudioObject.");
-
-        var existingData = containerIsAuo
-            ? Deserialize<AudioObject>(storage.Get(containerAssetId))
-            : null;
-
-        var basicEntries = (existingData?.BasicAudioObjects ?? new List<BasicAudioObjectEntry>()).ToList();
-        var subEntries   = (existingData?.SubAudioObjects  ?? new List<SubAudioObjectEntry>()).ToList();
+        var basicEntries = new List<BasicAudioObjectEntry>();
+        var subEntries   = new List<SubAudioObjectEntry>();
 
         var newId = NextId("AUO");
 
-        // A Basic container joins its own composition as the first entry.
-        if (containerIsBao)
-        {
-            basicEntries.Add(new BasicAudioObjectEntry { BAObjectIDOrBAObject = IdStubBao(containerAssetId) });
-            PutReference(newId, containerAssetId);
-        }
-
-        foreach (var (childId, placement) in children)
+        foreach (var (childId, placement) in placed)
         {
             if (!storage.Exists(childId))
                 throw new InvalidOperationException($"{childId} does not exist.");
@@ -264,9 +264,6 @@ public sealed class AoeAim
             var childIsAuo = IsType(childId, "AUO");
             if (!childIsBao && !childIsAuo)
                 throw new InvalidOperationException($"{childId} is not a BAO or an AudioObject.");
-
-            if (childIsAuo && containerIsAuo && WouldCreateCycle(containerAssetId, childId))
-                throw new InvalidOperationException($"Adding {childId} to {containerAssetId} would create a cycle.");
 
             PutReference(newId, childId);
 
@@ -291,11 +288,11 @@ public sealed class AoeAim
         storage.Put(newId, Serialize(new AudioObject
         {
             AudioObjectID = newId,
-            AudioObjectTime = existingData?.AudioObjectTime,
-            AudioObjectSpaceTime = existingData?.AudioObjectSpaceTime ?? AtTheOrigin(),
-            UserPoV = listenerPointOfView ?? existingData?.UserPoV,
-            AudioObjectProperties = existingData?.AudioObjectProperties,
-            ParentAudioObjectIDs = existingData?.ParentAudioObjectIDs,
+
+            // The frame the placed Objects sit in.
+            AudioObjectSpaceTime = AtTheOrigin(),
+
+            UserPoV = listenerPointOfView,
             BasicAudioObjectCount = basicEntries.Count,
             BasicAudioObjects = basicEntries.Count > 0 ? basicEntries : null,
             SubAudioObjectCount = subEntries.Count,
@@ -304,6 +301,7 @@ public sealed class AoeAim
 
         return new RepositoryAsset { AssetId = newId, AssetType = AssetType.AUO };
     }
+
 
     // Moves a child WITHIN its container, producing a new version of the
     // container. The child itself is untouched: what changes is where the
@@ -484,6 +482,83 @@ public sealed class AoeAim
             SubAudioObjectCount = existingData.SubAudioObjectCount,
             SubAudioObjects = existingData.SubAudioObjects
         }));
+
+        return new RepositoryAsset { AssetId = newId, AssetType = AssetType.AUO };
+    }
+
+    // The name and description a person wrote, both carried in DescrMetadata
+    // with the first line serving as the name.
+    //
+    // This is an INTERNAL characteristic - what the Object is, not where it
+    // stands - so it mints a new version, as every edit to what a thing is does.
+    // The schemas have no Name field; adding one to every Data Type a person
+    // handles is a question for MPAI rather than a change to make here, and
+    // storing a name in the identifier would be worse: an identifier is
+    // machine-assigned and stable, a name is human and changeable, and
+    // conflating them means renaming breaks every reference.
+    public RepositoryAsset EditBasicObjectDescription(
+        string basicAudioObjectAssetId,
+        string? descrMetadata)
+    {
+        if (!storage.Exists(basicAudioObjectAssetId))
+            throw new InvalidOperationException($"{basicAudioObjectAssetId} does not exist.");
+        if (!IsType(basicAudioObjectAssetId, "BAO"))
+            throw new InvalidOperationException($"{basicAudioObjectAssetId} is not a BasicAudioObject.");
+
+        var existingData = Deserialize<BasicAudioObject>(storage.Get(basicAudioObjectAssetId));
+
+        var newId = NextId("BAO");
+
+        storage.Put(newId, Serialize(new BasicAudioObject
+        {
+            Header = existingData.Header,
+            MInstanceID = existingData.MInstanceID,
+            UEnvironmentID = existingData.UEnvironmentID,
+            BasicAudioObjectID = newId,
+            BasicAudioObjectTime = existingData.BasicAudioObjectTime,
+            ParentObjects = existingData.ParentObjects,
+            ChildObjects = existingData.ChildObjects,
+            BasicAudioObjectData = existingData.BasicAudioObjectData,
+            ListenerPointOfView = existingData.ListenerPointOfView,
+            BasicAudioObjectProperties = existingData.BasicAudioObjectProperties,
+            AudioQualifier = existingData.AudioQualifier,
+            DataXMData = existingData.DataXMData,
+            DescrMetadata = descrMetadata
+        }));
+
+        return new RepositoryAsset { AssetId = newId, AssetType = AssetType.BAO };
+    }
+
+    public RepositoryAsset EditObjectDescription(
+        string audioObjectAssetId,
+        string? descrMetadata)
+    {
+        if (!storage.Exists(audioObjectAssetId))
+            throw new InvalidOperationException($"{audioObjectAssetId} does not exist.");
+        if (!IsType(audioObjectAssetId, "AUO"))
+            throw new InvalidOperationException($"{audioObjectAssetId} is not an AudioObject.");
+
+        var existingData = Deserialize<AudioObject>(storage.Get(audioObjectAssetId));
+
+        var newId = NextId("AUO");
+
+        storage.Put(newId, Serialize(new AudioObject
+        {
+            AudioObjectID = newId,
+            AudioObjectTime = existingData.AudioObjectTime,
+            AudioObjectSpaceTime = existingData.AudioObjectSpaceTime,
+            UserPoV = existingData.UserPoV,
+            AudioObjectProperties = existingData.AudioObjectProperties,
+            ParentAudioObjectIDs = existingData.ParentAudioObjectIDs,
+            BasicAudioObjectCount = existingData.BasicAudioObjectCount,
+            BasicAudioObjects = existingData.BasicAudioObjects,
+            SubAudioObjectCount = existingData.SubAudioObjectCount,
+            SubAudioObjects = existingData.SubAudioObjects,
+            DescrMetadata = descrMetadata
+        }));
+
+        foreach (var referenced in References(audioObjectAssetId))
+            PutReference(newId, referenced);
 
         return new RepositoryAsset { AssetId = newId, AssetType = AssetType.AUO };
     }
