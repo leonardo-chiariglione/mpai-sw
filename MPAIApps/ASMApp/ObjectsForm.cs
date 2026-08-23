@@ -167,13 +167,13 @@ public sealed class ObjectsForm : Form
         var grid = new TableLayoutPanel
         {
             Dock = DockStyle.Top,
-            ColumnCount = 5,
+            ColumnCount = 6,
             RowCount = 2,
             Height = 32 * 2 + 12,
             Padding = new Padding(4, 4, 4, 4)
         };
         grid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80));
-        for (var c = 0; c < 4; c++) grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
+        for (var c = 0; c < 5; c++) grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
         for (var i = 0; i < 2; i++) grid.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
 
         static Label RowLabel(string text) => new() { Text = text, TextAlign = System.Drawing.ContentAlignment.MiddleLeft, Dock = DockStyle.Fill, Font = new System.Drawing.Font("Segoe UI", 8, System.Drawing.FontStyle.Bold) };
@@ -188,6 +188,14 @@ public sealed class ObjectsForm : Form
         var acquireDeviceButton = Cell("From Device");
         acquireDeviceButton.Click += (_, _) => ToggleRecording(acquireDeviceButton);
 
+        // OPEN loads a saved Object into the editing space - its components at
+        // their placements, its listener as the room's - so an arrangement can
+        // be got back rather than retyped. Place puts an Object INTO what you
+        // are making, as one component; that is not the same act, and there was
+        // no way to do this one.
+        var openButton = Cell("Open");
+        openButton.Click += (_, _) => OpenSelectedObject();
+
         var objectEditButton = Cell("Object Edit");
         objectEditButton.Click += (_, _) => EditSelectedObject();
 
@@ -197,8 +205,9 @@ public sealed class ObjectsForm : Form
         grid.Controls.Add(RowLabel("Make"), 0, 0);
         grid.Controls.Add(acquireFileButton, 1, 0);
         grid.Controls.Add(acquireDeviceButton, 2, 0);
-        grid.Controls.Add(objectEditButton, 3, 0);
-        grid.Controls.Add(placeButton, 4, 0);
+        grid.Controls.Add(openButton, 3, 0);
+        grid.Controls.Add(objectEditButton, 4, 0);
+        grid.Controls.Add(placeButton, 5, 0);
 
         // Keeping and hearing. SAVE DRAFT puts the composition in the
         // Repository, where it stays an Object and can be placed into another.
@@ -923,9 +932,11 @@ public sealed class ObjectsForm : Form
 
         try
         {
+            // To FILE stays as it is: one WAV per component, unmixed, which is
+            // what you want when the components are the point. Hearing the
+            // arrangement is To Speaker's job.
             var delivery = new FileAudioDelivery(destinationFolder);
             var asd = new AsdAim(delivery);
-            var listener = new PointOfView { PointOfViewID = "default-listener", CartPosition = new double[] { 0, 0, 0 }, Orientation = new double[] { 0, 0, 0 } };
 
             asd.DeliverObjectAsync(materialized, listener).GetAwaiter().GetResult();
             Log($"Delivered {objectId} -> {destinationFolder}");
@@ -962,8 +973,18 @@ public sealed class ObjectsForm : Form
         try
         {
             var materialized = aoe.Materialize(objectId);
-            var asd = new AsdAim(new WinmmAudioDelivery());
-            var listener = new PointOfView { PointOfViewID = "default-listener", CartPosition = new double[] { 0, 0, 0 }, Orientation = new double[] { 0, 0, 0 } };
+            // MIXED, PANNED, AND FROM WHERE YOU ARE SITTING.
+            //
+            // This played through WinmmAudioDelivery, which ignores position
+            // entirely and takes one component at a time - so a composition
+            // sounded as its parts in sequence, from nowhere in particular.
+            // MixedAudioDelivery collects them, pans each by where it sits, and
+            // plays the sum.
+            //
+            // And the listener is the WINDOW'S listener, not a stand-in at the
+            // origin: panning is measured from the ear, so the wrong ear gives
+            // the wrong answer everywhere.
+            var asd = new AsdAim(new MixedAudioDelivery());
 
             Log($"Playing {objectId} ...");
             await asd.DeliverObjectAsync(materialized, listener);
@@ -973,6 +994,82 @@ public sealed class ObjectsForm : Form
         {
             Log($"ERROR playing object: {failure.Message}");
         }
+    }
+
+    // OPEN a saved Object into the editing space.
+    //
+    // Its components at their placements, its listener as the room's - so an
+    // arrangement can be got back and worked on, which is what opening a
+    // document means. Save Draft then mints a NEW Object: the one opened is
+    // untouched, whatever is done here, and closing changes nothing.
+    //
+    // ONE LEVEL. A component that is itself composed arrives as one placement,
+    // exactly as it is drawn; open THAT to get inside it.
+    private void OpenSelectedObject()
+    {
+        if (objectsList.SelectedItem is not string assetId)
+        {
+            MessageBox.Show(this, "Select an Object to open.", "Nothing selected",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        // Opening replaces what is in the editing space, so say so while it can
+        // still be stopped.
+        if (draftChildren.Count > 0)
+        {
+            var answer = MessageBox.Show(this,
+                $"The editing space holds {draftChildren.Count} placement(s) that have not been " +
+                $"saved.\n\nOpening {assetId} will discard them.",
+                "Discard the editing space?", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+
+            if (answer != DialogResult.OK) return;
+        }
+
+        AudioObject materialized;
+
+        try
+        {
+            materialized = aoe.Materialize(assetId);
+        }
+        catch (Exception failure)
+        {
+            MessageBox.Show(this, $"Could not read {assetId}: {failure.Message}",
+                "Unreadable", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        draftChildren.Clear();
+        undoLastAction = null;
+
+        foreach (var entry in materialized.BasicAudioObjects ?? new List<BasicAudioObjectEntry>())
+        {
+            var id = entry.BAObjectIDOrBAObject?.BasicAudioObjectID;
+            if (string.IsNullOrWhiteSpace(id)) continue;
+
+            draftChildren.Add((id, entry.BasicAudioObjectSpaceTime ?? BuildPlacementFrom(0, 0, 0, 0, 5)));
+        }
+
+        foreach (var entry in materialized.SubAudioObjects ?? new List<SubAudioObjectEntry>())
+        {
+            var id = entry.SubAObjectIDOrSubAObject?.AudioObjectID;
+            if (string.IsNullOrWhiteSpace(id)) continue;
+
+            draftChildren.Add((id, entry.SubAudioObjectSpaceTime ?? BuildPlacementFrom(0, 0, 0, 0, 5)));
+        }
+
+        // The Object's listener becomes the room's: you are opening the space it
+        // was heard in, not merely its contents.
+        if (ListenerOf(materialized) is PointOfView stored)
+        {
+            listener = stored;
+            listenerMoved = false;
+        }
+
+        Log($"Opened {assetId} - {draftChildren.Count} placement(s). " +
+            "Save Draft makes a new Object; the one opened is untouched.");
+
+        RedrawDraft();
     }
 
     // WHAT AN OBJECT IS - internal characteristics, and the only place they

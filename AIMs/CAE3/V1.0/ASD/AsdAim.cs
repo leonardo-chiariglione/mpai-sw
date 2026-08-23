@@ -43,23 +43,40 @@ public sealed class AsdAim
     private readonly IAudioDeliveryAim delivery;
     private readonly ISpatialAudioDeliveryAim? spatialDelivery;
 
+    // A backend that plays a scene AS A SCENE - everything at once, mixed -
+    // rather than acting on each leaf as it arrives.
+    private readonly IMixingAudioDeliveryAim? mixingDelivery;
+
     public AsdAim(IAudioDeliveryAim delivery)
     {
         this.delivery = delivery;
         spatialDelivery = delivery as ISpatialAudioDeliveryAim;
+        mixingDelivery = delivery as IMixingAudioDeliveryAim;
     }
 
     public async Task DeliverSceneAsync(AudioSceneDescriptors scene, PointOfView listenerPointOfView)
     {
         RequireListener(listenerPointOfView);
+
+        mixingDelivery?.Begin();
+
         var clock = Stopwatch.StartNew();
         await DeliverSceneInternalAsync(scene, listenerPointOfView, clock);
+
+        // Every leaf has been handed over, which is the only point at which the
+        // whole of it is known.
+        if (mixingDelivery is not null) await mixingDelivery.FinishAsync();
     }
 
     public async Task DeliverObjectAsync(AudioObject audioObject, PointOfView listenerPointOfView)
     {
         RequireListener(listenerPointOfView);
-        await DeliverObjectInternalAsync(audioObject, listenerPointOfView, objectPosition: null);
+
+        mixingDelivery?.Begin();
+
+        await DeliverObjectInternalAsync(audioObject, listenerPointOfView, placement: null);
+
+        if (mixingDelivery is not null) await mixingDelivery.FinishAsync();
     }
 
     private static void RequireListener(PointOfView listenerPointOfView)
@@ -82,12 +99,12 @@ public sealed class AsdAim
 
                 // The position recorded on THIS scene-level placement is
                 // applied uniformly to every leaf BAO under the object - see
-                // AseAim's note: per-object placements inside AOE's own
-                // composition (BasicAudioObjectEntry etc.) don't carry a
-                // confirmed-correct position field yet, so finer-grained
-                // per-BAO positioning within a composite object isn't wired.
-                var objectPosition = entry.AudioObjectSpaceTime?.SpatialAttitude1;
-                await DeliverObjectInternalAsync(entry.ObjectIDOrObject, listenerPointOfView, objectPosition);
+                // The note here said per-component placements inside a
+                // composition were not wired, because the position field was
+                // not confirmed correct. It is, and they are: the whole
+                // placement goes down, and each level adds its own.
+                await DeliverObjectInternalAsync(
+                    entry.ObjectIDOrObject, listenerPointOfView, entry.AudioObjectSpaceTime);
             }
         }
 
@@ -104,8 +121,15 @@ public sealed class AsdAim
     // a start time is actually present. No timing set - no delay, delivered
     // as soon as its turn in the walk comes up, exactly as before this
     // feature existed.
-    private static async Task WaitForStartTime(SpaceTime? placement, Stopwatch clock)
+    private async Task WaitForStartTime(SpaceTime? placement, Stopwatch clock)
     {
+        // A MIXING BACKEND IS NOT DELAYED. Waiting between leaves is what makes
+        // a sequential backend play them in order; a backend that mixes wants
+        // the offsets instead, so that two Objects starting at the same moment
+        // actually start at the same moment. It is given the placement and
+        // applies the times itself.
+        if (mixingDelivery is not null) return;
+
         var startTime = placement?.Time?.SimpleTimeData?.FirstOrDefault()?.StartTime;
         if (startTime is null) return;
 
@@ -116,7 +140,7 @@ public sealed class AsdAim
         }
     }
 
-    private async Task DeliverObjectInternalAsync(AudioObject audioObject, PointOfView listenerPointOfView, SpatialAttitude? objectPosition)
+    private async Task DeliverObjectInternalAsync(AudioObject audioObject, PointOfView listenerPointOfView, SpaceTime? placement)
     {
         foreach (var basicEntry in audioObject.BasicAudioObjects ?? new List<BasicAudioObjectEntry>())
         {
@@ -124,7 +148,16 @@ public sealed class AsdAim
             {
                 if (spatialDelivery != null)
                 {
-                    await spatialDelivery.DeliverAsync(basicEntry.BAObjectIDOrBAObject, objectPosition, listenerPointOfView);
+                    // THE COMPONENT'S OWN PLACEMENT, offset by the container's.
+                    //
+                    // This passed the CONTAINER'S position for every component,
+                    // so an Object of four voices panned all four identically -
+                    // which is to say the arrangement inside an Object never
+                    // reached the sound at all.
+                    await spatialDelivery.DeliverAsync(
+                        basicEntry.BAObjectIDOrBAObject,
+                        Combine(placement, basicEntry.BasicAudioObjectSpaceTime),
+                        listenerPointOfView);
                 }
                 else
                 {
@@ -137,8 +170,71 @@ public sealed class AsdAim
         {
             if (subEntry.SubAObjectIDOrSubAObject != null)
             {
-                await DeliverObjectInternalAsync(subEntry.SubAObjectIDOrSubAObject, listenerPointOfView, objectPosition);
+                await DeliverObjectInternalAsync(
+                    subEntry.SubAObjectIDOrSubAObject,
+                    listenerPointOfView,
+                    Combine(placement, subEntry.SubAudioObjectSpaceTime));
             }
         }
+    }
+
+    // Positions accumulate: a component's placement is within its immediate
+    // container, so where it actually sounds is that offset added to everything
+    // above it - the same rule the canvas draws by.
+    //
+    // Times accumulate too: a component starting two seconds into an Object that
+    // itself starts at five begins at seven.
+    private static SpaceTime? Combine(SpaceTime? outer, SpaceTime? inner)
+    {
+        if (outer is null) return inner;
+        if (inner is null) return outer;
+
+        var outerPosition = outer.SpatialAttitude1?.Position?.CartPosition;
+        var innerPosition = inner.SpatialAttitude1?.Position?.CartPosition;
+
+        var position = new double[3];
+        for (var axis = 0; axis < 3; axis++)
+        {
+            position[axis] =
+                (outerPosition is { Length: 3 } o ? o[axis] : 0) +
+                (innerPosition is { Length: 3 } i ? i[axis] : 0);
+        }
+
+        var outerStart = outer.Time?.SimpleTimeData?.FirstOrDefault()?.StartTime ?? 0;
+        var innerSegment = inner.Time?.SimpleTimeData?.FirstOrDefault();
+
+        return new SpaceTime
+        {
+            SpatialAttitude1 = new SpatialAttitude
+            {
+                ObjectSpatialAttitudeID = Guid.NewGuid().ToString(),
+                Position = new Position
+                {
+                    PositionID = Guid.NewGuid().ToString(),
+                    CartPosition = position
+                },
+                Orientation = inner.SpatialAttitude1?.Orientation
+                              ?? outer.SpatialAttitude1?.Orientation
+                              ?? new Orientation()
+            },
+            Time = innerSegment is null ? outer.Time : new SimpleTime
+            {
+                SimpleTimeData = new List<TimeSegment>
+                {
+                    new TimeSegment
+                    {
+                        FlagsByte = innerSegment.FlagsByte,
+                        StartTime = outerStart + innerSegment.StartTime,
+                        EndTime   = outerStart + innerSegment.EndTime,
+                        TimeType  = innerSegment.TimeType,
+
+                        // TimeUnit is nullable on the segment and not on what is
+                        // built from it, so an absent unit becomes seconds -
+                        // which is what "00" means and what every caller uses.
+                        TimeUnit  = innerSegment.TimeUnit ?? "00"
+                    }
+                }
+            }
+        };
     }
 }

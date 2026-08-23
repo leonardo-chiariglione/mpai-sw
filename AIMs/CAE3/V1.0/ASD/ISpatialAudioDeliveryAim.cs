@@ -12,5 +12,11 @@ namespace Mpai.Cae.Asd;
 // untouched and keep working exactly as before.
 public interface ISpatialAudioDeliveryAim : IAudioDeliveryAim
 {
-    Task DeliverAsync(BasicAudioObject audio, SpatialAttitude? objectPosition, PointOfView? listenerPointOfView);
+    // The whole PLACEMENT, not merely its attitude.
+    //
+    // This took a SpatialAttitude, which carries where something is and not
+    // when: a backend that mixes needs both, since the start times are what
+    // decide whether two Objects sound together or in turn. A SpaceTime holds
+    // the pair, and AsdAim had it in hand all along.
+    Task DeliverAsync(BasicAudioObject audio, SpaceTime? placement, PointOfView? listenerPointOfView);
 }

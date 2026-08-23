@@ -49,11 +49,13 @@ public sealed class PannedAudioDelivery : ISpatialAudioDeliveryAim
     }
 
     // Plain IAudioDeliveryAim.DeliverAsync - no position known, so centre pan.
-    public Task DeliverAsync(BasicAudioObject audio) => DeliverAsync(audio, null, null);
+    public Task DeliverAsync(BasicAudioObject audio) => DeliverAsync(audio, (SpaceTime?)null, null);
 
-    public Task DeliverAsync(BasicAudioObject audio, SpatialAttitude? objectPosition, PointOfView? listenerPointOfView)
+    // Takes the whole PLACEMENT now, not merely its attitude: a backend that
+    // mixes needs the times as well, so the interface carries both.
+    public Task DeliverAsync(BasicAudioObject audio, SpaceTime? placement, PointOfView? listenerPointOfView)
     {
-        var pan = ComputePan(objectPosition, listenerPointOfView);
+        var pan = ComputePan(placement, listenerPointOfView);
 
         // BasicAudioObject.Data is the raw WAV bytes (see Mpai.Core's
         // compatibility surface) - write to a temp file so NAudio's file-based
@@ -85,9 +87,9 @@ public sealed class PannedAudioDelivery : ISpatialAudioDeliveryAim
         return Task.CompletedTask;
     }
 
-    private double ComputePan(SpatialAttitude? objectPosition, PointOfView? listenerPointOfView)
+    private double ComputePan(SpaceTime? placement, PointOfView? listenerPointOfView)
     {
-        var objectX = objectPosition?.Position?.CartPosition is { Length: >= 1 } op ? op[0] : (double?)null;
+        var objectX = placement?.SpatialAttitude1?.Position?.CartPosition is { Length: >= 1 } op ? op[0] : (double?)null;
         var listenerX = listenerPointOfView?.CartPosition is { Length: >= 1 } lp ? lp[0] : (double?)null;
 
         // No position data for either side - deliver centred rather than
