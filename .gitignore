@@ -77,3 +77,5 @@ MPAIApps/ASMApp/_bin/
 MPAIApps/TSTApp/_bin/
 
 GlobalStorageDemo/
+
+*.bak*
