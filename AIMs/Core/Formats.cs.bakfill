@@ -67,24 +67,15 @@ public static class SpeakerType
 }
 
 // TFA/V1.5/formats/PCM.json
-//
-// The schema declared PCM as an ARRAY of objects, which was a drafting artefact:
-// it meant "these three values are contained", not "several sets of them". The
-// schema has been corrected to an object and the class follows, so PcmChannel is
-// gone and its three fields sit here.
 public sealed class Pcm
 {
     public string Header { get; init; } = "TFA-PCM-V1.5";
+    public List<PcmChannel> PCM { get; init; } = new();
+}
 
+public sealed class PcmChannel
+{
     public double? SamplingFrequency { get; init; }
-
-    // THE BITS USED TO REPRESENT A SAMPLE. Every caller wrote the bit depth into
-    // SamplePrecision, which is not what it is for - a consistent habit, and
-    // consistently wrong.
-    public int? Precision { get; init; }
-
-    // In the schema, and its meaning no longer known. Kept so the type matches
-    // its schema, and deliberately never written: inventing a value would be
-    // worse than an empty optional field.
     public double? SamplePrecision { get; init; }
+    public int? Precision { get; init; }
 }

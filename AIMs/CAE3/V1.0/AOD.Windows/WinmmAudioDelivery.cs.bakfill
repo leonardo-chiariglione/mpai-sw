@@ -19,15 +19,11 @@ public sealed class WinmmAudioDelivery : IAudioDeliveryAim
     public async Task DeliverAsync(
         BasicAudioObject audio)
     {
-        // Read the AUDIO Qualifier directly. This went through a .Qualifier
-        // property that presented it AS a Speech Qualifier - possible only while
-        // the two were secretly one type - and asked SpeechFileFormat whether an
-        // Audio Object was a WAV.
         var fileFormat =
-            audio.AudioQualifier?.Formats?.TransportFormat?.FileFormats;
+            audio.Qualifier?.Format?.TransportFormats?.FileFormat;
 
         if (fileFormat is not null &&
-            fileFormat != AudioFileFormat.Wav)
+            fileFormat != SpeechFileFormat.Wav)
         {
             throw new NotSupportedException(
                 $"WinmmAudioDelivery plays WAV, not '{fileFormat}'.");

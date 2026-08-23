@@ -278,18 +278,8 @@ public sealed class BasicSpeechObject
         SpeechQualifier = qualifier
     };
 
-    // Reinterpret the BYTES as a Basic Audio Object. The Qualifier does not
-    // cross: a Speech Qualifier describes speech - its language, its speaker -
-    // and an Audio Qualifier describes audio. Neither is the other in different
-    // words, which the comment here used to claim ("Audio == Speech at this
-    // level"): if that were so, OSD-AUO and OSD-SPO would not be separate Data
-    // Types.
-    //
-    // The receiving AIM should DETERMINE an Audio Qualifier for what it now
-    // holds, as MMC-SOA does in the other direction - it asserts a Speech
-    // Qualifier and says in its own comments why an assertion is the honest
-    // thing and a conversion is not.
-    public BasicAudioObject AsAudio() => BasicAudioObject.FromData(Data);
+    // Audio == Speech at this level: reinterpret as a Basic Audio Object.
+    public BasicAudioObject AsAudio() => BasicAudioObject.FromData(Data, SpeechQualifier);
 }
 
 // ---------------------------------------------------------------------------
@@ -347,33 +337,29 @@ public sealed class BasicAudioObject
         BasicAudioObjectData.OfType<InlineAudioData>().Select(d => Convert.FromBase64String(d.Data)).FirstOrDefault()
         ?? [];
 
-    // Qualifier - which presented this Object's Audio Qualifier AS a Speech
-    // Qualifier - is gone. It could only exist while the two were secretly one
-    // type, copying SubType, Format and Attributes across as though the words
-    // meant the same thing in both. Read AudioQualifier directly.
+    public SpeechQualifier? Qualifier => AudioQualifier is null ? null : new SpeechQualifier
+    {
+        SpeechQualifierID = AudioQualifier.AudioQualifierID,
+        SubType = AudioQualifier.SubType,
+        Format = AudioQualifier.Format,
+        Attributes = AudioQualifier.Attributes
+    };
 
-    // An AudioQualifier, which is what a Basic AUDIO Object is described by.
-    //
-    // This took a SpeechQualifier, so every acquisition built one for audio it
-    // had captured and the values were then reinterpreted. The two Qualifiers are
-    // separate now, each complete in itself, and nothing converts.
-    public static BasicAudioObject FromData(byte[] data, AudioQualifier? qualifier = null) => new()
+    public static BasicAudioObject FromData(byte[] data, SpeechQualifier? qualifier = null) => new()
     {
         BasicAudioObjectID = Guid.NewGuid().ToString(),
         BasicAudioObjectData = new() { new InlineAudioData(Convert.ToBase64String(data)) },
-        AudioQualifier = qualifier
+        AudioQualifier = qualifier is null ? null : new AudioQualifier
+        {
+            AudioQualifierID = qualifier.SpeechQualifierID,
+            SubType = qualifier.SubType,
+            Format = qualifier.Format,
+            Attributes = qualifier.Attributes
+        }
     };
 
-    // Reinterpret the BYTES as a Basic Speech Object; the Qualifier does not
-    // cross, for the reason given on AsAudio.
-    //
-    // MMC-SOA is the model for what a caller should do instead: it takes the
-    // captured bytes and ASSERTS a Speech Qualifier - Source Real, SpeakerType
-    // Human, the language inherited from the request - because asserting that
-    // sound is speech is what that AIM is FOR. A conversion records nothing
-    // about where the sound came from or why anyone should believe it contains
-    // speech.
-    public BasicSpeechObject AsSpeech() => BasicSpeechObject.FromData(Data);
+    // Audio == Speech at this level: reinterpret as a Basic Speech Object.
+    public BasicSpeechObject AsSpeech() => BasicSpeechObject.FromData(Data, Qualifier);
 
     // Returns a copy with a different BasicAudioObjectID. Used by AOE to
     // correct the stored object's own ID to match the Repository AssetId at

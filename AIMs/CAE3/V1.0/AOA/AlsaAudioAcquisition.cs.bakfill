@@ -173,48 +173,24 @@ public sealed class AlsaAudioAcquisition : IAudioAcquisitionAim, IStartStopAcqui
             BitConverter.GetBytes(value).CopyTo(pcm, i * 2);
         }
     }
-    // CAE-AOA acquires AUDIO, so it describes what it acquired with an
-    // AudioQualifier. It built a SpeechQualifier because the audio one held
-    // speech's types and had nothing that fitted a WAV.
-    private AudioQualifier BuildQualifier() => new AudioQualifier
+    private SpeechQualifier BuildQualifier() => new()
     {
-        AudioQualifierID = Guid.NewGuid().ToString(),
-
-        // WHEN THIS QUALIFIER WAS MADE. A SimpleTime segment with start and end the
-        // same instant, absolute - epoch 1970 - in seconds.
-        //
-        // It is not GetKeyInfo.StoredAt, and not a duplicate of it: that is the
-        // Repository's record of its own filing, and it stays behind if the Object
-        // is exported or sent elsewhere. The Qualifier describes the audio, so it
-        // travels with it and still says when it was made.
-        AudioQualifierTime = SimpleTimeAt(DateTimeOffset.UtcNow),
-
-        // SubTypes is left unset. Speech, Music, SoundEffects, Noise or Mixed
-        // is not something a WAV header says, and acquisition cannot know: a
-        // default would be a claim rather than a fact.
-
-        Formats = new AudioFormats
+        SpeechQualifierID = Guid.NewGuid().ToString(),
+        SubType = new SubType(),
+        Format = new SpeechFormat
         {
-            ContentFormat = new AudioContentFormat
+            ContentFormats = new SpeechContentFormats
             {
-                RawData = new AudioRawData
+                RawData = new Pcm
                 {
-                    SampleSpace = new Pcm
-                    {
-                        SamplingFrequency = _sampleRate,
-                        Precision = _bits
-                    }
+                    PCM = { new PcmChannel { SamplingFrequency = _sampleRate, SamplePrecision = _bits } }
                 }
             },
-            TransportFormat = new AudioTransportFormat
-            {
-                FileFormats = AudioFileFormat.Wav
-            }
+            TransportFormats = new SpeechTransportFormats { FileFormat = SpeechFileFormat.Wav }
         },
-
-        Attributes = new AudioAttributes
+        Attributes = new SpeechAttributes
         {
-            Source = "Real",
+            Source = SpeechSource.Real,
             Device = new AudioDevice
             {
                 DeviceRole = "Capture",
@@ -227,28 +203,4 @@ public sealed class AlsaAudioAcquisition : IAudioAcquisitionAim, IStartStopAcqui
             }
         }
     };
-
-    // A SimpleTime naming one instant: start and end the same, absolute epoch
-    // (1970), in seconds. The schema requires both StartTime and EndTime;
-    // TimeType true selects the 1970 epoch and TimeUnit "00" is seconds.
-    private static SimpleTime SimpleTimeAt(DateTimeOffset moment)
-    {
-        var seconds = moment.ToUnixTimeMilliseconds() / 1000.0;
-
-        return new SimpleTime
-        {
-            SimpleTimeID = Guid.NewGuid().ToString(),
-            SimpleTimeData =
-            {
-                new TimeSegment
-                {
-                    FlagsByte = 1,          // bit0 = TimeType = absolute
-                    StartTime = seconds,
-                    EndTime   = seconds,
-                    TimeType  = true,
-                    TimeUnit  = "00"        // seconds
-                }
-            }
-        };
-    }
 }

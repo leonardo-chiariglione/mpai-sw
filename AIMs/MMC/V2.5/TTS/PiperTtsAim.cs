@@ -218,14 +218,12 @@ public sealed class PiperTtsAim : ITtsAim
             {
                 RawData = new Pcm
                 {
-                    PCM =
-                    {
-                        new PcmChannel
-                        {
-                            SamplingFrequency = voice.SampleRate,
-                            SamplePrecision = voice.SamplePrecisionBits
-                        }
-                    }
+                    SamplingFrequency = voice.SampleRate,
+
+                    // Precision, not SamplePrecision: the bits used to represent
+                    // a sample. Every caller wrote the bit depth into the wrong
+                    // field - consistently, which is why nobody noticed.
+                    Precision = voice.SamplePrecisionBits
                 }
             },
             TransportFormats = new SpeechTransportFormats

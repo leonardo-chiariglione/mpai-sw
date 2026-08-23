@@ -55,37 +55,57 @@ public sealed class FileAudioAcquisition : IAudioAcquisitionAim
 
     // The acquisition AIM determines the Qualifier: what was acquired, from
     // where, and in what format.
-    private SpeechQualifier BuildQualifier(
+    //
+    // CAE-AOA acquires AUDIO, so this is an AudioQualifier. It built a
+    // SpeechQualifier because the audio one held speech's types and had nothing
+    // that fitted a WAV - so an Audio Object was described in speech terms, and
+    // nothing meaningful could be recorded about it.
+    private AudioQualifier BuildQualifier(
         string path)
     {
-        return new SpeechQualifier
+        return new AudioQualifier
         {
-            SpeechQualifierID = Guid.NewGuid().ToString(),
-            SubType = new SubType(),
-            Format = new SpeechFormat
+            AudioQualifierID = Guid.NewGuid().ToString(),
+
+            // WHEN THIS QUALIFIER WAS MADE. A SimpleTime segment with start and
+            // end the same instant, absolute - epoch 1970 - in seconds.
+            //
+            // It is not GetKeyInfo.StoredAt, and not a duplicate of it: that is
+            // the Repository's record of its own filing, and it stays behind if
+            // the Object is exported or sent elsewhere. The Qualifier describes
+            // the audio, so it travels with it and still says when it was made.
+            AudioQualifierTime = SimpleTimeAt(DateTimeOffset.UtcNow),
+
+            // SubTypes is left unset. Speech, Music, SoundEffects, Noise or
+            // Mixed is not something a WAV header says, and acquisition cannot
+            // know: a default would be a claim rather than a fact.
+
+            Formats = new AudioFormats
             {
-                ContentFormats = new SpeechContentFormats
+                ContentFormat = new AudioContentFormat
                 {
-                    RawData = new Pcm
+                    RawData = new AudioRawData
                     {
-                        PCM =
+                        SampleSpace = new Pcm
                         {
-                            new PcmChannel
-                            {
-                                SamplingFrequency = sampleRate,
-                                SamplePrecision = bits
-                            }
+                            SamplingFrequency = sampleRate,
+
+                            // Precision, not SamplePrecision: the bits used to
+                            // represent a sample. Every caller wrote the bit
+                            // depth into the wrong field, consistently.
+                            Precision = bits
                         }
                     }
                 },
-                TransportFormats = new SpeechTransportFormats
+                TransportFormat = new AudioTransportFormat
                 {
-                    FileFormat = SpeechFileFormat.Wav
+                    FileFormats = AudioFileFormat.Wav
                 }
             },
-            Attributes = new SpeechAttributes
+
+            Attributes = new AudioAttributes
             {
-                Source = SpeechSource.Real,
+                Source = "Real",
                 Device = new AudioDevice
                 {
                     DeviceID = path,
@@ -96,6 +116,30 @@ public sealed class FileAudioAcquisition : IAudioAcquisitionAim
                         ChannelCount = channels,
                         SamplingMode = channels == 1 ? "Mono" : "Stereo"
                     }
+                }
+            }
+        };
+    }
+
+    // A SimpleTime naming one instant: start and end the same, absolute epoch
+    // (1970), in seconds. The schema requires both StartTime and EndTime;
+    // TimeType true selects the 1970 epoch and TimeUnit "00" is seconds.
+    private static SimpleTime SimpleTimeAt(DateTimeOffset moment)
+    {
+        var seconds = moment.ToUnixTimeMilliseconds() / 1000.0;
+
+        return new SimpleTime
+        {
+            SimpleTimeID = Guid.NewGuid().ToString(),
+            SimpleTimeData =
+            {
+                new TimeSegment
+                {
+                    FlagsByte = 1,          // bit0 = TimeType = absolute
+                    StartTime = seconds,
+                    EndTime   = seconds,
+                    TimeType  = true,
+                    TimeUnit  = "00"        // seconds
                 }
             }
         };
