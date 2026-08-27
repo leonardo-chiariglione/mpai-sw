@@ -9,15 +9,18 @@ namespace Mpai.Mmc.Sir.EmbedTest;
 //   spk1221_a, spk1221_b  = same speaker (1221)
 //   spk1089_x             = different speaker (1089)
 // Expect: cosine(1221_a, 1221_b) HIGH; cosine(1221_a, 1089_x) LOW.
+//   arg 0: models dir (ecapa-tdnn.onnx). Default D:\AI\Models.
+//   arg 1: audio  dir (the .wav clips).  Default D:\AI\TestData\Audio.
 public static class Program
 {
     public static int Main(string[] args)
     {
         string models = args.Length >= 1 ? args[0] : @"D:\AI\Models";
+        string audio  = args.Length >= 2 ? args[1] : @"D:\AI\TestData\Audio";
         string modelPath = Path.Combine(models, "ecapa-tdnn.onnx");
-        string a = Path.Combine(models, "spk1221_a.wav");
-        string b = Path.Combine(models, "spk1221_b.wav");
-        string x = Path.Combine(models, "spk1089_x.wav");
+        string a = Path.Combine(audio, "spk1221_a.wav");
+        string b = Path.Combine(audio, "spk1221_b.wav");
+        string x = Path.Combine(audio, "spk1089_x.wav");
 
         foreach (var p in new[] { modelPath, a, b, x })
             if (!File.Exists(p)) { Console.WriteLine($"Missing: {p}"); return 1; }
@@ -31,9 +34,9 @@ public static class Program
         Console.WriteLine($"  embedding dim: {ea.Length}");
         Console.WriteLine();
 
-        double same = SpeakerEmbedder.Cosine(ea, eb);   // 1221 vs 1221
-        double diff = SpeakerEmbedder.Cosine(ea, ex);    // 1221 vs 1089
-        double diff2 = SpeakerEmbedder.Cosine(eb, ex);   // 1221 vs 1089 (other clip)
+        double same = SpeakerEmbedder.Cosine(ea, eb);
+        double diff = SpeakerEmbedder.Cosine(ea, ex);
+        double diff2 = SpeakerEmbedder.Cosine(eb, ex);
 
         Console.WriteLine("== Speaker discrimination ==");
         Console.WriteLine($"  same speaker  (1221_a vs 1221_b): cos = {same:F3}");

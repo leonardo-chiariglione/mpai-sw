@@ -6,20 +6,18 @@ using Mpai.Mmc.Sir;
 namespace Mpai.Mmc.Sir.RecogTest;
 
 // Stage 2 verification against the shared OSD-IID output.
-//   Enrol 1221 (clip a) and 1089 (clip x).
-//   Identify held-out clip b (truly 1221) -> primary candidate "1221" at
-//     ["sound","speech","speaker"].
-//   1089 vs a 1221-only DB -> not recognised, so primary is "speech" at the
-//     coarser ["sound","speech"] layer (NOT an empty list).
+//   arg 0: models dir (ecapa-tdnn.onnx). Default D:\AI\Models.
+//   arg 1: audio  dir (the .wav clips).  Default D:\AI\TestData\Audio.
 public static class Program
 {
     public static int Main(string[] args)
     {
         string models = args.Length >= 1 ? args[0] : @"D:\AI\Models";
+        string audio  = args.Length >= 2 ? args[1] : @"D:\AI\TestData\Audio";
         string modelPath = Path.Combine(models, "ecapa-tdnn.onnx");
-        string a = Path.Combine(models, "spk1221_a.wav");
-        string b = Path.Combine(models, "spk1221_b.wav");
-        string x = Path.Combine(models, "spk1089_x.wav");
+        string a = Path.Combine(audio, "spk1221_a.wav");
+        string b = Path.Combine(audio, "spk1221_b.wav");
+        string x = Path.Combine(audio, "spk1089_x.wav");
 
         foreach (var p in new[] { modelPath, a, b, x })
             if (!File.Exists(p)) { Console.WriteLine($"Missing: {p}"); return 1; }
@@ -38,7 +36,6 @@ public static class Program
         Console.WriteLine("== Recognition ==");
         Console.WriteLine($"  clip b (truly 1221): label='{pB.InstanceLabel}' conf={pB.LabelConfidenceLevel:F3} layer=[{string.Join(",", pB.Taxonomy.TaxonomyLevelIDs)}]");
 
-        // 1089 against a 1221-only DB -> coarser "speech" layer.
         var db1221 = new SpeakerDatabase(threshold: 0.45f);
         db1221.Enrol("1221", embedder.Embed(WavReader.ReadMono16k(a)));
         using var sir1221 = new SpeakerIdentityRecognitionAim(embedder, db1221);
