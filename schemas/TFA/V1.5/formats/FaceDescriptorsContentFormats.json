@@ -1,0 +1,16 @@
+{ "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.mpai.community/TFA/V1.5/formats/FaceDescriptorsContentFormats.json",
+  "title": "Face Descriptors Content Formats V1.5",
+  "description": "Face descriptor content formats. Uses oneOf with const+description so each value is self-documented.",
+  "type": "string", "oneOf": [
+    { "const": "Facial Action Coding System (FACS)",
+      "description": "An action-unit taxonomy that codes visible facial muscle movements; widely used in research and behavioral annotation." },
+    { "const": "MPEG-4 Face Animation Parameters (FAP)",
+      "description": "ISO/IEC 14496 (MPEG-4) Face & Body Animation parameter set (66 low-level + high-level FAPs) controlling standardized facial feature points for animation/visemes."},
+    { "const": "ARKit BlendShape Coefficients (52)",
+      "description": "Apple ARKit's canonical 52 blendshape coefficient set (e.g., jawOpen, mouthSmileLeft) for realÃ¢â‚¬â€˜time facial expression tracking and avatar animation." },
+    { "const": "MediaPipe Face Mesh Landmarks (468)",
+      "description": "Google MediaPipe's dense 468 3D facial landmark topology used for realÃ¢â‚¬â€˜time face geometry and expression estimation." },
+    { "const": "iBUG 68 Facial Landmarks (300-W)",
+      "description": "The 68Ã¢â‚¬â€˜point landmark annotation scheme popularized by the 300Ã¢â‚¬â€˜W/iÃ‚Â·bug datasets (outer contour, eyes, brows, nose, mouth)." },
+    { "const": "ISO/IEC 19794-5 Landmark Points", "description": "Landmark Point Block defined within ISO/IEC 19794Ã¢â‚¬â€˜5 Face Image Data records for biometric face image interchange." } ] }

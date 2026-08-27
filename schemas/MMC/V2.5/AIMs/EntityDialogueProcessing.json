@@ -1,0 +1,51 @@
+{ "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "https://schemas.mpai.community/AIF/V3.0/data/AIMMetadata.json",
+  "$id": "https://schemas.mpai.community/MMC/V2.5/AIMs/EntityDialogueProcessing.json",
+  "title": "Entity Dialogue Processing V2.5",
+
+  "Identifier":   { "ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "MMC-EDP-V2.5" },
+
+  "APIProfile":   "Basic",
+  "Description":  "This AIM produces the Machine's Text and Personal Status from the human's Text, ObjectID, Personal Status and other data.",
+
+  "ExternalPorts":  [
+    { "Name": "Summary"              , "Direction": "Input",   "DataType": "MMC-SUM-V2.5",  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "TextObject"           , "Direction": "Input",   "DataType": "OSD-TXO-V1.5",  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "Meaning"              , "Direction": "Input",   "DataType": "MMC-MEA-V2.5",  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "PersonalStatus"       , "Direction": "Input",   "DataType": "MMC-EPS-V2.5",  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "InstanceID"           , "Direction": "Input",   "DataType": "OSD-IID-V1.5",  "Technology": "Software", "Protocol": "", "PortNumber": 1, "IsRemote": false },
+    { "Name": "AVSceneGeometry"      , "Direction": "Input",   "DataType": "OSD-MSG-V1.5",  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "SpeakerID"            , "Direction": "Input",   "DataType": "OSD-IID-V1.5",  "Technology": "Software", "Protocol": "", "PortNumber": 2, "IsRemote": false },
+    { "Name": "FaceID"               , "Direction": "Input",   "DataType": "OSD-IID-V1.5",  "Technology": "Software", "Protocol": "", "PortNumber": 3, "IsRemote": false },
+    { "Name": "MachineTextObject"    , "Direction": "Output",  "DataType": "OSD-TXO-V1.5",  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "MachinePersonalStatus", "Direction": "Output",  "DataType": "MMC-EPS-V2.5",  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "EditedSummary"        , "Direction": "Output",  "DataType": "MMC-SUM-V2.5",  "Technology": "Software", "Protocol": "", "IsRemote": false }
+  ],
+
+  "SubAIMs":  [ ],
+  "Topology":  [ ],
+
+  "Implementations":  [
+   {
+    "BinaryName": "/* provided by implementer */",
+    "Architecture": "/* x86-64 | ARM64 */",
+    "OperatingSystem": "/* Windows | Linux | MacOS */",
+    "Version": "/* implementer version */",
+    "Source": "/* AIMStorage | MPAIStore */",
+    "Destination": "/* provided by implementer */"
+   }
+  ],
+
+  "ResourcePolicies":  [
+    { "Name": "Memory"              , "Minimum": "/* GB */",             "Maximum": "/* GB */",             "Request": "/* GB */" },
+    { "Name": "CPU:Number"          , "Minimum": "/* integer, 0=all */", "Maximum": "/* integer, 0=all */", "Request": "/* integer */" },
+    { "Name": "CPU:Class"           , "Minimum": "/* string */",         "Maximum": "/* string */",         "Request": "/* string */" },
+    { "Name": "GPU:Number"          , "Minimum": "/* integer, 0=all */", "Maximum": "/* integer, 0=all */", "Request": "/* integer */" },
+    { "Name": "GPU:CUDA:Class"      , "Minimum": "/* string */",         "Maximum": "/* string */",         "Request": "/* string */" },
+    { "Name": "GPU:CUDA:FrameBuffer", "Minimum": "/* GB */",             "Maximum": "/* GB */",             "Request": "/* GB */" },
+    { "Name": "GPU:CUDA:MemorySpeed", "Minimum": "/* GB/s */",           "Maximum": "/* GB/s */",           "Request": "/* GB/s */" }
+  ],
+
+  "DataXMData":  { },
+
+  "Documentation":  [{ "Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-mmc/v2-5/" }] }
