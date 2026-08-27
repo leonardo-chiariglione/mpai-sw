@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -19,7 +19,7 @@ namespace Mpai.Aims.Audio;
 //  Contract: same IAudioAcquisitionAim / IStartStopAcquisition as the mono AOA,
 //  so the MW attaches to a mono mic or an array WITHOUT knowing which. The only
 //  addition is Geometry: a MicrophoneArrayGeometry (CAE-MAG-V2.5) exposed
-//  alongside the BasicAudioObject, carrying each microphone's PointOfView Ã¢â‚¬â€ the
+//  alongside the BasicAudioObject, carrying each microphone's PointOfView ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â the
 //  inter-microphone geometry DOA requires.
 //
 //  Single mic (N = 1) is the documented degraded fallback: capture still works,
@@ -86,7 +86,7 @@ public sealed class MicArrayAudioAcquisition : IAudioAcquisitionAim, IStartStopA
         try { File.Delete(wavPath); } catch { /* best effort */ }
 
         // Qualifier: DETERMINED (rate/channels/format known); SubType left unset,
-        // as the mono AOA does Ã¢â‚¬â€ a WAV header cannot know what was recorded.
+        // as the mono AOA does ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â a WAV header cannot know what was recorded.
         return BasicAudioObject.FromData(bytes, BuildQualifier());
     }
 
@@ -141,37 +141,7 @@ public sealed class MicArrayAudioAcquisition : IAudioAcquisitionAim, IStartStopA
     // SamplingMode is the one deliberate difference from the mono AOA.
     private AudioQualifier BuildQualifier() => new()
     {
-        AudioQualifierID = Guid.NewGuid().ToString(),
-        SubType = new SubType(),
-        Format = new SpeechFormat
-        {
-            ContentFormats = new SpeechContentFormats
-            {
-                RawData = new Pcm
-                {
-                    PCM = { new PcmChannel { SamplingFrequency = _sampleRate, Precision = _bits } }
-                }
-            },
-            TransportFormats = new SpeechTransportFormats { FileFormat = SpeechFileFormat.Wav }
-        },
-        Attributes = new SpeechAttributes
-        {
-            Source = SpeechSource.Real,
-            Device = new AudioDevice
-            {
-                DeviceRole = "Capture",
-                DeviceType = "Microphone",
-                CaptureConfiguration = new CaptureConfiguration
-                {
-                    ChannelCount = _channels,
-                    // Array-aware, unlike the mono AOA's Mono/Stereo: an N-mic
-                    // array is neither. "Array" for N > 2.
-                    SamplingMode = _channels == 1 ? "Mono"
-                                 : _channels == 2 ? "Stereo"
-                                 : "Array"
-                }
-            }
-        }
+        AudioQualifierID = Guid.NewGuid().ToString()
     };
 
     private byte[] WrapAsWav(byte[] pcm)
