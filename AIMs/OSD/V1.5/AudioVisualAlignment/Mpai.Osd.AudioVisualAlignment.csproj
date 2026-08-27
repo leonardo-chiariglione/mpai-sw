@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Pure logic (no models). Needs Core (scene + BMS types) and the BMS
+         composition AIM (which AVA calls to build the base BMS). -->
+    <ProjectReference Include="..\..\..\Core\Mpai.Core.csproj" />
+    <ProjectReference Include="..\BasicAudioVisualSceneDescription\Mpai.Osd.BasicAudioVisualSceneDescription.csproj" />
+    <ProjectReference Include="..\..\..\..\AIF\V3.0\src\AIF.Controller\AIF.Controller.csproj" />
+  </ItemGroup>
+</Project>

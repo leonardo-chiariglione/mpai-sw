@@ -51,6 +51,14 @@ public sealed class BasicAudioVisualSceneDescriptors
     // Named "...Data" to match the schema property BasicAVSceneDescriptorsData.
     public List<BasicAVSceneEntry> BasicAVSceneDescriptorsData { get; init; } = new();
 
+    // OPTIONAL alignment layer (populated by the OSD-AVA AIM, absent in the
+    // degenerate composition-only BMS). Each element combines the constituent
+    // per-modality objects that AVA determined to be the SAME entity (matched by
+    // Spatial Attitude / PointOfView), tied by a shared AlignmentCode. Additive
+    // and non-destructive: the original BAS/BVS scenes above keep their objects
+    // and PointOfViews exactly as measured; this is AVA's interpretation on top.
+    public List<AlignedMMObject> AlignedMMObjects { get; init; } = new();
+
     public DataExchangeMetadata? DataXMData { get; init; }
     public string? DescrMetadata { get; init; }
 }
@@ -67,4 +75,29 @@ public sealed class BasicAVSceneEntry
     // these share no common base type (all Basic, no hierarchy); the concrete
     // type is checked at use (e.g. `entry.BXSOrBXSID is BasicAudioSceneDescriptors`).
     public object? BXSOrBXSID { get; init; }
+}
+
+// ---------------------------------------------------------------------------
+//  Aligned MultiModal Object - one element of BMS.AlignedMMObjects, produced by
+//  OSD-AVA. Combines the constituent per-modality objects (a BasicAudioObject +
+//  a BasicVisualObject, extensible to speech/3D) that AVA aligned as the same
+//  entity, by a shared AlignmentCode, with an optional consensus PointOfView.
+//
+//  AlignedObjects holds the constituents (or their id strings). Typed as object
+//  because the constituents are of different object types with no common base
+//  (BasicAudioObject / BasicVisualObject / BasicSpeechObject / ... / id string);
+//  the concrete type is checked at use.
+// ---------------------------------------------------------------------------
+public sealed class AlignedMMObject
+{
+    // Shared code marking the constituents as the same entity in this scene.
+    public string AlignmentCode { get; init; } = "";
+
+    // Optional consensus attitude of the fused entity. Does NOT replace the
+    // constituents' own PointOfViews (those stay on the original scene entries).
+    public PointOfView? AlignmentPointOfView { get; init; }
+
+    // The constituent objects fused into this entity (audio + visual, extensible),
+    // or their id-string references. At least one; typically two.
+    public List<object> AlignedObjects { get; init; } = new();
 }

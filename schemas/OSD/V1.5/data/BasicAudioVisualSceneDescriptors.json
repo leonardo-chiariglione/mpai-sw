@@ -31,6 +31,14 @@
                                   { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/BasicOfflineMapSceneDescriptors.json" },
                                   { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/BasicAudioVisualSceneDescriptors.json" },
                                   { "type": "string" } ] } } } },
+    "AlignedMMObjects":           { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": [ "AlignmentCode", "AlignedObjects" ], "properties": {
+      "AlignmentCode":            { "type": "string" },
+      "AlignmentPointOfView":     { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/PointOfView.json" },
+      "AlignedObjects":           { "type": "array", "items": { "anyOf": [
+                                  { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/BasicAudioObject.json" },
+                                  { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/BasicVisualObject.json" },
+                                  { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/BasicSpeechObject.json" },
+                                  { "type": "string" } ] } } } } },
 
     "DataXMData":                 { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
     "DescrMetadata":              { "type": "string", "maxLength": 2048 } } }
