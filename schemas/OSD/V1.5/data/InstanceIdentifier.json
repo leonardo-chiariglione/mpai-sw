@@ -14,7 +14,7 @@
     "InstanceTime":                { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SimpleTime.json", "description": "Time this Instance Identifier was produced." },
 
     "InstanceSpaceTime":           { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SpaceTime.json", "description": "Space/Time where/when this Instance is located." },
-    "ObjrctID":                    { "type": "string", "description": "The object to identified." },
+    "ObjectID":                    { "type": "string", "description": "The object to identified." },
     
     "InstanceIdentifierData":      { "type": "array", "minItems": 1,
                                      "description": "Ordered set of candidate Instance Identifiers; the first element is the primary identifier.",
