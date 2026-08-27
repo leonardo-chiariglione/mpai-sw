@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 using Mpai.Core;
@@ -22,6 +22,22 @@ namespace Mpai.Osd.VisualScene;
 //  needs depth (LiDAR fusion, later). So PointOfView.SpherPosition carries the
 //  visual bearing (azimuth/elevation); CartPosition is left at origin until
 //  fusion supplies depth. This is honest: we describe direction, not distance.
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+//  FUTURE INPUT (reference model, not yet in the system): AVS is also to
+//  receive the PREVIOUS cycle's Full Environment Descriptors (CAV-FED-V1.1)
+//  as prior context - FED(t-1) -> AVS(t) - to inform the current scene
+//  description (temporal continuity, tracking, disambiguation).
+//
+//  TRUST: HCI is a separate trust domain from the other Ego-CAV subsystems
+//  (ESS/AMS/MAS). So FED arriving here crosses a trust boundary and carries
+//  MPAI-PTF Data Exchange Metadata (DataXMData -> PTF/V1.0): it is external,
+//  provenance/authorisation/confidence-checked data, to be trust-evaluated,
+//  NOT treated as HCI-internal state. (FED from a REMOTE CAV crosses the same
+//  way, arriving in the Ego-Remote HCI Message (CAV-ERH-V1.1), also PTF-borne.)
+//
+//  Depends on: fused AudioVisualSceneDescriptors (OSD-BMS) and the FED type,
+//  neither of which exists yet. Add when those are built.
 // ---------------------------------------------------------------------------
 public sealed class AvsVisualPipeline
 {

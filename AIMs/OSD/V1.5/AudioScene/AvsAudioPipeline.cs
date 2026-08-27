@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -9,10 +9,10 @@ using Mpai.Aims.Audio; // MicrophoneArrayGeometry (defined in the AOA / CAE3 pro
 namespace Mpai.Osd.AudioScene;
 
 // =============================================================================
-//  AVS Ã¢â‚¬â€ Audio pipeline (Slice 2)
+//  AVS ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Audio pipeline (Slice 2)
 // -----------------------------------------------------------------------------
-//  Consumes what the microphone-array AOA produces Ã¢â‚¬â€ a BasicAudioObject (the
-//  interleaved multichannel WAV) plus the MicrophoneArrayGeometry Ã¢â‚¬â€ and
+//  Consumes what the microphone-array AOA produces ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â a BasicAudioObject (the
+//  interleaved multichannel WAV) plus the MicrophoneArrayGeometry ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â and
 //  localises speaking humans: is anyone speaking (VAD), and from which
 //  direction (DOA). This is the audio half of AV Scene Description; the visual
 //  half and the face<->voice fusion are separate and marked as extension points.
@@ -22,13 +22,29 @@ namespace Mpai.Osd.AudioScene;
 //  STATUS
 //    Real and usable:  WAV de-interleave, energy VAD, GCC-PHAT DOA over the
 //                      per-microphone CartPosition. No model, no external
-//                      dependency Ã¢â‚¬â€ pure C#, runs out of the box.
+//                      dependency ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â pure C#, runs out of the box.
 //    Extension points: model-based VAD (sherpa-onnx/WebRTC), multi-source DOA,
 //                      and fusion with the visual pipeline / speaker identity.
 //
 //  Not compile-verified here (no .NET SDK in the authoring environment); written
 //  against the real repo types (BasicAudioObject.Data, PointOfView.CartPosition).
 // =============================================================================
+// ---------------------------------------------------------------------------
+//  FUTURE INPUT (reference model, not yet in the system): AVS is also to
+//  receive the PREVIOUS cycle's Full Environment Descriptors (CAV-FED-V1.1)
+//  as prior context - FED(t-1) -> AVS(t) - to inform the current scene
+//  description (temporal continuity, tracking, disambiguation).
+//
+//  TRUST: HCI is a separate trust domain from the other Ego-CAV subsystems
+//  (ESS/AMS/MAS). So FED arriving here crosses a trust boundary and carries
+//  MPAI-PTF Data Exchange Metadata (DataXMData -> PTF/V1.0): it is external,
+//  provenance/authorisation/confidence-checked data, to be trust-evaluated,
+//  NOT treated as HCI-internal state. (FED from a REMOTE CAV crosses the same
+//  way, arriving in the Ego-Remote HCI Message (CAV-ERH-V1.1), also PTF-borne.)
+//
+//  Depends on: fused AudioVisualSceneDescriptors (OSD-BMS) and the FED type,
+//  neither of which exists yet. Add when those are built.
+// ---------------------------------------------------------------------------
 public sealed class AvsAudioPipeline
 {
     private const double SpeedOfSound = 343.0;   // m/s, ~20 C
@@ -67,7 +83,7 @@ public sealed class AvsAudioPipeline
 
         // Build the real output: BasicAudioSceneDescriptors (OSD-BAS). Because AVS
         // captures Basic Objects, this is the BASIC (flat) scene, not the
-        // hierarchical AudioSceneDescriptors Ã¢â‚¬â€ one entry per located speaking
+        // hierarchical AudioSceneDescriptors ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â one entry per located speaking
         // human, each carrying the source audio and its direction as a PointOfView.
         var entries = new List<BasicAudioSceneEntry>();
         if (speaking)
@@ -227,7 +243,7 @@ public sealed class AvsAudioPipeline
         return Math.Sqrt(dx * dx + dy * dy + dz * dz);
     }
 
-    // Naive DFT (O(n^2)) Ã¢â‚¬â€ adequate for short localisation frames; replace with
+    // Naive DFT (O(n^2)) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â adequate for short localisation frames; replace with
     // an FFT (e.g. MathNet.Numerics) for long windows.
     private static (double[] re, double[] im) Dft(short[] x, int n)
     {
@@ -265,7 +281,7 @@ public sealed class AvsAudioPipeline
 }
 
 // NB: the pipeline now returns the REAL type BasicAudioSceneDescriptors
-// (OSD-BAS-V1.5, Mpai.Core.OSD) Ã¢â‚¬â€ the Basic (flat) audio scene, appropriate
+// (OSD-BAS-V1.5, Mpai.Core.OSD) ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â the Basic (flat) audio scene, appropriate
 // because AVS captures Basic Objects. The full hierarchical AudioSceneDescriptors
 // (ASD) is deliberately NOT used here; CAE-ASE already builds BAS from
 // BasicAudioObjects (CreateBasicScene/MaterializeBasicScene) and this pipeline
