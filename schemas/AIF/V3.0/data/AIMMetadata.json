@@ -48,6 +48,7 @@
                                          "then": { "required": [ "ImplementationURI" ] } } ],
                             "properties": {
       "ImplementationURI":{ "anyOf": [ { "type": "string", "format": "uri" }, { "$dynamicRef": "#placeholder" } ] },
+      "MASPort":          { "type": "integer", "description": "Implementer-defined access port of the embedded MAS API Server. Default number is 443" },
       "BinaryName":       { "type": "string" },
       "Architecture":     { "anyOf": [ { "enum": [ "x86", "x86-64", "ARM", "ARM64", "MIPS", "RISC-V" ] }, { "$dynamicRef": "#placeholder" } ] },
       "OperatingSystem":  { "anyOf": [ { "enum": [ "Windows", "Linux", "MacOS", "Debian", "Ubuntu", "RedHat", "Android", "Zephyr", "RTOS", "Oniro", "iOS" ] }, { "$dynamicRef": "#placeholder" } ] },
