@@ -79,3 +79,10 @@ MPAIApps/TSTApp/_bin/
 GlobalStorageDemo/
 
 *.bak*
+
+TestData/gallery.json
+
+TestData/gallery.json
+
+TestData/Images/leonardo*.jpg
+TestData/Images/leonardo*.JPG
