@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 
 using Mpai.Core;
@@ -22,17 +22,20 @@ public static class Program
         string models      = args.Length >= 2 ? args[1] : @"D:\AI\Models";
         string arc   = Path.Combine(models, "glintr100.onnx");
         string ecapa = Path.Combine(models, "ecapa-tdnn.onnx");
+        string scrfd = Path.Combine(models, "scrfd_10g_bnkps.onnx");
 
         if (!File.Exists(arc))   { Console.WriteLine($"Missing face model: {arc}"); return 1; }
         if (!File.Exists(ecapa)) { Console.WriteLine($"Missing voice model: {ecapa}"); return 1; }
+        if (!File.Exists(scrfd)) { Console.WriteLine($"Missing face detector: {scrfd}"); return 1; }
 
         var gallery = SubjectGallery.Load(galleryPath);
         Console.WriteLine($"Gallery: {galleryPath}");
         Console.WriteLine($"Currently enrolled ({gallery.Count}): {(gallery.Count == 0 ? "(none)" : string.Join(", ", gallery.SubjectIds))}");
         Console.WriteLine();
 
-        using var face  = new ArcFaceRecogniser(arc);
-        using var voice = new SpeakerEmbedder(ecapa);
+        using var face     = new ArcFaceRecogniser(arc);
+        using var voice    = new SpeakerEmbedder(ecapa);
+        using var detector = new Mpai.Osd.VisualScene.ScrfdFaceDetector(scrfd);
 
         while (true)
         {
@@ -61,7 +64,8 @@ public static class Program
             {
                 SubjectEnrolment.EnrolSubject(gallery, name,
                     faceRecogniser: face, faceImagePath: img,
-                    speakerEmbedder: voice, voiceClipPath: wav);
+                    speakerEmbedder: voice, voiceClipPath: wav,
+                    faceDetector: detector);
                 gallery.Save(galleryPath);
                 string got = (img != null ? "face" : "") + (img != null && wav != null ? "+" : "") + (wav != null ? "voice" : "");
                 Console.WriteLine($"  Enrolled '{name}' ({got}). Saved. Gallery now has {gallery.Count} subject(s).");

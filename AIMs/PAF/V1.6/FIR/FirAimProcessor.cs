@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -132,7 +132,8 @@ public sealed class FirAimProcessor : IAimProcessor
     private InstanceIdentifier IdentifyCrop(Image<Rgb24> crop)
     {
         var fir = new FaceIdentityRecognitionAim(_recogniser, _gallery);
-        return fir.Identify(crop);
+        var iid = fir.Identify(crop);
+        return iid;
     }
 
     private static InstanceIdentifier CoarseFaceIdentity() => new()

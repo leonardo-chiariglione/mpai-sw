@@ -5,6 +5,7 @@ using AIF.Controller;
 using AIF.Store;
 
 using Mpai.Core;
+using Mpai.Core.OSD;
 
 namespace Hci.Access.Host;
 
@@ -24,6 +25,7 @@ internal static class Program
     private const string AmdRepository = @"D:\AI\AIMs\AMDs";
     private const string SettingsFile  = @"D:\AI\AIMs\aim-settings.json";
     private const string SpeechFixture = @"D:\AI\TestData\Audio\leonardo.wav";
+    private const string ImageFixture  = @"D:\AI\TestData\Images\leonardo.jpg";
 
     [STAThread]
     private static void Main(string[] args)
@@ -44,12 +46,21 @@ internal static class Program
         var provider = new HciIdentityProvider(store);
         var workflow = new HciAccessWorkflow(ua, provider, settings);
 
-        // Drive the choreography: identify the speaker in the enrolled clip.
-        var wav = args.FirstOrDefault(a => !a.StartsWith("--", StringComparison.Ordinal)) ?? SpeechFixture;
-        Console.WriteLine($"Identifying speaker in: {wav}");
-        Console.WriteLine();
-
-        var identity = workflow.IdentifySpeaker(wav);
+        // Mode: "face" runs FIR on the image; anything else runs SIR on the wav.
+        var mode = args.FirstOrDefault(a => !a.StartsWith("--", StringComparison.Ordinal)) ?? "voice";
+        InstanceIdentifier? identity;
+        if (string.Equals(mode, "face", StringComparison.OrdinalIgnoreCase))
+        {
+            Console.WriteLine($"Identifying face in: {ImageFixture}");
+            Console.WriteLine();
+            identity = workflow.IdentifyFace(ImageFixture);
+        }
+        else
+        {
+            Console.WriteLine($"Identifying speaker in: {SpeechFixture}");
+            Console.WriteLine();
+            identity = workflow.IdentifySpeaker(SpeechFixture);
+        }
 
         Console.WriteLine();
         if (identity is null)

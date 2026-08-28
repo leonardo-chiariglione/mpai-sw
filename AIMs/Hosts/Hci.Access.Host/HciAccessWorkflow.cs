@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -27,7 +27,8 @@ namespace Hci.Access.Host;
 // helpers modelled here.
 public sealed class HciAccessWorkflow
 {
-    private const string SirAiw = "UAG-SIR-V1.0";   // the AIW that wraps MMC-SIR (one SubAIM, no code)
+    private const string SirAiw = "UAG-SIR-V1.0";   // wraps MMC-SIR (one SubAIM, no code)
+    private const string FirAiw = "UAG-FIR-V1.0";   // wraps PAF-FIR (one SubAIM, no code)
 
     private readonly UserAgent    _ua;
     private readonly IAimProvider _provider;
@@ -69,7 +70,6 @@ public sealed class HciAccessWorkflow
             if (completed is null) { Console.WriteLine("  [diag] Run returned null (see error above)."); return null; }
 
             // Diagnostics.
-            Console.WriteLine($"  [diag] completed.Ports keys: {string.Join(", ", completed.Ports.Keys)}");
 
             // The speaker identity (OSD-IID) comes back on the AIW's OutputSpeakerID boundary port.
             string? iidJson = completed.Ports.TryGetValue("OutputSpeakerID", out var j) ? j
@@ -79,6 +79,44 @@ public sealed class HciAccessWorkflow
         finally
         {
             _ua.MPAI_AIFU_AIW_Stop(sirAiwId);
+        }
+    }
+
+    // Identify the user's face in a picture, through the Controller. Returns the OSD-IID.
+    public InstanceIdentifier? IdentifyFace(string imagePath)
+    {
+        if (!File.Exists(imagePath))
+            throw new FileNotFoundException($"Image fixture not found: {imagePath}");
+
+        _ua.MPAI_AIFU_Controller_Initialize();
+
+        if (_ua.MPAI_AIFU_AIW_Start(FirAiw, _provider, _settings, out var firAiwId) != AifError.OK)
+        {
+            Console.WriteLine($"  could not start {FirAiw}.");
+            return null;
+        }
+
+        try
+        {
+            // UA captures the picture at the boundary and wraps it as the Basic
+            // Visual Object the Controller routes to FIR's OSD-BVO input port.
+            var bvo = BasicVisualObject.FromFile(Path.GetFileName(imagePath), File.ReadAllBytes(imagePath));
+            var boundary = new Dictionary<string, string>
+            {
+                ["InputVisual"] = MpaiJson.ToJson(bvo)
+            };
+
+            var completed = Run(_ua, firAiwId, boundary);
+            if (completed is null) return null;
+
+            // The face identity (OSD-IID) comes back on the AIW's FaceID boundary port.
+            string? iidJson = completed.Ports.TryGetValue("FaceID", out var j) ? j
+                            : completed.Ports.Values.FirstOrDefault();
+            return string.IsNullOrWhiteSpace(iidJson) ? null : MpaiJson.FromJson<InstanceIdentifier>(iidJson);
+        }
+        finally
+        {
+            _ua.MPAI_AIFU_AIW_Stop(firAiwId);
         }
     }
 
