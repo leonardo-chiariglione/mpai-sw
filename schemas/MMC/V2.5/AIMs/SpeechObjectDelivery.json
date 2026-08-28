@@ -10,8 +10,8 @@
   "Description":          "Speech Object Delivery: receives a User Command, an Speech Object, and provides an Speech Object.",
 
   "ExternalPorts":        [{"Name": "UserCommand",  "Direction": "Input",  "DataType": "CAE-UCM-V1.0", "Technology": "Software", "Protocol": "", "IsRemote": false },
-                           {"Name": "SpeechObject", "Direction": "Input",  "DataType": "OSD-SPO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false },
-                           {"Name": "SpeechObject", "Direction": "Output", "DataType": "OSD-SPO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false }],
+                           {"Name": "SpeechObject", "Direction": "Input",  "DataType": ["OSD-BSO-V1.5", "OSD-SPO-V1.5"], "Technology": "Software", "Protocol": "", "IsRemote": false },
+                           {"Name": "SpeechObject", "Direction": "Output", "DataType": "OSD-BSO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false }],
 
   "SubAIMs":              [],
 

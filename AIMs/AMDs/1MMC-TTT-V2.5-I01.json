@@ -20,13 +20,14 @@
   "Topology":             [],
 
   "Implementations":      [{"ImplementationURI": "file:///D:/AI/AIMs/AMDs/MMC-TTT-V2.5-I01",
+"MASPort":          443,
                             "BinaryName":       "Mpai.Mmc.Ttt",
                             "Architecture":     "x86-64",
                             "OperatingSystem":  "Windows",
                             "Version":          "2.5",
                             "Source":           "AIMStorage"}],
 
-  "ResourcePolicies":     [{"Name": "Memory",     "Minimum": "1_GB",   "Request": "3_GB",   "Maximum": "8_GB"},
+  "ResourcePolicies":     [{"Name": "Memory",     "Minimum": "1 GB",   "Request": "3 GB",   "Maximum": "8 GB"},
                            {"Name": "CPU:Class",  "Minimum": "Medium", "Request": "Medium", "Maximum": "High"}],
 
   "DataXMData":           { },

@@ -11,8 +11,8 @@
   "InternalTypes":        [],
 
   "ExternalPorts":        [{"Name": "UserCommand", "Direction": "Input",  "DataType": "CAE-UCM-V1.0",                    "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "InputAudio",  "Direction": "Input",  "DataType": "OSD-AUO-V1.5",                    "Technology": "Hardware", "Protocol": "", "IsRemote": false},
-                           {"Name": "OutputAudio", "Direction": "Output", "DataType": ["OSD-BAO-V1.5", "OSD-AUO-V1.5"], "Technology": "Software", "Protocol": "", "IsRemote": false}],
+                           {"Name": "InputAudio",  "Direction": "Input",  "DataType": "OSD-BAO-V1.5",                    "Technology": "Hardware", "Protocol": "", "IsRemote": false},
+                           {"Name": "OutputAudio", "Direction": "Output", "DataType": "OSD-BAO-V1.5",                    "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":              [],
   "Topology":             [],

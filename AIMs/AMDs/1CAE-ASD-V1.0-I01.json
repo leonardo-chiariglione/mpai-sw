@@ -10,9 +10,15 @@
   "SubAIMs":          [],
   "Topology":         [],
 
-  "Implementations":  [],
+"Implementations":  [{"ImplementationURI": "file:///D:/AI/AIMs/CAE-ASD-V1.0-I01",
+                       "MASPort":           443,
+                       "BinaryName":        "Mpai.Cae.Asd",
+                       "Architecture":      "x86-64",
+                       "OperatingSystem":   "Windows",
+                       "Version":           "1.0",
+                       "Source":            "AIMStorage"}],
 
-  "ResourcePolicies": [{"Name": "Memory", "Minimum": "256_MB", "Request": "512_MB", "Maximum": "1_GB"}],
+  "ResourcePolicies": [{"Name": "Memory", "Minimum": "0.25 GB", "Request": "0.5 GB", "Maximum": "1 GB"}],
 
   "DataXMData":       { },
 

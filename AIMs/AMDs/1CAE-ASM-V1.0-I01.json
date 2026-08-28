@@ -37,9 +37,15 @@
                            { "Output": { "AIMName": "", "PortName": "DeliveryCommand", "PortNumber": 4 }, "Input": { "AIMName": "CAE-ASD-V1.0", "PortName": "UserCommand" } },
                            { "Output": { "AIMName": "CAE-ASD-V1.0", "PortName": "AudioDestination" }, "Input": { "AIMName": "", "PortName": "AudioDestination" } }],
 
-  "Implementations":      [],
+"Implementations":  [{"ImplementationURI": "file:///D:/AI/AIMs/CAE-ASM-V1.0-I01",
+                       "MASPort":           443,
+                       "BinaryName":        "Mpai.Cae.Asm",
+                       "Architecture":      "x86-64",
+                       "OperatingSystem":   "Windows",
+                       "Version":           "1.0",
+                       "Source":            "AIMStorage"}],
 
-  "ResourcePolicies":     [{"Name": "Memory", "Minimum": "1_GB", "Request": "2_GB", "Maximum": "4_GB"}, {"Name": "CPU:Class", "Minimum": "Medium", "Request": "High", "Maximum": "High"}],
+  "ResourcePolicies":     [{"Name": "Memory", "Minimum": "1 GB", "Request": "2 GB", "Maximum": "4 GB"}, {"Name": "CPU:Class", "Minimum": "Medium", "Request": "High", "Maximum": "High"}],
 
   "DataXMData":           {},
 

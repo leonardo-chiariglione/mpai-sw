@@ -11,13 +11,14 @@
   "Topology":         [],
 
   "Implementations":  [{"ImplementationURI": "file:///D:/AI/AIMs/MMC-OCR-V1.5-I01",
+"MASPort":          443,
                         "BinaryName":        "Mpai.Mmc.Ocr",
                         "Architecture":      "x86-64",
                         "OperatingSystem":   "Windows",
                         "Version":           "2.5",
                         "Source":            "AIMStorage"}],
 
-  "ResourcePolicies": [{"Name": "Memory",    "Minimum": "0.5_GB", "Request": "1_GB",   "Maximum": "2_GB"},
+  "ResourcePolicies": [{"Name": "Memory",    "Minimum": "0.5 GB", "Request": "1 GB",   "Maximum": "2 GB"},
                        {"Name": "CPU:Class", "Minimum": "Medium", "Request": "Medium", "Maximum": "High"}],
 
   "DataXMData":       {},

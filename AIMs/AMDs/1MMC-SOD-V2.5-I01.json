@@ -11,13 +11,14 @@
   "Topology":         [],
 
   "Implementations":  [{"ImplementationURI": "file:///D:/AI/AIMs/MMC-SOD-V2.5-I01",
+"MASPort":          443,
                         "BinaryName":        "Mpai.Mmc.Sod",
                         "Architecture":      "x86-64",
                         "OperatingSystem":   "Windows",
                         "Version":           "1.0",
                         "Source":            "AIMStorage"}],
 
-  "ResourcePolicies": [{"Name": "Memory",    "Minimum": "0.1_GB", "Request": "0.2_GB", "Maximum": "0.5_GB"},
+  "ResourcePolicies": [{"Name": "Memory",    "Minimum": "0.1 GB", "Request": "0.2 GB", "Maximum": "0.5 GB"},
                        {"Name": "CPU:Class", "Minimum": "Low",    "Request": "Low",    "Maximum": "Medium"}],
 
   "DataXMData":       {},

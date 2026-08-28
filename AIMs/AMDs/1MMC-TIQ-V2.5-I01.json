@@ -13,13 +13,14 @@
   "Topology":         [],
 
   "Implementations":  [{"ImplementationURI": "file:///D:/AI/AIMs/MMC-TIQ-V2.5-I01",
+"MASPort":          443,
                         "BinaryName":        "Mpai.Mmc.Tiq",
                         "Architecture":      "x86-64",
                         "OperatingSystem":   "Windows",
                         "Version":           "2.5",
                         "Source":            "AIMStorage"}],
 
-  "ResourcePolicies": [{"Name": "Memory",    "Minimum": "2_GB",   "Request": "3_GB", "Maximum": "4_GB"},
+  "ResourcePolicies": [{"Name": "Memory",    "Minimum": "2 GB",   "Request": "3 GB", "Maximum": "4 GB"},
                        {"Name": "CPU:Class", "Minimum": "Medium", "Request": "High", "Maximum": "High"}],
 
   "DataXMData":       {},

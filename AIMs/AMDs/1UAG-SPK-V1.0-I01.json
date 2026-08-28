@@ -20,9 +20,15 @@
                            { "Output": { "AIMName": "MMC-TTS-V2.5", "PortName": "OutputSpeech" }, "Input": { "AIMName": "MMC-SOD-V2.5", "PortName": "InputSpeech"  } },
                            { "Output": { "AIMName": "MMC-SOD-V2.5", "PortName": "OutputSpeech" }, "Input": { "AIMName": "",             "PortName": "OutputSpeech" } }],
 
-  "Implementations":      [],
+"Implementations":  [{"ImplementationURI": "file:///D:/AI/AIMs/UAG-SPK-V1.0-I01",
+                       "MASPort":           443,
+                       "BinaryName":        "Mpai.Uag.Spk",
+                       "Architecture":      "x86-64",
+                       "OperatingSystem":   "Windows",
+                       "Version":           "1.0",
+                       "Source":            "AIMStorage"}],
 
-  "ResourcePolicies":     [{"Name": "Memory", "Minimum": "1_GB", "Request": "1_GB", "Maximum": "2_GB"}],
+  "ResourcePolicies":     [{"Name": "Memory", "Minimum": "1 GB", "Request": "1 GB", "Maximum": "2 GB"}],
 
   "DataXMData":           { },
 
