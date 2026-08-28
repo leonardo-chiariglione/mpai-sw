@@ -50,6 +50,45 @@ public sealed class IdReconciliationAim
 
     // Reconcile one person's face + voice evidence into a single OSD-IID.
     // Either vector may be empty (that modality absent / no match).
+    // Fuse two OSD-IIDs (the mirror of Reconcile for the AIF wiring): FIR emits an
+    // OSD-IID, SIR emits an OSD-IID, and IDR reconciles the two. Each IID is a
+    // ranked candidate list with confidences - i.e. a score vector already - so we
+    // read each candidate's InstanceLabel + LabelConfidenceLevel as a SubjectScore
+    // and reuse the same normalise-and-fuse path. The coarse fallback candidates
+    // ("face"/"speech", which are layer markers rather than subjects) are dropped:
+    // they carry no subject identity to fuse. If a modality contributed only its
+    // coarse marker (nobody matched), its vector is empty and fusion degrades to
+    // the other modality, exactly as with empty score vectors.
+    public InstanceIdentifier ReconcileIdentifiers(
+        InstanceIdentifier? faceIdentity,
+        InstanceIdentifier? voiceIdentity,
+        Rule rule = Rule.WeightedSum,
+        string? objectId = null,
+        string? mInstanceID = null)
+    {
+        var faceScores  = ToScores(faceIdentity,  "person");
+        var voiceScores = ToScores(voiceIdentity, "speaker");
+        return Reconcile(faceScores, voiceScores, rule, objectId, mInstanceID);
+    }
+
+    // A candidate counts as a subject when its taxonomy reaches the identity layer
+    // (person/speaker); coarser candidates (just "face"/"speech") are layer markers,
+    // not subjects, and are skipped.
+    private static List<SubjectScore> ToScores(InstanceIdentifier? iid, string identityLayer)
+    {
+        var scores = new List<SubjectScore>();
+        if (iid is null) return scores;
+        foreach (var c in iid.InstanceIdentifierData)
+        {
+            var levels = c.Taxonomy?.TaxonomyLevelIDs;
+            bool isSubject = levels is not null && levels.Count > 0 &&
+                             levels[levels.Count - 1] == identityLayer;
+            if (isSubject && !string.IsNullOrWhiteSpace(c.InstanceLabel))
+                scores.Add(new SubjectScore(c.InstanceLabel, (float)c.LabelConfidenceLevel));
+        }
+        return scores;
+    }
+
     public InstanceIdentifier Reconcile(
         IReadOnlyList<SubjectScore> faceScores,
         IReadOnlyList<SubjectScore> voiceScores,
