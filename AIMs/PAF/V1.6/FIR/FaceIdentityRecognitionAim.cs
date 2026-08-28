@@ -5,6 +5,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
 using Mpai.Core;
+using Mpai.Core.OSD;
 
 namespace Mpai.Paf.Fir;
 
@@ -27,13 +28,13 @@ namespace Mpai.Paf.Fir;
 public sealed class FaceIdentityRecognitionAim : IDisposable
 {
     private readonly ArcFaceRecogniser _recogniser;
-    private readonly FaceDatabase _database;
+    private readonly SubjectGallery _gallery;
     private const string TaxonomyUri = "https://schemas.mpai.community/taxonomies/visual.json";
 
-    public FaceIdentityRecognitionAim(ArcFaceRecogniser recogniser, FaceDatabase database)
+    public FaceIdentityRecognitionAim(ArcFaceRecogniser recogniser, SubjectGallery gallery)
     {
         _recogniser = recogniser ?? throw new ArgumentNullException(nameof(recogniser));
-        _database = database ?? throw new ArgumentNullException(nameof(database));
+        _gallery = gallery ?? throw new ArgumentNullException(nameof(gallery));
     }
 
     public InstanceIdentifier Identify(Image<Rgb24> faceImage, string? mInstanceID = null, string? objectId = null)
@@ -44,15 +45,15 @@ public sealed class FaceIdentityRecognitionAim : IDisposable
 
     private InstanceIdentifier IdentifyEmbedding(float[] embedding, string? mInstanceID, string? objectId)
     {
-        var match = _database.Identify(embedding);
+        var match = _gallery.IdentifyFace(embedding);
 
         InstanceCandidate primary;
-        if (match is not null)
+        if (match is GalleryMatch m)
         {
             primary = new InstanceCandidate
             {
-                InstanceLabel = match.PersonId,
-                LabelConfidenceLevel = match.Similarity,
+                InstanceLabel = m.SubjectId,
+                LabelConfidenceLevel = m.Similarity,
                 Taxonomy = new InstanceTaxonomy
                 {
                     TaxonomyLevelIDs = new List<string> { "visual", "face", "person" },

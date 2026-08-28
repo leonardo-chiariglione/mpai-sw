@@ -36,9 +36,9 @@ public static class Program
 
         // FIR: enrol Reagan only.
         using var recogniser = new ArcFaceRecogniser(modelPath);
-        var faceDb = new FaceDatabase(threshold: 0.35f);
-        faceDb.Enrol("Reagan", recogniser.Embed(File.ReadAllBytes(reagan)));
-        using var fir = new FaceIdentityRecognitionAim(recogniser, faceDb);
+        var gallery = new SubjectGallery(faceThreshold: 0.35f);
+        gallery.EnrolEmbeddings("Reagan", face: recogniser.Embed(File.ReadAllBytes(reagan)));
+        using var fir = new FaceIdentityRecognitionAim(recogniser, gallery);
 
         // Build a BVS with two visual objects carrying the two face images.
         var bvs = new BasicVisualSceneDescriptors

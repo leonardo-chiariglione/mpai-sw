@@ -33,9 +33,9 @@ public static class Program
 
         // SIR: enrol 1221 from clip a.
         using var embedder = new SpeakerEmbedder(ecapa);
-        var spkDb = new SpeakerDatabase(threshold: 0.45f);
-        spkDb.Enrol("1221", embedder.Embed(WavReader.ReadMono16k(a)));
-        var sir = new SpeakerIdentityRecognitionAim(embedder, spkDb);
+        var gallery = new SubjectGallery(voiceThreshold: 0.45f);
+        gallery.EnrolEmbeddings("1221", voice: embedder.Embed(WavReader.ReadMono16k(a)));
+        var sir = new SpeakerIdentityRecognitionAim(embedder, gallery);
 
         // ASI with YAMNet + SIR.
         using var classifier = new SoundClassifier(yamnet, classMap);

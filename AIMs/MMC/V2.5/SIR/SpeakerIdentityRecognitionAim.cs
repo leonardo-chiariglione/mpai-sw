@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 using Mpai.Core;
+using Mpai.Core.OSD;
 
 namespace Mpai.Mmc.Sir;
 
@@ -24,28 +25,28 @@ namespace Mpai.Mmc.Sir;
 public sealed class SpeakerIdentityRecognitionAim : IDisposable
 {
     private readonly SpeakerEmbedder _embedder;
-    private readonly SpeakerDatabase _database;
+    private readonly SubjectGallery _gallery;
     private const string TaxonomyUri = "https://schemas.mpai.community/taxonomies/sound.json";
 
-    public SpeakerIdentityRecognitionAim(SpeakerEmbedder embedder, SpeakerDatabase database)
+    public SpeakerIdentityRecognitionAim(SpeakerEmbedder embedder, SubjectGallery gallery)
     {
         _embedder = embedder ?? throw new ArgumentNullException(nameof(embedder));
-        _database = database ?? throw new ArgumentNullException(nameof(database));
+        _gallery = gallery ?? throw new ArgumentNullException(nameof(gallery));
     }
 
     public InstanceIdentifier Identify(float[] speechSamples, string? mInstanceID = null)
     {
         var embedding = _embedder.Embed(speechSamples);
-        var match = _database.Identify(embedding);
+        var match = _gallery.IdentifyVoice(embedding);
 
         InstanceCandidate primary;
-        if (match is not null)
+        if (match is GalleryMatch m)
         {
             // Recognised: speaker layer.
             primary = new InstanceCandidate
             {
-                InstanceLabel = match.SpeakerId,
-                LabelConfidenceLevel = match.Similarity,
+                InstanceLabel = m.SubjectId,
+                LabelConfidenceLevel = m.Similarity,
                 Taxonomy = new InstanceTaxonomy
                 {
                     TaxonomyLevelIDs = new List<string> { "sound", "speech", "speaker" },
