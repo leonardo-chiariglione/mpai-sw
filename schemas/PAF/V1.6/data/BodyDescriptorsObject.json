@@ -6,8 +6,8 @@
   "required":                   [ "Header", "BodyDescriptorsObjectID", "BodyDescriptorsData" ],
   "properties":                 {
 
-    "Header":                   { "type": "string", "pattern": "^PAF-BDO-V[0-9]{1,2}[.][0-9]{1,2}$",
-                                  "description": "Body Descriptors Object Header – Standard PAF-BDO-Vx.y" },
+    "Header":                   { "type": "string", "const": "PAF-BDO-V1.6",
+                                  "description": "Body Descriptors Object Header - Standard PAF-BDO-V1.6" },
     "MInstanceID":              { "type": "string", "description": "Identifier of the M-Instance (Virtual Space) where this Body is or is intended to be located." },
     "UEnvironmentID":           { "type": "string", "description": "Identifier of the U-Environment (Real Space) where this Body is or is intended to be located." },
     "BodyDescriptorsObjectID":  { "type": "string", "description": "Unique identifier of this Body Descriptors Object instance." },
