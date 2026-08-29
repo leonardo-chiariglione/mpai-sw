@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using AIF.Controller;
@@ -45,13 +45,11 @@ public sealed class IdrAimProcessor : IAimProcessor
     {
         var faceId    = ReadIdentity(message, _faceIdPort);
         var speakerId = ReadIdentity(message, _speakerIdPort);
-
         if (faceId is null && speakerId is null)
         {
             return Message.Error(message.MessageId, InstanceId,
                 "HCI-IDR-V1.0: neither a face nor a speaker identity was delivered.");
         }
-
         InstanceIdentifier reconciled = _idr.ReconcileIdentifiers(faceId, speakerId);
 
         var json = MpaiJson.ToJson(reconciled);
