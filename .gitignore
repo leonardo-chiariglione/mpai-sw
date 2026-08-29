@@ -86,3 +86,8 @@ TestData/gallery.json
 
 TestData/Images/leonardo*.jpg
 TestData/Images/leonardo*.JPG
+
+# Biometric test data - never commit
+TestData/gallery-store/
+TestData/Images/enrol-*.jpg
+TestData/Images/webcam-test.jpg

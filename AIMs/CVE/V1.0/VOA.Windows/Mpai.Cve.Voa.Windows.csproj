@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
@@ -8,5 +8,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\Mpai.Core.csproj" />
     <ProjectReference Include="..\VOA\Mpai.Cve.Voa.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="OpenCvSharp4.Windows" Version="4.10.0.20241108" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\AIF\V3.0\src\AIF.Controller\AIF.Controller.csproj" />
+    <ProjectReference Include="..\..\..\AIF\V3.0\src\AIF.GlobalStorage\AIF.GlobalStorage.csproj" />
+    <ProjectReference Include="..\..\Core\Mpai.Core.csproj" />
+    <ProjectReference Include="..\..\Gallery\Mpai.Gallery.csproj" />
+    <ProjectReference Include="..\..\PAF\V1.6\EFD\Mpai.Paf.Efd.csproj" />
+    <ProjectReference Include="..\..\MMC\V2.5\ESD\Mpai.Mmc.Esd.csproj" />
+    <ProjectReference Include="..\..\CVE\V1.0\VOA.Windows\Mpai.Cve.Voa.Windows.csproj" />
+  </ItemGroup>
+</Project>
