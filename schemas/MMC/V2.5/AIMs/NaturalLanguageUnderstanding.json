@@ -1,47 +1,111 @@
-{ "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$comment": "https://schemas.mpai.community/AIF/V3.0/data/AIMMetadata.json",
+{
+  "$schema": "https://schemas.mpai.community/AIF/V3.0/data/AIMMetadata.json",
   "$id": "https://schemas.mpai.community/MMC/V2.5/AIMs/NaturalLanguageUnderstanding.json",
   "title": "Natural Language Understanding V2.5",
-
-  "Identifier":   { "ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "MMC-NLU-V2.5" },
-
-  "APIProfile":   "Basic",
-  "Description":  "This AIM extracts Meaning from Recognised Text.",
-
-  "ExternalPorts":  [
-    { "Name": "TextObject"      , "Direction": "Input",   "DataType": "OSD-TXO-V1.5",  "Technology": "Software", "Protocol": "", "PortNumber": 1, "IsRemote": false },
-    { "Name": "RecognisedText"  , "Direction": "Input",   "DataType": "OSD-TXO-V1.5",  "Technology": "Software", "Protocol": "", "PortNumber": 2, "IsRemote": false },
-    { "Name": "InstanceID"      , "Direction": "Input",   "DataType": "OSD-IID-V1.5",  "Technology": "Software", "Protocol": "", "PortNumber": 1, "IsRemote": false },
-    { "Name": "AVSceneGeometry" , "Direction": "Input",   "DataType": "OSD-MSG-V1.5",  "Technology": "Software", "Protocol": "", "IsRemote": false },
-    { "Name": "VisualInstanceID", "Direction": "Input",   "DataType": "OSD-IID-V1.5",  "Technology": "Software", "Protocol": "", "PortNumber": 2, "IsRemote": false },
-    { "Name": "Meaning"         , "Direction": "Output",  "DataType": "MMC-MEA-V2.5",  "Technology": "Software", "Protocol": "", "IsRemote": false },
-    { "Name": "RefinedText"     , "Direction": "Output",  "DataType": "OSD-TXO-V1.5",  "Technology": "Software", "Protocol": "", "IsRemote": false }
+  "Identifier": {
+    "ImplementerID": "/* String assigned by IIDRA */",
+    "ImplementationID": "/* String from Implementer */",
+    "AIMName": "MMC-NLU-V2.5"
+  },
+  "APIProfile": "Basic",
+  "Description": "This AIM receives an input text (from a keyboard or an MMC-ASR AIM) and produces a Refined Text (if the input came from ASR) and the Meaning of the input text (Text Descriptors). It may also receive the Identifier of an Instance and the Audio-Visual Scene Descriptors to ground referential meaning.",
+  "ExternalPorts": [
+    {
+      "Name": "InputText",
+      "Direction": "Input",
+      "DataType": [
+        "OSD-BTO-V1.5",
+        "OSD-TXO-V1.5"
+      ],
+      "Technology": "Software",
+      "Protocol": "",
+      "IsRemote": false
+    },
+    {
+      "Name": "RecognisedText",
+      "Direction": "Input",
+      "DataType": [
+        "OSD-BTO-V1.5",
+        "OSD-TXO-V1.5"
+      ],
+      "Technology": "Software",
+      "Protocol": "",
+      "IsRemote": false
+    },
+    {
+      "Name": "InstanceID",
+      "Direction": "Input",
+      "DataType": "OSD-IID-V1.5",
+      "Technology": "Software",
+      "Protocol": "",
+      "IsRemote": false
+    },
+    {
+      "Name": "AudioVisualScene",
+      "Direction": "Input",
+      "DataType": "OSD-BVS-V1.5",
+      "Technology": "Software",
+      "Protocol": "",
+      "IsRemote": false
+    },
+    {
+      "Name": "Meaning",
+      "Direction": "Output",
+      "DataType": "MMC-TDO-V2.5",
+      "Technology": "Software",
+      "Protocol": "",
+      "IsRemote": false
+    },
+    {
+      "Name": "RefinedText",
+      "Direction": "Output",
+      "DataType": [
+        "OSD-BTO-V1.5",
+        "OSD-TXO-V1.5"
+      ],
+      "Technology": "Software",
+      "Protocol": "",
+      "IsRemote": false
+    }
   ],
-
-  "SubAIMs":  [ ],
-  "Topology":  [ ],
-
-  "Implementations":  [
-   {
-    "BinaryName": "/* provided by implementer */",
-    "Architecture": "/* x86-64 | ARM64 */",
-    "OperatingSystem": "/* Windows | Linux | MacOS */",
-    "Version": "/* implementer version */",
-    "Source": "/* AIMStorage | MPAIStore */",
-    "Destination": "/* provided by implementer */"
-   }
+  "SubAIMs": [],
+  "Topology": [],
+  "Implementations": [
+    {
+      "ImplementationURI": "/* URI storing Implementation */",
+      "BinaryName": "/* BinaryName */",
+      "Architecture": "/* x86 | x86-64 | ARM | ARM64 | MIPS | RISC-V */",
+      "OperatingSystem": "/* Windows | Linux | MacOS | Debian | Ubuntu | RedHat | Android | Zephyr | RTOS | Oniro | iOS */",
+      "Version": "/* Version */",
+      "Source": "/* AIMStorage | MPAIStore | AIMURL */",
+      "Destination": "/* Destination URI */"
+    }
   ],
-
-  "ResourcePolicies":  [
-    { "Name": "Memory"              , "Minimum": "/* GB */",             "Maximum": "/* GB */",             "Request": "/* GB */" },
-    { "Name": "CPU:Number"          , "Minimum": "/* integer, 0=all */", "Maximum": "/* integer, 0=all */", "Request": "/* integer */" },
-    { "Name": "CPU:Class"           , "Minimum": "/* string */",         "Maximum": "/* string */",         "Request": "/* string */" },
-    { "Name": "GPU:Number"          , "Minimum": "/* integer, 0=all */", "Maximum": "/* integer, 0=all */", "Request": "/* integer */" },
-    { "Name": "GPU:CUDA:Class"      , "Minimum": "/* string */",         "Maximum": "/* string */",         "Request": "/* string */" },
-    { "Name": "GPU:CUDA:FrameBuffer", "Minimum": "/* GB */",             "Maximum": "/* GB */",             "Request": "/* GB */" },
-    { "Name": "GPU:CUDA:MemorySpeed", "Minimum": "/* GB/s */",           "Maximum": "/* GB/s */",           "Request": "/* GB/s */" }
+  "ResourcePolicies": [
+    {
+      "Name": "Memory",
+      "Minimum": "/* number GB, e.g. 8 GB */",
+      "Maximum": "/* number GB, e.g. 8 GB */",
+      "Request": "/* number GB, e.g. 8 GB */"
+    },
+    {
+      "Name": "CPU:Number",
+      "Minimum": "/* integer, 0=all */",
+      "Maximum": "/* integer, 0=all */",
+      "Request": "/* integer, 0=all */"
+    },
+    {
+      "Name": "CPU:Class",
+      "Minimum": "/* Low | Medium | High */",
+      "Maximum": "/* Low | Medium | High */",
+      "Request": "/* Low | Medium | High */"
+    }
   ],
-
-  "DataXMData":  { },
-
-  "Documentation":  [{ "Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-mmc/v2-5/" }] }
+  "DataXMData": {},
+  "Documentation": [
+    {
+      "Type": "Tutorial",
+      "URI": "https://mpai.community/standards/mpai-mmc/v2-5/"
+    }
+  ]
+}
