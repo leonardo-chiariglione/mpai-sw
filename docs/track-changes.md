@@ -238,6 +238,31 @@ Non-blocking; each to be done as its own commit with a green-build check afterwa
 - Body/Gesture (EGI) omitted (immature). NEXT toward end of HCI MW: EDP (LLM dialogue ->
   CAV response + machine EPS) and PAF-PDR (de-multiplex machine EPS -> speaking avatar).
 
+### 2026-08-30 â€” EDP (Entity Dialogue Processing, box 10) BUILT + PROVEN
+- MMC-EDP produces the Machine's response Text + Machine Personal Status + updated Summary from
+  the human's Text (+ Text Descriptors), Personal Status, identity, scene object IIDs and BMS,
+  using a local LLM (Ollama) as the dialogue engine. PROVEN end-to-end through the Controller:
+  User "Hello, can you open the door for me?" -> CAV "Of course, right this way.", machine PS
+  CALMNESS/calm + SOCIAL RANK/respectful, Summary updated.
+- Engine: Ollama (local, llama3.1, served from D:\AI\Models\ollama). OllamaClient POSTs to
+  localhost:11434/api/chat; no external API/key. EdpAimProcessor verbalises the situational
+  picture into the canonical prompt ("respond to the Text provided by the user with ID X, who
+  is BELIEVED to hold Personal Status ..., located in a scene populated by the following visual
+  objects (IID) at their spatial attitudes ... and audio objects ..."), calls the LLM, parses a
+  JSON reply into Machine text + Machine EPS (structured, feeds PAF-PDR) + EditedSummary.
+- I/O corrected vs the stale committed L2: Meaning/MMC-MEA -> TextDescriptors/MMC-TDO (retired);
+  TextObject/MachineTextObject OSD-TXO -> OSD-BTO; AVSceneGeometry/OSD-MSG -> BMS/OSD-BMS (MSG a
+  subset of BMS); SpeakerID+FaceID -> one reconciled UserID (from IDR); ObjectIDs split into
+  VisualObjectIDs (VII) + AudioObjectIDs (ASI = our AII, YAMNet) - three OSD-IID inputs
+  PortNumber 1/2/3. Scene verbaliser hedges the object type when the IID is uncertain (low top
+  confidence or close top-2 candidates: "possibly a person, or perhaps a mannequin"), the
+  epistemic parallel to "believed to hold". The object scanner that feeds VII/ASI is APP logic
+  in the HCI app, not an AIM (would be overkill).
+- ARCHITECTURE closed: perceive (NLU+PSE, 3 real affect engines) -> EntityPersonalStatus -> EDP
+  verbalise -> LLM -> CAV response + machine EPS. The machine perceives how the human is and
+  responds appropriately with its own feeling. NEXT: PAF-PDR (de-multiplex machine EPS ->
+  affective TTS + generative face/body -> speaking avatar) completes the MW output side.
+
 ## 5. Per-AIM build status (MMC-HCI chain)
 
 Boxes of the MMC-HCI reference model, and adjacent AIMs.

@@ -1,15 +1,11 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$comment": "https://schemas.mpai.community/AIF/V3.0/data/AIMMetadata.json",
-  "$id": "https://schemas.mpai.community/MMC/V2.5/AIMs/EntityDialogueProcessing.json",
-  "title": "Entity Dialogue Processing V2.5",
   "Identifier": {
-    "ImplementerID": "/* String assigned by IIDRA */",
-    "ImplementationID": "/* String from Implementer */",
+    "ImplementerID": "1",
+    "ImplementationID": "MMC-EDP-V2.5-I01",
     "AIMName": "MMC-EDP-V2.5"
   },
   "APIProfile": "Basic",
-  "Description": "This AIM produces the Machine's Text and Personal Status from the human's Text, its Text Descriptors, the human's Personal Status and identity, the identifiers of the scene's objects, and the Basic Audio-Visual Scene, using the running Summary as dialogue memory.",
+  "Description": "Entity Dialogue Processing: composes the human's Text, Text Descriptors, Personal Status, identity, the scene's object identifiers and the Basic Audio-Visual Scene (plus the running Summary) into a prompt for a local LLM (Ollama), and produces the Machine's response Text, the Machine's Personal Status, and an updated Summary.",
   "ExternalPorts": [
     {
       "Name": "Summary",
@@ -114,27 +110,27 @@
   "Topology": [],
   "Implementations": [
     {
-      "ImplementationURI": "/* URI storing Implementation */",
-      "BinaryName": "/* BinaryName */",
-      "Architecture": "/* x86 | x86-64 | ARM | ARM64 | MIPS | RISC-V */",
-      "OperatingSystem": "/* Windows | Linux | MacOS | Debian | Ubuntu | RedHat | Android | Zephyr | RTOS | Oniro | iOS */",
-      "Version": "/* Version */",
-      "Source": "/* AIMStorage | MPAIStore | AIMURL */",
-      "Destination": "/* Destination URI */"
+      "ImplementationURI": "file:///D:/AI/AIMs/MMC-EDP-V2.5-I01",
+      "MASPort": 443,
+      "BinaryName": "Mpai.Mmc.Edp",
+      "Architecture": "x86-64",
+      "OperatingSystem": "Windows",
+      "Version": "2.5",
+      "Source": "AIMStorage"
     }
   ],
   "ResourcePolicies": [
     {
       "Name": "Memory",
-      "Minimum": "/* number GB */",
-      "Maximum": "/* number GB */",
-      "Request": "/* number GB */"
+      "Minimum": "1 GB",
+      "Request": "2 GB",
+      "Maximum": "8 GB"
     },
     {
       "Name": "CPU:Class",
-      "Minimum": "/* Low | Medium | High */",
-      "Maximum": "/* Low | Medium | High */",
-      "Request": "/* Low | Medium | High */"
+      "Minimum": "Medium",
+      "Request": "High",
+      "Maximum": "High"
     }
   ],
   "DataXMData": {},
