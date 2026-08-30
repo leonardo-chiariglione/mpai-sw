@@ -144,6 +144,14 @@ Non-blocking; each to be done as its own commit with a green-build check afterwa
 - **A8 â€” OSD-BBX VisualData fidelity** (BBX schema wants a full VisualObject; FIR used
   BasicVisualObject for the crop). Revisit.
 - **A9 â€” Delete dead FaceDatabase.cs / SpeakerDatabase.cs** (unused).
+- **A11 â€” Delete orphaned old-name schema files (dead ends).** *(2026-08-29)* When newer
+  Data/Qualifier/Formats were authored under a different name than a pre-existing schema
+  (e.g. the old "Meaning"/MMC-MEA output superseded by TextDescriptorsObject/MMC-TDO), the
+  old-name file was left in the tree. These are **not referenced** by any current code or
+  schema â€” dead ends, not live conflicts, so nothing breaks. Cleanup only. Do a proper
+  orphan sweep across the whole schema tree (find *.json not $ref'd or named by any AIM
+  L2/L3 or other schema) and delete the unreferenced old-name duplicates, so there is one
+  canonical Data + Qualifier + Formats per concept. Batch with A7 (placement review).
 
 ### Tracked follow-ups (feature, not refactor)
 - **PAF-FDO expression descriptor for PS-Face.** PAF-FDO today carries only an ArcFace identity
@@ -158,6 +166,77 @@ Non-blocking; each to be done as its own commit with a green-build check afterwa
   (second person / empty gallery / imposter fixture).
 
 ---
+
+### 2026-08-30 â€” NLU emits Text Personal Status (PSE text branch live)
+- MMC-NLU now emits THREE outputs: TextDescriptors (MMC-TDO, the Basic Text Descriptors),
+  RefinedText (OSD-BTO), and TextPersonalStatus (MMC-TPS - the three factors Cognitive State/
+  Emotion/Social Attitude, each Value 0..1). The word "Meaning" is purged everywhere (retired
+  MMC-MEA); the output is the Text Descriptors Object. PSE consumes only the TPS.
+- First-pass affect engine: a small lexicon (valence -> Emotion, certainty -> Cognitive State,
+  polite/aggressive -> Social Attitude). Deepen to a contextual model (e.g. GoEmotions) later
+  without interface change. PROVEN: "...please" -> Social Attitude 1.00, others 0.50 neutral.
+- Core PersonalStatus.cs added: PersonalStatusFactor + TextPersonalStatus/SpeechPersonalStatus/
+  FacePersonalStatus/GesturePersonalStatus (MMC-TPS/SPS/FPS/GPS) + EntityPersonalStatus (MMC-EPS).
+  These mirror the data schemas and are used by NLU (TPS) and, next, PSM (assemble EPS).
+- Data-type note: the gesture/body modality PS is GesturePersonalStatus (MMC-GPS), NOT Body/
+  MMC-BPS (an earlier wrong name, now dropped). EPS refs Text/Speech/Face/Gesture PS.
+
+### 2026-08-30 â€” PSE Phase A PROVEN end-to-end (box 9 interpretation + multiplexing)
+- The full Personal Status Extraction pipeline runs through the Controller: media -> per-modality
+  Personal Status -> assembled Entity Personal Status, with labelled factors + degrees.
+- AIMs built + proven: MMC-ESI (Entity Speech Interpretation, OSD-BSO -> MMC-SPS, first-pass
+  prosodic RMS via WavReader), MMC-EFI (Entity Face Interpretation, OSD-BVO -> MMC-FPS, Phase A
+  neutral placeholder), MMC-PSM (Personal Status Multiplexing, TPS+SPS+FPS+GPS -> MMC-EPS, pure
+  assembly). Plus NLU already emits MMC-TPS. Each wrapped in a UAG (UAG-ESI/EFI/PSM) + a Pse.Host
+  that runs NLU/ESI/EFI then PSM. PROVEN: PSM Ports=3 -> EntityPersonalStatus with Text (SOCIAL
+  RANK/respectful 0.70), Speech (CALMNESS/calm 0.90), Face (CALMNESS/calm 0.50).
+- DATA MODEL (corrected + cross-checked vs web specs, in Leonardo's spatial arrangement):
+  factor = LABEL (three-level Category/GeneralAdjectival/SpecificAdjectival from the standard set)
+  + optional Degree [0,1]. Emotion (MMC-EEM), CognitiveState (MMC-ECS), SocialAttitude (MMC-ESA)
+  schemas fixed: SpaceTime (actual) vs SimpleTime (creation), ESA V1.0->V2.5, mojibake risquÃ©,
+  commanding/domineering, plain object uniform, jealous own general, Entity-prefixed IDs. SOCIAL
+  RANK split polite/courteous/respectful into 3 distinct general adjectivals (synonym clusters
+  kept). Modality PS (TPS/SPS/FPS/GPS) = 3 factor $refs, anyOf >=1. EPS = modality container
+  (Text/Speech/Face/Gesture PS). C# PersonalStatus.cs mirrors all.
+- PHASE B (next): stage HSEmotion (ONNX) for a real Face PS (EFI), then wav2vec2 for Speech PS
+  (ESI) - deepen the engines without interface change. Body/Gesture (EGI) still omitted (immature).
+
+### 2026-08-30 â€” PSE Phase B: EFI effective Face PS via HSEmotion (FaceEmotion real)
+- MMC-EFI now reads real facial affect: SCRFD detects+crops the face (reusing the proven
+  ScrfdFaceDetector + FaceCrop), then HSEmotion (enet_b0_8_va_mtl, EfficientNet-B0 multi-task,
+  AffectNet, 16MB ONNX, staged in D:\AI\Models) predicts 8 emotion probabilities + valence +
+  arousal. Signature (probe-confirmed): input [1,3,224,224] NCHW ImageNet-normalised, output
+  [1,10] = 8 emotion logits + valence + arousal. HSEmotionEstimator.cs wraps it (mirrors
+  BlazePose/YOLOX). PROVEN on leonardo.jpg: Happiness 0.838, valence +0.63 (he is smiling).
+- Mapping HSEmotion -> MMC factors: emotions -> FaceEmotion (MMC-EEM: Anger/Disgust/Fear/
+  Happiness/Sadness -> their categories, Neutral -> CALMNESS/calm, Contempt -> HURT/hurt);
+  Surprise -> FaceCognitiveState (MMC-ECS SURPRISE/surprised), since MPAI classes Surprise as
+  a Cognitive State not an Emotion. Degree = softmax confidence of the chosen label.
+- PROVEN through the Controller in the full PSE: EntityPersonalStatus = Text (SOCIAL RANK/
+  respectful 0.70) + Speech (CALMNESS/calm 0.90) + Face (HAPPINESS/happy 0.84) - a genuine
+  multi-modal read (respectful words, calm voice, happy face). Two real engines now (ESI
+  prosodic, EFI HSEmotion) + NLU labelled text affect.
+- REMAINING Phase B: ESI could deepen to wav2vec2 (valence/arousal/dominance) - optional, the
+  prosodic first-pass is functional. Body/Gesture (EGI) still omitted (immature). Then toward
+  end of HCI MW: EDP (LLM dialogue -> response + machine EPS) and PAF-PDR (avatar synthesis).
+
+### 2026-08-30 â€” PSE Phase B closed: ESI effective Speech PS via wav2vec2 (dimensional)
+- MMC-ESI now reads real dimensional speech affect: wav2vec2 (audeering w2v2-L-robust-12,
+  wav2vec2-large-robust pruned to 12 layers, MSP-Podcast, 661MB ONNX at D:\AI\Models\
+  w2v2-emotion\model.onnx). Signature (probe-confirmed): input 'signal' [1,-1] raw mono 16kHz;
+  outputs 'hidden_states' [1,1024] + 'logits' [1,3] = arousal, dominance, valence (~0..1).
+  Wav2Vec2EmotionEstimator.cs wraps it; ESI reads mono-16k via WavReader (same path as ESD).
+  PROVEN on leonardo.wav (17.6s): arousal 0.43, dominance 0.50, valence 0.59 - distinct values.
+- Mapping dimensional -> MMC factors: (valence,arousal) circumplex quadrant -> Emotion
+  (high-val/high-aro HAPPINESS, low-val/high-aro ANGER, low-val/low-aro SADNESS, high-val/
+  low-aro CALMNESS); Degree = distance off the neutral (0.5,0.5) centre. Dominance -> Social
+  Attitude (high SOCIAL DOMINANCE/CONFIDENCE/confident, low AGGRESSION/submissive, mid none).
+- PHASE B COMPLETE: three real affect engines now feed the PSE - NLU (labelled text affect),
+  ESI (wav2vec2 dimensional speech), EFI (HSEmotion face). PROVEN through the Controller:
+  EntityPersonalStatus = Text SOCIAL RANK/respectful 0.70 + Speech CALMNESS/calm 0.23
+  (valence 0.59, arousal 0.43) + Face HAPPINESS/happy 0.84 - a fully real multi-modal read.
+- Body/Gesture (EGI) omitted (immature). NEXT toward end of HCI MW: EDP (LLM dialogue ->
+  CAV response + machine EPS) and PAF-PDR (de-multiplex machine EPS -> speaking avatar).
 
 ## 5. Per-AIM build status (MMC-HCI chain)
 

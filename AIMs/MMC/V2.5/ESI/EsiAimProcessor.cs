@@ -13,27 +13,26 @@ namespace Mpai.Mmc.Esi;
 // MMC-ESI-V2.5 - Entity Speech Interpretation, as an AIF IAimProcessor.
 //
 // Receives a Basic Speech Object (OSD-BSO) and produces the Speech Personal Status
-// (MMC-SPS): the Cognitive State, Emotion, and Social Attitude Factors carried by
-// the speech, each a chosen label + Degree. Fused description and interpretation:
-// the AIM reads affect directly from the speech media.
+// (MMC-SPS): the Personal Status Factors carried by the speech, each a chosen
+// label + Degree. Fused description and interpretation.
 //
-// ENGINE (first pass, deliberately simple - proves the AIM and the SPS data shape
-// end-to-end, then deepens without touching the interface): a prosodic heuristic
-// over the PCM samples - overall energy (RMS) as an arousal proxy - mapped to an
-// Emotion label + Degree. Cognitive State and Social Attitude are left null in this
-// first pass. (The planned upgrade is a speech-emotion model, e.g. wav2vec2
-// valence/arousal/dominance, run locally; the interface does not change.)
+// ENGINE (Phase B, effective): reads dimensional speech affect with wav2vec2
+// (audeering w2v2-L-robust-12, MSP-Podcast) - arousal, dominance, valence in ~[0,1].
+// The (valence, arousal) point maps to an MPAI Emotion (MMC-EEM) label via the
+// affective circumplex; dominance maps to a Social Attitude (MMC-ESA) reading.
 public sealed class EsiAimProcessor : IAimProcessor
 {
     private readonly string _instanceId;
+    private readonly Wav2Vec2EmotionEstimator _estimator;
     private readonly string _inPort;   // OSD-BSO
     private readonly string _outPort;  // MMC-SPS
 
-    public EsiAimProcessor(string instanceId, AimPortReader ports)
+    public EsiAimProcessor(string instanceId, Wav2Vec2EmotionEstimator estimator, AimPortReader ports)
     {
         _instanceId = instanceId;
-        _inPort  = ports.Input("OSD-BSO-V1.5");
-        _outPort = ports.Output("MMC-SPS-V2.5");
+        _estimator  = estimator;
+        _inPort     = ports.Input("OSD-BSO-V1.5");
+        _outPort    = ports.Output("MMC-SPS-V2.5");
     }
 
     public string InstanceId => _instanceId;
@@ -49,18 +48,10 @@ public sealed class EsiAimProcessor : IAimProcessor
             return System.Threading.Tasks.Task.FromResult(
                 Message.Error(message.MessageId, _instanceId, "empty Basic Speech Object"));
 
-        // First-pass prosodic arousal from sample energy (RMS), normalised to [0,1].
-        // Decode the WAV to mono 16 kHz samples the same way the speech AIMs do.
         var samples = WavReader.ReadMono16k(speech.Data);
-        double arousal = RmsEnergy(samples);
+        var affect  = _estimator.Estimate(samples);
 
-        // Map arousal to a coarse Emotion label. High energy -> aroused/positive
-        // (HAPPINESS); low energy -> calm. Degree = the arousal magnitude.
-        Emotion emotion = arousal >= 0.5
-            ? Emotion.Of(FactorLabel.Of("HAPPINESS", "happy", null, arousal))
-            : Emotion.Of(FactorLabel.Of("CALMNESS", "calm", null, 1.0 - arousal));
-
-        var sps = new SpeechPersonalStatus { SpeechEmotion = emotion };
+        var sps = ToSpeechPersonalStatus(affect);
 
         return System.Threading.Tasks.Task.FromResult(new Message
         {
@@ -70,14 +61,38 @@ public sealed class EsiAimProcessor : IAimProcessor
         });
     }
 
-    // Root-mean-square energy of the mono samples (assumed roughly [-1,1] float),
-    // scaled to [0,1] as a coarse arousal proxy.
-    private static double RmsEnergy(float[] samples)
+    // Map dimensional affect (valence, arousal, dominance in ~[0,1]) to MPAI Factors.
+    //   Emotion: the (valence, arousal) quadrant of the affective circumplex, with
+    //     0.5 as the neutral centre:
+    //       high valence, high arousal -> HAPPINESS/happy
+    //       low  valence, high arousal -> ANGER/angry
+    //       low  valence, low  arousal -> SADNESS/sad
+    //       high valence, low  arousal -> CALMNESS/calm
+    //     near the centre -> CALMNESS/calm (low degree).
+    //   Social Attitude from dominance: clearly high -> SOCIAL DOMINANCE/CONFIDENCE
+    //     (confident); clearly low -> AGGRESSION/submissive; mid -> none.
+    private static SpeechPersonalStatus ToSpeechPersonalStatus(SpeechAffect a)
     {
-        if (samples.Length == 0) return 0.0;
-        double sumSq = 0;
-        foreach (var x in samples) sumSq += (double)x * x;
-        double rms = Math.Sqrt(sumSq / samples.Length);
-        return Math.Clamp(rms * 4.0, 0.0, 1.0);   // speech RMS is well below full-scale
+        double v = a.Valence, ar = a.Arousal, d = a.Dominance;
+
+        // Distance from the neutral centre drives the Emotion degree.
+        double dv = v - 0.5, da = ar - 0.5;
+        double intensity = Math.Clamp(2.0 * Math.Sqrt(dv * dv + da * da), 0.0, 1.0);
+
+        FactorLabel emotionLabel =
+            (dv >= 0 && da >= 0) ? FactorLabel.Of("HAPPINESS", "happy", null, intensity) :
+            (dv <  0 && da >= 0) ? FactorLabel.Of("ANGER", "angry", null, intensity) :
+            (dv <  0 && da <  0) ? FactorLabel.Of("SADNESS", "sad", null, intensity) :
+                                   FactorLabel.Of("CALMNESS", "calm", null, intensity);
+
+        SocialAttitude? attitude = null;
+        if (d >= 0.65)      attitude = SocialAttitude.Of(FactorLabel.Of("SOCIAL DOMINANCE/CONFIDENCE", "confident", null, Math.Clamp((d - 0.5) * 2, 0, 1)));
+        else if (d <= 0.35) attitude = SocialAttitude.Of(FactorLabel.Of("AGGRESSION", "submissive", null, Math.Clamp((0.5 - d) * 2, 0, 1)));
+
+        return new SpeechPersonalStatus
+        {
+            SpeechEmotion        = Emotion.Of(emotionLabel),
+            SpeechSocialAttitude = attitude
+        };
     }
 }
