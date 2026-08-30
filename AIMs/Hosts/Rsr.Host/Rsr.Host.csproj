@@ -6,8 +6,8 @@
     <AssemblyName>Rsr.Host</AssemblyName>
     <RootNamespace>Rsr.Host</RootNamespace>
   </PropertyGroup>
-  <!-- Audio DEVICES are Windows-specific (winmm), like CAV-MAC: net10.0-windows on
-       Windows with WINDOWS_DEVICES, plain net10.0 elsewhere. -->
+  <!-- Speech-delivery DEVICE is Windows-specific (winmm), like CAV-MAC: net10.0-windows
+       on Windows with WINDOWS_DEVICES, plain net10.0 elsewhere. -->
   <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
     <TargetFramework>net10.0-windows</TargetFramework>
     <DefineConstants>$(DefineConstants);WINDOWS_DEVICES</DefineConstants>
@@ -22,12 +22,12 @@
     <ProjectReference Include="..\..\Core\Mpai.Core.csproj" />
     <!-- Personal Status De-multiplexing -->
     <ProjectReference Include="..\..\PAF\V1.6\PSD\Mpai.Paf.Psd.csproj" />
-    <!-- Spoken response: MMC-TTS + SOD (delivery) + audio device -->
+    <!-- Spoken response: MMC-TTS + MMC-SOD (speech delivery). -->
     <ProjectReference Include="..\..\MMC\V2.5\TTS\Mpai.Mmc.Tts.csproj" />
     <ProjectReference Include="..\..\MMC\V2.5\SOD\Mpai.Mmc.Sod.csproj" />
-    <ProjectReference Include="..\..\CAE3\V1.0\AOD\Mpai.Cae.Aod.csproj" />
   </ItemGroup>
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <ProjectReference Include="..\..\CAE3\V1.0\AOD.Windows\Mpai.Cae.Aod.Windows.csproj" />
+    <!-- Speech-delivery device (winmm). -->
+    <ProjectReference Include="..\..\MMC\V2.5\SOD.Windows\Mpai.Mmc.Sod.Windows.csproj" />
   </ItemGroup>
 </Project>

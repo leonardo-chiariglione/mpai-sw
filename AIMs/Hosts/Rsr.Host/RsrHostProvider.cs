@@ -7,8 +7,7 @@ using AIF.Store;
 using Mpai.Core;
 using Mpai.Paf.Psd;      // PsdAimProcessor
 using Mpai.Aims.Tts;     // TtsAimProcessor, TtsFactory
-using Mpai.Aims.Speech;  // SodAimProcessor
-using Mpai.Aims.Audio;   // WinmmAudioDelivery / AplayAudioDelivery
+using Mpai.Aims.Speech;  // SodAimProcessor, ISpeechDeliveryAim, WinmmSpeechDelivery
 
 namespace Rsr.Host;
 
@@ -38,12 +37,14 @@ internal sealed class RsrHostProvider : IAimProvider, IDisposable
             _ => throw new NotSupportedException($"RsrHostProvider does not provide '{aimName}'.")
         };
 
-    private static IAudioDeliveryAim Loudspeaker()
+    private static ISpeechDeliveryAim Loudspeaker()
     {
+        // Speech Object Delivery has its own device (independent of Audio Object
+        // Delivery). On Windows this is the winmm-backed speech delivery.
 #if WINDOWS_DEVICES
-        return new WinmmAudioDelivery();
+        return new WinmmSpeechDelivery();
 #else
-        return new AplayAudioDelivery();
+        throw new System.PlatformNotSupportedException("No non-Windows speech delivery device is configured.");
 #endif
     }
 

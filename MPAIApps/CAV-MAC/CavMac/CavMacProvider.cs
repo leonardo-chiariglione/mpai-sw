@@ -13,8 +13,7 @@ using Mpai.Hci.Idr;   // IdrAimProcessor
 using Mpai.Osd.VisualScene;
 
 using Mpai.Aims.Tts;     // TtsAimProcessor, TtsFactory (text -> speech)
-using Mpai.Aims.Speech;  // SodAimProcessor (speech -> loudspeaker)
-using Mpai.Aims.Audio;   // WinmmAudioDelivery / AplayAudioDelivery (the device)
+using Mpai.Aims.Speech;  // SodAimProcessor, ISpeechDeliveryAim, WinmmSpeechDelivery (speech -> loudspeaker)
 
 namespace CavMac;
 
@@ -65,12 +64,14 @@ internal sealed class CavMacProvider : IAimProvider, IDisposable
     private ScrfdFaceDetector Scrfd(IReadOnlyDictionary<string, string> s) =>
         _scrfd ??= new ScrfdFaceDetector(Setting(s, "ScrfdModel", @"D:\AI\Models\scrfd_10g_bnkps.onnx"));
 
-    private static IAudioDeliveryAim Loudspeaker()
+    // Speech Object Delivery has its own device, independent of Audio Object
+    // Delivery. On Windows this is the winmm-backed speech delivery.
+    private static ISpeechDeliveryAim Loudspeaker()
     {
 #if WINDOWS_DEVICES
-        return new WinmmAudioDelivery();
+        return new WinmmSpeechDelivery();
 #else
-        return new AplayAudioDelivery();
+        throw new PlatformNotSupportedException("No non-Windows speech delivery device is configured.");
 #endif
     }
 

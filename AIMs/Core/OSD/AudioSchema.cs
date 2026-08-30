@@ -34,7 +34,28 @@ public sealed class Depth { }             // OSD/V1.5/data/Depth.json
 public sealed class OcclusionFlag { }     // OSD/V1.5/data/OcclusionFlag.json
 public sealed class InteractionPotential { } // OSD/V1.5/data/InteractionPotential.json
 public sealed class SalienceScore { }     // OSD/V1.5/data/SalienceScore.json
-public sealed class ThreeDModelObject { }  // OSD/V1.5/data/3DModelObject.json (not yet provided)
+
+  // ---------------------------------------------------------------------------
+  //  3D Model Object - OSD/V1.5/data/3DModelObject.json (OSD-3DO). The composite:
+  //  a 3D Model Object aggregates Basic 3D Model Objects (leaves, OSD-B3O) and/or
+  //  child 3D Model Objects (recursive). Replaces the empty `ThreeDModelObject { }`
+  //  placeholder previously here (marked "not yet provided" - now provided). The
+  //  Basic/leaf object lives in Mpai.Core with the other Basic objects, referenced
+  //  fully-qualified; the placement rule (objects in OSD) predates this file and is
+  //  not retrofitted, so existing references are left undisturbed.
+  // ---------------------------------------------------------------------------
+  public sealed class ThreeDModelObject
+  {
+      public string Header { get; init; } = "OSD-3DO-V1.5";
+      public string? MInstanceID { get; init; }
+      public string? UEnvironmentID { get; init; }
+      public string ThreeDModelObjectID { get; init; } = "";
+
+      public System.Collections.Generic.List<Basic3DModelObject>? Basic3DModelObjects { get; init; }
+      public System.Collections.Generic.List<ThreeDModelObject>? Sub3DModelObjects { get; init; }
+
+      public string? DescrMetadata { get; init; }
+  }
 
 // ---------------------------------------------------------------------------
 //  Audio Source - OSD/V1.5/data/AudioSource.json

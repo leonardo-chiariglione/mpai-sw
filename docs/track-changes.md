@@ -306,6 +306,32 @@ Non-blocking; each to be done as its own commit with a green-build check afterwa
   expression and the ACTUAL RSR speech playing while the mouth lip-syncs to it (so the face
   speaks the real response with the matching expression). Full 3D/Unity avatar = the deepening.
 
+### 2026-08-30 â€” Delivery architecture: speech-typed SOD, 3D Model Object types, 3OD
+- CORRECTION: SOD (Speech Object Delivery) now delivers a Speech Object AS SPEECH through its own
+  ISpeechDeliveryAim, not by demoting to audio via IAudioDeliveryAim. SOD and AOD are INDEPENDENT
+  siblings (the old comment claiming SOD "reuses AOD's device" was plainly wrong - removed). New
+  Mpai.Mmc.Sod.Windows project isolates the device driver (WinmmSpeechDelivery), keeping the
+  portable Mpai.Mmc.Sod free of NAudio/Windows - mirroring Mpai.Cae.Aod / Mpai.Cae.Aod.Windows.
+  Providers (RSR host, CAV-MAC) build WinmmSpeechDelivery. PROVEN: [MMC-SOD-V2.5] speaking N bytes.
+- 3D MODEL OBJECT types (were an empty misfiled stub `ThreeDModelObject { }` in AudioSchema.cs,
+  marked "not yet provided"): now real. Basic3DModelObject (OSD-B3O) in Core/OSD/Basic3DModelObject.cs
+  (objects and scenes live in OSD - the new type follows the rule; legacy media Basic objects in
+  Mpai.Core are not migrated, too many references). ThreeDModelObject (OSD-3DO composite) real,
+  replacing the stub. (C# class must be ThreeDModelObject - identifiers cannot lead with a digit;
+  schema files + AIM codes use the digit 3: 3DModelObject.json, OSD-3DO, OSD-B3O, OSD-3OD.)
+- 3OD (OSD-3OD-V1.5, 3D Model Object Delivery) - the visual-delivery sibling of SOD, built by the
+  SAME pattern: TodAimProcessor delivers a 3D Model Object through I3DModelDeliveryAim, keeping it
+  typed as a 3D Model Object to the device edge where the device renders it (3D to 2D). Portable
+  Mpai.Osd.Tod (interface + processor + a headless ConsoleModelDelivery device); the graphical
+  WebView renderer is deferred to the host app that owns a display. Input/output ports dual-typed
+  [OSD-B3O, OSD-3DO]. L3 (1OSD-3OD-V1.5-I01) + public L2 (schemas/OSD/V1.5/AIMs/3DModelObjectDelivery.json)
+  + UAG-3OD wrapper + Tod.Host. PROVEN: [OSD-3OD-V1.5] rendering 3D Model Object ... -> (delivered).
+- The delivery family is now complete + consistent: AOD (Audio Object), SOD (Speech Object,
+  speech-typed), 3OD (3D Model Object) - each with its own typed object + device. This is the
+  faithful foundation for the standalone CAV: an HCI App whose UA delivers the Portable Avatar
+  via SOD (speech -> loudspeaker) + 3OD (avatar -> screen), the UA trusted with the Controller and
+  untrusted with the real world (per MPAI-PTF, which drives the design though not yet implemented).
+
 ## 5. Per-AIM build status (MMC-HCI chain)
 
 Boxes of the MMC-HCI reference model, and adjacent AIMs.
