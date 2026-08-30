@@ -285,6 +285,27 @@ Non-blocking; each to be done as its own commit with a green-build check afterwa
   PSE (3 real affect engines) -> EntityPersonalStatus -> EDP (local LLM -> response + machine
   EPS) -> RSR (PAF-PSD -> TTS -> SOD) -> the machine SPEAKS BACK. Only the visual avatar remains.
 
+### 2026-08-30 â€” Box 11 VISUAL delivery: FACS-driven CAV face (2D + realistic 3D)
+- The CAV is impersonated visually by a face that shows its (generated / "faked") Personal
+  Status as an expression and lip-syncs when speaking - the visual half of PAF-RSR. Audio
+  delivery (speech) was already proven; this adds the visual delivery.
+- PRINCIPLED PIPELINE (buildable in our C# stack): the machine Emotion -> EM-FACS -> FACS
+  Action Units (Ekman) -> a renderer-agnostic Face descriptor. FaceActionUnits.cs (Core, the AU
+  descriptor + EM-FACS prototypes: HAPPINESS=AU6+AU12, SADNESS=AU1+AU4+AU15, ANGER=AU4+5+7+23,
+  etc.). PAF-GFD (Generative Face Description, PAF-GFD-V1.6): the generative counterpart of
+  Entity Face Description - Face Personal Status -> the AU descriptor. PROVEN (emotion -> AUs).
+- 2D delivery (proof): MPAIApps/CavFace - an Avalonia app rendering a face whose features move
+  per AU + lip-sync. Proved the FACS pipeline drives a face; schematic (not MPAI-grade realism).
+- 3D delivery (realistic): MPAIApps/CavFace3D/cav-face.html - a three.js viewer loading a
+  realistic ReadyPlayerMe avatar (ARKit blendshapes + Oculus visemes) and driving it with our
+  AU -> ARKit-blendshape mapping (EM-FACS emotions) + viseme lip-sync, ACES tone mapping + a
+  real studio HDR (image-based lighting). Realistic, FACS-driven. Avatar GLB + studio HDR are
+  gitignored binaries (sources documented in the README); the same AU descriptor drives a future
+  MetaHuman/Unity avatar unchanged.
+- STILL TO WIRE: the live pipeline into the face - the ACTUAL machine EPS (from EDP) driving the
+  expression and the ACTUAL RSR speech playing while the mouth lip-syncs to it (so the face
+  speaks the real response with the matching expression). Full 3D/Unity avatar = the deepening.
+
 ## 5. Per-AIM build status (MMC-HCI chain)
 
 Boxes of the MMC-HCI reference model, and adjacent AIMs.

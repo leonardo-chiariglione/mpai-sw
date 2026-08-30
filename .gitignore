@@ -92,3 +92,6 @@ TestData/gallery-store/
 TestData/Images/enrol-*.jpg
 TestData/Images/webcam-test.jpg
 TestData/Images/access-probe.jpg
+
+# CavFace3D avatar/HDR binaries (re-fetch via MPAIApps/CavFace3D/README.md)
+TestData/Avatars/
