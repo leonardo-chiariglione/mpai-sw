@@ -9,15 +9,18 @@ namespace Mpai.Osd.Tod;
 // OSD-3OD-V1.5 - 3D Model Object Delivery. Self-contained IAimProcessor.
 // Reads its own port names from 1OSD-3OD-V1.5-I01.json at startup.
 //
-// 3OD takes a 3D Model Object (its input port accepts both OSD-B3O and OSD-3DO)
-// and delivers it to a device through its own delivery abstraction
-// (I3DModelDeliveryAim), keeping the object typed as a 3D Model Object to the
-// device edge, where the device renders it (3D to 2D on the screen). Independent
-// of the other Object Delivery AIMs. The output port re-emits the 3D Model Object
-// unchanged, so a downstream consumer still sees a 3D Model Object.
+// 3OD delivers a 3D scene to a device (a 3D renderer): the 3D Model (its
+// ModelObject port accepts both OSD-B3O and OSD-3DO) together with the animation
+// streams that drive it - Face Descriptors (FaceAnimation port) and Body
+// Descriptors (BodyAnimation port), each optional and on its own port so further
+// animation streams can be added independently. The renderer combines model +
+// animation and renders (3D to 2D); posing and rendering are one act. The objects
+// stay typed to the device edge. Independent of the other Object Delivery AIMs.
 public sealed class TodAimProcessor : IAimProcessor
 {
-    private readonly string                _inputPort;
+    private readonly string                _modelPort;
+    private readonly string                _faceAnimPort;
+    private readonly string                _bodyAnimPort;
     private readonly string                _outputPort;
     private readonly I3DModelDeliveryAim   _tod;
     public string InstanceId { get; }
@@ -27,36 +30,53 @@ public sealed class TodAimProcessor : IAimProcessor
         I3DModelDeliveryAim tod,
         AimPortReader       ports)
     {
-        InstanceId  = instanceId;
-        _tod        = tod;
-        _inputPort  = ports.Input("OSD-B3O-V1.5");    // dual-typed port [OSD-B3O, OSD-3DO]
-        _outputPort = ports.Output("OSD-B3O-V1.5");   // dual-typed port [OSD-B3O, OSD-3DO]
+        InstanceId    = instanceId;
+        _tod          = tod;
+        _modelPort    = ports.Input("OSD-B3O-V1.5");   // ModelObject, dual-typed [OSD-B3O, OSD-3DO]
+        _faceAnimPort = ports.Input("PAF-FDO-V1.6");   // FaceAnimation
+        _bodyAnimPort = ports.Input("PAF-BDO-V1.6");   // BodyAnimation
+        _outputPort   = ports.Output("OSD-B3O-V1.5");  // OutputVisual, dual-typed [OSD-B3O, OSD-3DO]
     }
 
     public async Task<Message> ProcessAsync(Message message)
     {
-        var model = MpaiJson.FromJson<Basic3DModelObject>(message.Ports[_inputPort]);
-        // An EMPTY 3D Model Object means there is nothing to render - the model
-        // data is missing. Handing zero bytes to a renderer would turn that into a
-        // second, unrelated error.
+        var model = ReadModel(message);
         if (model is null || model.Data.Length == 0)
         {
-            System.Console.WriteLine("[OSD-3OD-V1.5] nothing to render - the 3D Model Object is empty.");
+            System.Console.WriteLine("[OSD-3OD-V1.5] nothing to render - no 3D Model Object.");
+            return Passthrough(message);
         }
-        else
-        {
-            await _tod.DeliverAsync(model);   // deliver the 3D Model Object, as a 3D Model Object
-        }
-        return new Message
-        {
-            MessageId   = message.MessageId,
-            MessageType = "Basic3DModelObject",
-            DataType    = "OSD-B3O-V1.5",
-            Payload     = message.Ports[_inputPort],
-            Ports       = new Dictionary<string, string>
-            {
-                [_outputPort] = message.Ports[_inputPort]
-            }
-        };
+
+        var faceAnim = Read<FaceDescriptorsObject>(message, _faceAnimPort);
+        var bodyAnim = Read<BodyDescriptorsObject>(message, _bodyAnimPort);
+
+        await _tod.DeliverAsync(model, faceAnim, bodyAnim);   // deliver model + animation to the renderer
+
+        return Passthrough(message);
     }
+
+    private Basic3DModelObject? ReadModel(Message message)
+    {
+        if (!message.Ports.TryGetValue(_modelPort, out var json) || string.IsNullOrWhiteSpace(json))
+            return null;
+        return MpaiJson.FromJson<Basic3DModelObject>(json);
+    }
+
+    private static T? Read<T>(Message message, string port) where T : class
+    {
+        if (!message.Ports.TryGetValue(port, out var json) || string.IsNullOrWhiteSpace(json))
+            return null;
+        return MpaiJson.FromJson<T>(json);
+    }
+
+    private Message Passthrough(Message message) => new()
+    {
+        MessageId   = message.MessageId,
+        MessageType = "Basic3DModelObject",
+        DataType    = "OSD-B3O-V1.5",
+        Payload     = message.Ports.TryGetValue(_modelPort, out var m) ? m : "",
+        Ports       = message.Ports.TryGetValue(_modelPort, out var mm)
+            ? new Dictionary<string, string> { [_outputPort] = mm }
+            : new Dictionary<string, string>()
+    };
 }

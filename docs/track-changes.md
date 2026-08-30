@@ -332,6 +332,33 @@ Non-blocking; each to be done as its own commit with a green-build check afterwa
   via SOD (speech -> loudspeaker) + 3OD (avatar -> screen), the UA trusted with the Controller and
   untrusted with the real world (per MPAI-PTF, which drives the design though not yet implemented).
 
+### 2026-08-30 â€” 3OD delivers model + animation; 3D data architecture settled
+- ARCHITECTURE (reasoned + validated): a 3D avatar splits into a STATIC MODEL and its ANIMATION.
+  The qualifier test proves they are distinct types: 3D-model content formats {glTF, FBX, OBJ,
+  USD, VRM} vs animation content formats {BVH, ARKit/FACS weight streams} are disjoint, with
+  different qualifier structure (model: polycount/textures/units; animation: frame rate/duration/
+  target rig). Confirmed by our own work: BDO's format is BVH (a pure animation format).
+  - Model = OSD-B3O (Basic 3D Model Object) / OSD-3DO (composite). Static: geometry + materials +
+    rig + blendshape DEFINITIONS. Maps to glTF/GLB.
+  - Animation = the EXISTING first-class types PAF-FDO (Face) + PAF-BDO (Body), whose qualifiers
+    already carry the animation formats (FACS-AU morph weights, BVH). NO new "3DA" type is needed
+    - FDO/BDO ARE the animation. FDO represents the whole face's movement (expression + lips +
+      gaze/blink); BDO the whole body's (gesture + posture + head). Generation (emotion model,
+      speech->viseme, blink timer) is not the data type's concern - the type REPRESENTS movement.
+  - Posing = rendering: in real-time 3D you cannot serialise an "animated 3DO" per frame; the
+    renderer holds the static model and applies the animation (morph weights / bone poses) at
+    render time. So "Scene and Avatar Rendering" is what the renderer (3OD's device) does.
+- 3OD EXTENDED: since 3D rendering inherently needs model + animation together (unlike audio,
+  which needs only speech), 3OD's inputs are now SEPARATE ports: ModelObject [OSD-B3O, OSD-3DO],
+  FaceAnimation [PAF-FDO], BodyAnimation [PAF-BDO] (each animation its own channel - FDO and BDO
+  are unrelated; future animation streams add ports independently). Output OutputVisual. The
+  device (renderer) combines model + animation -> frames. PROVEN: [OSD-3OD-V1.5] rendering 3D
+  scene: model ... + face animation -> (delivered).
+- TRUST: SOD + 3OD are the User Agent's real-world delivery (untrusted-real-world edge); RSR
+  (trusted composite) PRODUCES Machine Speech + Face/Body Descriptors, the UA DELIVERS them.
+  PAF (Portable Avatar bundling) is not used here - direct paths: model via 3OD, speech via SOD,
+  animation (FDO/BDO) to the renderer through 3OD's animation ports.
+
 ## 5. Per-AIM build status (MMC-HCI chain)
 
 Boxes of the MMC-HCI reference model, and adjacent AIMs.

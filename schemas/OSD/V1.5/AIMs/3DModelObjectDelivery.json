@@ -7,10 +7,12 @@
 
   "APIProfile":           "Basic",
 
-  "Description":          "3D Model Object Delivery: delivers a 3D Model Object (Basic 3D Model Object or 3D Model Object) to a device - a 3D renderer that displays it. The object stays a 3D Model Object to the device edge, where it is rendered (3D to 2D). Both ports accept OSD-B3O and OSD-3DO.",
+  "Description":          "3D Model Object Delivery: delivers a 3D scene to a device - a 3D renderer. It delivers the 3D Model (Basic 3D Model Object or 3D Model Object) together with the animation streams that drive it - Face Descriptors (facial animation) and Body Descriptors (body animation) - each on its own port, so further animation streams can be added independently. The objects stay typed to the device edge, where the device renders them (3D to 2D). Model and animation are inseparable at render time (posing is rendering).",
 
-  "ExternalPorts":        [{ "Name": "Input3DModel",  "Direction": "Input",  "DataType": ["OSD-B3O-V1.5", "OSD-3DO-V1.5"], "Technology": "Software", "Protocol": "", "IsRemote": false },
-                           { "Name": "Output3DModel", "Direction": "Output", "DataType": ["OSD-B3O-V1.5", "OSD-3DO-V1.5"], "Technology": "Hardware", "Protocol": "", "IsRemote": false }],
+  "ExternalPorts":        [{ "Name": "ModelObject",   "Direction": "Input",  "DataType": ["OSD-B3O-V1.5", "OSD-3DO-V1.5"], "Technology": "Software", "Protocol": "", "IsRemote": false },
+                           { "Name": "FaceAnimation", "Direction": "Input",  "DataType": "PAF-FDO-V1.6", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false },
+                           { "Name": "BodyAnimation", "Direction": "Input",  "DataType": "PAF-BDO-V1.6", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false },
+                           { "Name": "OutputVisual",  "Direction": "Output", "DataType": ["OSD-B3O-V1.5", "OSD-3DO-V1.5"], "Technology": "Hardware", "Protocol": "", "IsRemote": false }],
 
   "SubAIMs":              [],
   "Topology":             [],
