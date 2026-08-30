@@ -1,56 +1,28 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$comment": "https://schemas.mpai.community/AIF/V3.0/data/AIMMetadata.json",
-  "$id": "https://schemas.mpai.community/MMC/V2.5/AIMs/PersonalStatusMultiplexing.json",
-  "title": "Personal Status Multiplexing V2.5",
+  "$id": "https://schemas.mpai.community/MMC/V2.5/AIMs/EntityGestureInterpretation.json",
+  "title": "Entity Gesture Interpretation V2.5",
   "Identifier": {
     "ImplementerID": "/* String assigned by IIDRA */",
     "ImplementationID": "/* String from Implementer */",
-    "AIMName": "MMC-PSM-V2.5"
+    "AIMName": "MMC-EGI-V2.5"
   },
   "APIProfile": "Basic",
-  "Description": "This AIM assembles the per-modality Personal Statuses - Text, Speech, Face, and Gesture - into a single Entity Personal Status. It combines; it does not compute. Each modality input is optional, but at least one shall be present; the Entity Personal Status carries whichever modalities are supplied.",
+  "Description": "This AIM extracts the Gesture Personal Status from a Basic Visual Object whose Visual Qualifier declares its content is a body: a value for each Personal Status Factor (Cognitive State, Emotion, Social Attitude) carried by the body gesture.",
   "ExternalPorts": [
     {
-      "Name": "TextPersonalStatus",
+      "Name": "BodyObject",
       "Direction": "Input",
-      "DataType": "MMC-TPS-V2.5",
-      "IsOptional": true,
-      "Technology": "Software",
-      "Protocol": "",
-      "IsRemote": false
-    },
-    {
-      "Name": "SpeechPersonalStatus",
-      "Direction": "Input",
-      "DataType": "MMC-SPS-V2.5",
-      "IsOptional": true,
-      "Technology": "Software",
-      "Protocol": "",
-      "IsRemote": false
-    },
-    {
-      "Name": "FacePersonalStatus",
-      "Direction": "Input",
-      "DataType": "MMC-FPS-V2.5",
-      "IsOptional": true,
+      "DataType": "OSD-BVO-V1.5",
       "Technology": "Software",
       "Protocol": "",
       "IsRemote": false
     },
     {
       "Name": "GesturePersonalStatus",
-      "Direction": "Input",
-      "DataType": "MMC-GPS-V2.5",
-      "IsOptional": true,
-      "Technology": "Software",
-      "Protocol": "",
-      "IsRemote": false
-    },
-    {
-      "Name": "EntityPersonalStatus",
       "Direction": "Output",
-      "DataType": "MMC-EPS-V2.5",
+      "DataType": "MMC-GPS-V2.5",
       "Technology": "Software",
       "Protocol": "",
       "IsRemote": false

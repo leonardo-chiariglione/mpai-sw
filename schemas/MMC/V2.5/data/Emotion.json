@@ -1,17 +1,17 @@
 { "$schema":                  "https://json-schema.org/draft/2020-12/schema",
   "$id":                      "https://schemas.mpai.community/MMC/V2.5/data/Emotion.json",
   "title":                    "Emotion V2.5",
-  "description":              "Emotion labels per MPAI-MMC: categories with general and specific adjectival labels.",
+  "description":              "Emotion labels per MPAI-MMC: categories with general and specific adjectival labels, plus an optional Degree in [0,1].",
   "type":                     "object",
-  "required":                 ["Header", "EmotionCategory"],
+  "required":                 [ "Header", "EmotionCategory" ],
   "additionalProperties":     false,
   "properties":               {
 
     "Header":                 { "type": "string", "const": "MMC-EEM-V2.5" },
     "MInstanceID":            { "type": "string" },
     "UEnvironmentID":         { "type": "string" },
-    "EmotionID":              { "type": "string" },
-    "EmotionTime":            { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SimpleTime.json" },
+    "EntityEmotionID":        { "type": "string" },
+    "EntityEmotionSpaceTime": { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SpaceTime.json" },
 
     "EmotionCategory":        { "type": "object", "additionalProperties": false, "properties": {
 
@@ -37,7 +37,8 @@
 
       "HURT":                 { "type": "object", "additionalProperties": false, "properties": {
         "GeneralAdjectival":  { "type": "object", "additionalProperties": false, "properties": {
-          "hurt":             { "type": "string", "enum": ["jealous", "insulted/offended", "resentful/disgruntled", "bitter"] } } } } },
+          "hurt":             { "type": "string", "enum": ["insulted/offended", "resentful/disgruntled", "bitter"] },
+          "jealous":          { "type": "string", "enum": ["jealous"] } } } } },
 
       "PRIDE/SHAME":          { "type": "object", "additionalProperties": false, "properties": {
         "GeneralAdjectival":  { "type": "object", "additionalProperties": false, "properties": {
@@ -50,6 +51,9 @@
       "SADNESS":              { "type": "object", "additionalProperties": false, "properties": {
         "GeneralAdjectival":  { "type": "object", "additionalProperties": false, "properties": {
           "sad":              { "type": "string", "enum": ["lonely", "grief-stricken", "depressed/gloomy", "disappointed"] } } } } } } },
+
+    "Degree":                 { "type": "number", "minimum": 0, "maximum": 1,
+                                "description": "Optional intensity/confidence of the chosen Emotion label, in [0,1]." },
 
     "DataXMData":             { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
     "DescrMetadata":          { "type": "string", "maxLength": 2048 } } }

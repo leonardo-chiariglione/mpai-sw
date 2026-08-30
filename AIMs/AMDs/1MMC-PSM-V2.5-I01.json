@@ -1,15 +1,11 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$comment": "https://schemas.mpai.community/AIF/V3.0/data/AIMMetadata.json",
-  "$id": "https://schemas.mpai.community/MMC/V2.5/AIMs/PersonalStatusMultiplexing.json",
-  "title": "Personal Status Multiplexing V2.5",
   "Identifier": {
-    "ImplementerID": "/* String assigned by IIDRA */",
-    "ImplementationID": "/* String from Implementer */",
+    "ImplementerID": "1",
+    "ImplementationID": "MMC-PSM-V2.5-I01",
     "AIMName": "MMC-PSM-V2.5"
   },
   "APIProfile": "Basic",
-  "Description": "This AIM assembles the per-modality Personal Statuses - Text, Speech, Face, and Gesture - into a single Entity Personal Status. It combines; it does not compute. Each modality input is optional, but at least one shall be present; the Entity Personal Status carries whichever modalities are supplied.",
+  "Description": "Personal Status Multiplexing: assembles the per-modality Personal Statuses - Text (from NLU), Speech, and Face - into a single Entity Personal Status. It combines; it does not compute. Each modality input is optional, but at least one must be present; the Entity Personal Status carries whichever modalities are supplied.",
   "ExternalPorts": [
     {
       "Name": "TextPersonalStatus",
@@ -60,27 +56,27 @@
   "Topology": [],
   "Implementations": [
     {
-      "ImplementationURI": "/* URI storing Implementation */",
-      "BinaryName": "/* BinaryName */",
-      "Architecture": "/* x86 | x86-64 | ARM | ARM64 | MIPS | RISC-V */",
-      "OperatingSystem": "/* Windows | Linux | MacOS | Debian | Ubuntu | RedHat | Android | Zephyr | RTOS | Oniro | iOS */",
-      "Version": "/* Version */",
-      "Source": "/* AIMStorage | MPAIStore | AIMURL */",
-      "Destination": "/* Destination URI */"
+      "ImplementationURI": "file:///D:/AI/AIMs/MMC-PSM-V2.5-I01",
+      "MASPort": 443,
+      "BinaryName": "Mpai.Mmc.Psm",
+      "Architecture": "x86-64",
+      "OperatingSystem": "Windows",
+      "Version": "2.5",
+      "Source": "AIMStorage"
     }
   ],
   "ResourcePolicies": [
     {
       "Name": "Memory",
-      "Minimum": "/* number GB */",
-      "Maximum": "/* number GB */",
-      "Request": "/* number GB */"
+      "Minimum": "0.25 GB",
+      "Request": "0.5 GB",
+      "Maximum": "1 GB"
     },
     {
       "Name": "CPU:Class",
-      "Minimum": "/* Low | Medium | High */",
-      "Maximum": "/* Low | Medium | High */",
-      "Request": "/* Low | Medium | High */"
+      "Minimum": "Low",
+      "Request": "Low",
+      "Maximum": "Medium"
     }
   ],
   "DataXMData": {},

@@ -1,21 +1,24 @@
 { "$schema":                  "https://json-schema.org/draft/2020-12/schema",
   "$id":                      "https://schemas.mpai.community/MMC/V2.5/data/FacePersonalStatus.json",
   "title":                    "Face Personal Status V2.5",
-  "description":              "Describes the face-related cognitive, emotional, and social state of an Entity.",
+  "description":              "Personal Status of the Face modality: the Cognitive State, Emotion, and Social Attitude Factors carried by the face. None is required; at least one shall be present.",
   "type":                     "object",
   "additionalProperties":     false,
   "required":                 [ "Header", "FacePersonalStatusID" ],
+  "anyOf":                    [ { "required": [ "FaceCognitiveState" ] },
+                              { "required": [ "FaceEmotion" ] },
+                              { "required": [ "FaceSocialAttitude" ] } ],
   "properties":               {
 
     "Header":                 { "type": "string", "const": "MMC-FPS-V2.5" },
-    "MInstanceID":            { "type": "string", "description": "M-Instance identifier." },
-    "UEnvironmentID":         { "type": "string", "description": "U-Environment identifier." },
-    "FacePersonalStatusID":   { "type": "string", "description": "Unique Face Personal Status identifier." },
-    "FacePersonalStatusTime": { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SimpleTime.json" },
+    "MInstanceID":            { "type": "string" },
+    "UEnvironmentID":         { "type": "string" },
+    "FacePersonalStatusID":  { "type": "string" },
+    "FacePersonalStatusTime":{ "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SimpleTime.json" },
 
-    "FaceCognitiveState":     { "type": "object", "additionalProperties": false, "required": [ "Value" ], "properties": { "Value": { "type": "number", "minimum": 0, "maximum": 1 } } },
-    "FaceEmotion":            { "type": "object", "additionalProperties": false, "required": [ "Value" ], "properties": { "Value": { "type": "number", "minimum": 0, "maximum": 1 } } },
-    "FaceSocialAttitude":     { "type": "object", "additionalProperties": false, "required": [ "Value" ], "properties": { "Value": { "type": "number", "minimum": 0, "maximum": 1 } } },
+    "FaceCognitiveState":    { "$ref": "https://schemas.mpai.community/MMC/V2.5/data/CognitiveState.json" },
+    "FaceEmotion":           { "$ref": "https://schemas.mpai.community/MMC/V2.5/data/Emotion.json" },
+    "FaceSocialAttitude":    { "$ref": "https://schemas.mpai.community/MMC/V2.5/data/SocialAttitude.json" },
 
     "DataXMData":             { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
     "DescrMetadata":          { "type": "string", "maxLength": 2048 } } }

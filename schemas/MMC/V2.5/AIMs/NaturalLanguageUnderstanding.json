@@ -1,5 +1,6 @@
 {
-  "$schema": "https://schemas.mpai.community/AIF/V3.0/data/AIMMetadata.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "https://schemas.mpai.community/AIF/V3.0/data/AIMMetadata.json",
   "$id": "https://schemas.mpai.community/MMC/V2.5/AIMs/NaturalLanguageUnderstanding.json",
   "title": "Natural Language Understanding V2.5",
   "Identifier": {
@@ -8,7 +9,7 @@
     "AIMName": "MMC-NLU-V2.5"
   },
   "APIProfile": "Basic",
-  "Description": "This AIM receives an input text (from a keyboard or an MMC-ASR AIM) and produces a Refined Text (if the input came from ASR) and the Meaning of the input text (Text Descriptors). It may also receive the Identifier of an Instance and the Audio-Visual Scene Descriptors to ground referential meaning.",
+  "Description": "This AIM receives an Input Text or a Recognised Text and produces the Text Descriptors Object (carrying the Basic Text Descriptors), a Refined Text, and the Text Personal Status (a value for each Personal Status Factor carried by the text).",
   "ExternalPorts": [
     {
       "Name": "InputText",
@@ -17,6 +18,8 @@
         "OSD-BTO-V1.5",
         "OSD-TXO-V1.5"
       ],
+      "PortNumber": 1,
+      "IsOptional": true,
       "Technology": "Software",
       "Protocol": "",
       "IsRemote": false
@@ -28,28 +31,14 @@
         "OSD-BTO-V1.5",
         "OSD-TXO-V1.5"
       ],
+      "PortNumber": 2,
+      "IsOptional": true,
       "Technology": "Software",
       "Protocol": "",
       "IsRemote": false
     },
     {
-      "Name": "InstanceID",
-      "Direction": "Input",
-      "DataType": "OSD-IID-V1.5",
-      "Technology": "Software",
-      "Protocol": "",
-      "IsRemote": false
-    },
-    {
-      "Name": "AudioVisualScene",
-      "Direction": "Input",
-      "DataType": "OSD-BVS-V1.5",
-      "Technology": "Software",
-      "Protocol": "",
-      "IsRemote": false
-    },
-    {
-      "Name": "Meaning",
+      "Name": "TextDescriptors",
       "Direction": "Output",
       "DataType": "MMC-TDO-V2.5",
       "Technology": "Software",
@@ -66,6 +55,14 @@
       "Technology": "Software",
       "Protocol": "",
       "IsRemote": false
+    },
+    {
+      "Name": "TextPersonalStatus",
+      "Direction": "Output",
+      "DataType": "MMC-TPS-V2.5",
+      "Technology": "Software",
+      "Protocol": "",
+      "IsRemote": false
     }
   ],
   "SubAIMs": [],
@@ -75,7 +72,7 @@
       "ImplementationURI": "/* URI storing Implementation */",
       "BinaryName": "/* BinaryName */",
       "Architecture": "/* x86 | x86-64 | ARM | ARM64 | MIPS | RISC-V */",
-      "OperatingSystem": "/* Windows | Linux | MacOS | Debian | Ubuntu | RedHat | Android | Zephyr | RTOS | Oniro | iOS */",
+      "OperatingSystem": "/* Windows | Linux | MacOS | ... */",
       "Version": "/* Version */",
       "Source": "/* AIMStorage | MPAIStore | AIMURL */",
       "Destination": "/* Destination URI */"
@@ -84,15 +81,9 @@
   "ResourcePolicies": [
     {
       "Name": "Memory",
-      "Minimum": "/* number GB, e.g. 8 GB */",
-      "Maximum": "/* number GB, e.g. 8 GB */",
-      "Request": "/* number GB, e.g. 8 GB */"
-    },
-    {
-      "Name": "CPU:Number",
-      "Minimum": "/* integer, 0=all */",
-      "Maximum": "/* integer, 0=all */",
-      "Request": "/* integer, 0=all */"
+      "Minimum": "/* number GB */",
+      "Maximum": "/* number GB */",
+      "Request": "/* number GB */"
     },
     {
       "Name": "CPU:Class",
