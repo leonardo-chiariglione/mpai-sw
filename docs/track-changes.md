@@ -263,6 +263,28 @@ Non-blocking; each to be done as its own commit with a green-build check afterwa
   responds appropriately with its own feeling. NEXT: PAF-PDR (de-multiplex machine EPS ->
   affective TTS + generative face/body -> speaking avatar) completes the MW output side.
 
+### 2026-08-30 â€” PAF-RSR speech path PROVEN: the machine SPEAKS ALOUD (box 11, audible half)
+- UAG-RSR composite (PAF-PSD + MMC-TTS + MMC-SOD) - the machine speaks its Entity Dialogue
+  Processing response aloud through the Controller. PROVEN: "Of course, right this way." ->
+  PAF-PSD de-multiplexes the machine EPS -> MMC-TTS synthesises -> MMC-SOD plays 82,080 bytes
+  to the loudspeaker (CAE-AOD). The dialogue loop is now AUDIBLE end-to-end.
+- PAF-PSD (Personal Status De-multiplexing, PAF-PSD-V1.6) - NEW, the inverse of MMC-PSM: one
+  Entity Personal Status -> Speech/Face/Gesture Personal Status. Resolves the machine's factors
+  from whichever modality slot carried them (EDP emits them in the Text slot) and projects onto
+  each output modality.
+- MMC-TTS + MMC-SOD dual-typed for speech interoperability (Leonardo): TTS InputText [OSD-BTO,
+  OSD-TXO], OutputSpeech [OSD-BSO, OSD-SPO]; SOD InputSpeech/OutputSpeech [OSD-BSO, OSD-SPO]
+  (L3 + L2 both). Fixed a latent bug: TTS L2 OutputSpeech was wrongly OSD-AUO (audio) - now
+  speech. The dialogue pipeline is SPEECH, not audio (audio only at SOD's final acoustic
+  AsAudio() step). TTS->SOD wires via OSD-BSO ("INPUT HIT: MMC-TTS-V2.5 -> OSD-BSO-V1.5").
+- SCOPE: RSR is a full Composite AIM. The SPEECH path (PAF-PSD + MMC-TTS + MMC-SOD) is built +
+  proven. The VISUAL avatar (Scene and Avatar Rendering PAF-SAR + generative Face/Body
+  Description) needs a 3D engine (Unity/Unreal) - a separate major project, the visual half of
+  box 11.
+- THE FULL HCI MW LOOP IS NOW AUDIBLE: human speaks -> perceive (scene/identity/ASR) -> NLU ->
+  PSE (3 real affect engines) -> EntityPersonalStatus -> EDP (local LLM -> response + machine
+  EPS) -> RSR (PAF-PSD -> TTS -> SOD) -> the machine SPEAKS BACK. Only the visual avatar remains.
+
 ## 5. Per-AIM build status (MMC-HCI chain)
 
 Boxes of the MMC-HCI reference model, and adjacent AIMs.

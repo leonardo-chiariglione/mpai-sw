@@ -7,10 +7,10 @@
 
   "APIProfile":           "Basic",
 
-  "Description":          "Text to Speech: converts a Basic Text Object into a Basic Speech Object.",
+  "Description":          "Text to Speech: converts a Text Object (Basic Text Object or Text Object) into a Speech Object (Basic Speech Object or Speech Object). The input port accepts both OSD-BTO and OSD-TXO; the output port carries both OSD-BSO and OSD-SPO.",
 
-  "ExternalPorts":        [{ "Name": "InputText",    "Direction": "Input",  "DataType": "OSD-TXO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false },
-                           { "Name": "OutputSpeech", "Direction": "Output", "DataType": "OSD-AUO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false }],
+  "ExternalPorts":        [{ "Name": "InputText",    "Direction": "Input",  "DataType": ["OSD-BTO-V1.5", "OSD-TXO-V1.5"], "Technology": "Software", "Protocol": "", "IsRemote": false },
+                           { "Name": "OutputSpeech", "Direction": "Output", "DataType": ["OSD-BSO-V1.5", "OSD-SPO-V1.5"], "Technology": "Software", "Protocol": "", "IsRemote": false }],
 
   "SubAIMs":              [],
 
@@ -24,13 +24,8 @@
                             "Source":           "/* AIMStorage | MPAIStore | AIMURL */",
                             "Destination":      "/* Destination URI */"}],
 
-  "ResourcePolicies":     [{"Name": "Memory",               "Minimum": "/* GB */",                                                                                                                                        "Maximum": "/* GB */",                                                                                                                                        "Request": "/* GB */"},
-                           {"Name": "CPU:Number",           "Minimum": "/* integer, 0=all */",                                                                                                                               "Maximum": "/* integer, 0=all */",                                                                                                                               "Request": "/* integer, 0=all */"},
-                           {"Name": "CPU:Class",            "Minimum": "/* Low | Medium | High */",                                                                                                                          "Maximum": "/* Low | Medium | High */",                                                                                                                          "Request": "/* Low | Medium | High */"},
-                           {"Name": "GPU:Number",           "Minimum": "/* integer, 0=all */",                                                                                                                               "Maximum": "/* integer, 0=all */",                                                                                                                               "Request": "/* integer, 0=all */"},
-                           {"Name": "GPU:CUDA:Class",       "Minimum": "/* SM10|SM11|SM12|SM13|SM20|SM21|SM30|SM32|SM35|SM37|SM50|SM52|SM53|SM60|SM61|SM62|SM70|SM72|SM75|SM80|SM86|SM87|SM90 */",                         "Maximum": "/* SM10|SM11|SM12|SM13|SM20|SM21|SM30|SM32|SM35|SM37|SM50|SM52|SM53|SM60|SM61|SM62|SM70|SM72|SM75|SM80|SM86|SM87|SM90 */",                         "Request": "/* SM10|SM11|SM12|SM13|SM20|SM21|SM30|SM32|SM35|SM37|SM50|SM52|SM53|SM60|SM61|SM62|SM70|SM72|SM75|SM80|SM86|SM87|SM90 */"},
-                           {"Name": "GPU:CUDA:FrameBuffer", "Minimum": "/* float_GB_GDDR|GDDR2|GDDR3|GDDR4|GDDR5|GDDR5X|GDDR6|GDDR6X */",                                                                                  "Maximum": "/* float_GB_GDDR|GDDR2|GDDR3|GDDR4|GDDR5|GDDR5X|GDDR6|GDDR6X */",                                                                                  "Request": "/* float_GB_GDDR|GDDR2|GDDR3|GDDR4|GDDR5|GDDR5X|GDDR6|GDDR6X */"},
-                           {"Name": "GPU:CUDA:MemorySpeed", "Minimum": "/* float_GHz */",                                                                                                                                    "Maximum": "/* float_GHz */",                                                                                                                                    "Request": "/* float_GHz */"}],
+  "ResourcePolicies":     [{"Name": "Memory",     "Minimum": "/* GB */", "Maximum": "/* GB */", "Request": "/* GB */"},
+                           {"Name": "CPU:Class",  "Minimum": "/* Low | Medium | High */", "Maximum": "/* Low | Medium | High */", "Request": "/* Low | Medium | High */"}],
 
   "DataXMData":           { },
 

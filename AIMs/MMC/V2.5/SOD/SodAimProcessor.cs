@@ -1,29 +1,24 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
 using AIF.Controller;
 using Mpai.Core;
-
 namespace Mpai.Aims.Speech;
-
-// MMC-SOD-V2.5 — Speech Object Delivery. Self-contained IAimProcessor.
+// MMC-SOD-V2.5 - Speech Object Delivery. Self-contained IAimProcessor.
 // Reads its own port names from 1MMC-SOD-V2.5-I01.json at startup.
 //
-// SOD takes a Basic SPEECH Object (OSD-SPO-V1.5) and delivers it to a device.
-// Physical delivery is acoustic (a speaker emits sound waves regardless of
-// whether the content is speech), so SOD reuses the same IAudioDeliveryAim as
-// AOD, converting the speech to audio only at the final acoustic step
-// (AsAudio) — the SpeechQualifier metadata is preserved on the object up to
-// that boundary. The output port re-emits the Speech Object unchanged, so a
-// downstream consumer still sees speech.
+// SOD takes a Speech Object (its input port accepts both OSD-BSO and OSD-SPO) and
+// delivers it to a device. Physical delivery is acoustic (a speaker emits sound
+// waves regardless of whether the content is speech), so SOD reuses the same
+// IAudioDeliveryAim as AOD, converting the speech to audio only at the final
+// acoustic step (AsAudio) - the SpeechQualifier metadata is preserved on the
+// object up to that boundary. The output port re-emits the Speech Object
+// unchanged (dual-typed OSD-BSO/OSD-SPO), so a downstream consumer still sees speech.
 public sealed class SodAimProcessor : IAimProcessor
 {
     private readonly string            _inputPort;
     private readonly string            _outputPort;
     private readonly IAudioDeliveryAim _aod;
-
     public string InstanceId { get; }
-
     public SodAimProcessor(
         string            instanceId,
         IAudioDeliveryAim aod,
@@ -31,10 +26,9 @@ public sealed class SodAimProcessor : IAimProcessor
     {
         InstanceId  = instanceId;
         _aod        = aod;
-        _inputPort  = ports.Input("OSD-SPO-V1.5");
-        _outputPort = ports.Output("OSD-SPO-V1.5");
+        _inputPort  = ports.Input("OSD-BSO-V1.5");    // dual-typed port [OSD-BSO, OSD-SPO]
+        _outputPort = ports.Output("OSD-BSO-V1.5");   // dual-typed port [OSD-BSO, OSD-SPO]
     }
-
     public async Task<Message> ProcessAsync(Message message)
     {
         var speech = MpaiJson.FromJson<BasicSpeechObject>(message.Ports[_inputPort]);
@@ -50,7 +44,6 @@ public sealed class SodAimProcessor : IAimProcessor
         {
             await _aod.DeliverAsync(speech.AsAudio());   // acoustic delivery
         }
-
         return new Message
         {
             MessageId   = message.MessageId,
