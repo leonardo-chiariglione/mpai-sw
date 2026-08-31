@@ -256,9 +256,25 @@ public sealed class EdpAimProcessor : IAimProcessor
             }
             catch { /* keep plain-text fallback */ }
         }
-        return (response, emotion, attitude, summary);
+        return (Sanitise(response), emotion, attitude, summary);
     }
 
+    // Strip any emotion/attitude labels the model leaked into the spoken response.
+    // A weak model sometimes appends its structured fields as prose ("... Emotion:
+    // happy, Attitude: friendly"); those must drive the face, never be spoken.
+    private static string Sanitise(string response)
+    {
+        if (string.IsNullOrWhiteSpace(response)) return response;
+        // Cut off at the first occurrence of a leaked label.
+        var cut = System.Text.RegularExpressions.Regex.Match(
+            response,
+            @"(?i)[\s,;.\-]*(emotion|attitude|summary)\s*[:=]",
+            System.Text.RegularExpressions.RegexOptions.None);
+        if (cut.Success) response = response.Substring(0, cut.Index);
+        // Remove any stray trailing JSON-ish braces/quotes.
+        response = response.Trim().TrimEnd('}', '{', '"', ',', ' ');
+        return response.Trim();
+    }
     // Build the machine's Personal Status from the LLM's stated emotion + attitude.
     // Carried as a Text modality PS inside the Entity Personal Status; PAF-PDR will
     // de-multiplex it to speech/face/gesture for avatar rendering.

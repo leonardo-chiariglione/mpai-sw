@@ -122,3 +122,9 @@ MPAIApps/MMCApps/MadApp/
 MPAIApps/MMCApps/MatApp/
 
 MPAIApps/MMCApps/*.WebView2/
+
+# UA Lib
+Lib/UaKit/bin/
+Lib/UaKit/obj/
+Lib/Assets/*.glb
+Lib/Assets/*.hdr

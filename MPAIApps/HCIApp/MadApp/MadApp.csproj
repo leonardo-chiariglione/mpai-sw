@@ -7,23 +7,14 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <AssemblyName>MadApp</AssemblyName>
     <RootNamespace>MadApp</RootNamespace>
-    <DefineConstants>$(DefineConstants);WINDOWS_DEVICES</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\AIMs\Core\Mpai.Core.csproj" />
-    <!-- The HCI middleware API (the faÃ§ade the app is a thin client of). -->
     <ProjectReference Include="..\HciApi\Mpai.Hci.Api.csproj" />
-    <!-- The 3OD WebView renderer device (SAR presentation). -->
-    <ProjectReference Include="..\..\..\AIMs\OSD\V1.5\TOD\Mpai.Osd.Tod.csproj" />
-    <!-- UA real-world edge: mic capture (Speech Object Acquisition device) -->
-    <ProjectReference Include="..\..\..\AIMs\MMC\V2.5\SOA\Mpai.Mmc.Soa.csproj" />
-    <ProjectReference Include="..\..\..\AIMs\CAE3\V1.0\AOA.Windows\Mpai.Cae.Aoa.Windows.csproj" />
-    <ProjectReference Include="..\..\..\AIF\V3.0\src\AIF.Store\AIF.Store.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="web\**\*.*" CopyToOutputDirectory="PreserveNewest" />
+    <!-- The shared User Agent toolkit (WebView avatar host, capture loop, present). -->
+    <ProjectReference Include="..\..\..\Lib\UaKit\Mpai.UaKit.csproj" />
   </ItemGroup>
 </Project>
