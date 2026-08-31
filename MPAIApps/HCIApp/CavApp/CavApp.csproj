@@ -13,19 +13,13 @@
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
   </ItemGroup>
   <ItemGroup>
-    <!-- Framework -->
-    <ProjectReference Include="..\..\..\AIF\V3.0\src\AIF.Controller\AIF.Controller.csproj" />
-    <ProjectReference Include="..\..\..\AIF\V3.0\src\AIF.Store\AIF.Store.csproj" />
     <ProjectReference Include="..\..\..\AIMs\Core\Mpai.Core.csproj" />
-    <!-- RSR Module SubAIMs: Personal Status De-multiplexing + Text-To-Speech + Generative Face Description -->
-    <ProjectReference Include="..\..\..\AIMs\PAF\V1.6\PSD\Mpai.Paf.Psd.csproj" />
-    <ProjectReference Include="..\..\..\AIMs\MMC\V2.5\TTS\Mpai.Mmc.Tts.csproj" />
-    <ProjectReference Include="..\..\..\AIMs\PAF\V1.6\GFD\Mpai.Paf.Gfd.csproj" />
-    <!-- 3OD WebView renderer device -->
+    <!-- The HCI middleware API (the faÃ§ade the app is a thin client of). -->
+    <ProjectReference Include="..\HciApi\Mpai.Hci.Api.csproj" />
+    <!-- The 3OD WebView renderer device (SAR presentation). -->
     <ProjectReference Include="..\..\..\AIMs\OSD\V1.5\TOD\Mpai.Osd.Tod.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <!-- Bundle the renderer web assets (copied to output; the app maps a virtual host to them). -->
     <None Include="web\**\*.*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

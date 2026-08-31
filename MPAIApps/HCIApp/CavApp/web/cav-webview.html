@@ -31,7 +31,6 @@
 <div id="app">
   <div id="stage">
     <canvas id="canvas"></canvas>
-    <div id="status">CALMNESS / calm</div>
     <div id="loading">Loading the CAV's faceâ€¦</div>
   </div>
   <div id="panel">
@@ -255,7 +254,7 @@ function receiveResponse(fdoJson, speechWavBase64) {
     // Auto-play the response as soon as it arrives.
     playResponse();
   } catch(e) {
-    document.getElementById('status').textContent = 'Bad response payload';
+    (document.getElementById('status')||{}).textContent = 'Bad response payload';
     console.error(e);
   }
 }
@@ -293,10 +292,10 @@ async function playResponse() {
   if (!responseFrames) return;
   const audio = document.getElementById('responseAudio');
   playing = true;
-  document.getElementById('status').textContent = 'CAV speaking...';
+  (document.getElementById('status')||{}).textContent = 'CAV speaking...';
   audio.currentTime = 0;
   await audio.play();
-  audio.onended = () => { playing = false; setEmotion('CALMNESS', 0); document.getElementById('status').textContent = 'CALMNESS / calm'; };
+  audio.onended = () => { playing = false; setEmotion('CALMNESS', 0); (document.getElementById('status')||{}).textContent = 'CALMNESS / calm'; };
 }
 
 

@@ -427,6 +427,28 @@ Non-blocking; each to be done as its own commit with a green-build check afterwa
   Note: M3152 specifies the HCI API (one HCI AIW/Module, one PTF trust domain, HCI Memory on
   AIW-scoped Shared Storage); we implement it, not invent it. Terminology: AIW is now "Module".
 
+### 2026-08-30 â€” HCI API facade (M3152) + the conversational CAV
+- The HCI API is IMPLEMENTED (not invented) per M3152: a thin facade (Mpai.Hci.Api at
+  MPAIApps/HCIApp/HciApi) over the HCI Modules. It holds the AIF UserAgent/Controller + a combined
+  provider (EDP's Ollama AIM + RSR's PSD/TTS/GFD), and exposes the specified operations:
+    - SubmitDialogueIntent(humanText) -> runs UAG-EDP (local LLM) -> Machine Text + Machine
+      Personal Status (the reply + its affect).
+    - ReceiveSpeakingAvatar(machineText, machinePS) -> runs UAG-RSR -> Machine Speech + Machine
+      Face Descriptors (the Speaking Avatar: speech + facial-animation timeline).
+  Two distinct operations, faithful to M3152 5.
+- CavApp is now a THIN CLIENT of the API (no longer re-wires the AIF): on Say, it supplies the
+  human's turn (SubmitDialogueIntent), renders the reply (ReceiveSpeakingAvatar), and presents the
+  Speaking Avatar on the WebView device (the SAR presentation seam - a device write, below the
+  API). So MPAIApps/HCIApp is a real COLLECTION on a shared HCI API, not N apps re-wiring the
+  framework. PROVEN: type what the human says -> EDP thinks (local LLM) -> the CAV speaks its
+  reply with lip-sync + expression. A real conversation.
+- Latency: the local LLM dominates. Mitigations - a startup warm-up (background SubmitDialogueIntent
+  loads the model before the first real turn) + a smaller/faster model (llama3.2 3B, set via the
+  OllamaModel setting). No response-length cap (deliberate - the CAV may answer at length). UI:
+  Enter = Say (default button); removed the CALMNESS/calm status; larger window.
+- Terminology: AIW is now "Module". Naming discipline held (no silent invention). SAR (Speaking
+  Avatar Rendering) in M3152 is a DIFFERENT module from our RSR - RSR kept.
+
 ## 5. Per-AIM build status (MMC-HCI chain)
 
 Boxes of the MMC-HCI reference model, and adjacent AIMs.

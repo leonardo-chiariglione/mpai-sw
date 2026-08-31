@@ -7,10 +7,10 @@
   <DockPanel>
     <Border DockPanel.Dock="Bottom" Background="#1E2632" Padding="10">
       <DockPanel>
-        <Button x:Name="SayButton" DockPanel.Dock="Right" Content="Say" Width="90" Margin="8,0,0,0"
+        <Button x:Name="SayButton" DockPanel.Dock="Right" Content="Say" Width="90" Margin="8,0,0,0" IsDefault="True"
                 Click="SayButton_Click" FontSize="14"/>
         <TextBox x:Name="InputBox" FontSize="14" VerticalContentAlignment="Center" Padding="8"
-                 KeyDown="InputBox_KeyDown"/>
+                />
       </DockPanel>
     </Border>
     <wv2:WebView2 x:Name="Web"/>
