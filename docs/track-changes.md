@@ -512,6 +512,20 @@ Non-blocking; each to be done as its own commit with a green-build check afterwa
   conversation - after each spoken response, auto-listen for the next turn (a flowing back-and-forth),
   until a Stop, with the Summary threading context across the whole conversation.
 
+### 2026-08-30 â€” Continuous conversation + reliable memory (running transcript)
+- Continuous auto-listen conversation loop (UAD-MAD / CavApp): the Listen button toggles Listen
+  <-> Stop. Press Listen once to start; a background loop then listens (VAD auto-stop) -> MMC-MAD
+  answers -> the app waits the response's audio duration so the mic does not catch the avatar's own
+  voice -> listens again, a flowing back-and-forth, until Stop. Typed Say still does a single turn.
+- Reliable memory fix: EDP's threaded context is now a running TRANSCRIPT, not a one-sentence
+  summary. The prompt had asked the LLM for "a one-sentence updated running summary", which
+  silently dropped specifics (a name survived, a hobby was lost -> "I have no info"). EDP now
+  appends each turn verbatim (User: ... / CAV: ...) to the incoming Summary, so nothing said is
+  forgotten; the one-sentence-summary ask was removed from the prompt. PROVEN: across a flowing
+  spoken conversation the CAV recalls every specific (name, hobby, and more).
+- NOTE: the verbatim transcript grows with a very long conversation (larger prompt); fine for
+  normal chats. A fact-preserving smart summary is the refinement if very long sessions are needed.
+
 ## 5. Per-AIM build status (MMC-HCI chain)
 
 Boxes of the MMC-HCI reference model, and adjacent AIMs.

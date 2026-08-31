@@ -29,6 +29,7 @@ public partial class MainWindow : Window
     private HciApi? _hci;                          // the HCI middleware API
     private WebView3DModelDelivery? _renderer;     // 3OD's device (the SAR presentation)
     private bool _ready;
+    private volatile bool _conversing;   // the continuous conversation loop is running
 
     public MainWindow()
     {
@@ -60,29 +61,81 @@ public partial class MainWindow : Window
         _ = Task.Run(() => { try { _hci.Converse(text: "hello"); } catch { } });
     }
 
-    private async void ListenButton_Click(object sender, RoutedEventArgs e)
+    // Listen toggles a CONTINUOUS conversation: press to start, and after each spoken
+    // turn the CAV answers and then listens again automatically - a flowing back-and-
+    // forth - until pressed again to stop. The running Summary threads context across
+    // the whole conversation.
+    private void ListenButton_Click(object sender, RoutedEventArgs e)
     {
         if (!_ready || _hci is null || _renderer is null) return;
-        ListenButton.IsEnabled = false; SayButton.IsEnabled = false;
-        ListenButton.Content = "listening...";
+        if (_conversing) { StopConversation(); return; }
+        _conversing = true;
+        ListenButton.Content = "Stop";
+        SayButton.IsEnabled = false;
+        _ = Task.Run(ConversationLoopAsync);
+    }
+
+    private void StopConversation()
+    {
+        _conversing = false;
+        Dispatcher.Invoke(() => { ListenButton.Content = "Listen"; SayButton.IsEnabled = true; });
+    }
+
+    // The continuous conversation loop (background): listen -> answer -> wait for the
+    // avatar to finish speaking -> listen again, until stopped. Empty captures (nobody
+    // spoke) simply listen again; the Stop button ends the loop.
+    private async Task ConversationLoopAsync()
+    {
         try
         {
-            // Capture the human's spoken turn (the UA's real-world edge): the mic
-            // device + Speech Object Acquisition with voice-activity auto-stop, so
-            // the user just speaks and it stops when they finish.
-            var speech = await Task.Run(() => CaptureSpeech());
-            ListenButton.Content = "Listen";
-            if (speech is null || speech.Data.Length == 0)
+            while (_conversing)
             {
-                System.Windows.MessageBox.Show(
-                    "No speech captured (heard nothing, or too quiet). Check the microphone, and speak after pressing Listen.",
-                    "CAV heard nothing");
-                return;
+                var speech = CaptureSpeech();                 // VAD auto-stop
+                if (!_conversing) break;
+                if (speech is null || speech.Data.Length == 0) continue;
+
+                var avatar = await Task.Run(() => _hci!.Converse(speech: speech));
+                await Dispatcher.InvokeAsync(async () =>
+                {
+                    var model = Basic3DModelObject.FromData(Array.Empty<byte>());
+                    await _renderer!.DeliverWithSpeechAsync(model, avatar.FaceDescriptors, avatar.MachineSpeechWav);
+                });
+
+                // Let the avatar finish speaking before listening again, so the mic
+                // does not capture her own voice.
+                var speakSeconds = WavDurationSeconds(avatar.MachineSpeechWav);
+                await Task.Delay(TimeSpan.FromSeconds(speakSeconds + 0.6));
             }
-            await ConverseAsync(speech: speech);
         }
-        catch (Exception ex) { System.Windows.MessageBox.Show(ex.ToString(), "CAV listen error"); }
-        finally { ListenButton.Content = "Listen"; ListenButton.IsEnabled = true; SayButton.IsEnabled = true; }
+        catch (Exception ex)
+        {
+            await Dispatcher.InvokeAsync(() => System.Windows.MessageBox.Show(ex.ToString(), "CAV conversation error"));
+        }
+        finally { StopConversation(); }
+    }
+
+    // Duration of a 16-bit PCM WAV, in seconds, from its bytes.
+    private static double WavDurationSeconds(byte[] wav)
+    {
+        try
+        {
+            if (wav.Length < 44) return 1.0;
+            int channels   = BitConverter.ToInt16(wav, 22);
+            int sampleRate = BitConverter.ToInt32(wav, 24);
+            int bits       = BitConverter.ToInt16(wav, 34);
+            if (channels <= 0 || sampleRate <= 0 || bits <= 0) return 1.0;
+            int pos = 12, dataLen = wav.Length - 44;
+            while (pos + 8 <= wav.Length)
+            {
+                string id = System.Text.Encoding.ASCII.GetString(wav, pos, 4);
+                int len = BitConverter.ToInt32(wav, pos + 4);
+                if (id == "data") { dataLen = Math.Min(len, wav.Length - (pos + 8)); break; }
+                pos += 8 + len + (len & 1);
+            }
+            double bytesPerSec = sampleRate * channels * (bits / 8.0);
+            return bytesPerSec > 0 ? dataLen / bytesPerSec : 1.0;
+        }
+        catch { return 1.0; }
     }
 
     private async void SayButton_Click(object sender, RoutedEventArgs e)

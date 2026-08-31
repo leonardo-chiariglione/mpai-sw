@@ -111,7 +111,13 @@ public sealed class EdpAimProcessor : IAimProcessor
 
         var machineText    = BasicTextObject.FromText(responseText);
         var machinePs      = MachinePersonalStatus(emotion, attitude);
-        var editedSummary  = Summary.Of(string.IsNullOrWhiteSpace(summaryOut) ? summaryIn : summaryOut);
+        // The threaded context is a running TRANSCRIPT, not a one-sentence summary: a
+        // one-line summary silently drops specifics (a name is kept, a hobby is lost),
+        // so we append each turn verbatim. Nothing said is forgotten.
+        var transcript = string.IsNullOrWhiteSpace(summaryIn)
+            ? $"User: {userText}\nCAV: {responseText}"
+            : $"{summaryIn}\nUser: {userText}\nCAV: {responseText}";
+        var editedSummary  = Summary.Of(transcript);
 
         return System.Threading.Tasks.Task.FromResult(new Message
         {
