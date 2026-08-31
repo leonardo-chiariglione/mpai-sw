@@ -407,6 +407,26 @@ Non-blocking; each to be done as its own commit with a green-build check afterwa
   to the words. Remaining: body/gesture (PAF-GBD, EGI), the seamless standalone CAV app, and
   affective TTS - all deepenings on a complete, correct core.
 
+### 2026-08-30 â€” Integrated standalone CAV app (MPAIApps/HCIApp/CavApp)
+- The seamless CAV: a native WPF app with an embedded WebView2 (the sanctioned "headless
+  glTF/WebGL driven from C#" 3OD renderer path, per M3154). One window: the realistic avatar face
+  + a text box + Say. On Say, the app's UserAgent runs the RSR Module (PAF-PSD + MMC-TTS +
+  PAF-GFD) via the AIF Controller -> Machine Speech + Machine Face Descriptors (lip-sync timeline);
+  delivers them to the WebView via WebView3DModelDelivery (3OD's device, a poster-delegate wrapper
+  so the portable Mpai.Osd.Tod carries no WebView2 dependency); the WebView plays the speech and
+  animates the avatar in sync. PROVEN: type a line -> the lady speaks it with lip-sync + her
+  (calm/respectful) expression, in-app - no browser, no files.
+- This is the first member of MPAIApps/HCIApp, the COLLECTION of HCI applications (M3152/M3154):
+  the In-Cabin conversational CAV. Access Control (CAV-MAC) is a sibling. It is the "dialogue
+  slice" (text intent -> RSR -> present) of the HCI middleware.
+- Fixes en route: WebView2 autoplay policy (--autoplay-policy=no-user-gesture-required) so the
+  message-triggered audio.play() is not blocked; project reference depth (3 levels to D:\AI).
+- NEXT (per Leonardo's plan): the HCI API FAÃ‡ADE (M3152 Â§5) - wrap this orchestration into the
+  specified thin operations (SubmitDialogueIntent, ReceiveSpeakingAvatar, Read* products, the IDR
+  and SAR seams) so apps are thin clients of the standard HCI API rather than re-wiring the AIF.
+  Note: M3152 specifies the HCI API (one HCI AIW/Module, one PTF trust domain, HCI Memory on
+  AIW-scoped Shared Storage); we implement it, not invent it. Terminology: AIW is now "Module".
+
 ## 5. Per-AIM build status (MMC-HCI chain)
 
 Boxes of the MMC-HCI reference model, and adjacent AIMs.

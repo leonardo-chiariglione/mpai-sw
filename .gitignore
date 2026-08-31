@@ -95,3 +95,9 @@ TestData/Images/access-probe.jpg
 
 # CavFace3D avatar/HDR binaries (re-fetch via MPAIApps/CavFace3D/README.md)
 TestData/Avatars/
+
+# CavApp build output + bundled binaries
+MPAIApps/HCIApp/CavApp/bin/
+MPAIApps/HCIApp/CavApp/obj/
+MPAIApps/HCIApp/CavApp/web/cav-avatar.glb
+MPAIApps/HCIApp/CavApp/web/studio.hdr
