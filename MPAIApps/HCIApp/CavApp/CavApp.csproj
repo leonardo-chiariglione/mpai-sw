@@ -18,6 +18,10 @@
     <ProjectReference Include="..\HciApi\Mpai.Hci.Api.csproj" />
     <!-- The 3OD WebView renderer device (SAR presentation). -->
     <ProjectReference Include="..\..\..\AIMs\OSD\V1.5\TOD\Mpai.Osd.Tod.csproj" />
+    <!-- UA real-world edge: mic capture (Speech Object Acquisition device) -->
+    <ProjectReference Include="..\..\..\AIMs\MMC\V2.5\SOA\Mpai.Mmc.Soa.csproj" />
+    <ProjectReference Include="..\..\..\AIMs\CAE3\V1.0\AOA.Windows\Mpai.Cae.Aoa.Windows.csproj" />
+    <ProjectReference Include="..\..\..\AIF\V3.0\src\AIF.Store\AIF.Store.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="web\**\*.*" CopyToOutputDirectory="PreserveNewest" />

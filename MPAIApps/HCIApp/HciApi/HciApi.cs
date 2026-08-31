@@ -9,20 +9,17 @@ using Mpai.Core.OSD;
 
 namespace Mpai.Hci.Api;
 
-// The HCI API (MPAI-HCI middleware API, per M3152 Â§5). A thin faÃ§ade over the HCI
-// Modules: it holds the AIF UserAgent/Controller and the Module providers, and
-// exposes the specified operations so HCI applications are thin clients that supply
-// intent and consume products - they do not wire the AIF themselves.
-//
-// This first cut implements the dialogue slice: SubmitDialogueIntent (Entity
-// Dialogue Processing) and ReceiveSpeakingAvatar (Response and Scene Rendering).
-// Presentation of the Speaking Avatar is the app's SAR seam (a device write, below
-// the API). The whole HCI MW is one AIW/Module under one Controller (one PTF trust
-// domain); this faÃ§ade is the app-facing surface above the API boundary.
+// The HCI API (MPAI-HCI middleware API). A thin faÃ§ade the User Agent (UAD-MAD)
+// uses to drive the MMC-MAD Middleware Module across the north API. MMC-MAD is ONE
+// AIW: the Controller reads its L3, recurses its SubAIMs (Automatic Speech
+// Recognition, Entity Dialogue Processing, Response and Scene Rendering) and runs
+// the whole pipeline. The UA supplies a turn - the human's spoken Speech Object OR
+// typed Text Object - at the boundary, and consumes the Speaking Avatar (Machine
+// Speech + Machine Face Descriptors) the run produces. Acquisition (mic) and
+// delivery (loudspeaker, screen) are the UA's real-world edges, outside the Module.
 public sealed class HciApi : IDisposable
 {
-    private const string EdpModule = "UAG-EDP-V1.0";   // Entity Dialogue Processing (verify name)
-    private const string RsrModule = "UAG-RSR-V1.0";   // Response and Scene Rendering
+    private const string MadModule = "MMC-MAD-V2.5";   // Multimodal Anonymous Dialogue
 
     private readonly UserAgent    _ua;
     private readonly HciProvider  _provider;
@@ -38,37 +35,21 @@ public sealed class HciApi : IDisposable
         _ua.MPAI_AIFU_Controller_Initialize();
     }
 
-    // ---- M3152 Â§5.1 Supply intent: SubmitDialogueIntent ----
-    // Give the dialogue processor the human's turn; receive the generated reply
-    // (Machine Text + the machine's Personal Status). Runs Entity Dialogue Processing.
-    // NOTE: EDP's exact boundary ports are filled once its L3 is confirmed.
-    public DialogueOutput SubmitDialogueIntent(string humanText, EntityPersonalStatus? humanStatus = null)
+    // Drive one dialogue turn through MMC-MAD. Supply the human's turn at the
+    // boundary - a typed Text Object and/or a spoken Speech Object - and receive
+    // the Speaking Avatar the Module produces. MAD recognises speech (if given),
+    // processes the dialogue, and renders the response; the Machine's own Personal
+    // Status is generated inside EDP.
+    public SpeakingAvatar Converse(string? text = null, BasicSpeechObject? speech = null)
     {
-        var boundary = new Dictionary<string, string>
-        {
-            ["TextObject"]     = MpaiJson.ToJson(BasicTextObject.FromText(humanText)),
-            ["PersonalStatus"] = MpaiJson.ToJson(humanStatus ?? new EntityPersonalStatus())
-        };
-        var outs = RunModule(EdpModule, boundary);
-        var machineText = ""; EntityPersonalStatus? machinePs = null;
-        if (outs.TryGetValue("MachineTextObject", out var mt) && !string.IsNullOrWhiteSpace(mt))
-            machineText = MpaiJson.FromJson<BasicTextObject>(mt)?.GetText() ?? "";
-        if (outs.TryGetValue("MachinePersonalStatus", out var mp) && !string.IsNullOrWhiteSpace(mp))
-            machinePs = MpaiJson.FromJson<EntityPersonalStatus>(mp);
-        return new DialogueOutput(machineText, machinePs ?? new EntityPersonalStatus());
-    }
+        var boundary = new Dictionary<string, string>();
+        if (!string.IsNullOrWhiteSpace(text))
+            boundary["TextObject"] = MpaiJson.ToJson(BasicTextObject.FromText(text));
+        if (speech is not null && speech.Data.Length > 0)
+            boundary["InputSpeech"] = MpaiJson.ToJson(speech);
 
-    // ---- M3152 Â§5.2 Consume product: ReceiveSpeakingAvatar ----
-    // Render the machine's reply as the Speaking Avatar: Machine Speech + the Machine
-    // Face Descriptors (the facial-animation timeline). Runs Response and Scene Rendering.
-    public SpeakingAvatar ReceiveSpeakingAvatar(string machineText, EntityPersonalStatus machineStatus)
-    {
-        var boundary = new Dictionary<string, string>
-        {
-            ["TextObject"]     = MpaiJson.ToJson(BasicTextObject.FromText(machineText)),
-            ["PersonalStatus"] = MpaiJson.ToJson(machineStatus)
-        };
-        var outs = RunModule(RsrModule, boundary);
+        var outs = RunModule(MadModule, boundary);
+
         byte[] wav = Array.Empty<byte>(); FaceDescriptorsObject? fdo = null;
         if (outs.TryGetValue("MachineSpeech", out var sj) && !string.IsNullOrWhiteSpace(sj))
             wav = MpaiJson.FromJson<BasicSpeechObject>(sj)?.Data ?? Array.Empty<byte>();
@@ -94,9 +75,7 @@ public sealed class HciApi : IDisposable
     public void Dispose() => _provider.Dispose();
 }
 
-// The reply the dialogue processor generated: the machine's text + its Personal Status.
-public sealed record DialogueOutput(string MachineText, EntityPersonalStatus MachinePersonalStatus);
-
 // The Speaking Avatar product: Machine Speech (WAV) + the Machine Face Descriptors
-// (the facial-animation timeline). The app presents it on the device (SAR seam).
+// (the facial-animation timeline). The UA presents it on its devices (loudspeaker,
+// screen) - the real-world delivery edge.
 public sealed record SpeakingAvatar(byte[] MachineSpeechWav, FaceDescriptorsObject? FaceDescriptors);

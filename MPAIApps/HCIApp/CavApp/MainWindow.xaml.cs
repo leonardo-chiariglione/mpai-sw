@@ -1,28 +1,31 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
 using Microsoft.Web.WebView2.Core;
 
+using Mpai.Core;
 using Mpai.Core.OSD;
 using Mpai.Hci.Api;   // HciApi - the HCI middleware API faÃ§ade
 using Mpai.Osd.Tod;   // WebView3DModelDelivery
+using Mpai.Aims.Audio; // WasapiAudioAcquisition (the mic device - UA real-world edge)
+using Mpai.Aims.Speech;// SoaAimProcessor (Speech Object Acquisition - UA edge)
 
 namespace CavApp;
 
-// The In-Cabin conversational CAV (an HCI application), now a THIN CLIENT of the HCI
-// API. On "Say", it supplies the human's turn to the API (SubmitDialogueIntent ->
-// Entity Dialogue Processing produces the Machine's reply + Personal Status), then
-// asks the API to render the Speaking Avatar (ReceiveSpeakingAvatar -> Response and
-// Scene Rendering produces the Machine Speech + facial-animation timeline). The app
-// presents the Speaking Avatar on the device - the SAR presentation seam (a device
-// write, below the API): it posts speech + animation to the embedded WebView, which
-// plays and lip-syncs the avatar. The app supplies intent and consumes products; it
-// does not wire the AIF.
+// UAD-MAD - the User Agent for Multimodal Anonymous Dialogue: the process that
+// controls the MMC-MAD Middleware Module across the north HCI API. It owns the
+// real-world edges (mic capture via Speech Object Acquisition; the loudspeaker and
+// screen via the WebView renderer), and drives one MMC-MAD run per turn: it supplies
+// the human's turn - typed text or a captured Speech Object - and presents the
+// Speaking Avatar (Machine Speech + facial-animation timeline) the Module returns.
+// MMC-MAD is ONE Module (ASR -> EDP -> RSR); the UA does not wire the AIF.
 public partial class MainWindow : Window
 {
+    private const string AmdDir = @"D:\AI\AIMs\AMDs";
     private HciApi? _hci;                          // the HCI middleware API
     private WebView3DModelDelivery? _renderer;     // 3OD's device (the SAR presentation)
     private bool _ready;
@@ -54,7 +57,32 @@ public partial class MainWindow : Window
 
         // Warm the dialogue model in the background so the first real turn is fast
         // (Ollama loads the model on the first request; do that now, discarding the reply).
-        _ = Task.Run(() => { try { _hci.SubmitDialogueIntent("hello"); } catch { } });
+        _ = Task.Run(() => { try { _hci.Converse(text: "hello"); } catch { } });
+    }
+
+    private async void ListenButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!_ready || _hci is null || _renderer is null) return;
+        ListenButton.IsEnabled = false; SayButton.IsEnabled = false;
+        ListenButton.Content = "listening...";
+        try
+        {
+            // Capture the human's spoken turn (the UA's real-world edge): the mic
+            // device + Speech Object Acquisition with voice-activity auto-stop, so
+            // the user just speaks and it stops when they finish.
+            var speech = await Task.Run(() => CaptureSpeech());
+            ListenButton.Content = "Listen";
+            if (speech is null || speech.Data.Length == 0)
+            {
+                System.Windows.MessageBox.Show(
+                    "No speech captured (heard nothing, or too quiet). Check the microphone, and speak after pressing Listen.",
+                    "CAV heard nothing");
+                return;
+            }
+            await ConverseAsync(speech: speech);
+        }
+        catch (Exception ex) { System.Windows.MessageBox.Show(ex.ToString(), "CAV listen error"); }
+        finally { ListenButton.Content = "Listen"; ListenButton.IsEnabled = true; SayButton.IsEnabled = true; }
     }
 
     private async void SayButton_Click(object sender, RoutedEventArgs e)
@@ -63,25 +91,43 @@ public partial class MainWindow : Window
         string humanText = InputBox.Text?.Trim() ?? "";
         if (humanText.Length == 0) return;
 
-        SayButton.IsEnabled = false;
+        SayButton.IsEnabled = false; ListenButton.IsEnabled = false;
         InputBox.Clear();
         try
         {
-            // Supply intent -> the Machine's reply + Personal Status (Entity Dialogue Processing).
-            var reply = await Task.Run(() => _hci.SubmitDialogueIntent(humanText));
-
-            // Render the Speaking Avatar from the reply (Response and Scene Rendering).
-            var avatar = await Task.Run(() =>
-                _hci.ReceiveSpeakingAvatar(reply.MachineText, reply.MachinePersonalStatus));
-
-            // Present it (SAR seam - device write): post speech + animation to the WebView.
-            var model = Basic3DModelObject.FromData(Array.Empty<byte>());   // avatar bundled in the renderer
-            await _renderer.DeliverWithSpeechAsync(model, avatar.FaceDescriptors, avatar.MachineSpeechWav);
+            await ConverseAsync(text: humanText);
         }
-        catch (Exception ex)
+        catch (Exception ex) { System.Windows.MessageBox.Show(ex.ToString(), "CAV error"); }
+        finally { SayButton.IsEnabled = true; ListenButton.IsEnabled = true; }
+    }
+
+    // Capture the human's spoken turn (UA real-world edge: mic + Speech Object
+    // Acquisition with voice-activity auto-stop). Returns the Speech Object; the
+    // recognition (ASR) happens inside MMC-MAD, not here.
+    private BasicSpeechObject? CaptureSpeech()
+    {
+        var store = new AIF.Store.AmdStore(AmdDir);
+        store.Scan();
+        var mic = new WasapiAudioAcquisition();
+        var soa = new SoaAimProcessor("MMC-SOA-V2.5",
+            mic, AIF.Controller.AimPortReader.Load(store, "MMC-SOA-V2.5"),
+            vadAutoStop: true);
+        var msg = new AIF.Controller.Message
         {
-            System.Windows.MessageBox.Show(ex.ToString(), "CAV error");
-        }
-        finally { SayButton.IsEnabled = true; }
+            MessageId = System.Guid.NewGuid().ToString(),
+            Ports = new System.Collections.Generic.Dictionary<string, string>()
+        };
+        var outcome = soa.ProcessAsync(msg).GetAwaiter().GetResult();
+        var speechJson = outcome.Ports.Values.FirstOrDefault() ?? "";
+        return string.IsNullOrWhiteSpace(speechJson) ? null : MpaiJson.FromJson<BasicSpeechObject>(speechJson);
+    }
+
+    // Run one dialogue turn through MMC-MAD (one Module): the human's typed text
+    // OR spoken Speech Object -> the Speaking Avatar -> present it on the device.
+    private async Task ConverseAsync(string? text = null, BasicSpeechObject? speech = null)
+    {
+        var avatar = await Task.Run(() => _hci!.Converse(text, speech));
+        var model = Basic3DModelObject.FromData(Array.Empty<byte>());   // avatar bundled in the renderer
+        await _renderer!.DeliverWithSpeechAsync(model, avatar.FaceDescriptors, avatar.MachineSpeechWav);
     }
 }

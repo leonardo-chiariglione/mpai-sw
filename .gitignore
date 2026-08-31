@@ -107,3 +107,6 @@ MPAIApps/HCIApp/HciApi/obj/
 
 MPAIApps/HCIApp/HciApi/bin/
 MPAIApps/HCIApp/HciApi/obj/
+
+# routed deploy backups
+.backups/

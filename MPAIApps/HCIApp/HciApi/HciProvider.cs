@@ -8,6 +8,7 @@ using Mpai.Mmc.Edp;   // EdpAimProcessor, OllamaClient
 using Mpai.Paf.Psd;   // PsdAimProcessor
 using Mpai.Paf.Gfd;   // GfdAimProcessor
 using Mpai.Aims.Tts;  // TtsAimProcessor, TtsFactory
+using Mpai.Aims.Asr;  // AsrAimProcessor, AsrFactory
 
 namespace Mpai.Hci.Api;
 
@@ -26,6 +27,7 @@ public sealed class HciProvider : IAimProvider, IDisposable
     public IAimProcessor Create(string aimName, IReadOnlyDictionary<string, string> settings)
         => aimName switch
         {
+            "MMC-ASR-V2.5" => new AsrAimProcessor(aimName, AsrFactory.Create(settings), AimPortReader.Load(_store, aimName)),
             "MMC-EDP-V2.5" => new EdpAimProcessor(aimName, Llm(settings), AimPortReader.Load(_store, aimName)),
             "PAF-PSD-V1.6" => new PsdAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
             "MMC-TTS-V2.5" => new TtsAimProcessor(aimName, TtsFactory.Create(settings), AimPortReader.Load(_store, aimName)),

@@ -449,6 +449,52 @@ Non-blocking; each to be done as its own commit with a green-build check afterwa
 - Terminology: AIW is now "Module". Naming discipline held (no silent invention). SAR (Speaking
   Avatar Rendering) in M3152 is a DIFFERENT module from our RSR - RSR kept.
 
+### 2026-08-30 â€” DEFERRED for the future: body/gesture (PAF-GBD)
+- The CAV is face-only. Body/gesture animation - PAF-GBD (Generative Body Description) - is a
+  well-scoped FUTURE item, with the scaffolding partly in place:
+    - PSD already emits GesturePersonalStatus (currently unconsumed - ready for GBD's input).
+    - 3OD already has a BodyAnimation (PAF-BDO) input port (the delivery channel is ready).
+    - PAF-EBD (analysis: BlazePose -> BVH) exists as the sibling; PAF-GBD is its generative
+      counterpart (Gesture PS + Text + Machine Speech -> Machine Body Descriptors / BVH timeline).
+    - The FDO-timeline pattern + 3OD delivery are the template (a BDO timeline is the body analogue
+      of the face FDO timeline); the RPM avatar is a full-body skeletal model (bones ready to drive).
+  TO BUILD when resumed: PAF-GBD itself; RSR extended to include GBD (produce Machine Body
+  Descriptors alongside the face); the renderer's skeletal animation (BVH -> skeleton) + a
+  body-showing avatar view.
+
+### 2026-08-30 â€” MMC-MAD as ONE Module; spoken + typed dialogue (single turn)
+- Corrected architecture (Leonardo): HCI is a middleware exposing a north API; ALL AIMs and their
+  combinations stay INSIDE the MW (trusted, one PTF domain). An HCI App is a UA-equivalent: it
+  talks to the real world and drives the MW via the north API. For this use case - MMC-MAD
+  (Multimodal Anonymous Dialogue: anonymous = no ID Reconciliation) - the acquisition/delivery
+  edges (SOA, SOD, 3OD) belong to the UA (that is how the MW touches the real world); the
+  processing AIMs (ASR, EDP, RSR; PSE/NLU next) are the MW.
+- MMC-MAD-V2.5 is ONE Module (AIW). The Controller reads its L3, recurses its SubAIMs
+  (MMC-ASR + UAG-EDP + UAG-RSR - and their nested composites), instantiates the leaf AIMs via the
+  provider, and runs the whole ASR -> EDP -> RSR pipeline. The faÃ§ade (Mpai.Hci.Api) drives ONE
+  run per turn: Converse(text?, speech?) -> the Speaking Avatar (Machine Speech + Face
+  Descriptors). The earlier "three separate AIWs" design was wrong and is replaced.
+- UAD-MAD-V1.0 is the User Agent (CavApp): it owns the real-world edges - mic capture (Speech
+  Object Acquisition with energy-VAD auto-stop), and the loudspeaker + screen (the WebView
+  renderer) - and controls MMC-MAD across the north API. Text box + a Listen button (left).
+- The AIF MachineExecutor makes this work as-is: routing is by DataType (not port-name strings);
+  nested composites execute (RunCompositeChildAsync); ASR is skipped on a text-only turn
+  (HasNoInputAvailable + IsOptional); when a consumer port is fed by both a boundary value and an
+  AIM output, the boundary wins when present (typed text) else the AIM output is used (ASR
+  transcription) - the exact speech-XOR-text branch MAD needs.
+- Voice-activity detection added: ILevelMeter (Mpai.Core) + CurrentLevel (RMS) on the mic device;
+  SOA gained a VAD auto-stop capture mode (wait for speech, stop after ~1.2s silence, 30s guard) -
+  the "just speak, no press-stop" the acquisition assertion had invited.
+- EDP TextObject input made dual-typed [OSD-BTO, OSD-TXO] (the C-BTO principle) so ASR's OSD-TXO
+  routes into EDP for spoken turns; typed OSD-BTO still works.
+- PROVEN: type OR speak -> MMC-MAD recognises (ASR), thinks (local LLM), and answers with a
+  lip-synced expressive face, in one Module run. SINGLE TURN (each turn a fresh MMC-MAD run).
+- NEXT: the multi-turn loop via suspend/resume - start MMC-MAD once, suspend between turns, resume
+  on each new input, keeping the dialogue context (Summary) and avoiding per-turn re-instantiation.
+  The executor already has the machinery (ExecuteResumableAsync / ResumeAsync / SuspendedExecution).
+- Deploy tooling: backups now route to $RepoRoot/.backups (gitignored) instead of littering
+  <name>.bak files.
+
 ## 5. Per-AIM build status (MMC-HCI chain)
 
 Boxes of the MMC-HCI reference model, and adjacent AIMs.

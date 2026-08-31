@@ -20,7 +20,7 @@ namespace Mpai.Aims.Audio;
 // of the low-recording-level issue this class works around below (that
 // traced to the system's own microphone input gain, which any capture API
 // would be equally subject to).
-public sealed class WasapiAudioAcquisition : IAudioAcquisitionAim, IStartStopAcquisition
+public sealed class WasapiAudioAcquisition : IAudioAcquisitionAim, IStartStopAcquisition, ILevelMeter
 {
     private readonly int _sampleRate;
     private readonly int _bits;
@@ -31,6 +31,24 @@ public sealed class WasapiAudioAcquisition : IAudioAcquisitionAim, IStartStopAcq
         _sampleRate = sampleRate;
         _bits = bits;
         _channels = channels;
+    }
+
+    // ---- live level meter (ILevelMeter): RMS of the latest buffer, 0..1 ----
+    // Updated on every DataAvailable so a consumer (SOA's voice-activity detection)
+    // can watch the microphone during capture. Reads the raw captured level, before
+    // NormalizeIfQuiet runs at the end.
+    public double CurrentLevel { get; private set; }
+
+    private void UpdateLevel(byte[] buffer, int bytesRecorded)
+    {
+        if (bytesRecorded < 2) return;
+        long sumSquares = 0; int n = 0;
+        for (int i = 0; i + 1 < bytesRecorded; i += 2)
+        {
+            short sample = (short)(buffer[i] | (buffer[i + 1] << 8));
+            sumSquares += (long)sample * sample; n++;
+        }
+        CurrentLevel = n > 0 ? System.Math.Sqrt((double)sumSquares / n) / 32768.0 : 0.0;
     }
 
     public async Task<BasicAudioObject> AcquireAsync(AcquisitionRequest request)
@@ -61,7 +79,7 @@ public sealed class WasapiAudioAcquisition : IAudioAcquisitionAim, IStartStopAcq
             var writer = new WaveFileWriter(wavPath, format);
             var stopped = new TaskCompletionSource();
 
-            waveIn.DataAvailable += (_, a) => writer.Write(a.Buffer, 0, a.BytesRecorded);
+            waveIn.DataAvailable += (_, a) => { UpdateLevel(a.Buffer, a.BytesRecorded); writer.Write(a.Buffer, 0, a.BytesRecorded); };
             waveIn.RecordingStopped += (_, _) => { writer.Dispose(); stopped.TrySetResult(); };
 
             waveIn.StartRecording();
@@ -100,7 +118,7 @@ public sealed class WasapiAudioAcquisition : IAudioAcquisitionAim, IStartStopAcq
 
         _waveIn = new WaveInEvent { WaveFormat = format };
 
-        _waveIn.DataAvailable += (_, a) => _writer?.Write(a.Buffer, 0, a.BytesRecorded);
+        _waveIn.DataAvailable += (_, a) => { UpdateLevel(a.Buffer, a.BytesRecorded); _writer?.Write(a.Buffer, 0, a.BytesRecorded); };
         _waveIn.RecordingStopped += (_, _) => { _writer?.Dispose(); _stopped?.TrySetResult(); };
 
         _waveIn.StartRecording();

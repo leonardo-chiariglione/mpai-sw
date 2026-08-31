@@ -6,7 +6,7 @@ using Mpai.Core;
 
 namespace Mpai.Aims.Speech;
 
-// MMC-SOA-V2.5 — Speech Object Acquisition. Self-contained IAimProcessor.
+// MMC-SOA-V2.5 â€” Speech Object Acquisition. Self-contained IAimProcessor.
 // Reads its own port names from 1MMC-SOA-V2.5-I01.json at startup.
 //
 // The physical acquisition is identical to AOA (capturing sound waves is
@@ -25,6 +25,8 @@ public sealed class SoaAimProcessor : IAimProcessor
     private readonly IStartStopAcquisition? _startStop;
     private readonly System.TimeSpan        _duration;
     private readonly bool                   _pressToStop;
+    private readonly bool                   _vadAutoStop;
+    private readonly ILevelMeter?           _levelMeter;
 
     public string InstanceId { get; }
 
@@ -33,15 +35,70 @@ public sealed class SoaAimProcessor : IAimProcessor
         IAudioAcquisitionAim aoa,
         AimPortReader             ports,
         System.TimeSpan?     duration = null,
-        bool                 pressToStop = false)
+        bool                 pressToStop = false,
+        bool                 vadAutoStop = false)
     {
         InstanceId  = instanceId;
         _aoa        = aoa;
         _startStop  = aoa as IStartStopAcquisition;
+        _levelMeter = aoa as ILevelMeter;
         _duration    = duration ?? System.TimeSpan.FromSeconds(5);
         _pressToStop = pressToStop;
+        _vadAutoStop = vadAutoStop;
         _inputPort  = ports.InputOrDefault("OSD-SPO-V1.5", "InputSpeech");
         _outputPort = ports.Output("OSD-SPO-V1.5");
+    }
+
+    // Voice-activity-detection capture: record until the speaker finishes. Watches
+    // the microphone level (ILevelMeter): waits for speech to start (level rises
+    // above a threshold; gives up after a start timeout if nobody speaks), then
+    // stops when the level stays below a threshold for a short hangover (~1.2s),
+    // meaning the utterance has ended. A runaway guard caps the whole capture. This
+    // is the "just speak, no press-stop" mode - the voice-activity detection the
+    // acquisition assertion invited. Thresholds are approximate (energy VAD) and
+    // tunable.
+    private async Task<BasicAudioObject> CaptureWithVadAsync()
+    {
+        const double speakThreshold   = 0.02;   // RMS 0..1: above this = speaking
+        const double silenceThreshold = 0.015;  // below this (held) = silence
+        var  silenceHangover = System.TimeSpan.FromMilliseconds(1200);
+        var  startTimeout    = System.TimeSpan.FromSeconds(8);
+        var  runawayGuard    = System.TimeSpan.FromSeconds(30);
+
+        System.Console.WriteLine("[MMC-SOA-V2.5] listening - speak; it stops when you finish.");
+        _startStop!.StartAcquire();
+
+        var start = System.DateTime.UtcNow;
+        bool speechStarted = false;
+        System.DateTime? silenceSince = null;
+
+        while (true)
+        {
+            await Task.Delay(25);
+            double level = _levelMeter!.CurrentLevel;
+            var now = System.DateTime.UtcNow;
+
+            if (now - start > runawayGuard) break;               // runaway guard
+
+            if (!speechStarted)
+            {
+                if (level > speakThreshold) speechStarted = true;
+                else if (now - start > startTimeout) break;      // nobody spoke
+            }
+            else
+            {
+                if (level < silenceThreshold)
+                {
+                    silenceSince ??= now;
+                    if (now - silenceSince.Value >= silenceHangover) break;   // utterance ended
+                }
+                else silenceSince = null;                        // still speaking
+            }
+        }
+
+        var audio = await _startStop.StopAcquireAsync();
+        System.Console.WriteLine($"[MMC-SOA-V2.5] captured {audio.Data.Length:N0} bytes (VAD)");
+        return audio;
     }
 
     public async Task<Message> ProcessAsync(Message message)
@@ -72,9 +129,18 @@ public sealed class SoaAimProcessor : IAimProcessor
             };
         }
 
-        // No input delivered — acquire fresh from the device (same as AOA).
+        // No input delivered â€” acquire fresh from the device (same as AOA).
         var context = message.Context;
         BasicAudioObject audio;
+
+        // VAD auto-stop mode: record until the speaker finishes (no manual stop).
+        // Requires a start/stop device that also meters its level.
+        if (_vadAutoStop && _startStop is not null && _levelMeter is not null)
+        {
+            audio = await CaptureWithVadAsync();
+        }
+        else
+        {
 
         // Press-to-stop is left switched off. It waits for the Stop token, and the
         // AIF Basic API gives the User Agent no way to signal a running AIM -
@@ -142,6 +208,7 @@ public sealed class SoaAimProcessor : IAimProcessor
         else
         {
             audio = await _aoa.AcquireAsync(new AcquisitionRequest { Duration = _duration });
+        }
         }
 
         // Re-interpret the captured audio as a Basic Speech Object (OSD-SPO).

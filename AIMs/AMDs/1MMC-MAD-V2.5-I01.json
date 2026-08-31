@@ -1,0 +1,35 @@
+{ "Identifier":       { "ImplementerID": "1", "ImplementationID": "MMC-MAD-V2.5-I01", "AIMName": "MMC-MAD-V2.5" },
+
+  "APIProfile":       "Basic",
+  "Description":      "Multimodal Anonymous Dialogue: the HCI middleware Module for anonymous multimodal dialogue (no identity - no ID Reconciliation). A trusted composite exposing the north HCI API to a User Agent application. It recognises the human's speech (Automatic Speech Recognition), processes the dialogue turn (Entity Dialogue Processing, a local LLM) into the Machine's response Text and Personal Status, and renders that response (Response and Scene Rendering) into the Machine Speech and Machine Face Descriptors. This implementation is the ASR + EDP + RSR slice; Personal Status Extraction and Natural Language Understanding are the next processing SubAIMs.",
+
+  "ExternalPorts":    [{"Name": "InputSpeech",             "Direction": "Input",  "DataType": "OSD-SPO-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "TextObject",              "Direction": "Input",  "DataType": ["OSD-BTO-V1.5", "OSD-TXO-V1.5"], "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "MachineSpeech",           "Direction": "Output", "DataType": ["OSD-BSO-V1.5", "OSD-SPO-V1.5"], "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "MachineFaceDescriptors",  "Direction": "Output", "DataType": "PAF-FDO-V1.6", "Technology": "Software", "Protocol": "", "IsRemote": false}],
+
+  "SubAIMs":          [{ "Identifier": { "ImplementerID": "1",    "ImplementationID": "MMC-ASR-V2.5-I01", "AIMName": "MMC-ASR-V2.5" } },
+                       { "Identifier": { "ImplementerID": "MPAI", "ImplementationID": "UAG-EDP-V1.0-I01", "AIMName": "UAG-EDP-V1.0" } },
+                       { "Identifier": { "ImplementerID": "MPAI", "ImplementationID": "UAG-RSR-V1.0-I01", "AIMName": "UAG-RSR-V1.0" } }],
+
+  "Topology":         [{ "Output": { "AIMName": "",             "PortName": "InputSpeech"           }, "Input": { "AIMName": "MMC-ASR-V2.5", "PortName": "InputSpeech"    } },
+                       { "Output": { "AIMName": "MMC-ASR-V2.5", "PortName": "OutputText"            }, "Input": { "AIMName": "UAG-EDP-V1.0", "PortName": "TextObject"     } },
+                       { "Output": { "AIMName": "",             "PortName": "TextObject"            }, "Input": { "AIMName": "UAG-EDP-V1.0", "PortName": "TextObject"     } },
+                       { "Output": { "AIMName": "UAG-EDP-V1.0", "PortName": "MachineTextObject"     }, "Input": { "AIMName": "UAG-RSR-V1.0", "PortName": "TextObject"     } },
+                       { "Output": { "AIMName": "UAG-EDP-V1.0", "PortName": "MachinePersonalStatus" }, "Input": { "AIMName": "UAG-RSR-V1.0", "PortName": "PersonalStatus" } },
+                       { "Output": { "AIMName": "UAG-RSR-V1.0", "PortName": "MachineSpeech"          }, "Input": { "AIMName": "",             "PortName": "MachineSpeech"  } },
+                       { "Output": { "AIMName": "UAG-RSR-V1.0", "PortName": "MachineFaceDescriptors" }, "Input": { "AIMName": "",             "PortName": "MachineFaceDescriptors" } }],
+
+  "Implementations":  [{"ImplementationURI": "file:///D:/AI/AIMs/MMC-MAD-V2.5-I01",
+                        "MASPort":           443,
+                        "BinaryName":        "Mpai.Mmc.Mad",
+                        "Architecture":      "x86-64",
+                        "OperatingSystem":   "Windows",
+                        "Version":           "2.5",
+                        "Source":            "AIMStorage"}],
+
+  "ResourcePolicies": [{"Name": "Memory",    "Minimum": "2 GB",   "Request": "4 GB",   "Maximum": "8 GB"},
+                       {"Name": "CPU:Class", "Minimum": "Medium", "Request": "High",   "Maximum": "High"}],
+
+  "DataXMData":       {},
+  "Documentation":    [{"Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-mmc/v2-5/"}]}

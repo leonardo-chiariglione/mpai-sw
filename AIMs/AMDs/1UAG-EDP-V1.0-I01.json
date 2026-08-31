@@ -23,7 +23,7 @@
     {
       "Name": "TextObject",
       "Direction": "Input",
-      "DataType": "OSD-BTO-V1.5",
+      "DataType": ["OSD-BTO-V1.5", "OSD-TXO-V1.5"],
       "Technology": "Software",
       "Protocol": "",
       "IsRemote": false

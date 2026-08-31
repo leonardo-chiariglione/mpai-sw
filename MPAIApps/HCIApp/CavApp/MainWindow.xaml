@@ -7,6 +7,8 @@
   <DockPanel>
     <Border DockPanel.Dock="Bottom" Background="#1E2632" Padding="10">
       <DockPanel>
+        <Button x:Name="ListenButton" DockPanel.Dock="Left" Content="Listen" Width="90" Margin="0,0,8,0"
+                Click="ListenButton_Click" FontSize="14"/>
         <Button x:Name="SayButton" DockPanel.Dock="Right" Content="Say" Width="90" Margin="8,0,0,0" IsDefault="True"
                 Click="SayButton_Click" FontSize="14"/>
         <TextBox x:Name="InputBox" FontSize="14" VerticalContentAlignment="Center" Padding="8"
