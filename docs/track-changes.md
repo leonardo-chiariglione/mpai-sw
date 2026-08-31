@@ -359,6 +359,35 @@ Non-blocking; each to be done as its own commit with a green-build check afterwa
   PAF (Portable Avatar bundling) is not used here - direct paths: model via 3OD, speech via SOD,
   animation (FDO/BDO) to the renderer through 3OD's animation ports.
 
+### 2026-08-30 â€” RSR produces speech + FACIAL ANIMATION with text-driven lip-sync
+- RSR (UAG-RSR) is now the produce-only composite: PAF-PSD + MMC-TTS + PAF-GFD -> Machine Speech
+  (OSD-BSO) + Machine Face Descriptors (PAF-FDO). No SOD/3OD inside (SOD/3OD are the User Agent's
+  real-world delivery). No Scene-and-Avatar-Rendering monolith (rendering is the renderer/3OD
+  device). PROVEN: one Controller run produces 75,424 bytes of speech (spoken via SOD) + a
+  38-frame face-animation timeline.
+- FDO schema enhanced to an interoperable ANIMATION TIMELINE: each FaceDescriptorsData item now
+  carries an optional SimpleTime, so the array is a sequence of face descriptors over time. The
+  timing is a first-class, FORMAT-INDEPENDENT field IN the FDO (not buried in the opaque Data,
+  not qualifier-dependent) - any face-descriptor content format (FACS-AU, embedding, blendshapes)
+  can use it. A single item without Time is a static pose. The SAME FaceDescriptorsObject type now
+  serves analysis (ArcFace embedding, one item) and generation (AU/viseme timeline, many items).
+- PAF-GFD (Generative Face Description) now takes THREE inputs and uses all three to produce the
+  whole facial animation (the FDO carries the WHOLE face movement - expression + lips):
+    - Face Personal Status -> emotion -> expression Action Units (EM-FACS), held across the utterance
+    - Text Object -> espeak-ng phonemes -> VISEME mouth shapes (which shapes; text disambiguates
+      the phonemes that audio alone cannot)
+    - Machine Speech -> WAV duration + amplitude envelope (when/how long; times and gates the mouth)
+  -> a FaceDescriptorsObject timeline: ~22 fps frames, each expression merged with the frame's
+  viseme gated by the speech amplitude. espeak-ng phonemization (grapheme fallback), inline WAV
+  RMS envelope (no NAudio - GFD stays portable). PROVEN: "Of course, right this way." -> 20 visemes
+  over 1.71s, 38 frames.
+- Visemes: Open/Wide/Round/Closed/Neutral mouth shapes mapped to mouth AUs (AU18 LipPucker added
+  for rounded vowels); phoneme (IPA) -> viseme grouping.
+- Naming discipline (Leonardo): announce every new AIM/Data Type explicitly (no silent invention).
+  Confirmed: PAF-GFD Generative Face Description (kept); PAF-GBD Generative Body Description (future,
+  not built - face only). The delivery family (AOD/SOD/3OD) and 3D types (3DO model, FDO/BDO
+  animation) settled earlier stand.
+
 ## 5. Per-AIM build status (MMC-HCI chain)
 
 Boxes of the MMC-HCI reference model, and adjacent AIMs.
