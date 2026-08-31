@@ -110,3 +110,15 @@ MPAIApps/HCIApp/HciApi/obj/
 
 # routed deploy backups
 .backups/
+
+# MMCApps published output
+MPAIApps/HCIApp/MatApp/bin/
+MPAIApps/HCIApp/MatApp/obj/
+MPAIApps/MMCApps/*.exe
+MPAIApps/MMCApps/*.dll
+MPAIApps/MMCApps/_build/
+MPAIApps/MMCApps/web/
+MPAIApps/MMCApps/MadApp/
+MPAIApps/MMCApps/MatApp/
+
+MPAIApps/MMCApps/*.WebView2/

@@ -20,12 +20,14 @@ namespace Mpai.Hci.Api;
 public sealed class HciApi : IDisposable
 {
     private const string MadModule = "MMC-MAD-V2.5";   // Multimodal Anonymous Dialogue
+    private const string MatModule = "MMC-MAT-V2.5";   // Multimodal Anonymous Translation
 
     private readonly UserAgent    _ua;
     private readonly HciProvider  _provider;
     private readonly AimSettings  _settings;
 
     private int?    _aiwId;         // the started MMC-MAD instance, kept alive across turns
+    private int?    _matAiwId;      // the started MMC-MAT instance, kept alive across turns
     private string? _lastSummary;   // the running dialogue Summary (threaded turn to turn)
 
     public HciApi(string amdDir, string settingsPath)
@@ -80,6 +82,69 @@ public sealed class HciApi : IDisposable
         return new SpeakingAvatar(wav, fdo);
     }
 
+    // Translate one spoken turn through MMC-MAT: the human speaks in one language;
+    // the avatar speaks the translation in another, lip-synced. The input language
+    // rides on the speech's own Qualifier (ASR reads it there); the target language
+    // is named by the Language Selector and carried onward so Text-To-Speech picks
+    // the target voice.
+    public SpeakingAvatar Translate(BasicSpeechObject speech, string? fromLang, string toLang)
+    {
+        if (_matAiwId is null)
+        {
+            if (_ua.MPAI_AIFU_AIW_Start(MatModule, _provider, _settings, out var mid) != AifError.OK)
+                return new SpeakingAvatar(Array.Empty<byte>(), null);
+            _matAiwId = mid;
+        }
+
+        // Tag the speech with the input language so ASR recognises it in that language.
+        var tagged = WithInputLanguage(speech, fromLang);
+        var selector = BasicSelectorObject.Languages(fromLang, toLang);
+
+        var boundary = new Dictionary<string, string>
+        {
+            ["InputSpeech"]      = MpaiJson.ToJson(tagged),
+            ["LanguageSelector"] = MpaiJson.ToJson(selector)
+        };
+
+        var (err, outcome) = _ua.RunAsync(_matAiwId!.Value, boundary).GetAwaiter().GetResult();
+        if (err != AifError.OK || outcome?.Completed is null || outcome.Completed.IsError)
+            return new SpeakingAvatar(Array.Empty<byte>(), null);
+
+        var outs = outcome.Completed.Ports;
+        byte[] wav = Array.Empty<byte>(); FaceDescriptorsObject? fdo = null;
+        if (outs.TryGetValue("MachineSpeech", out var sj) && !string.IsNullOrWhiteSpace(sj))
+            wav = MpaiJson.FromJson<BasicSpeechObject>(sj)?.Data ?? Array.Empty<byte>();
+        if (outs.TryGetValue("MachineFaceDescriptors", out var fj) && !string.IsNullOrWhiteSpace(fj))
+            fdo = MpaiJson.FromJson<FaceDescriptorsObject>(fj);
+        return new SpeakingAvatar(wav, fdo);
+    }
+
+    // Set the input language on the speech's Speech Qualifier so ASR recognises it
+    // in that language (the Qualifier is where ASR reads the input language). The
+    // Qualifier types are init-only, so this rebuilds the qualifier immutably,
+    // carrying the existing attributes and setting the language metadata.
+    private static BasicSpeechObject WithInputLanguage(BasicSpeechObject speech, string? lang)
+    {
+        if (string.IsNullOrWhiteSpace(lang)) return speech;
+        var oldQ = speech.SpeechQualifier;
+        var oldAttr = oldQ?.Attributes;
+        var oldMeta = oldAttr?.Metadata;
+        var newQualifier = new SpeechQualifier
+        {
+            SpeechQualifierID = oldQ?.SpeechQualifierID ?? System.Guid.NewGuid().ToString(),
+            Attributes = new SpeechAttributes
+            {
+                Source = oldAttr?.Source ?? SpeechSource.Real,
+                Metadata = new SpeechMetadata
+                {
+                    Language = new Language { LanguageCode = lang, LanguageFormat = "Iso639_1" },
+                    SpeakerProperties = oldMeta?.SpeakerProperties
+                }
+            }
+        };
+        return BasicSpeechObject.FromData(speech.Data, newQualifier);
+    }
+
     // Begin a fresh conversation: forget the running Summary. The Module stays
     // alive; only the dialogue context is cleared.
     public void ResetConversation() => _lastSummary = null;
@@ -87,6 +152,7 @@ public sealed class HciApi : IDisposable
     public void Dispose()
     {
         if (_aiwId is not null) { _ua.MPAI_AIFU_AIW_Stop(_aiwId.Value); _aiwId = null; }
+        if (_matAiwId is not null) { _ua.MPAI_AIFU_AIW_Stop(_matAiwId.Value); _matAiwId = null; }
         _provider.Dispose();
     }
 }

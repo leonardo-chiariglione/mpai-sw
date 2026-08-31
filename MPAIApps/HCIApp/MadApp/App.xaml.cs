@@ -1,3 +1,3 @@
 using System.Windows;
-namespace CavApp;
+namespace MadApp;
 public partial class App : Application { }

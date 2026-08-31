@@ -27,7 +27,7 @@
                            { "Output": { "AIMName": "MMC-TTS-V2.5", "PortName": "OutputSpeech" }, "Input": { "AIMName": "",             "PortName": "OutputSpeech" } }],
 
   "Implementations":      [{ "ImplementationURI": "file:///D:/AI/AIMs/AMDs/MMC-AMQ-V2.5-I01",
- "MASPort":          443,
+                             "MASPort": 443,
                              "BinaryName": "Mpai.Mmc.Amq",
                              "Architecture": "x86-64",
                              "OperatingSystem": "Windows",

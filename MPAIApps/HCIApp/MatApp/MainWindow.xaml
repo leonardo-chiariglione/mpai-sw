@@ -1,0 +1,27 @@
+<Window x:Class="MatApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        Title="MAT - Multimodal Anonymous Translation" Height="1120" Width="1120"
+        Background="#141A24">
+  <DockPanel>
+    <Border DockPanel.Dock="Top" Background="#1E2632" Padding="12,10">
+      <StackPanel>
+        <TextBlock Text="Multimodal Anonymous Translation" Foreground="#EAF1FB" FontSize="18" FontWeight="SemiBold"/>
+        <TextBlock Text="Speak - the avatar speaks your words in the chosen language, lip-synced." Foreground="#9FB0C6" FontSize="12" Margin="0,2,0,0"/>
+      </StackPanel>
+    </Border>
+    <Border DockPanel.Dock="Bottom" Background="#1E2632" Padding="10">
+      <DockPanel>
+        <TextBlock DockPanel.Dock="Left" Text="From" Foreground="#9FB0C6" VerticalAlignment="Center" Margin="0,0,6,0"/>
+        <ComboBox x:Name="FromLang" DockPanel.Dock="Left" Width="90" Margin="0,0,12,0" VerticalContentAlignment="Center"/>
+        <TextBlock DockPanel.Dock="Left" Text="To" Foreground="#9FB0C6" VerticalAlignment="Center" Margin="0,0,6,0"/>
+        <ComboBox x:Name="ToLang" DockPanel.Dock="Left" Width="90" Margin="0,0,12,0" VerticalContentAlignment="Center"/>
+        <Button x:Name="ListenButton" DockPanel.Dock="Right" Content="Listen" Width="110" Margin="8,0,0,0"
+                Click="ListenButton_Click" FontSize="14"/>
+        <TextBlock x:Name="StatusText" Foreground="#9FB0C6" VerticalAlignment="Center" Text="Choose languages, press Listen, and speak."/>
+      </DockPanel>
+    </Border>
+    <wv2:WebView2 x:Name="Web"/>
+  </DockPanel>
+</Window>

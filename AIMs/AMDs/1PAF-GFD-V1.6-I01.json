@@ -4,7 +4,7 @@
   "Description":      "Generative Face Description: produces the Machine Face Descriptors - the whole facial animation to display - from the machine's Face Personal Status (Emotion -> expression Action Units via EM-FACS), the Text (words -> phonemes -> viseme mouth shapes) and the Machine Speech (duration + amplitude envelope that times and gates the mouth). The output is a Face Descriptors Object whose FaceDescriptorsData is a timeline: a sequence of frames, each a Time and the Action Unit weights for that instant (expression merged with the frame's viseme). The lip movement is IN the descriptors, format-independent and interoperable.",
 
   "ExternalPorts":    [{"Name": "FacePersonalStatus",    "Direction": "Input",  "DataType": "MMC-FPS-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                       {"Name": "TextObject",            "Direction": "Input",  "DataType": "OSD-BTO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "TextObject",            "Direction": "Input",  "DataType": ["OSD-BTO-V1.5", "OSD-TXO-V1.5"], "Technology": "Software", "Protocol": "", "IsRemote": false},
                        {"Name": "MachineSpeech",         "Direction": "Input",  "DataType": "OSD-BSO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
                        {"Name": "MachineFaceDescriptors", "Direction": "Output", "DataType": "PAF-FDO-V1.6", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 

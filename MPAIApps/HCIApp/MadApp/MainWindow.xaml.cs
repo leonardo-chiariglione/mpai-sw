@@ -14,7 +14,7 @@ using Mpai.Osd.Tod;   // WebView3DModelDelivery
 using Mpai.Aims.Audio; // WasapiAudioAcquisition (the mic device - UA real-world edge)
 using Mpai.Aims.Speech;// SoaAimProcessor (Speech Object Acquisition - UA edge)
 
-namespace CavApp;
+namespace MadApp;
 
 // UAD-MAD - the User Agent for Multimodal Anonymous Dialogue: the process that
 // controls the MMC-MAD Middleware Module across the north HCI API. It owns the
@@ -74,7 +74,6 @@ public partial class MainWindow : Window
         SayButton.IsEnabled = false;
         _ = Task.Run(ConversationLoopAsync);
     }
-
     private void StopConversation()
     {
         _conversing = false;
