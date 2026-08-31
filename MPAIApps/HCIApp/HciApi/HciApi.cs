@@ -116,7 +116,10 @@ public sealed class HciApi : IDisposable
             wav = MpaiJson.FromJson<BasicSpeechObject>(sj)?.Data ?? Array.Empty<byte>();
         if (outs.TryGetValue("MachineFaceDescriptors", out var fj) && !string.IsNullOrWhiteSpace(fj))
             fdo = MpaiJson.FromJson<FaceDescriptorsObject>(fj);
-        return new SpeakingAvatar(wav, fdo);
+        string? translated = null;
+        if (outs.TryGetValue("TranslatedText", out var tj) && !string.IsNullOrWhiteSpace(tj))
+            translated = MpaiJson.FromJson<BasicTextObject>(tj)?.GetText();
+        return new SpeakingAvatar(wav, fdo, translated);
     }
 
     // Set the input language on the speech's Speech Qualifier so ASR recognises it
@@ -160,4 +163,4 @@ public sealed class HciApi : IDisposable
 // The Speaking Avatar product: Machine Speech (WAV) + the Machine Face Descriptors
 // (the facial-animation timeline). The UA presents it on its devices (loudspeaker,
 // screen) - the real-world delivery edge.
-public sealed record SpeakingAvatar(byte[] MachineSpeechWav, FaceDescriptorsObject? FaceDescriptors);
+public sealed record SpeakingAvatar(byte[] MachineSpeechWav, FaceDescriptorsObject? FaceDescriptors, string? TranslatedText = null);

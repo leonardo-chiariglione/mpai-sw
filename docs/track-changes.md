@@ -526,6 +526,42 @@ Non-blocking; each to be done as its own commit with a green-build check afterwa
 - NOTE: the verbatim transcript grows with a very long conversation (larger prompt); fine for
   normal chats. A fact-preserving smart summary is the refinement if very long sessions are needed.
 
+### 2026-08-30 â€” Mpai.UaKit (reusable UA toolkit); MAT written translation; voices
+- Mpai.UaKit: a reusable User Agent toolkit at a new top-level Lib/ (sibling of AIF, AIMs,
+  MPAIApps). AvatarUaHost provides the plumbing every avatar UA needs - the WebView-hosted 3D
+  renderer (present a Speaking Avatar), microphone capture via Speech Object Acquisition with
+  voice-activity auto-stop, the continuous listen loop, WAV duration - driven by an app-supplied
+  per-turn handler. Lib/Assets holds the avatar + viewer, one copy repo-wide (both apps map their
+  WebView to it). MadApp and MatApp are now THIN clients: each keeps only its UI and its Module
+  call (Converse / Translate); the duplicated WebView/capture/present code and the per-app web/
+  folders are gone. This is the reusable UA library that had been agreed and deferred.
+- MAT written translation (restoring what MMC-TST had): MMC-MAT now exposes the TranslatedText at
+  its boundary (from TTT), so the facade returns it and MatApp SHOWS the translated text in a
+  panel below the avatar - always, in addition to speaking it where a voice can synthesise. This
+  makes every language usable: European targets (en/it/es/de/fr/pt) are spoken and shown; Chinese
+  and Japanese are SHOWN (correct text) but not yet spoken. Any language works as the source.
+  (Text-To-Speech already returns an empty Speech Object on a phonemiser failure rather than
+  throwing, so a non-synthesisable target does not crash the run - the translation still comes out.)
+- Voices (Route B): female Piper voices for it (paola), es (mls_10246), de (eva_k), en (amy);
+  fr (siwis) and zh (huayan) were already female; pt (cadu) remains male (no Piper female). So the
+  female avatar now speaks with a female voice in the languages that have one.
+- Dialogue quality: EDP prompt broadened to answer general questions from the model's own knowledge
+  (was misreading factual questions as scene queries), plus a sanitiser that strips any
+  emotion/attitude labels a weak model leaks into the spoken response. Model returned to llama3.2:3b
+  (1b was too weak - garbled JSON, leaked its Personal Status into speech). 3b answers cleanly.
+- MMCApps launchers simplified (assets read from Lib/Assets, no per-app copy); start-ollama.bat
+  keeps the LLM warm (OLLAMA_KEEP_ALIVE, llama3.2 on GPU).
+
+DEFERRED (scoped future tasks):
+  - CJK speech: Chinese and Japanese TTS need dedicated phonemisers (pinyin for Chinese, OpenJTalk
+    / pyopenjtalk for Japanese) integrated into MMC-TTS; the current Piper build is espeak-only.
+    Until then, CJK targets are shown as text, not spoken.
+  - Voice/face gender, Route A (the "desirable" one): a male avatar for male-voiced languages, so
+    voice and face gender always match - needs a male ReadyPlayerMe GLB (ARKit blendshapes) which
+    could not be sourced now; Route B (female voices) taken instead.
+  - Improve input/output Personal Status (EPS) handling - how the human's PS is used and how the
+    machine's PS is generated and expressed.
+
 ## 5. Per-AIM build status (MMC-HCI chain)
 
 Boxes of the MMC-HCI reference model, and adjacent AIMs.

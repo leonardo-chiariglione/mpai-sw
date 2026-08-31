@@ -26,6 +26,10 @@ public partial class MainWindow : Window
     {
         ("en", "English"), ("it", "Italiano"), ("es", "Espanol"), ("pt", "Portugues"),
         ("fr", "Francais"), ("de", "Deutsch"), ("ja", "Nihongo"), ("zh", "Zhongwen")
+        // Every language is offered: the written translation is always shown; it is
+        // also spoken where a voice can synthesise it. Chinese and Japanese show the
+        // translated text but are not yet spoken (their voices need dedicated CJK
+        // phonemisers - pinyin / OpenJTalk - not in this espeak-only build).
     };
 
     private HciApi?       _hci;
@@ -77,6 +81,11 @@ public partial class MainWindow : Window
         if (!_ready || _hci is null || _ua is null) return;
         if (_ua.IsRunning) { _ua.StopLoop(); return; }
         string from = FromCode(), to = ToCode();
-        _ua.StartLoop(speech => _hci!.Translate(speech, from, to));
+        _ua.StartLoop(speech =>
+        {
+            var avatar = _hci!.Translate(speech, from, to);
+            Dispatcher.Invoke(() => TranslationText.Text = avatar.TranslatedText ?? "");
+            return avatar;
+        });
     }
 }

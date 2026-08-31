@@ -8,7 +8,7 @@
     <Border DockPanel.Dock="Top" Background="#1E2632" Padding="12,10">
       <StackPanel>
         <TextBlock Text="Multimodal Anonymous Translation" Foreground="#EAF1FB" FontSize="18" FontWeight="SemiBold"/>
-        <TextBlock Text="Speak - the avatar speaks your words in the chosen language, lip-synced." Foreground="#9FB0C6" FontSize="12" Margin="0,2,0,0"/>
+        <TextBlock Text="Speak - the avatar speaks and shows your words in the chosen language." Foreground="#9FB0C6" FontSize="12" Margin="0,2,0,0"/>
       </StackPanel>
     </Border>
     <Border DockPanel.Dock="Bottom" Background="#1E2632" Padding="10">
@@ -21,6 +21,10 @@
                 Click="ListenButton_Click" FontSize="14"/>
         <TextBlock x:Name="StatusText" Foreground="#9FB0C6" VerticalAlignment="Center" Text="Choose languages, press Listen, and speak."/>
       </DockPanel>
+    </Border>
+    <Border DockPanel.Dock="Bottom" Background="#0F1620" Padding="12,10">
+      <TextBlock x:Name="TranslationText" Foreground="#EAF1FB" FontSize="20" TextWrapping="Wrap"
+                 MinHeight="40" Text=""/>
     </Border>
     <wv2:WebView2 x:Name="Web"/>
   </DockPanel>
