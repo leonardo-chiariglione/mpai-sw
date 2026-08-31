@@ -11,12 +11,12 @@ namespace Mpai.Hci.Api;
 
 // The HCI API (MPAI-HCI middleware API). A thin faÃ§ade the User Agent (UAD-MAD)
 // uses to drive the MMC-MAD Middleware Module across the north API. MMC-MAD is ONE
-// AIW: the Controller reads its L3, recurses its SubAIMs (Automatic Speech
-// Recognition, Entity Dialogue Processing, Response and Scene Rendering) and runs
-// the whole pipeline. The UA supplies a turn - the human's spoken Speech Object OR
-// typed Text Object - at the boundary, and consumes the Speaking Avatar (Machine
-// Speech + Machine Face Descriptors) the run produces. Acquisition (mic) and
-// delivery (loudspeaker, screen) are the UA's real-world edges, outside the Module.
+// AIW (ASR -> EDP -> RSR). The Module is started ONCE and kept alive across turns:
+// each turn is one RunAsync on the same instance, so the AIM tree is instantiated
+// once (speed) and the running dialogue Summary threads from each turn's
+// EditedSummary into the next turn's Summary (context - the dialogue remembers).
+// Acquisition (mic) and delivery (loudspeaker, screen) are the UA's real-world
+// edges, outside the Module.
 public sealed class HciApi : IDisposable
 {
     private const string MadModule = "MMC-MAD-V2.5";   // Multimodal Anonymous Dialogue
@@ -24,6 +24,9 @@ public sealed class HciApi : IDisposable
     private readonly UserAgent    _ua;
     private readonly HciProvider  _provider;
     private readonly AimSettings  _settings;
+
+    private int?    _aiwId;         // the started MMC-MAD instance, kept alive across turns
+    private string? _lastSummary;   // the running dialogue Summary (threaded turn to turn)
 
     public HciApi(string amdDir, string settingsPath)
     {
@@ -35,44 +38,57 @@ public sealed class HciApi : IDisposable
         _ua.MPAI_AIFU_Controller_Initialize();
     }
 
-    // Drive one dialogue turn through MMC-MAD. Supply the human's turn at the
-    // boundary - a typed Text Object and/or a spoken Speech Object - and receive
-    // the Speaking Avatar the Module produces. MAD recognises speech (if given),
-    // processes the dialogue, and renders the response; the Machine's own Personal
-    // Status is generated inside EDP.
+    // Start MMC-MAD once and keep it alive; subsequent turns reuse the instance.
+    private bool EnsureStarted()
+    {
+        if (_aiwId is not null) return true;
+        if (_ua.MPAI_AIFU_AIW_Start(MadModule, _provider, _settings, out var id) != AifError.OK)
+            return false;
+        _aiwId = id;
+        return true;
+    }
+
+    // Drive one dialogue turn through MMC-MAD. Supply the human's turn - typed text
+    // and/or a spoken Speech Object - and receive the Speaking Avatar. The running
+    // Summary is threaded automatically, so the dialogue keeps context across turns.
     public SpeakingAvatar Converse(string? text = null, BasicSpeechObject? speech = null)
     {
+        if (!EnsureStarted()) return new SpeakingAvatar(Array.Empty<byte>(), null);
+
         var boundary = new Dictionary<string, string>();
         if (!string.IsNullOrWhiteSpace(text))
             boundary["TextObject"] = MpaiJson.ToJson(BasicTextObject.FromText(text));
         if (speech is not null && speech.Data.Length > 0)
             boundary["InputSpeech"] = MpaiJson.ToJson(speech);
+        if (!string.IsNullOrWhiteSpace(_lastSummary))
+            boundary["Summary"] = _lastSummary;
 
-        var outs = RunModule(MadModule, boundary);
+        var (err, outcome) = _ua.RunAsync(_aiwId!.Value, boundary).GetAwaiter().GetResult();
+        if (err != AifError.OK || outcome?.Completed is null || outcome.Completed.IsError)
+            return new SpeakingAvatar(Array.Empty<byte>(), null);
 
+        var outs = outcome.Completed.Ports;
         byte[] wav = Array.Empty<byte>(); FaceDescriptorsObject? fdo = null;
         if (outs.TryGetValue("MachineSpeech", out var sj) && !string.IsNullOrWhiteSpace(sj))
             wav = MpaiJson.FromJson<BasicSpeechObject>(sj)?.Data ?? Array.Empty<byte>();
         if (outs.TryGetValue("MachineFaceDescriptors", out var fj) && !string.IsNullOrWhiteSpace(fj))
             fdo = MpaiJson.FromJson<FaceDescriptorsObject>(fj);
+        // Thread the running Summary into the next turn.
+        if (outs.TryGetValue("EditedSummary", out var es) && !string.IsNullOrWhiteSpace(es))
+            _lastSummary = es;
+
         return new SpeakingAvatar(wav, fdo);
     }
 
-    private IReadOnlyDictionary<string, string> RunModule(string module, Dictionary<string, string> boundary)
-    {
-        if (_ua.MPAI_AIFU_AIW_Start(module, _provider, _settings, out var id) != AifError.OK)
-            return new Dictionary<string, string>();
-        try
-        {
-            var (err, outcome) = _ua.RunAsync(id, boundary).GetAwaiter().GetResult();
-            if (err != AifError.OK || outcome?.Completed is null || outcome.Completed.IsError)
-                return new Dictionary<string, string>();
-            return outcome.Completed.Ports;
-        }
-        finally { _ua.MPAI_AIFU_AIW_Stop(id); }
-    }
+    // Begin a fresh conversation: forget the running Summary. The Module stays
+    // alive; only the dialogue context is cleared.
+    public void ResetConversation() => _lastSummary = null;
 
-    public void Dispose() => _provider.Dispose();
+    public void Dispose()
+    {
+        if (_aiwId is not null) { _ua.MPAI_AIFU_AIW_Stop(_aiwId.Value); _aiwId = null; }
+        _provider.Dispose();
+    }
 }
 
 // The Speaking Avatar product: Machine Speech (WAV) + the Machine Face Descriptors

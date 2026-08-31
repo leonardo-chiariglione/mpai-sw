@@ -495,6 +495,23 @@ Non-blocking; each to be done as its own commit with a green-build check afterwa
 - Deploy tooling: backups now route to $RepoRoot/.backups (gitignored) instead of littering
   <name>.bak files.
 
+### 2026-08-30 â€” Multi-turn dialogue: MMC-MAD kept alive, running Summary threaded (context)
+- MMC-MAD is now started ONCE and kept alive across turns (per the UserAgent: RunAsync can be
+  called repeatedly on one started AIW; the instantiated graph/host persist; Stop only on Dispose).
+  Each turn is one RunAsync on the same instance, so the AIM tree is instantiated once.
+- CONTEXT (the real win): MMC-MAD's L3 gained Summary (input, MMC-SUM, optional) + EditedSummary
+  (output, MMC-SUM), wired to UAG-EDP's Summary/EditedSummary. The faÃ§ade (HciApi) threads the
+  running Summary: each turn's EditedSummary becomes the next turn's Summary, so EDP builds a
+  running conversation summary and the dialogue REMEMBERS. ResetConversation() clears it for a
+  fresh conversation. PROVEN: "my name is Leonardo" ... "what is my name?" -> "Leonardo".
+- LATENCY note: turn 2 ~ turn 1, as expected. The local LLM generation dominates and runs every
+  turn; keep-alive saves only the (small) instantiation, and turn 2's longer context prompt offsets
+  it. The context win is what multi-turn was for; speed is LLM-bound (already mitigated by llama3.2
+  + the startup warm-up).
+- Interaction is currently press-Listen (or type + Say) per turn. NEXT (UX): continuous
+  conversation - after each spoken response, auto-listen for the next turn (a flowing back-and-forth),
+  until a Stop, with the Summary threading context across the whole conversation.
+
 ## 5. Per-AIM build status (MMC-HCI chain)
 
 Boxes of the MMC-HCI reference model, and adjacent AIMs.
