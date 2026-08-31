@@ -51,6 +51,8 @@ internal static class Program
             if (outcome.Completed.IsError) { Console.WriteLine($"{outcome.Completed.FailedAim}: {outcome.Completed.Payload}"); return; }
 
             var outputs = outcome.Completed.Ports;
+            var renderDir = @"D:\AI\TestData\Avatars";
+            try { System.IO.Directory.CreateDirectory(renderDir); } catch { }
 
             // RSR produced the Machine Face Descriptors (the animation timeline).
             if (outputs.TryGetValue("MachineFaceDescriptors", out var fdoJson) && !string.IsNullOrWhiteSpace(fdoJson))
@@ -58,6 +60,7 @@ internal static class Program
                 var fdo = MpaiJson.FromJson<FaceDescriptorsObject>(fdoJson);
                 int frames = fdo?.FaceDescriptorsData?.Count ?? 0;
                 Console.WriteLine($"Machine Face Descriptors: {frames} animation frames (lip-sync + expression). {fdo?.DescrMetadata}");
+                try { System.IO.File.WriteAllText(System.IO.Path.Combine(renderDir, "response-fdo.json"), fdoJson); Console.WriteLine("  wrote response-fdo.json"); } catch { }
             }
             else Console.WriteLine("Machine Face Descriptors: (none)");
 
@@ -66,6 +69,7 @@ internal static class Program
             {
                 var speech = MpaiJson.FromJson<BasicSpeechObject>(speechJson);
                 Console.WriteLine($"Machine Speech: {speech?.Data.Length ?? 0:N0} bytes - speaking...");
+                try { if (speech is not null) { System.IO.File.WriteAllBytes(System.IO.Path.Combine(renderDir, "response-speech.wav"), speech.Data); Console.WriteLine("  wrote response-speech.wav"); } } catch { }
 #if WINDOWS_DEVICES
                 if (speech is not null && speech.Data.Length > 0)
                     new WinmmSpeechDelivery().DeliverAsync(speech).GetAwaiter().GetResult();

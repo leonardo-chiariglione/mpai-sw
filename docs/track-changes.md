@@ -388,6 +388,25 @@ Non-blocking; each to be done as its own commit with a green-build check afterwa
   not built - face only). The delivery family (AOD/SOD/3OD) and 3D types (3DO model, FDO/BDO
   animation) settled earlier stand.
 
+### 2026-08-30 â€” Lip-sync RENDERED: the CAV speaks with a moving face
+- The FDO timeline is now RENDERED, completing the visual delivery. The RSR host writes its two
+  outputs to disk (response-fdo.json = the Machine Face Descriptors timeline, response-speech.wav
+  = the Machine Speech). The three.js viewer (MPAIApps/CavFace3D/cav-lipsync.html) loads them,
+  plays the audio, and animates the realistic avatar through the FDO timeline: each
+  {SimpleTime, Data} frame -> AU weights -> ARKit blendshapes, applied at the audio's currentTime
+  (interpolated between frames). PROVEN: the avatar's mouth moves through the words, synced to the
+  speech, over the calm expression - the CAV seen speaking with real lips.
+- This closes the render side of PAF-GFD's animation: GFD PRODUCES the FDO timeline (text-driven
+  visemes + expression); the renderer (3OD's device) APPLIES it to the model synced to the speech.
+  The renderer-agnostic AU descriptor + the interoperable FDO Time-per-frame timeline made this a
+  clean mapping (AU -> ARKit blendshape) with no private encoding.
+- The full HCI speech+face dialogue loop is now AUDIBLE AND VISIBLE end to end: a person is
+  perceived, their Personal Status extracted, EDP responds (local LLM) with the machine's own
+  Personal Status, RSR produces speech + the facial-animation timeline, and the UA delivers -
+  speech to the loudspeaker (SOD) and the avatar to the screen (3OD's renderer), the mouth moving
+  to the words. Remaining: body/gesture (PAF-GBD, EGI), the seamless standalone CAV app, and
+  affective TTS - all deepenings on a complete, correct core.
+
 ## 5. Per-AIM build status (MMC-HCI chain)
 
 Boxes of the MMC-HCI reference model, and adjacent AIMs.
