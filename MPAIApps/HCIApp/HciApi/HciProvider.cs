@@ -10,6 +10,9 @@ using Mpai.Paf.Gfd;   // GfdAimProcessor
 using Mpai.Aims.Tts;  // TtsAimProcessor, TtsFactory
 using Mpai.Aims.Asr;  // AsrAimProcessor, AsrFactory
 using Mpai.Aims.Ttt;  // TttAimProcessor, TttFactory
+using Mpai.Mmc.Nlu;   // NluAimProcessor
+using Mpai.Mmc.Esi;   // EsiAimProcessor (+ Wav2Vec2EmotionEstimator)
+using Mpai.Mmc.Psm;   // PsmAimProcessor
 
 namespace Mpai.Hci.Api;
 
@@ -21,6 +24,9 @@ namespace Mpai.Hci.Api;
 public sealed class HciProvider : IAimProvider, IDisposable
 {
     private readonly AmdStore _store;
+    private Wav2Vec2EmotionEstimator? _w2v2;
+    private Wav2Vec2EmotionEstimator W2v2() =>
+        _w2v2 ??= new Wav2Vec2EmotionEstimator(@"D:\AI\Models\w2v2-emotion\model.onnx");
     private OllamaClient?     _llm;
 
     public HciProvider(AmdStore store) => _store = store;
@@ -34,6 +40,10 @@ public sealed class HciProvider : IAimProvider, IDisposable
             "PAF-PSD-V1.6" => new PsdAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
             "MMC-TTS-V2.5" => new TtsAimProcessor(aimName, TtsFactory.Create(settings), AimPortReader.Load(_store, aimName)),
             "PAF-GFD-V1.6" => new GfdAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
+            // Personal-Status pipeline (MMC-MPD): understand + perceive feeling.
+            "MMC-NLU-V2.5" => new NluAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
+            "MMC-ESI-V2.5" => new EsiAimProcessor(aimName, W2v2(), AimPortReader.Load(_store, aimName)),
+            "MMC-PSM-V2.5" => new PsmAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
             _ => throw new NotSupportedException($"HciProvider does not provide '{aimName}'.")
         };
 
@@ -44,5 +54,5 @@ public sealed class HciProvider : IAimProvider, IDisposable
         return _llm = new OllamaClient(model);
     }
 
-    public void Dispose() => _llm?.Dispose();
+    public void Dispose() { _llm?.Dispose(); _w2v2?.Dispose(); }
 }

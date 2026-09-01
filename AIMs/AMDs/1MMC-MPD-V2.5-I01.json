@@ -1,0 +1,46 @@
+{ "Identifier":       { "ImplementerID": "1", "ImplementationID": "MMC-MPD-V2.5-I01", "AIMName": "MMC-MPD-V2.5" },
+
+  "APIProfile":       "Basic",
+  "Description":      "Multimodal Personal Status-based Dialogue: dialogue that perceives both the MEANING and the FEELING of the human and responds accordingly. It recognises the speech (Automatic Speech Recognition), understands it (Natural Language Understanding: Text Descriptors + Text Personal Status), reads the emotion in the voice (Entity Speech Interpretation: Speech Personal Status), fuses the per-modality Personal Statuses into one Entity Personal Status (Personal Status Multiplexing), processes the dialogue turn aware of the meaning and the person's Personal Status (Entity Dialogue Processing, a local LLM), and renders the response as a Speaking Avatar (Response and Scene Rendering). It is MMC-MAD preceded by NLU + Personal Status Extraction (ESI + PSM); the running Summary threads context across turns. Personal Status is extracted from speech + text here (no camera); Face Personal Status can be added when a visual edge is present.",
+
+  "ExternalPorts":    [{"Name": "InputSpeech",             "Direction": "Input",  "DataType": "OSD-SPO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "Summary",                 "Direction": "Input",  "DataType": "MMC-SUM-V2.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "MachineSpeech",           "Direction": "Output", "DataType": ["OSD-BSO-V1.5", "OSD-SPO-V1.5"], "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "MachineFaceDescriptors",  "Direction": "Output", "DataType": "PAF-FDO-V1.6", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "EditedSummary",           "Direction": "Output", "DataType": "MMC-SUM-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
+
+  "SubAIMs":          [{ "Identifier": { "ImplementerID": "1",    "ImplementationID": "MMC-ASR-V2.5-I01", "AIMName": "MMC-ASR-V2.5" } },
+                       { "Identifier": { "ImplementerID": "1",    "ImplementationID": "MMC-NLU-V2.5-I01", "AIMName": "MMC-NLU-V2.5" } },
+                       { "Identifier": { "ImplementerID": "1",    "ImplementationID": "MMC-ESI-V2.5-I01", "AIMName": "MMC-ESI-V2.5" } },
+                       { "Identifier": { "ImplementerID": "1",    "ImplementationID": "MMC-PSM-V2.5-I01", "AIMName": "MMC-PSM-V2.5" } },
+                       { "Identifier": { "ImplementerID": "MPAI", "ImplementationID": "UAG-EDP-V1.0-I01", "AIMName": "UAG-EDP-V1.0" } },
+                       { "Identifier": { "ImplementerID": "MPAI", "ImplementationID": "UAG-RSR-V1.0-I01", "AIMName": "UAG-RSR-V1.0" } }],
+
+  "Topology":         [{ "Output": { "AIMName": "",             "PortName": "InputSpeech"            }, "Input": { "AIMName": "MMC-ASR-V2.5", "PortName": "InputSpeech"    } },
+                       { "Output": { "AIMName": "MMC-ASR-V2.5", "PortName": "OutputText"             }, "Input": { "AIMName": "MMC-NLU-V2.5", "PortName": "RecognisedText", "PortNumber": 2 } },
+                       { "Output": { "AIMName": "",             "PortName": "InputSpeech"            }, "Input": { "AIMName": "MMC-ESI-V2.5", "PortName": "SpeechObject"   } },
+                       { "Output": { "AIMName": "MMC-NLU-V2.5", "PortName": "TextPersonalStatus"     }, "Input": { "AIMName": "MMC-PSM-V2.5", "PortName": "TextPersonalStatus"   } },
+                       { "Output": { "AIMName": "MMC-ESI-V2.5", "PortName": "SpeechPersonalStatus"   }, "Input": { "AIMName": "MMC-PSM-V2.5", "PortName": "SpeechPersonalStatus" } },
+                       { "Output": { "AIMName": "MMC-ASR-V2.5", "PortName": "OutputText"             }, "Input": { "AIMName": "UAG-EDP-V1.0", "PortName": "TextObject"     } },
+                       { "Output": { "AIMName": "MMC-NLU-V2.5", "PortName": "TextDescriptors"        }, "Input": { "AIMName": "UAG-EDP-V1.0", "PortName": "TextDescriptors" } },
+                       { "Output": { "AIMName": "MMC-PSM-V2.5", "PortName": "EntityPersonalStatus"   }, "Input": { "AIMName": "UAG-EDP-V1.0", "PortName": "PersonalStatus" } },
+                       { "Output": { "AIMName": "",             "PortName": "Summary"                }, "Input": { "AIMName": "UAG-EDP-V1.0", "PortName": "Summary"        } },
+                       { "Output": { "AIMName": "UAG-EDP-V1.0", "PortName": "MachineTextObject"      }, "Input": { "AIMName": "UAG-RSR-V1.0", "PortName": "TextObject"     } },
+                       { "Output": { "AIMName": "UAG-EDP-V1.0", "PortName": "MachinePersonalStatus"  }, "Input": { "AIMName": "UAG-RSR-V1.0", "PortName": "PersonalStatus" } },
+                       { "Output": { "AIMName": "UAG-EDP-V1.0", "PortName": "EditedSummary"          }, "Input": { "AIMName": "",             "PortName": "EditedSummary"  } },
+                       { "Output": { "AIMName": "UAG-RSR-V1.0", "PortName": "MachineSpeech"           }, "Input": { "AIMName": "",             "PortName": "MachineSpeech"  } },
+                       { "Output": { "AIMName": "UAG-RSR-V1.0", "PortName": "MachineFaceDescriptors"  }, "Input": { "AIMName": "",             "PortName": "MachineFaceDescriptors" } }],
+
+  "Implementations":  [{"ImplementationURI": "file:///D:/AI/AIMs/MMC-MPD-V2.5-I01",
+                        "MASPort":           443,
+                        "BinaryName":        "Mpai.Mmc.Mpd",
+                        "Architecture":      "x86-64",
+                        "OperatingSystem":   "Windows",
+                        "Version":           "2.5",
+                        "Source":            "AIMStorage"}],
+
+  "ResourcePolicies": [{"Name": "Memory",    "Minimum": "3 GB",   "Request": "5 GB",   "Maximum": "10 GB"},
+                       {"Name": "CPU:Class", "Minimum": "Medium", "Request": "High",   "Maximum": "High"}],
+
+  "DataXMData":       {},
+  "Documentation":    [{"Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-mmc/v2-5/"}]}

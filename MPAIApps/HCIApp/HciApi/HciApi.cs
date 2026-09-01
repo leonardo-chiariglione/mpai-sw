@@ -22,6 +22,7 @@ public sealed class HciApi : IDisposable
     private const string MadModule = "MMC-MAD-V2.5";   // Multimodal Anonymous Dialogue
     private const string MatModule = "MMC-MAT-V2.5";   // Multimodal Anonymous Translation
     private const string RsrModule = "UAG-RSR-V1.0";   // Response and Scene Rendering (say-as-avatar)
+    private const string MpdModule = "MMC-MPD-V2.5";   // Multimodal Personal Status-based Dialogue
 
     private readonly UserAgent    _ua;
     private readonly HciProvider  _provider;
@@ -29,6 +30,8 @@ public sealed class HciApi : IDisposable
 
     private int?    _aiwId;         // the started MMC-MAD instance, kept alive across turns
     private int?    _matAiwId;      // the started MMC-MAT instance, kept alive across turns
+    private int?    _mpdAiwId;      // the started MMC-MPD instance, kept alive across turns
+    private string? _lastSummaryMpd;
     private string? _lastSummary;   // the running dialogue Summary (threaded turn to turn)
 
     public HciApi(string amdDir, string settingsPath)
@@ -80,6 +83,41 @@ public sealed class HciApi : IDisposable
         if (outs.TryGetValue("EditedSummary", out var es) && !string.IsNullOrWhiteSpace(es))
             _lastSummary = es;
 
+        return new SpeakingAvatar(wav, fdo);
+    }
+
+    // Personal-Status-based dialogue: one spoken turn through MMC-MPD, which perceives
+    // the meaning (Natural Language Understanding) and the feeling (Entity Speech
+    // Interpretation + Personal Status Multiplexing) of what the human said, and
+    // replies aware of both. The running Summary threads context across turns.
+    public SpeakingAvatar ConverseMpd(BasicSpeechObject speech)
+    {
+        if (_mpdAiwId is null)
+        {
+            if (_ua.MPAI_AIFU_AIW_Start(MpdModule, _provider, _settings, out var id) != AifError.OK)
+                return new SpeakingAvatar(Array.Empty<byte>(), null);
+            _mpdAiwId = id;
+        }
+
+        var boundary = new Dictionary<string, string>
+        {
+            ["InputSpeech"] = MpaiJson.ToJson(speech)
+        };
+        if (!string.IsNullOrWhiteSpace(_lastSummaryMpd))
+            boundary["Summary"] = _lastSummaryMpd;
+
+        var (err, outcome) = _ua.RunAsync(_mpdAiwId!.Value, boundary).GetAwaiter().GetResult();
+        if (err != AifError.OK || outcome?.Completed is null || outcome.Completed.IsError)
+            return new SpeakingAvatar(Array.Empty<byte>(), null);
+
+        var outs = outcome.Completed.Ports;
+        byte[] wav = Array.Empty<byte>(); FaceDescriptorsObject? fdo = null;
+        if (outs.TryGetValue("MachineSpeech", out var sj) && !string.IsNullOrWhiteSpace(sj))
+            wav = MpaiJson.FromJson<BasicSpeechObject>(sj)?.Data ?? Array.Empty<byte>();
+        if (outs.TryGetValue("MachineFaceDescriptors", out var fj) && !string.IsNullOrWhiteSpace(fj))
+            fdo = MpaiJson.FromJson<FaceDescriptorsObject>(fj);
+        if (outs.TryGetValue("EditedSummary", out var es) && !string.IsNullOrWhiteSpace(es))
+            _lastSummaryMpd = es;
         return new SpeakingAvatar(wav, fdo);
     }
 
@@ -232,6 +270,7 @@ public sealed class HciApi : IDisposable
     {
         if (_aiwId is not null) { _ua.MPAI_AIFU_AIW_Stop(_aiwId.Value); _aiwId = null; }
         if (_matAiwId is not null) { _ua.MPAI_AIFU_AIW_Stop(_matAiwId.Value); _matAiwId = null; }
+        if (_mpdAiwId is not null) { _ua.MPAI_AIFU_AIW_Stop(_mpdAiwId.Value); _mpdAiwId = null; }
         _provider.Dispose();
     }
 }

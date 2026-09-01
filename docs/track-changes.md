@@ -589,6 +589,28 @@ DEFERRED (scoped future tasks):
   the result. CAV-MAC is the third HCI application on the unified surface (after MAD, MAT); its
   camera edge + guided state machine are groundwork for the eventual BMS-to-RSR integration.
 
+### 2026-08-30 â€” MMC-MPD: Multimodal Personal Status-based Dialogue (the affective dialogue)
+- A fourth HCI application. MMC-MPD is MMC-MAD preceded by Natural Language Understanding and
+  Personal Status Extraction, so the CAV perceives both the MEANING and the FEELING of what the
+  person says, and replies aware of both. Pipeline (all existing Modules wired into one):
+    speech -> ASR -> text
+    text  -> NLU -> Text Descriptors (meaning) + Text Personal Status (word attitude)
+    speech-> ESI -> Speech Personal Status (voice emotion)
+    NLU.TextPS + ESI.SpeechPS -> PSM -> the human's Entity Personal Status (fused; face optional/
+      absent here - mic-only dialogue, so two modalities: voice + words)
+    text + Text Descriptors + Entity PS + Summary -> EDP -> Machine Text + Machine PS + EditedSummary
+    -> RSR -> the Speaking Avatar
+  EDP already exposed TextDescriptors + PersonalStatus inputs; MMC-MAD fed neither (canned PS),
+  MMC-MPD feeds the real ones. The running Summary threads context across turns.
+- HciProvider gained the leaves NLU, ESI, PSM (ESI uses the wav2vec2 emotion model); HciApi gained
+  ConverseMpd(speech) - runs MMC-MPD, keep-alive + Summary threaded, like Converse.
+- UAD-MPD / MpdApp: a thin app on Mpai.UaKit (Listen loop, multi-turn), driving MMC-MPD. Speak, and
+  the CAV responds to your meaning and your tone.
+- PROVEN: the reply reflects not just the words but how they are said (voice emotion via ESI feeds
+  the machine's response). This realises the NLU-PSE-EDP-RSR affective pipeline - a step toward the
+  full BMS-to-RSR Human-CAV Interaction (adding Face Personal Status via a camera edge is the next
+  modality). The HCIApp collection now has four apps on the unified surface: MAD, MAT, CAV-MAC, MPD.
+
 ## 5. Per-AIM build status (MMC-HCI chain)
 
 Boxes of the MMC-HCI reference model, and adjacent AIMs.
