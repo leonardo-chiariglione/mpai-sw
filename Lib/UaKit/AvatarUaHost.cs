@@ -68,9 +68,23 @@ public sealed class AvatarUaHost
     // the avatar viewer. Call once, after the window is loaded.
     public async Task InitAsync(string viewerPage = "cav-webview.html")
     {
-        var env = await CoreWebView2Environment.CreateAsync(null, null,
+        // A DEDICATED user-data folder per application. WebView2 reuses an existing
+        // environment when the user-data folder matches, and the FIRST environment's
+        // browser arguments win - so a shared (default) folder makes the autoplay
+        // flag below be ignored, and the avatar's speech is silently blocked (the
+        // face still animates - only audio is autoplay-gated). A per-app folder makes
+        // the --autoplay-policy flag actually take effect, so the avatar can speak
+        // without a preceding user gesture.
+        var appName = System.Reflection.Assembly.GetEntryAssembly()?.GetName().Name ?? "UaKit";
+        var userDataFolder = System.IO.Path.Combine(
+            System.IO.Path.GetTempPath(), "MpaiUaKit", appName);
+        System.IO.Directory.CreateDirectory(userDataFolder);
+
+        var env = await CoreWebView2Environment.CreateAsync(null, userDataFolder,
             new CoreWebView2EnvironmentOptions("--autoplay-policy=no-user-gesture-required"));
         await _web.EnsureCoreWebView2Async(env);
+        _web.CoreWebView2.Settings.IsWebMessageEnabled = true;
+        _web.CoreWebView2.IsMuted = false;   // never mute the avatar's voice
         _web.CoreWebView2.SetVirtualHostNameToFolderMapping(
             _assetsHost, _assetsDir, CoreWebView2HostResourceAccessKind.Allow);
         _web.CoreWebView2.Navigate($"https://{_assetsHost}/{viewerPage}");

@@ -562,6 +562,33 @@ DEFERRED (scoped future tasks):
   - Improve input/output Personal Status (EPS) handling - how the human's PS is used and how the
     machine's PS is generated and expressed.
 
+### 2026-08-30 â€” CAV-MAC: avatar-guided, hands-free Multimodal Access Control (WPF)
+- CAV-MAC rebuilt on the unified Human-CAV Interaction surface: its UI moved from Avalonia to WPF
+  (App.xaml / MainWindow.xaml / Program.cs), reusing Mpai.UaKit for the WebView avatar and the
+  microphone capture, and Mpai.Hci.Api for the spoken prompts. Window sized to match MadApp/MatApp.
+  The identification pipeline is unchanged: PAF-EFD (face) + MMC-ESD (speaker) described via the
+  Controller, matched against the enrolment gallery, reconciled by HCI-IDR into a grant/deny.
+- HANDS-FREE, avatar-guided flow (the point of the new interface): the person presses Start once
+  (an activation request, like MadApp/MatApp), then the avatar runs the whole authentication with
+  NO further buttons - she says "look at the camera" and the webcam captures automatically; she
+  says "speak your passphrase" and the microphone listens automatically with voice-activity
+  auto-stop (AvatarUaHost.CaptureSpeech); then she reconciles and speaks the verdict.
+- The avatar expresses the MACHINE'S OWN scripted Personal Status per outcome (the user's Personal
+  Status is not analysed): neutral while capturing, welcoming (happy) on grant, concerned/
+  reproaching on deny - via HciApi.Announce -> UAG-RSR (Response and Scene Rendering) with the
+  scripted emotion/attitude driving the face (EM-FACS) alongside the lip-synced speech.
+- HciApi gained Announce(text, emotion, attitude): render fixed text as a Speaking Avatar (no
+  dialogue, no translation) - start-run-STOP RSR per call (a kept-alive RSR carried suspend/resume
+  state that dropped every second prompt; per-call runs are clean and independent).
+- Mpai.UaKit WebView2 fix (benefits all three apps): the avatar audio was silently autoplay-blocked
+  because the WebView2 shared the default user-data folder, so the --autoplay-policy flag was
+  ignored (WebView2 reuses an existing environment and the first one's args win). AvatarUaHost now
+  gives each app its OWN user-data folder so the flag applies, and sets IsMuted=false. The face
+  animated but was silent until this - MadApp/MatApp were affected too.
+- PROVEN: press Start -> the lady guides a full hands-free authentication and speaks + expresses
+  the result. CAV-MAC is the third HCI application on the unified surface (after MAD, MAT); its
+  camera edge + guided state machine are groundwork for the eventual BMS-to-RSR integration.
+
 ## 5. Per-AIM build status (MMC-HCI chain)
 
 Boxes of the MMC-HCI reference model, and adjacent AIMs.

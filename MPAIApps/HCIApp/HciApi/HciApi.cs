@@ -21,6 +21,7 @@ public sealed class HciApi : IDisposable
 {
     private const string MadModule = "MMC-MAD-V2.5";   // Multimodal Anonymous Dialogue
     private const string MatModule = "MMC-MAT-V2.5";   // Multimodal Anonymous Translation
+    private const string RsrModule = "UAG-RSR-V1.0";   // Response and Scene Rendering (say-as-avatar)
 
     private readonly UserAgent    _ua;
     private readonly HciProvider  _provider;
@@ -147,6 +148,81 @@ public sealed class HciApi : IDisposable
         };
         return BasicSpeechObject.FromData(speech.Data, newQualifier);
     }
+
+    // Say a fixed piece of text as a Speaking Avatar - no dialogue, no translation,
+    // just render the given words to speech + a lip-synced face. Used for scripted
+    // guidance (for example an access-control app prompting the user). Runs Response
+    // and Scene Rendering directly; Personal Status is optional and omitted here, so
+    // the avatar speaks in a neutral manner.
+    public SpeakingAvatar Announce(string text, string emotion = "CALMNESS", string? attitude = null)
+    {
+        // Start-run-STOP per call (no keep-alive): each announcement is a fresh RSR
+        // run, so no suspend/resume state is carried between prompts. (A kept-alive
+        // instance dropped every second prompt - the classic carried-state trap.)
+        if (_ua.MPAI_AIFU_AIW_Start(RsrModule, _provider, _settings, out var rid) != AifError.OK)
+            return new SpeakingAvatar(Array.Empty<byte>(), null);
+
+        // The Personal Status here is the MACHINE'S OWN - the expression the avatar
+        // should display for this utterance (neutral while capturing, welcoming on
+        // success, concerned on failure). It is scripted by the caller, not derived
+        // from the user. Response and Scene Rendering turns it into the avatar's
+        // facial expression (via Personal Status De-multiplexing + Generative Face
+        // Description) alongside the lip-synced speech.
+        var boundary = new Dictionary<string, string>
+        {
+            ["TextObject"]     = MpaiJson.ToJson(BasicTextObject.FromText(text)),
+            ["PersonalStatus"] = MpaiJson.ToJson(MachinePersonalStatus(emotion, attitude))
+        };
+
+        try
+        {
+            var (err, outcome) = _ua.RunAsync(rid, boundary).GetAwaiter().GetResult();
+            if (err != AifError.OK || outcome?.Completed is null || outcome.Completed.IsError)
+                return new SpeakingAvatar(Array.Empty<byte>(), null);
+
+            var outs = outcome.Completed.Ports;
+            byte[] wav = Array.Empty<byte>(); FaceDescriptorsObject? fdo = null;
+            if (outs.TryGetValue("MachineSpeech", out var sj) && !string.IsNullOrWhiteSpace(sj))
+                wav = MpaiJson.FromJson<BasicSpeechObject>(sj)?.Data ?? Array.Empty<byte>();
+            if (outs.TryGetValue("MachineFaceDescriptors", out var fj) && !string.IsNullOrWhiteSpace(fj))
+                fdo = MpaiJson.FromJson<FaceDescriptorsObject>(fj);
+            return new SpeakingAvatar(wav, fdo);
+        }
+        finally { _ua.MPAI_AIFU_AIW_Stop(rid); }
+    }
+
+    // Build the machine's Personal Status (its OWN expression) from an emotion and an
+    // optional attitude - the same shape Entity Dialogue Processing produces, carried
+    // in the Text modality for Personal Status De-multiplexing to pick up.
+
+    private static EntityPersonalStatus MachinePersonalStatus(string emotion, string? attitude)
+    {
+        FactorLabel emo = emotion.ToUpperInvariant() switch
+        {
+            "HAPPINESS" => FactorLabel.Of("HAPPINESS", "happy", null, 0.8),
+            "SADNESS"   => FactorLabel.Of("SADNESS", "sad", null, 0.8),
+            "ANGER"     => FactorLabel.Of("ANGER", "disapproving", null, 0.7),
+            "FEAR"      => FactorLabel.Of("FEAR", "fearful", null, 0.8),
+            "CALMNESS"  => FactorLabel.Of("CALMNESS", "calm", null, 0.6),
+            _           => FactorLabel.Of("CALMNESS", "calm", null, 0.5)
+        };
+        SocialAttitude? att = attitude?.ToLowerInvariant() switch
+        {
+            "welcoming"    => SocialAttitude.Of(FactorLabel.Of("ACCEPTANCE", "welcoming", null, 0.8)),
+            "friendly"     => SocialAttitude.Of(FactorLabel.Of("ACCEPTANCE", "friendly", null, 0.8)),
+            "disapproving" => SocialAttitude.Of(FactorLabel.Of("SOCIAL RANK", "disapproving", null, 0.7)),
+            _              => null
+        };
+        return new EntityPersonalStatus
+        {
+            TextPersonalStatus = new TextPersonalStatus
+            {
+                TextEmotion        = Emotion.Of(emo),
+                TextSocialAttitude = att
+            }
+        };
+    }
+
 
     // Begin a fresh conversation: forget the running Summary. The Module stays
     // alive; only the dialogue context is cleared.

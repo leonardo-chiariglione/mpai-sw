@@ -134,3 +134,6 @@ Lib/UaKit/bin/
 Lib/UaKit/obj/
 Lib/Assets/*.glb
 Lib/Assets/*.hdr
+
+# WebView2 per-app user data (UaKit)
+**/MpaiUaKit/

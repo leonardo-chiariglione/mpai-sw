@@ -1,26 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <Nullable>enable</Nullable>
-    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-  </PropertyGroup>
-
-  <!-- UI is portable; audio DEVICES are not. net10.0-windows on Windows (device
-       AIMs use NAudio/winmm), plain net10.0 elsewhere. Same pattern as TstUi. -->
-  <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
     <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <DefineConstants>$(DefineConstants);WINDOWS_DEVICES</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
-    <TargetFramework>net10.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.3.12" />
-    <PackageReference Include="Avalonia.Desktop" Version="11.3.12" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.12" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.12" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,22 +20,23 @@
     <ProjectReference Include="..\..\..\AIF\V3.0\src\AIF.GlobalStorage\AIF.GlobalStorage.csproj" />
     <ProjectReference Include="..\..\..\AIMs\Core\Mpai.Core.csproj" />
     <ProjectReference Include="..\..\..\AIMs\Gallery\Mpai.Gallery.csproj" />
+    <!-- The Human-CAV Interaction avatar surface (WebView renderer + present) -->
+    <ProjectReference Include="..\..\..\Lib\UaKit\Mpai.UaKit.csproj" />
+    <!-- The HCI API - Announce (say a prompt as a Speaking Avatar via RSR) -->
+    <ProjectReference Include="..\..\..\MPAIApps\HCIApp\HciApi\Mpai.Hci.Api.csproj" />
     <!-- Description + reconciliation AIMs -->
     <ProjectReference Include="..\..\..\AIMs\PAF\V1.6\EFD\Mpai.Paf.Efd.csproj" />
     <ProjectReference Include="..\..\..\AIMs\MMC\V2.5\ESD\Mpai.Mmc.Esd.csproj" />
     <ProjectReference Include="..\..\..\AIMs\HCI\IDR\Mpai.Hci.Idr.csproj" />
     <!-- Webcam capture (VOA.Windows) -->
     <ProjectReference Include="..\..\..\AIMs\CVE\V1.0\VOA.Windows\Mpai.Cve.Voa.Windows.csproj" />
-    <!-- Spoken prompts: MMC-TTS + MMC-SOD (speech delivery). Text->speech->loudspeaker. -->
+    <!-- Spoken prompts: MMC-TTS + MMC-SOD (speech delivery) -->
     <ProjectReference Include="..\..\..\AIMs\MMC\V2.5\TTS\Mpai.Mmc.Tts.csproj" />
     <ProjectReference Include="..\..\..\AIMs\MMC\V2.5\SOD\Mpai.Mmc.Sod.csproj" />
     <!-- Live mic capture -->
     <ProjectReference Include="..\..\..\AIMs\CAE3\V1.0\AOA\Mpai.Cae.Aoa.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
     <ProjectReference Include="..\..\..\AIMs\CAE3\V1.0\AOA.Windows\Mpai.Cae.Aoa.Windows.csproj" />
-    <!-- Speech-delivery device (winmm), independent of Audio delivery. -->
+    <!-- Speech-delivery device (winmm) -->
     <ProjectReference Include="..\..\..\AIMs\MMC\V2.5\SOD.Windows\Mpai.Mmc.Sod.Windows.csproj" />
   </ItemGroup>
 </Project>
