@@ -1,56 +1,65 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 using AIF.Controller;
 using AIF.Store;
 
 using Mpai.Core;
-using Mpai.Paf.Fir;   // ArcFaceRecogniser, FaceCrop (shared primitives)
-using Mpai.Mmc.Sir;   // SpeakerEmbedder, WavReader (shared primitives)
-using Mpai.Paf.Efd;   // EfdAimProcessor
-using Mpai.Mmc.Esd;   // EsdAimProcessor
-using Mpai.Hci.Idr;   // IdrAimProcessor
-using Mpai.Osd.VisualScene;
-
-using Mpai.Aims.Tts;     // TtsAimProcessor, TtsFactory (text -> speech)
-using Mpai.Aims.Speech;  // SodAimProcessor, ISpeechDeliveryAim, WinmmSpeechDelivery (speech -> loudspeaker)
+using Mpai.Paf.Fir;        // FirAimProcessor, ArcFaceRecogniser, FaceCrop
+using Mpai.Mmc.Sir;        // SirAimProcessor, SpeakerEmbedder, WavReader
+using Mpai.Osd.Idr;        // IdrAimProcessor (the reconciliation + verdict AIM)
+using Mpai.Osd.VisualScene;// ScrfdFaceDetector
+using Mpai.Paf.Psd;        // PsdAimProcessor
+using Mpai.Paf.Gfd;        // GfdAimProcessor
+using Mpai.Aims.Tts;       // TtsAimProcessor, TtsFactory
 
 namespace CavMac;
 
-// Composition root for CAV-MAC V2.0 (Multimodal Access Control). Builds the two
-// description AIMs (PAF-EFD, MMC-ESD), the reconciliation AIM (HCI-IDR), and the
-// spoken-prompt chain used to speak the instructions: MMC-TTS (text -> speech)
-// followed by MMC-SOD (speech -> loudspeaker). Shares one ArcFace recogniser +
-// SCRFD detector and one ECAPA embedder across the description AIMs, so models
-// load once. Modelled on HciAccessControlProvider (identity AIMs) + TstProvider
-// (TTS / delivery / devices).
+// Composition root for CAV-MAC-V2.0 (Multimodal Access Control). The Controller
+// builds the CAV-MAC composite from its L3; this provider supplies ONLY the leaf
+// AIMs the tree needs:
+//   PAF-FIR  - face recognition (SCRFD + ArcFace, matching the shared gallery)
+//   MMC-SIR  - speaker recognition (ECAPA, matching the shared gallery)
+//   OSD-IDR  - reconcile + decide + issue Response and Personal Status
+//   PAF-PSD, MMC-TTS, PAF-GFD - the Response and Scene Rendering leaves
+// One SubjectGallery (loaded from gallery.json) is shared by FIR and SIR so they
+// search one subject-ID space. One ArcFace/SCRFD and one ECAPA load once.
 internal sealed class CavMacProvider : IAimProvider, IDisposable
 {
     private readonly AmdStore _store;
+    private readonly SubjectGallery _gallery;
 
     private ArcFaceRecogniser? _arcFace;
     private SpeakerEmbedder?   _ecapa;
     private ScrfdFaceDetector? _scrfd;
 
-    public CavMacProvider(AmdStore store) => _store = store;
+    public CavMacProvider(AmdStore store, string galleryJsonPath)
+    {
+        _store   = store;
+        _gallery = SubjectGallery.Load(galleryJsonPath);
+    }
 
     public IAimProcessor Create(string aimName, IReadOnlyDictionary<string, string> settings)
         => aimName switch
         {
-            "PAF-EFD-V1.6" =>
-                new EfdAimProcessor(aimName, Scrfd(settings), ArcFace(settings), AimPortReader.Load(_store, aimName)),
+            "PAF-FIR-V1.6" =>
+                new FirAimProcessor(aimName, Scrfd(settings), ArcFace(settings), _gallery, AimPortReader.Load(_store, aimName)),
 
-            "MMC-ESD-V2.5" =>
-                new EsdAimProcessor(aimName, Ecapa(settings), AimPortReader.Load(_store, aimName)),
+            "MMC-SIR-V2.5" =>
+                new SirAimProcessor(aimName, Ecapa(settings), _gallery, AimPortReader.Load(_store, aimName)),
 
-            "HCI-IDR-V1.0" =>
+            "OSD-IDR-V1.5" =>
                 new IdrAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
+
+            "PAF-PSD-V1.6" =>
+                new PsdAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
 
             "MMC-TTS-V2.5" =>
                 new TtsAimProcessor(aimName, TtsFactory.Create(settings), AimPortReader.Load(_store, aimName)),
 
-            "MMC-SOD-V2.5" =>
-                new SodAimProcessor(aimName, Loudspeaker(), AimPortReader.Load(_store, aimName)),
+            "PAF-GFD-V1.6" =>
+                new GfdAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
 
             _ => throw new NotSupportedException($"CavMacProvider does not provide '{aimName}'.")
         };
@@ -63,17 +72,6 @@ internal sealed class CavMacProvider : IAimProvider, IDisposable
 
     private ScrfdFaceDetector Scrfd(IReadOnlyDictionary<string, string> s) =>
         _scrfd ??= new ScrfdFaceDetector(Setting(s, "ScrfdModel", @"D:\AI\Models\scrfd_10g_bnkps.onnx"));
-
-    // Speech Object Delivery has its own device, independent of Audio Object
-    // Delivery. On Windows this is the winmm-backed speech delivery.
-    private static ISpeechDeliveryAim Loudspeaker()
-    {
-#if WINDOWS_DEVICES
-        return new WinmmSpeechDelivery();
-#else
-        throw new PlatformNotSupportedException("No non-Windows speech delivery device is configured.");
-#endif
-    }
 
     private static string Setting(IReadOnlyDictionary<string, string> s, string key, string fallback) =>
         s.TryGetValue(key, out var v) && !string.IsNullOrWhiteSpace(v) ? v : fallback;

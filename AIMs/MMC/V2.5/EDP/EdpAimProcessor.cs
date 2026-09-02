@@ -302,6 +302,14 @@ public sealed class EdpAimProcessor : IAimProcessor
             {
                 TextEmotion        = Emotion.Of(emo),
                 TextSocialAttitude = att
+            },
+            FacePersonalStatus = new FacePersonalStatus
+            {
+                FaceEmotion = Emotion.Of(emo)
+            },
+            SpeechPersonalStatus = new SpeechPersonalStatus
+            {
+                SpeechEmotion = Emotion.Of(emo)
             }
         };
     }

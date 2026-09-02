@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -9,39 +8,33 @@ using AIF.Controller;
 
 using Mpai.Core;
 using Mpai.Core.OSD;
-using Mpai.Osd.VisualScene;   // ScrfdFaceDetector, FaceDetection
-using Mpai.Paf.Fir;           // FaceCrop (shared face primitive)
 
 namespace Mpai.Mmc.Efi;
 
 // MMC-EFI-V2.5 - Entity Face Interpretation, as an AIF IAimProcessor.
 //
-// Receives a Basic Visual Object (OSD-BVO) whose Visual Qualifier declares its
-// content is a face, and produces the Face Personal Status (MMC-FPS): the Personal
-// Status Factors carried by the face, each a chosen label + Degree.
+// Receives a Basic Visual Object (OSD-BVO) that IS a face - a face already
+// isolated upstream (the Face Object), the visual-object mirror of ESI's Speech
+// Object - and produces the Face Personal Status (MMC-FPS): the Personal Status
+// Factors carried by the face, each a chosen label + Degree.
 //
-// ENGINE (Phase B, effective): detects the most prominent face (SCRFD), crops it,
-// and reads facial affect with HSEmotion (EfficientNet-B0 multi-task, AffectNet) -
-// eight emotion probabilities plus valence and arousal. The chosen emotion maps to
-// an MPAI Emotion label (MMC-EEM); because Surprise is a Cognitive State in MPAI,
-// a Surprise result is emitted as a Cognitive State (MMC-ECS) instead. The Degree
-// is the model's confidence for the chosen label. Fused description and interpretation.
+// It INTERPRETS the given face directly with HSEmotion (EfficientNet-B0 multi-
+// task, AffectNet); it does NOT DETECT a face in a scene. Detection is scene
+// work (locating a face in a frame) and belongs upstream; EFI, like ESI, reads
+// affect from the object it is given. HSEmotion resizes the image to 224x224 and
+// reads eight emotion probabilities plus valence and arousal. The chosen emotion
+// maps to an MPAI Emotion label (MMC-EEM); Surprise, a Cognitive State in MPAI,
+// is emitted as a Cognitive State (MMC-ECS). The Degree is the model confidence.
 public sealed class EfiAimProcessor : IAimProcessor
 {
     private readonly string _instanceId;
-    private readonly ScrfdFaceDetector _detector;
     private readonly HSEmotionEstimator _hse;
     private readonly string _inPort;   // OSD-BVO
     private readonly string _outPort;  // MMC-FPS
 
-    public EfiAimProcessor(
-        string instanceId,
-        ScrfdFaceDetector detector,
-        HSEmotionEstimator hse,
-        AimPortReader ports)
+    public EfiAimProcessor(string instanceId, HSEmotionEstimator hse, AimPortReader ports)
     {
         _instanceId = instanceId;
-        _detector   = detector;
         _hse        = hse;
         _inPort     = ports.Input("OSD-BVO-V1.5");
         _outPort    = ports.Output("MMC-FPS-V2.5");
@@ -60,19 +53,11 @@ public sealed class EfiAimProcessor : IAimProcessor
             return System.Threading.Tasks.Task.FromResult(
                 Message.Error(message.MessageId, _instanceId, "empty Basic Visual Object"));
 
-        // Detect the most prominent face; crop to it (whole image if none found).
+        // Interpret the given face directly (HSEmotion resizes to 224x224). No
+        // detection: the input is already a face (the Face Object).
         FaceAffect affect;
         using (var image = Image.Load<Rgb24>(visual.Data))
-        {
-            var faces = _detector.Detect(visual.Data)
-                .OrderByDescending(f => f.Width * f.Height)
-                .ToList();
-
-            using var crop = faces.Count > 0
-                ? FaceCrop.Crop(image, faces[0].X1, faces[0].Y1, faces[0].X2, faces[0].Y2)
-                : image.Clone();
-            affect = _hse.Estimate(crop);
-        }
+            affect = _hse.Estimate(image);
 
         var fps = ToFacePersonalStatus(affect);
 
@@ -84,9 +69,6 @@ public sealed class EfiAimProcessor : IAimProcessor
         });
     }
 
-    // Map the HSEmotion result to a Face Personal Status. Most emotions map to an
-    // MPAI Emotion (MMC-EEM) label; Surprise maps to a Cognitive State (MMC-ECS),
-    // as MPAI classes Surprise as a cognitive rather than emotional Factor.
     private static FacePersonalStatus ToFacePersonalStatus(FaceAffect a)
     {
         double degree = Math.Clamp(a.Confidence, 0.0, 1.0);

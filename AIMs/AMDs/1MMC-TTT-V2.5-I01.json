@@ -1,26 +1,21 @@
-{ "$schema":              "https://json-schema.org/draft/2020-12/schema",
-  "$comment":             "https://schemas.mpai.community/AIF/V3.0/data/AIMMetadata.json",
-  "$id":                  "file:///D:/AI/AIMs/AMDs/1MMC-TTT-V2.5-I01.json",
-  "title":                "Text-to-Text Translation V2.5 - Implementation I01",
-
-  "Identifier":           {"ImplementerID": "MPAI", "ImplementationID": "MMC-TTT-V2.5-I01", "AIMName": "MMC-TTT-V2.5"},
+{ "Identifier":           {"ImplementerID": "MPAI", "ImplementationID": "MMC-TTT-V2.5-I01", "AIMName": "MMC-TTT-V2.5"},
 
   "APIProfile":           "Basic",
-  "Description":          "Text-to-Text Translation. Translates Input Text or Recognised Text into the language named by the Language Selector. Two OSD-TXO-V1.5 input ports, told apart by PortNumber; when both carry data the Media Selector decides which is translated.",
+  "Description":          "Text-to-Text Translation. Translates Input Text or Recognised Text into the language named by the Language Selector. Two OSD-BTO-V1.5 text input ports, told apart by PortNumber; when both carry data the Media Selector decides which is translated.",
 
   "InternalTypes":        [],
 
-  "ExternalPorts":        [{"Name": "InputText",        "Direction": "Input",  "DataType": "OSD-TXO-V1.5", "PortNumber": 1, "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "RecognisedText",   "Direction": "Input",  "DataType": "OSD-TXO-V1.5", "PortNumber": 2, "Technology": "Software", "Protocol": "", "IsRemote": false},
+  "ExternalPorts":        [{"Name": "InputText",        "Direction": "Input",  "DataType": "OSD-BTO-V1.5", "PortNumber": 1, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "RecognisedText",   "Direction": "Input",  "DataType": "OSD-BTO-V1.5", "PortNumber": 2, "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "LanguageSelector", "Direction": "Input",  "DataType": "OSD-SEL-V1.5", "PortNumber": 1, "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "MediaSelector",    "Direction": "Input",  "DataType": "OSD-SEL-V1.5", "PortNumber": 2, "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "TranslatedText",   "Direction": "Output", "DataType": "OSD-TXO-V1.5",                  "Technology": "Software", "Protocol": "", "IsRemote": false}],
+                           {"Name": "TranslatedText",   "Direction": "Output", "DataType": "OSD-BTO-V1.5",                  "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":              [],
   "Topology":             [],
 
   "Implementations":      [{"ImplementationURI": "file:///D:/AI/AIMs/AMDs/MMC-TTT-V2.5-I01",
-"MASPort":          443,
+                            "MASPort":          443,
                             "BinaryName":       "Mpai.Mmc.Ttt",
                             "Architecture":     "x86-64",
                             "OperatingSystem":  "Windows",

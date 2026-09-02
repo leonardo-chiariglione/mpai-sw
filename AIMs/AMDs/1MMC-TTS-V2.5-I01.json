@@ -1,10 +1,11 @@
-{ "Identifier":       { "ImplementerID": "1", "ImplementationID": "MMC-TTS-V2.5-I01", "AIMName": "MMC-TTS-V2.5" },
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "MMC-TTS-V2.5-I01", "AIMName": "MMC-TTS-V2.5"},
 
   "APIProfile":       "Basic",
-  "Description":      "Text to Speech: converts a Text Object (Basic Text Object or Text Object) into a Speech Object (Basic Speech Object or Speech Object). Its input port accepts both OSD-BTO and OSD-TXO; its output port carries both OSD-BSO and OSD-SPO, so a consumer that wants either the basic or the full object finds it. Within MMC-AMQ-V2.5 and MMC-TST-V2.5 its Output Speech goes to the User Agent across the Composite AIM boundary: Speech Object Delivery is a User Agent module there, not a SubAIM.",
+  "Description":      "Text to Speech: converts a Text Object into a Speech Object. Optionally rendered with a Speech Personal Status so the Machine Speech carries emotion; when the Speech Personal Status is absent the speech is neutral. Input text accepts OSD-BTO and OSD-TXO; output carries OSD-BSO and OSD-SPO.",
 
-  "ExternalPorts":    [{"Name": "InputText",    "Direction": "Input",  "DataType": ["OSD-BTO-V1.5", "OSD-TXO-V1.5"], "Technology": "Software", "Protocol": "", "IsRemote": false},
-                       {"Name": "OutputSpeech", "Direction": "Output", "DataType": ["OSD-BSO-V1.5", "OSD-SPO-V1.5"], "Technology": "Software", "Protocol": "", "IsRemote": false}],
+  "ExternalPorts":    [{"Name": "InputText",             "Direction": "Input",  "DataType": ["OSD-BTO-V1.5", "OSD-TXO-V1.5"], "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "SpeechPersonalStatus",  "Direction": "Input",  "DataType": "MMC-SPS-V2.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "OutputSpeech",          "Direction": "Output", "DataType": ["OSD-BSO-V1.5", "OSD-SPO-V1.5"], "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":          [],
 
@@ -18,8 +19,8 @@
                         "Version":           "2.5",
                         "Source":            "AIMStorage"}],
 
-  "ResourcePolicies": [{"Name": "Memory",    "Minimum": "0.2 GB", "Request": "0.5 GB", "Maximum": "1 GB"},
-                       {"Name": "CPU:Class", "Minimum": "Low",    "Request": "Medium", "Maximum": "High"}],
+  "ResourcePolicies": [{"Name": "Memory",     "Minimum": "0.2 GB", "Request": "0.5 GB", "Maximum": "1 GB"},
+                       {"Name": "CPU:Class",  "Minimum": "Low", "Request": "Medium", "Maximum": "High"}],
 
   "DataXMData":       {},
   "Documentation":    [{"Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-mmc/tts/"}]}

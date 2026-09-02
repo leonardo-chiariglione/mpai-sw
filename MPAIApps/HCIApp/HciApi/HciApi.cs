@@ -9,7 +9,7 @@ using Mpai.Core.OSD;
 
 namespace Mpai.Hci.Api;
 
-// The HCI API (MPAI-HCI middleware API). A thin faÃ§ade the User Agent (UAD-MAD)
+// The HCI API (MPAI-HCI middleware API). A thin faÃƒÂ§ade the User Agent (UAD-MAD)
 // uses to drive the MMC-MAD Middleware Module across the north API. MMC-MAD is ONE
 // AIW (ASR -> EDP -> RSR). The Module is started ONCE and kept alive across turns:
 // each turn is one RunAsync on the same instance, so the AIM tree is instantiated
@@ -23,6 +23,7 @@ public sealed class HciApi : IDisposable
     private const string MatModule = "MMC-MAT-V2.5";   // Multimodal Anonymous Translation
     private const string RsrModule = "UAG-RSR-V1.0";   // Response and Scene Rendering (say-as-avatar)
     private const string MpdModule = "MMC-MPD-V2.5";   // Multimodal Personal Status-based Dialogue
+    private const string AsrModule = "MMC-ASR-V2.5";   // Automatic Speech Recognition (for intent)
 
     private readonly UserAgent    _ua;
     private readonly HciProvider  _provider;
@@ -112,14 +113,50 @@ public sealed class HciApi : IDisposable
 
         var outs = outcome.Completed.Ports;
         byte[] wav = Array.Empty<byte>(); FaceDescriptorsObject? fdo = null;
-        if (outs.TryGetValue("MachineSpeech", out var sj) && !string.IsNullOrWhiteSpace(sj))
+        if (outs.TryGetValue("OutputSpeech", out var sj) && !string.IsNullOrWhiteSpace(sj))
             wav = MpaiJson.FromJson<BasicSpeechObject>(sj)?.Data ?? Array.Empty<byte>();
-        if (outs.TryGetValue("MachineFaceDescriptors", out var fj) && !string.IsNullOrWhiteSpace(fj))
+        if (outs.TryGetValue("OutputFaceDescriptors", out var fj) && !string.IsNullOrWhiteSpace(fj))
             fdo = MpaiJson.FromJson<FaceDescriptorsObject>(fj);
         if (outs.TryGetValue("EditedSummary", out var es) && !string.IsNullOrWhiteSpace(es))
             _lastSummaryMpd = es;
         return new SpeakingAvatar(wav, fdo);
     }
+
+    // Recognise speech to text - used by an application to detect a spoken command
+    // (an intent) before deciding what to do with the utterance. Runs Automatic
+    // Speech Recognition once.
+    public string? Recognise(BasicSpeechObject speech)
+    {
+        var startErr = _ua.MPAI_AIFU_AIW_Start(AsrModule, _provider, _settings, out var id);
+        if (startErr != AifError.OK) return null;
+        try
+        {
+            var boundary = new Dictionary<string, string> { ["InputSpeech"] = MpaiJson.ToJson(speech) };
+            var (err, outcome) = _ua.RunAsync(id, boundary).GetAwaiter().GetResult();
+            if (err != AifError.OK || outcome?.Completed is null || outcome.Completed.IsError) return null;
+            foreach (var kv in outcome.Completed.Ports)
+            {
+                var payload = kv.Value;
+                if (string.IsNullOrWhiteSpace(payload)) continue;
+                // Try full Text Object first (ASR outputs OSD-TXO), then Basic Text Object,
+                // then a raw JSON "Text" field, so the recognised words are extracted whatever
+                // the exact text type.
+                try { var t = MpaiJson.FromJson<BasicTextObject>(payload)?.GetText(); if (!string.IsNullOrWhiteSpace(t)) return t; } catch {}
+                // Type-agnostic fallback: pull a text field straight from the JSON, whatever the
+                // exact text type (OSD-TXO vs OSD-BTO) - the recognised words live in a "Text"-like field.
+                try
+                {
+                    using var doc = System.Text.Json.JsonDocument.Parse(payload);
+                    foreach (var field in new[] { "Text", "text", "TextData", "Content", "Recognised", "RecognisedText" })
+                        if (doc.RootElement.TryGetProperty(field, out var te) && te.ValueKind == System.Text.Json.JsonValueKind.String)
+                        { var t = te.GetString(); if (!string.IsNullOrWhiteSpace(t)) return t; }
+                } catch {}
+            }
+            return null;
+        }
+        finally { _ua.MPAI_AIFU_AIW_Stop(id); }
+    }
+
 
     // Translate one spoken turn through MMC-MAT: the human speaks in one language;
     // the avatar speaks the translation in another, lip-synced. The input language

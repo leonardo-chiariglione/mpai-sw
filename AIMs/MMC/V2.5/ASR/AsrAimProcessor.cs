@@ -27,8 +27,8 @@ public sealed class AsrAimProcessor : IAimProcessor
     {
         InstanceId   = instanceId;
         _asr         = asr;
-        _inputPort   = ports.Input("OSD-SPO-V1.5");
-        _outputPort  = ports.Output("OSD-TXO-V1.5");
+        _inputPort   = ports.Input("OSD-BSO-V1.5");
+        _outputPort  = ports.Output("OSD-BTO-V1.5");
     }
 
     public async Task<Message> ProcessAsync(Message message)

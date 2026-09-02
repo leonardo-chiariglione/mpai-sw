@@ -19,7 +19,7 @@ namespace Mpai.Aims.Ttt;
 //   neither present   -> an error; there is nothing to translate
 public sealed class TttAimProcessor : IAimProcessor
 {
-    private const string TextType     = "OSD-TXO-V1.5";
+    private const string TextType     = "OSD-BTO-V1.5";
     private const string SelectorType = "OSD-SEL-V1.5";
 
     private readonly string  _inputTextPort;
