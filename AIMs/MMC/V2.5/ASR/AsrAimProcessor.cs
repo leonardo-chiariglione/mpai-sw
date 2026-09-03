@@ -6,12 +6,8 @@ using Mpai.Core;
 
 namespace Mpai.Aims.Asr;
 
-// MMC-ASR-V2.5 — self-contained IAimProcessor.
+// MMC-ASR-V2.5 â€” self-contained IAimProcessor.
 // Reads its own port names from 1MMC-ASR-V2.5-I01.json at startup.
-//
-// ASR consumes SPEECH (OSD-SPO-V1.5): speech can be recognised, generic audio
-// cannot. The input port is now typed as speech and the object arrives as a
-// Basic Speech Object directly (no audio->speech reinterpretation needed).
 public sealed class AsrAimProcessor : IAimProcessor
 {
     private readonly string        _inputPort;
@@ -34,8 +30,14 @@ public sealed class AsrAimProcessor : IAimProcessor
     public async Task<Message> ProcessAsync(Message message)
     {
         var speech = MpaiJson.FromJson<BasicSpeechObject>(message.Ports[_inputPort]);
-        var text   = await _asr.ProcessAsync(speech);
-        var json   = MpaiJson.ToJson(text);
+
+        Trace("[ASR-IN] speechBytes=" + (speech?.Data?.Length ?? -1));
+
+        var text = await _asr.ProcessAsync(speech);
+
+        Trace("[ASR-OUT] text=<" + (text?.GetText() ?? "<null>") + ">");
+
+        var json = MpaiJson.ToJson(text);
 
         return new Message
         {
@@ -45,5 +47,16 @@ public sealed class AsrAimProcessor : IAimProcessor
             Payload     = json,
             Ports       = new Dictionary<string, string> { [_outputPort] = json }
         };
+    }
+
+    private static void Trace(string m)
+    {
+        try
+        {
+            System.IO.File.AppendAllText(
+                @"D:\AI\asr-trace.log",
+                System.DateTime.Now.ToString("HH:mm:ss.fff") + "  " + m + "\n");
+        }
+        catch { }
     }
 }

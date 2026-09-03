@@ -36,7 +36,7 @@ public sealed class SummaryDataItem
     public string? DataID { get; init; }
 }
 
-// Minimal client for a local Ollama server (http://localhost:11434). Uses the
+// Minimal client for a local Ollama server (http://127.0.0.1:11434). Uses the
 // /api/chat endpoint with stream disabled, and returns the assistant's message
 // content. HttpClient + System.Text.Json only - no external package.
 public sealed class OllamaClient : IDisposable
@@ -44,7 +44,7 @@ public sealed class OllamaClient : IDisposable
     private readonly HttpClient _http;
     private readonly string _model;
 
-    public OllamaClient(string model = "llama3.1", string baseUrl = "http://localhost:11434")
+    public OllamaClient(string model = "llama3.1", string baseUrl = "http://127.0.0.1:11434")
     {
         _model = model;
         _http = new HttpClient { BaseAddress = new Uri(baseUrl), Timeout = TimeSpan.FromMinutes(5) };
@@ -66,10 +66,10 @@ public sealed class OllamaClient : IDisposable
 
         var json = JsonSerializer.Serialize(request);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
-        using var response = await _http.PostAsync("/api/chat", content);
+        using var response = await _http.PostAsync("/api/chat", content).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
-        var body = await response.Content.ReadAsStringAsync();
+        var body = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         using var doc = JsonDocument.Parse(body);
         // Ollama /api/chat (non-stream): { "message": { "role":"assistant", "content":"..." }, ... }
         if (doc.RootElement.TryGetProperty("message", out var msg) &&

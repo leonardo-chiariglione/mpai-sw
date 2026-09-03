@@ -41,37 +41,32 @@ public sealed class WhisperAsrAim : IAsrAim
                 Arguments = BuildArguments(wav, speech),
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
+                RedirectStandardError = true,
                 CreateNoWindow = true,
 
                 // whisper-cli writes UTF-8. Unless told so, .NET decodes a child
                 // process's output using the console's code page - Windows-1252
-                // here - and any transcription outside Latin-1 arrives as
-                // mojibake. Japanese came back as "Ã¤Â»â€¢Ã¦â€¹Â¼Ã¥" and MMC-TTT then
-                // translated that faithfully into nonsense.
-                //
-                // The console host hid this by setting Console.OutputEncoding to
-                // UTF-8, which fixes the child decoding as a side effect. The
-                // Avalonia application does not, so a latent fault surfaced. The
-                // encoding belongs here either way: what whisper-cli emits is a
-                // property of whisper-cli, not of whoever happens to be hosting
-                // this AIM.
-                StandardOutputEncoding = System.Text.Encoding.UTF8
+                // here - and any transcription outside Latin-1 arrives as mojibake.
+                StandardOutputEncoding = System.Text.Encoding.UTF8,
+                StandardErrorEncoding  = System.Text.Encoding.UTF8
             };
 
             using var process = Process.Start(psi)
                 ?? throw new InvalidOperationException("Could not start whisper-cli.");
 
-            var output = await process.StandardOutput.ReadToEndAsync();
+            // Read stdout AND stderr concurrently, then wait for exit. whisper-cli
+            // writes copious progress to stderr; if stderr is not drained, its write
+            // blocks once the pipe buffer fills (a windowed app has no console to
+            // absorb it), and the process never exits - a deadlock. Draining both
+            // streams before WaitForExit avoids it.
+            var stdoutTask = process.StandardOutput.ReadToEndAsync();
+            var stderrTask = process.StandardError.ReadToEndAsync();
+            await Task.WhenAll(stdoutTask, stderrTask);
             await process.WaitForExitAsync();
+            var output = stdoutTask.Result;
 
             var recognisedText = ExtractTranscription(output);
 
-            // Say what was heard. Without this line a wrong translation is
-            // undiagnosable: "Beaucoup de gens sont allÃ©s rentrer chez eux" may be
-            // a faithful translation of a misheard sentence or a bad translation
-            // of a correct one, and nothing downstream can tell the difference.
-            // The Recognised Text is internal to the Composite AIM, so the User
-            // Agent cannot see it - but this AIM can say it.
             System.Console.WriteLine($"[MMC-ASR-V2.5] heard: {recognisedText}");
 
             return BasicTextObject.FromText(recognisedText, BuildTextQualifier(speech));
@@ -82,12 +77,6 @@ public sealed class WhisperAsrAim : IAsrAim
         }
     }
 
-    // whisper-cli was invoked with only -m and -f, so it detected the language
-    // itself and the configured LanguageCode reached the output Qualifier but
-    // never the command line. MMC-TST relies on the input language arriving on
-    // the input Speech Qualifier - that is why it has no Input Language Selector
-    // - so the Qualifier's language is what we pass, falling back to the
-    // configured default.
     private string BuildArguments(string wav, BasicSpeechObject speech)
     {
         var arguments = $"-m \"{_config.ModelPath}\" -f \"{wav}\"";
@@ -96,8 +85,6 @@ public sealed class WhisperAsrAim : IAsrAim
             speech.SpeechQualifier?.Attributes?.Metadata?.Language?.LanguageCode
             ?? _config.LanguageCode;
 
-        // An English-only model (ggml-*.en.bin) accepts no other language, and
-        // passing -l to one is an error rather than a hint.
         var englishOnly =
             System.IO.Path.GetFileNameWithoutExtension(_config.ModelPath)
                   .EndsWith(".en", StringComparison.OrdinalIgnoreCase);
@@ -110,7 +97,6 @@ public sealed class WhisperAsrAim : IAsrAim
         return arguments;
     }
 
-    // "it" / "it-IT" -> "it"; "auto" is passed through, whisper understands it.
     private static string PrimaryLanguage(string languageCode)
     {
         var head = languageCode.Trim().ToLowerInvariant().Split('-', '_')[0];
@@ -120,7 +106,6 @@ public sealed class WhisperAsrAim : IAsrAim
 
     private TextQualifier BuildTextQualifier(BasicSpeechObject source)
     {
-        // inherit Language from the input speech; else determine from the model.
         Language? language =
             source.SpeechQualifier?.Attributes?.Metadata?.Language
             ?? new Language { LanguageCode = _config.LanguageCode, LanguageFormat = LanguageFormat.Iso639_1 };
@@ -130,7 +115,7 @@ public sealed class WhisperAsrAim : IAsrAim
             TextQualifierID = Guid.NewGuid().ToString(),
             Format = new TextFormat
             {
-                ContentFormat = new TextContentFormat { Static = TextStaticFormat.Utf8 }   // determine: whisper emits UTF-8
+                ContentFormat = new TextContentFormat { Static = TextStaticFormat.Utf8 }
             },
             Attributes = new TextAttributes { Language = language }
         };
