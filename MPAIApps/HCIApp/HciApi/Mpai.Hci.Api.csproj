@@ -24,5 +24,7 @@
     <ProjectReference Include="..\..\..\AIMs\OSD\V1.5\BVS\Mpai.Osd.Bvs.csproj" />
     <ProjectReference Include="..\..\..\AIMs\OSD\V1.5\BLS\Mpai.Osd.Bls.csproj" />
       <ProjectReference Include="..\..\..\AIMs\OSD\V1.5\AVA\Mpai.Osd.Ava.csproj" />
+      <ProjectReference Include="..\..\..\AIMs\CVE\V1.0\VSI\Mpai.Cve.Vsi.csproj" />
+    <ProjectReference Include="..\..\..\AIMs\CAE1\V2.5\ASI2\Mpai.Cae.Asi.csproj" />
   </ItemGroup>
 </Project>

@@ -46,6 +46,7 @@
       "Source":                   { "type": "object", "additionalProperties": false, "properties": {
         "Real":                   { "type": "string", "enum": [ "Raster" ] },
         "Synthetic":              { "type": "string", "enum": [ "Raster", "Vector" ] } } },
+      "VisualObjectType":         { "type": "string", "enum": [ "Face", "Body", "Object" ] },
       "Metadata":                 { "$ref": "https://schemas.mpai.community/TFA/V1.5/formats/VisualMetadataFormats.json" },
       "ObjectID":                 { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/InstanceIdentifier.json" },
       "EntityInternalStatus":     { "$ref": "https://schemas.mpai.community/MMC/V2.5/data/PersonalStatus.json" },

@@ -17,6 +17,9 @@ using Mpai.Osd.Bvs;
 using Mpai.Osd.Bls;
 
 using Mpai.Osd.Ava;
+using Mpai.Cve.Vsi;
+using Mpai.Cae.Asi;
+using Mpai.Osd.VisualScene;
 namespace Mpai.Hci.Api;
 // Composition root for the HCI middleware Modules the API facade runs. It supplies
 // the LEAF AIM implementations the Controller instantiates; composites (RSR, PSE)
@@ -31,6 +34,9 @@ public sealed class HciProvider : IAimProvider, IDisposable
     private HSEmotionEstimator Hse() => _hse ??= new HSEmotionEstimator(@"D:\\AI\\Models\\hsemotion_enet_b0_8_va_mtl.onnx");
     private OllamaClient?     _llm;
     public HciProvider(AmdStore store) => _store = store;
+        private ScrfdFaceDetector? _vsiScrfd;
+    private ScrfdFaceDetector VsiScrfd() => _vsiScrfd ??= new ScrfdFaceDetector(@"D:\AI\Models\scrfd_10g_bnkps.onnx");
+
     public IAimProcessor Create(string aimName, IReadOnlyDictionary<string, string> settings)
         => aimName switch
         {
@@ -49,6 +55,8 @@ public sealed class HciProvider : IAimProvider, IDisposable
             "OSD-BVS-V1.5" => new BvsAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
             "OSD-BLS-V1.5" => new BlsAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
             "OSD-AVA-V1.5" => new OsdAvaAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
+            "CAE-ASI-V2.5" => new CaeAsiAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
+            "CVE-VSI-V1.0" => new CveVsiAimProcessor(aimName, VsiScrfd(), AimPortReader.Load(_store, aimName)),
             _ => throw new NotSupportedException($"HciProvider does not provide '{aimName}'.")
         };
     private OllamaClient Llm(IReadOnlyDictionary<string, string> settings)

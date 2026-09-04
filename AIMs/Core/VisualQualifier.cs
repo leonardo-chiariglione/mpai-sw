@@ -3,14 +3,14 @@ using System;
 namespace Mpai.Core;
 
 // ---------------------------------------------------------------------------
-//  Visual Qualifier — TFA/V1.5/data/VisualQualifier.json
+//  Visual Qualifier â€” TFA/V1.5/data/VisualQualifier.json
 //
 //  The running description of a Visual Object: its colour characteristics
 //  (SubType), its content and transport formats (Format), and its source and
 //  device attributes (Attributes). Projected faithfully from the TFA schema,
 //  in the same style as TextQualifier and SpeechQualifier.
 //
-//  A Visual Object is Basic Visual Data + this Qualifier — not just bytes.
+//  A Visual Object is Basic Visual Data + this Qualifier â€” not just bytes.
 // ---------------------------------------------------------------------------
 public sealed class VisualQualifier
 {
@@ -52,7 +52,7 @@ public sealed class VisualQualifier
     };
 }
 
-// ── SubType ──────────────────────────────────────────────────────────────────
+// â”€â”€ SubType â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 public sealed class VisualSubType
 {
     public ColourFormat? ColourFormat      { get; init; }
@@ -63,7 +63,7 @@ public sealed class VisualSubType
     public string?       CMYK              { get; init; }
 }
 
-// ── Format ───────────────────────────────────────────────────────────────────
+// â”€â”€ Format â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 public sealed class VisualFormat
 {
     public VisualContentFormat? Content   { get; init; }
@@ -124,10 +124,11 @@ public sealed class VisualTransport
     public string?           StreamFormat { get; init; }   // VisualStreamFormats
 }
 
-// ── Attributes ───────────────────────────────────────────────────────────────
+// â”€â”€ Attributes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 public sealed class VisualAttributes
 {
     public VisualSource?       Source              { get; init; }
+    public string?             VisualObjectType    { get; init; }   // "Face" | "Body" | "Object" - set by CVE-VSI (SCRFD)
     public string?             Metadata            { get; init; }   // VisualMetadataFormats
     public InstanceIdentifier? ObjectID            { get; init; }
     public PersonalStatus?     EntityInternalStatus { get; init; }
@@ -189,7 +190,7 @@ public sealed class VisualSynchronisation
     public string? Reference { get; init; }
 }
 
-// ── Format enums (TFA/V1.5/formats/*) ────────────────────────────────────────
+// â”€â”€ Format enums (TFA/V1.5/formats/*) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 // TFA/V1.5/formats/Visual2DStaticFormats.json
 public enum Visual2DStaticFormat
