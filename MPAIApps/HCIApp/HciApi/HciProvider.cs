@@ -12,6 +12,10 @@ using Mpai.Mmc.Nlu;   // NluAimProcessor
 using Mpai.Mmc.Esi;   // EsiAimProcessor (+ Wav2Vec2EmotionEstimator)
 using Mpai.Mmc.Efi;   // EfiAimProcessor (+ HSEmotionEstimator)
 using Mpai.Mmc.Psm;   // PsmAimProcessor
+using Mpai.Osd.Bas;
+using Mpai.Osd.Bvs;
+using Mpai.Osd.Bls;
+
 namespace Mpai.Hci.Api;
 // Composition root for the HCI middleware Modules the API facade runs. It supplies
 // the LEAF AIM implementations the Controller instantiates; composites (RSR, PSE)
@@ -40,6 +44,9 @@ public sealed class HciProvider : IAimProvider, IDisposable
             "MMC-ESI-V2.5" => new EsiAimProcessor(aimName, W2v2(), AimPortReader.Load(_store, aimName)),
             "MMC-EFI-V2.5" => new EfiAimProcessor(aimName, Hse(), AimPortReader.Load(_store, aimName)),
             "MMC-PSM-V2.5" => new PsmAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
+            "OSD-BAS-V1.5" => new BasAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
+            "OSD-BVS-V1.5" => new BvsAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
+            "OSD-BLS-V1.5" => new BlsAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
             _ => throw new NotSupportedException($"HciProvider does not provide '{aimName}'.")
         };
     private OllamaClient Llm(IReadOnlyDictionary<string, string> settings)
