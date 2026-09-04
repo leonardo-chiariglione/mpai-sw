@@ -3,13 +3,13 @@
   "$id":                  "https://schemas.mpai.community/OSD/V1.5/AIMs/BasicVisualSceneDescription.json",
   "title":                "Basic Visual Scene Description V1.5",
 
-  "Identifier":           {"ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "OSD-BVD-V1.5"},
+  "Identifier":           {"ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "OSD-BVS-V1.5"},
 
   "APIProfile":           "Basic",
   "Description":          "This AIM implements the Basic Visual Scene Description function.",
 
   "ExternalPorts":        [{"Name": "SpaceTime",                   "Direction": "Input",  "DataType": "OSD-SPT-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "VisualObject",                "Direction": "Input",  "DataType": "OSD-VIO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "BasicVisualObject",           "Direction": "Input",  "DataType": "OSD-BVO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "BasicVisualSceneDescriptors", "Direction": "Output", "DataType": "OSD-BVD-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":              [ ],

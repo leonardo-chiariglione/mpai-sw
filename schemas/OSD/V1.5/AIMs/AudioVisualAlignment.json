@@ -8,11 +8,12 @@
   "APIProfile":           "Basic",
   "Description":          "This AIM aligns the Identifiers of Speech, Audio, and Visual Objects with the same Spatial Attitude.",
 
-  "ExternalPorts":        [{"Name": "SpeechSceneDescriptors",  "Direction": "Input",  "DataType": "OSD-SSD-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "AudioSceneDescriptors",   "Direction": "Input",  "DataType": "OSD-ASD-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "VisualSceneDescriptors",  "Direction": "Input",  "DataType": "OSD-VSD-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "3DModelSceneDescriptors", "Direction": "Input",  "DataType": "OSD-3SD-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "AVSceneDescriptors",      "Direction": "Output", "DataType": "OSD-MSD-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
+  "ExternalPorts":        [{"Name": "SpeechSceneDescriptors",        "Direction": "Input",  "DataType": "OSD-BSS-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "AudioSceneDescriptors",         "Direction": "Input",  "DataType": "OSD-BAS-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "VisualSceneDescriptors",        "Direction": "Input",  "DataType": "OSD-BVS-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "LiDARSceneDescriptors",         "Direction": "Input",  "DataType": "OSD-BLS-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "AlignedAudioSceneDescriptors",  "Direction": "Output", "DataType": "OSD-BAS-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "AlignedVisualSceneDescriptors", "Direction": "Output", "DataType": "OSD-BVS-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":              [ ],
 

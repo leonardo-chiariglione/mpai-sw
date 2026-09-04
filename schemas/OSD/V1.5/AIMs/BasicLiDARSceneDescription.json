@@ -3,13 +3,13 @@
   "$id":                  "https://schemas.mpai.community/OSD/V1.5/AIMs/BasicLiDARSceneDescription.json",
   "title":                "Basic LiDAR Scene Description V1.5",
 
-  "Identifier":           {"ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "OSD-BLD-V1.5"},
+  "Identifier":           {"ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "OSD-BLS-V1.5"},
 
   "APIProfile":           "Basic",
   "Description":          "This AIM implements the Basic LiDAR Scene Description function.",
 
   "ExternalPorts":        [{"Name": "SpaceTime",                  "Direction": "Input",  "DataType": "OSD-SPT-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "LiDARObject",                "Direction": "Input",  "DataType": "OSD-LIO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "BasicLiDARObject",           "Direction": "Input",  "DataType": "OSD-BLO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "BasicLiDARSceneDescriptors", "Direction": "Output", "DataType": "OSD-BLS-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":              [ ],
