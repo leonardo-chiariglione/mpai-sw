@@ -23,5 +23,6 @@
       <ProjectReference Include="..\..\..\AIMs\OSD\V1.5\BAS\Mpai.Osd.Bas.csproj" />
     <ProjectReference Include="..\..\..\AIMs\OSD\V1.5\BVS\Mpai.Osd.Bvs.csproj" />
     <ProjectReference Include="..\..\..\AIMs\OSD\V1.5\BLS\Mpai.Osd.Bls.csproj" />
+      <ProjectReference Include="..\..\..\AIMs\OSD\V1.5\AVA\Mpai.Osd.Ava.csproj" />
   </ItemGroup>
 </Project>
