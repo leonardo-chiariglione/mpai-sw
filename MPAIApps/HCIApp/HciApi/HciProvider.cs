@@ -39,8 +39,11 @@ public sealed class HciProvider : IAimProvider, IDisposable
         private ScrfdFaceDetector? _vsiScrfd;
     private ScrfdFaceDetector VsiScrfd() => _vsiScrfd ??= new ScrfdFaceDetector(@"D:\AI\Models\scrfd_10g_bnkps.onnx");
 
-        private SoundClassifier? _aiiYamnet;
-    private SoundClassifier AiiYamnet() => _aiiYamnet ??= new SoundClassifier(@"D:\AI\Models\yamnet.onnx", @"D:\AI\Models\yamnet_class_map.csv");
+        private Mpai.Cae.Aii.SoundClassifier? _aiiYamnet;
+    private Mpai.Cae.Aii.SoundClassifier AiiYamnet() => _aiiYamnet ??= new Mpai.Cae.Aii.SoundClassifier(@"D:\AI\Models\yamnet.onnx", @"D:\AI\Models\yamnet_class_map.csv");
+
+        private Mpai.Cae.Asi.SoundClassifier? _asiYamnet;
+    private Mpai.Cae.Asi.SoundClassifier AsiYamnet() => _asiYamnet ??= new Mpai.Cae.Asi.SoundClassifier(@"D:\AI\Models\yamnet.onnx", @"D:\AI\Models\yamnet_class_map.csv");
 
     public IAimProcessor Create(string aimName, IReadOnlyDictionary<string, string> settings)
         => aimName switch
@@ -60,7 +63,7 @@ public sealed class HciProvider : IAimProvider, IDisposable
             "OSD-BVS-V1.5" => new BvsAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
             "OSD-BLS-V1.5" => new BlsAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
             "OSD-AVA-V1.5" => new OsdAvaAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
-            "CAE-ASI-V2.5" => new CaeAsiAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
+            "CAE-ASI-V2.5" => new CaeAsiAimProcessor(aimName, AsiYamnet(), AimPortReader.Load(_store, aimName)),
             "CVE-VSI-V1.0" => new CveVsiAimProcessor(aimName, VsiScrfd(), AimPortReader.Load(_store, aimName)),
             "CAE-QCV-V1.0" => new QcvAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
             "CAE-AII-V2.5" => new CaeAiiAimProcessor(aimName, AiiYamnet(), AimPortReader.Load(_store, aimName)),
@@ -72,5 +75,5 @@ public sealed class HciProvider : IAimProvider, IDisposable
         string model = settings.TryGetValue("OllamaModel", out var m) && !string.IsNullOrWhiteSpace(m) ? m : "llama3.1";
         return _llm = new OllamaClient(model);
     }
-    public void Dispose() { _aiiYamnet?.Dispose(); _llm?.Dispose(); _w2v2?.Dispose(); _hse?.Dispose(); }
+    public void Dispose() { _asiYamnet?.Dispose(); _aiiYamnet?.Dispose(); _llm?.Dispose(); _w2v2?.Dispose(); _hse?.Dispose(); }
 }
