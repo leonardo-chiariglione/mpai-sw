@@ -9,7 +9,7 @@ using Mpai.Core.OSD;
 
 namespace Mpai.Hci.Api;
 
-// The HCI API (MPAI-HCI middleware API). A thin faÃƒÂ§ade the User Agent (UAD-MAD)
+// The HCI API (MPAI-HCI middleware API). A thin faÃƒÆ’Ã‚Â§ade the User Agent (UAD-MAD)
 // uses to drive the MMC-MAD Middleware Module across the north API. MMC-MAD is ONE
 // AIW (ASR -> EDP -> RSR). The Module is started ONCE and kept alive across turns:
 // each turn is one RunAsync on the same instance, so the AIM tree is instantiated
@@ -24,6 +24,7 @@ public sealed class HciApi : IDisposable
     private const string RsrModule = "UAG-RSR-V1.0";   // Response and Scene Rendering (say-as-avatar)
     private const string MpdModule = "MMC-MPD-V2.5";   // Multimodal Personal Status-based Dialogue
     private const string AsrModule = "MMC-ASR-V2.5";   // Automatic Speech Recognition (for intent)
+    private const string MacModule = "CAV-MAC-V2.0";   // Multimodal Access Control (identify + verdict)
 
     private readonly UserAgent    _ua;
     private readonly HciProvider  _provider;
@@ -301,6 +302,38 @@ public sealed class HciApi : IDisposable
 
     // Begin a fresh conversation: forget the running Summary. The Module stays
     // alive; only the dialogue context is cleared.
+    // Run one access-control pass through the CAV-MAC Module: identify the user from
+    // their face and speech against the shared gallery, and return the verdict. The UA
+    // supplies the acquired Face Object (webcam) and Speech Object (mic); the Module
+    // recognises, reconciles, decides, and renders the spoken verdict. A non-empty
+    // User ID means access is granted. Start-run-STOP per call (no kept-alive state).
+    public AccessResult RunAccessControl(BasicVisualObject? face, BasicSpeechObject? speech)
+    {
+        if (_ua.MPAI_AIFU_AIW_Start(MacModule, _provider, _settings, out var id) != AifError.OK)
+            return new AccessResult(false, null, new SpeakingAvatar(Array.Empty<byte>(), null));
+        try
+        {
+            var boundary = new Dictionary<string, string>();
+            if (face   is not null) boundary["FaceObject"]   = MpaiJson.ToJson(face);
+            if (speech is not null) boundary["SpeechObject"] = MpaiJson.ToJson(speech);
+
+            var (err, outcome) = _ua.RunAsync(id, boundary).GetAwaiter().GetResult();
+            if (err != AifError.OK || outcome?.Completed is null || outcome.Completed.IsError)
+                return new AccessResult(false, null, new SpeakingAvatar(Array.Empty<byte>(), null));
+
+            var outs = outcome.Completed.Ports;
+            byte[] wav = Array.Empty<byte>(); FaceDescriptorsObject? fdo = null;
+            if (outs.TryGetValue("VocalResponse", out var sj) && !string.IsNullOrWhiteSpace(sj))
+                wav = MpaiJson.FromJson<BasicSpeechObject>(sj)?.Data ?? Array.Empty<byte>();
+            if (outs.TryGetValue("FaceDescriptors", out var fj) && !string.IsNullOrWhiteSpace(fj))
+                fdo = MpaiJson.FromJson<FaceDescriptorsObject>(fj);
+            var userId = outs.TryGetValue("UserID", out var uj) && !string.IsNullOrWhiteSpace(uj) ? uj : null;
+
+            return new AccessResult(userId is not null, userId, new SpeakingAvatar(wav, fdo));
+        }
+        finally { _ua.MPAI_AIFU_AIW_Stop(id); }
+    }
+
     public void ResetConversation() => _lastSummary = null;
 
     public void Dispose()
@@ -316,3 +349,7 @@ public sealed class HciApi : IDisposable
 // (the facial-animation timeline). The UA presents it on its devices (loudspeaker,
 // screen) - the real-world delivery edge.
 public sealed record SpeakingAvatar(byte[] MachineSpeechWav, FaceDescriptorsObject? FaceDescriptors, string? TranslatedText = null);
+
+// The access-control verdict: whether access was granted, the reconciled User ID
+// (null when not recognised), and the Speaking Avatar the lady uses to voice it.
+public sealed record AccessResult(bool Granted, string? UserId, SpeakingAvatar Verdict);
