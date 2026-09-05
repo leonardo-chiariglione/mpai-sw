@@ -20,6 +20,7 @@ using Mpai.Osd.Ava;
 using Mpai.Cve.Vsi;
 using Mpai.Cae.Asi;
 using Mpai.Osd.VisualScene;
+using Mpai.Cae.Qcv;
 namespace Mpai.Hci.Api;
 // Composition root for the HCI middleware Modules the API facade runs. It supplies
 // the LEAF AIM implementations the Controller instantiates; composites (RSR, PSE)
@@ -57,6 +58,7 @@ public sealed class HciProvider : IAimProvider, IDisposable
             "OSD-AVA-V1.5" => new OsdAvaAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
             "CAE-ASI-V2.5" => new CaeAsiAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
             "CVE-VSI-V1.0" => new CveVsiAimProcessor(aimName, VsiScrfd(), AimPortReader.Load(_store, aimName)),
+            "CAE-QCV-V1.0" => new QcvAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
             _ => throw new NotSupportedException($"HciProvider does not provide '{aimName}'.")
         };
     private OllamaClient Llm(IReadOnlyDictionary<string, string> settings)
