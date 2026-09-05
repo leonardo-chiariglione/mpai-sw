@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -71,6 +71,22 @@ public sealed class FirAimProcessor : IAimProcessor
         {
             return Message.Error(message.MessageId, InstanceId,
                 "PAF-FIR-V1.6: visual object carried no image data.");
+        }
+
+        // Type guard: FIR identifies FACES only. CVE-VSI tags each object's
+        // VisualQualifier with VisualObjectType; both FIR and VII receive the
+        // OSD-BVO stream (routing is by data type) and each acts only on its type,
+        // so EXACTLY ONE Instance Identifier is produced per object. FIR acts only
+        // on "Face"; anything else (or untagged) it declines - VII identifies it.
+        var visualObjectType = picture.VisualQualifier?.Attributes?.VisualObjectType;
+        if (visualObjectType != "Face")
+        {
+            return new Message
+            {
+                MessageId   = message.MessageId,
+                MessageType = message.MessageType,
+                Ports       = new Dictionary<string, string>()
+            };
         }
 
         // Detect faces (SCRFD separates them); take the user's face = the most

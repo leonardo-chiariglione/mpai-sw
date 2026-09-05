@@ -62,6 +62,18 @@ public sealed class ViiAimProcessor : IAimProcessor
             return System.Threading.Tasks.Task.FromResult(
                 Message.Error(message.MessageId, _instanceId, "empty Target Visual Object"));
 
+        // Type guard: VII identifies NON-FACE visual objects. Faces are FIR's; a
+        // face-tagged object is declined here so EXACTLY ONE Instance Identifier is
+        // produced per object. Untagged objects default to VII (generic).
+        var visualObjectType = visual.VisualQualifier?.Attributes?.VisualObjectType;
+        if (visualObjectType == "Face")
+            return System.Threading.Tasks.Task.FromResult(new Message
+            {
+                MessageId   = message.MessageId,
+                MessageType = message.MessageType,
+                Ports       = new System.Collections.Generic.Dictionary<string, string>()
+            });
+
         // Identify the object: run YOLOX, take the highest-confidence detection.
         var detections = _detector.Detect(visual.Data);
         var best = detections.OrderByDescending(d => d.Score).FirstOrDefault();
