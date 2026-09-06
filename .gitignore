@@ -137,3 +137,26 @@ Lib/Assets/*.hdr
 
 # WebView2 per-app user data (UaKit)
 **/MpaiUaKit/
+
+# --- build output ---
+bin/
+obj/
+.vs/
+*.user
+*.pdb
+*.lib
+_macpublish/
+_build/
+
+# --- diagnostics / scratch ---
+*.log
+*.bak
+.backups/
+
+# --- governed storage: biometrics / runtime data must NEVER be committed ---
+SharedStorage/
+TestData/gallery.json
+
+# --- OS ---
+Thumbs.db
+.DS_Store
