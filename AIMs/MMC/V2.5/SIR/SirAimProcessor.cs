@@ -66,7 +66,23 @@ public sealed class SirAimProcessor : IAimProcessor
         // (Speech Time, if delivered on _speechTimePort, could window the samples
         // here; the first version analyses the whole clip.)
         float[] samples = WavReader.ReadMono16k(speech.Data);
-        InstanceIdentifier identity = _sir.Identify(samples);
+
+        // --- inner trace: input + VAD metrics ---
+        int _vf = 0;
+        for (int i = 0; i + FrameSamples <= samples.Length; i += FrameSamples)
+        {
+            double sum = 0; for (int j = 0; j < FrameSamples; j++) { float v = samples[i + j]; sum += v * v; }
+            if (System.Math.Sqrt(sum / FrameSamples) >= EnergyFloor) _vf++;
+        }
+        int _voicedMs = _vf * 20;
+        bool _activated = _voicedMs >= MinVoicedMs;
+        Sir($"in: wavBytes={speech.Data.Length} samples={samples.Length} ({samples.Length/16000.0:F2}s) voicedMs={_voicedMs} floor={EnergyFloor} minVoiced={MinVoicedMs} ACTIVATED={_activated}");
+
+        InstanceIdentifier identity = _activated ? _sir.Identify(samples) : CoarseSpeech();
+
+        // --- inner trace: what the recogniser returned ---
+        var _top = identity.InstanceIdentifierData is { Count: > 0 } _d ? _d[0] : null;
+        Sir($"out: path={(_activated ? "Identify" : "CoarseSpeech-VADgate")} label=<{_top?.InstanceLabel ?? "<none>"}> conf={(_top?.LabelConfidenceLevel ?? 0f):F3} candidates={identity.InstanceIdentifierData.Count}");
 
         var json = MpaiJson.ToJson(identity);
         await Task.CompletedTask;
@@ -80,4 +96,48 @@ public sealed class SirAimProcessor : IAimProcessor
             Ports       = new Dictionary<string, string> { [_outputPort] = json }
         };
     }
+
+    // Simple, dependency-free voice-activity detector on 16 kHz mono samples:
+    // require at least MinVoicedMs of audio whose short-frame RMS energy exceeds a
+    // floor. Enough to reject silence and one-syllable fragments, cheap and robust.
+    private const int   FrameSamples = 320;      // 20 ms at 16 kHz
+    private const float EnergyFloor  = 0.015f;   // RMS threshold for a "voiced" frame
+    private const int   MinVoicedMs  = 350;      // a real utterance, not a fragment
+
+    private static void Sir(string m)
+    {
+        try { System.IO.File.AppendAllText(@"D:\AI\sir-trace.log",
+            System.DateTime.Now.ToString("HH:mm:ss.fff") + "  SIR " + m + "\n"); } catch {}
+    }
+
+    private static bool VoiceActivated(float[] s)
+    {
+        if (s.Length < FrameSamples) return false;
+        int voicedFrames = 0;
+        for (int i = 0; i + FrameSamples <= s.Length; i += FrameSamples)
+        {
+            double sum = 0;
+            for (int j = 0; j < FrameSamples; j++) { float v = s[i + j]; sum += v * v; }
+            double rms = System.Math.Sqrt(sum / FrameSamples);
+            if (rms >= EnergyFloor) voicedFrames++;
+        }
+        int voicedMs = voicedFrames * 20;   // each frame is 20 ms
+        return voicedMs >= MinVoicedMs;
+    }
+
+    // The coarse "speech" identity: a non-subject the reconciler will not grant on.
+    private static InstanceIdentifier CoarseSpeech() => new()
+    {
+        Header = "OSD-IID-V1.5",
+        InstanceIdentifier_ = "speech",
+        InstanceIdentifierData =
+        {
+            new InstanceCandidate
+            {
+                InstanceLabel = "speech",
+                LabelConfidenceLevel = 0f,
+                Taxonomy = new InstanceTaxonomy { TaxonomyLevelIDs = { "sound", "speech" } }
+            }
+        }
+    };
 }

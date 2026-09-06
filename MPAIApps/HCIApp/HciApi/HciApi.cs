@@ -327,7 +327,16 @@ public sealed class HciApi : IDisposable
                 wav = MpaiJson.FromJson<BasicSpeechObject>(sj)?.Data ?? Array.Empty<byte>();
             if (outs.TryGetValue("FaceDescriptors", out var fj) && !string.IsNullOrWhiteSpace(fj))
                 fdo = MpaiJson.FromJson<FaceDescriptorsObject>(fj);
-            var userId = outs.TryGetValue("UserID", out var uj) && !string.IsNullOrWhiteSpace(uj) ? uj : null;
+            // The UserID port carries the reconciled identity OBJECT (an Instance
+            // Identifier). Extract its clean label (the subject name) - never the raw
+            // JSON, which must not be shown or spoken.
+            string? userId = null;
+            if (outs.TryGetValue("UserID", out var uj) && !string.IsNullOrWhiteSpace(uj))
+            {
+                var iid = MpaiJson.FromJson<InstanceIdentifier>(uj);
+                var label = iid?.InstanceIdentifierData is { Count: > 0 } d ? d[0].InstanceLabel : null;
+                userId = string.IsNullOrWhiteSpace(label) ? null : label;
+            }
 
             return new AccessResult(userId is not null, userId, new SpeakingAvatar(wav, fdo));
         }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 using AIF.Controller;
@@ -73,7 +73,7 @@ public sealed class HciIdentityProvider : IAimProvider, IDisposable
     // ---- shared singletons (built once, from settings) --------------------
 
     private SubjectGallery Gallery(IReadOnlyDictionary<string, string> s) =>
-        _gallery ??= SubjectGallery.Load(Setting(s, "GalleryPath", @"D:\AI\TestData\gallery.json"));
+        _gallery ??= SubjectGallery.Load(new AIF.SharedStorage.FileSharedStorage(Mpai.Core.MpaiPaths.SharedStorage, "HCI-Access-Host", "local"));
 
     private ArcFaceRecogniser ArcFace(IReadOnlyDictionary<string, string> s) =>
         _arcFace ??= new ArcFaceRecogniser(Setting(s, "ArcFaceModel", @"D:\AI\Models\glintr100.onnx"));

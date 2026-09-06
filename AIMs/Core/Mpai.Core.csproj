@@ -4,4 +4,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\AIF\V3.0\src\AIF.SharedStorage\AIF.SharedStorage.csproj" />
+  </ItemGroup>
 </Project>

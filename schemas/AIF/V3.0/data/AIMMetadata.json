@@ -121,7 +121,7 @@
                             "type": "object", "additionalProperties": false,
                             "required": [ "Name", "Minimum", "Maximum", "Request" ],
                             "properties": {
-      "Name":             { "anyOf": [ { "enum": [ "Memory", "CPU:Number", "CPU:Class", "GPU:Number",
+      "Name":             { "anyOf": [ { "enum": [ "Memory", "Storage", "StorageType", "CPU:Number", "CPU:Class", "GPU:Number",
                                                    "GPU:CUDA:Class", "GPU:CUDA:FrameBuffer", "GPU:CUDA:MemorySpeed" ] },
                                        { "$dynamicRef": "#placeholder" } ] },
       "Minimum":          true,

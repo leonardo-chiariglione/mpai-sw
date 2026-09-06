@@ -36,10 +36,16 @@ public sealed class WebcamVisualAcquisition : IVisualAcquisitionAim
 
     private BasicVisualObject Capture()
     {
+        var __t0 = System.DateTime.UtcNow;
+        try { System.IO.File.AppendAllText(@"D:\AI\hci-diag.log", System.DateTime.Now.ToString("HH:mm:ss.fff") + "  " + ("VISUAL capture start: cameraIndex=" + _cameraIndex + " warmup=" + _warmupFrames) + "\n"); } catch {}
         using var capture = new VideoCapture(_cameraIndex);
+        try { System.IO.File.AppendAllText(@"D:\AI\hci-diag.log", System.DateTime.Now.ToString("HH:mm:ss.fff") + "  " + ("VISUAL VideoCapture.IsOpened=" + capture.IsOpened()) + "\n"); } catch {}
         if (!capture.IsOpened())
+        {
+            try { System.IO.File.AppendAllText(@"D:\AI\hci-diag.log", System.DateTime.Now.ToString("HH:mm:ss.fff") + "  " + ("VISUAL ERROR: could not open camera index " + _cameraIndex) + "\n"); } catch {}
             throw new InvalidOperationException(
                 $"Could not open camera at index {_cameraIndex}.");
+        }
 
         using var frame = new Mat();
 
@@ -50,13 +56,17 @@ public sealed class WebcamVisualAcquisition : IVisualAcquisitionAim
         // The frame we keep.
         capture.Read(frame);
         if (frame.Empty())
+        {
+            try { System.IO.File.AppendAllText(@"D:\AI\hci-diag.log", System.DateTime.Now.ToString("HH:mm:ss.fff") + "  " + ("VISUAL ERROR: empty frame from camera index " + _cameraIndex) + "\n"); } catch {}
             throw new InvalidOperationException(
                 $"Camera at index {_cameraIndex} returned an empty frame.");
+        }
 
         Cv2.ImEncode(".jpg", frame, out var jpeg);
 
         AimLog.Write("CVE-VOA-V1.0",
             $"acquired webcam frame: {frame.Width}x{frame.Height} ({jpeg.Length:N0} bytes JPEG)");
+        try { System.IO.File.AppendAllText(@"D:\AI\hci-diag.log", System.DateTime.Now.ToString("HH:mm:ss.fff") + "  " + ("VISUAL frame ok: " + frame.Width + "x" + frame.Height + " jpegBytes=" + jpeg.Length + " elapsed=" + (System.DateTime.UtcNow-__t0).TotalSeconds.ToString("F2") + "s") + "\n"); } catch {}
 
         return BasicVisualObject.FromFile("webcam.jpg", jpeg);
     }

@@ -6,7 +6,7 @@ using Mpai.Core;
 
 namespace Mpai.Aims.Speech;
 
-// MMC-SOA-V2.5 â€” Speech Object Acquisition. Self-contained IAimProcessor.
+// MMC-SOA-V2.5 Ã¢â‚¬â€ Speech Object Acquisition. Self-contained IAimProcessor.
 // Reads its own port names from 1MMC-SOA-V2.5-I01.json at startup.
 //
 // The physical acquisition is identical to AOA (capturing sound waves is
@@ -71,32 +71,33 @@ public sealed class SoaAimProcessor : IAimProcessor
         var start = System.DateTime.UtcNow;
         bool speechStarted = false;
         System.DateTime? silenceSince = null;
+        string stopReason = "?"; int poll = 0; double maxLevel = 0;
+        try { System.IO.File.AppendAllText(@"D:\AI\hci-diag.log", System.DateTime.Now.ToString("HH:mm:ss.fff") + "  " + ("AUDIO VAD enter: speak=" + speakThreshold + " silence=" + silenceThreshold + " hangover=" + silenceHangover.TotalMilliseconds + "ms") + "\n"); } catch {}
 
         while (true)
         {
             await Task.Delay(25);
             double level = _levelMeter!.CurrentLevel;
             var now = System.DateTime.UtcNow;
+            poll++; if (level > maxLevel) maxLevel = level;
+            if (poll % 8 == 0) try { System.IO.File.AppendAllText(@"D:\AI\hci-diag.log", System.DateTime.Now.ToString("HH:mm:ss.fff") + "  " + ("AUDIO poll t=" + (now-start).TotalMilliseconds.ToString("F0") + "ms level=" + level.ToString("F4") + " started=" + speechStarted) + "\n"); } catch {}
 
-            if (now - start > runawayGuard) break;               // runaway guard
+            if (now - start > runawayGuard) { stopReason = "runaway"; break; }
 
             if (!speechStarted)
             {
-                if (level > speakThreshold) speechStarted = true;
-                else if (now - start > startTimeout) break;      // nobody spoke
+                if (level > speakThreshold) { speechStarted = true; try { System.IO.File.AppendAllText(@"D:\AI\hci-diag.log", System.DateTime.Now.ToString("HH:mm:ss.fff") + "  " + ("AUDIO SPEECH STARTED t=" + (now-start).TotalMilliseconds.ToString("F0") + "ms level=" + level.ToString("F4")) + "\n"); } catch {} }
+                else if (now - start > startTimeout) { stopReason = "start-timeout-nobody-spoke"; break; }
             }
             else
             {
-                if (level < silenceThreshold)
-                {
-                    silenceSince ??= now;
-                    if (now - silenceSince.Value >= silenceHangover) break;   // utterance ended
-                }
-                else silenceSince = null;                        // still speaking
+                if (level < silenceThreshold) { silenceSince ??= now; if (now - silenceSince.Value >= silenceHangover) { stopReason = "silence-hangover"; break; } }
+                else silenceSince = null;
             }
         }
 
         var audio = await _startStop.StopAcquireAsync();
+        try { System.IO.File.AppendAllText(@"D:\AI\hci-diag.log", System.DateTime.Now.ToString("HH:mm:ss.fff") + "  " + ("AUDIO STOP reason=" + stopReason + " elapsed=" + (System.DateTime.UtcNow-start).TotalSeconds.ToString("F2") + "s bytes=" + audio.Data.Length + " maxLevel=" + maxLevel.ToString("F4")) + "\n"); } catch {}
         System.Console.WriteLine($"[MMC-SOA-V2.5] captured {audio.Data.Length:N0} bytes (VAD)");
         return audio;
     }
@@ -129,14 +130,16 @@ public sealed class SoaAimProcessor : IAimProcessor
             };
         }
 
-        // No input delivered â€” acquire fresh from the device (same as AOA).
+        // No input delivered Ã¢â‚¬â€ acquire fresh from the device (same as AOA).
         var context = message.Context;
         BasicAudioObject audio;
 
         // VAD auto-stop mode: record until the speaker finishes (no manual stop).
         // Requires a start/stop device that also meters its level.
+        try { System.IO.File.AppendAllText(@"D:\AI\hci-diag.log", System.DateTime.Now.ToString("HH:mm:ss.fff") + "  " + ("AUDIO branch: vadAutoStop=" + _vadAutoStop + " startStop=" + (_startStop is not null) + " levelMeter=" + (_levelMeter is not null)) + "\n"); } catch {}
         if (_vadAutoStop && _startStop is not null && _levelMeter is not null)
         {
+            try { System.IO.File.AppendAllText(@"D:\AI\hci-diag.log", System.DateTime.Now.ToString("HH:mm:ss.fff") + "  " + ("AUDIO -> VAD branch") + "\n"); } catch {}
             audio = await CaptureWithVadAsync();
         }
         else

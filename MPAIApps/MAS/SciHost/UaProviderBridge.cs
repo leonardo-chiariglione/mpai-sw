@@ -49,7 +49,7 @@ public sealed class UaProviderBridge : IAimProvider
             "MMC-TTS-V2.5" => new TtsAimProcessor(aimName, _tts ??= TtsFactory.Create(settings), AimPortReader.Load(_store, aimName)),
             "MMC-SOA-V2.5" => new SoaAimProcessor(aimName, new FileAudioAcquisition(string.Empty), AimPortReader.Load(_store, aimName), TimeSpan.FromSeconds(5)),
             "MMC-TTT-V2.5" => new TttAimProcessor(aimName, _ttt ??= TttFactory.Create(settings), AimPortReader.Load(_store, aimName)),
-            "MMC-SOD-V2.5" => new SodAimProcessor(aimName, new FileAudioDelivery(_outputFolder), AimPortReader.Load(_store, aimName)),
+            "MMC-SOD-V2.5" => new SodAimProcessor(aimName, new FileSpeechDelivery(_outputFolder), AimPortReader.Load(_store, aimName)),
             "CAE-AOD-V1.0" => new AodAimProcessor(aimName, new FileAudioDelivery(_outputFolder), AimPortReader.Load(_store, aimName)),
             "CVE-VOD-V1.0" => new VodAimProcessor(aimName, new FileVisualDelivery(_outputFolder), AimPortReader.Load(_store, aimName)),
             _ => throw new NotSupportedException($"No implementation for {aimName}.")

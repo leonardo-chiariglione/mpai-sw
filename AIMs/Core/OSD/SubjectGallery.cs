@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -145,6 +145,40 @@ public sealed class SubjectGallery
         if (dto?.Subjects is null) return g;
         foreach (var s in dto.Subjects)
             g._subjects[s.SubjectId] = new Subject { SubjectId = s.SubjectId, FaceEmbedding = s.FaceEmbedding, VoiceEmbedding = s.VoiceEmbedding };
+        return g;
+    }
+
+    // ---- Persistence via AIF Shared Storage (the governed, per-subject store) --
+    //  The proper home flagged above. Each subject is one key "subject:<id>" whose
+    //  value is that subject's embeddings; FIR and SIR (AIMs of the same Module)
+    //  share this store, and the framework stamps provenance on every Put. A clone
+    //  ships this store EMPTY - no biometrics leave the enrolling machine.
+    public const string SubjectKeyPrefix = "subject:";
+
+    public void Save(AIF.SharedStorage.ISharedStorage store)
+    {
+        foreach (var s in _subjects.Values)
+        {
+            var dto = new SubjectDto { SubjectId = s.SubjectId, FaceEmbedding = s.FaceEmbedding, VoiceEmbedding = s.VoiceEmbedding };
+            store.Put(SubjectKeyPrefix + s.SubjectId,
+                System.Text.Encoding.UTF8.GetBytes(JsonSerializer.Serialize(dto, JsonOpts)));
+        }
+    }
+
+    public static SubjectGallery Load(AIF.SharedStorage.ISharedStorage store,
+                                      float faceThreshold = 0.35f, float voiceThreshold = 0.45f)
+    {
+        var g = new SubjectGallery(faceThreshold, voiceThreshold);
+        foreach (var key in store.List(SubjectKeyPrefix))
+        {
+            var dto = JsonSerializer.Deserialize<SubjectDto>(
+                System.Text.Encoding.UTF8.GetString(store.Get(key)), JsonOpts);
+            if (dto is null) continue;
+            g._subjects[dto.SubjectId] = new Subject
+            {
+                SubjectId = dto.SubjectId, FaceEmbedding = dto.FaceEmbedding, VoiceEmbedding = dto.VoiceEmbedding
+            };
+        }
         return g;
     }
 

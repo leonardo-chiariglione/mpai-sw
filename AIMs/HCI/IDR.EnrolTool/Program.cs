@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 
 using Mpai.Core;
@@ -28,8 +28,11 @@ public static class Program
         if (!File.Exists(ecapa)) { Console.WriteLine($"Missing voice model: {ecapa}"); return 1; }
         if (!File.Exists(scrfd)) { Console.WriteLine($"Missing face detector: {scrfd}"); return 1; }
 
-        var gallery = SubjectGallery.Load(galleryPath);
-        Console.WriteLine($"Gallery: {galleryPath}");
+        var store = new AIF.SharedStorage.FileSharedStorage(Mpai.Core.MpaiPaths.SharedStorage, "IDR-EnrolTool", "local");
+        if (store.List(SubjectGallery.SubjectKeyPrefix).Count == 0 && File.Exists(galleryPath))
+            SubjectGallery.Load(galleryPath).Save(store);   // one-time import of a legacy JSON gallery into the store
+        var gallery = SubjectGallery.Load(store);
+        Console.WriteLine($"Gallery (Shared Storage): {Mpai.Core.MpaiPaths.SharedStorage}");
         Console.WriteLine($"Currently enrolled ({gallery.Count}): {(gallery.Count == 0 ? "(none)" : string.Join(", ", gallery.SubjectIds))}");
         Console.WriteLine();
 
@@ -66,7 +69,7 @@ public static class Program
                     faceRecogniser: face, faceImagePath: img,
                     speakerEmbedder: voice, voiceClipPath: wav,
                     faceDetector: detector);
-                gallery.Save(galleryPath);
+                gallery.Save(store);
                 string got = (img != null ? "face" : "") + (img != null && wav != null ? "+" : "") + (wav != null ? "voice" : "");
                 Console.WriteLine($"  Enrolled '{name}' ({got}). Saved. Gallery now has {gallery.Count} subject(s).");
             }

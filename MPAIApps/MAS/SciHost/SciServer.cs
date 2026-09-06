@@ -8,6 +8,12 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+
 using AIF.Controller;
 using AIF.Store;
 
@@ -18,7 +24,7 @@ namespace Mpai.Mas.Sci;
 
 // A stand-in MPAI-MAS Service Controller Instance (SCI) for the AMQ demo.
 //
-// Implements the MPAI-MAS Remote API ( /MPAI/AIFU/ ) over HttpListener, mapping
+// Implements the MPAI-MAS Remote API ( /MPAI/AIFU/ ) over Kestrel, mapping
 // each route to the in-process AIF Controller (UserAgent / MPAI_AIFU_*). Holds
 // the Controller + AMQ + models server-side; the RCA is a thin client.
 //
@@ -72,16 +78,28 @@ public sealed class SciServer
     {
         LoadServerSide();
 
-        using var listener = new HttpListener();
-        listener.Prefixes.Add(_listenUrl);
-        listener.Start();
+        // Kestrel rather than HttpListener: HttpListener cannot serve HTTPS on
+        // Linux at all, and on Windows a certificate is bound to the port
+        // administratively, outside the application. Kestrel takes a certificate
+        // in-process, the same way on both.
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseUrls(_listenUrl);
+
+        // The route handlers write their bodies synchronously, as they did under
+        // HttpListener. Allowing that keeps this change to the listener itself;
+        // making Write async would touch every call site instead.
+        builder.WebHost.ConfigureKestrel(o => o.AllowSynchronousIO = true);
+
+        // The SCI trace is the interesting output; the framework's own logging
+        // would bury it.
+        builder.Logging.ClearProviders();
+
+        var app = builder.Build();
+        app.Run(HandleAsync);   // one terminal handler - the dispatch below is ours
+
         Console.WriteLine($"[SCI] Listening on {_listenUrl}  (AMQ ready, models loaded)");
 
-        while (true)
-        {
-            var ctx = await listener.GetContextAsync();
-            _ = Task.Run(() => HandleAsync(ctx));   // handle concurrently
-        }
+        await app.RunAsync();
     }
 
     // Load the Controller + AMQ + models ONCE (server-side).
@@ -102,13 +120,13 @@ public sealed class SciServer
         Console.WriteLine("[SCI] Models loaded.");
     }
 
-    private async Task HandleAsync(HttpListenerContext ctx)
+    private async Task HandleAsync(HttpContext ctx)
     {
         try
         {
             var req = ctx.Request;
-            var path = req.Url!.AbsolutePath.TrimEnd('/');
-            var method = req.HttpMethod;
+            var path = (req.Path.Value ?? "").TrimEnd('/');
+            var method = req.Method;
             Console.WriteLine($"[SCI] {method} {path}");
 
             // Route dispatch on the /MPAI/AIFU/ surface.
@@ -172,7 +190,7 @@ public sealed class SciServer
     }
 
     // ── Route handlers ───────────────────────────────────────────────────────
-    private Task CreateController(HttpListenerContext ctx)
+    private Task CreateController(HttpContext ctx)
     {
         var cid = Guid.NewGuid().ToString();
         _sessions[cid] = new Session { ControllerId = cid };
@@ -181,13 +199,13 @@ public sealed class SciServer
         return Task.CompletedTask;
     }
 
-    private void DeleteController(HttpListenerContext ctx, string cid)
+    private void DeleteController(HttpContext ctx, string cid)
     {
         _sessions.TryRemove(cid, out _);
         Write(ctx, 200, "text/plain", "OK");
     }
 
-    private async Task StartAiw(HttpListenerContext ctx, Session s)
+    private async Task StartAiw(HttpContext ctx, Session s)
     {
         var body = await ReadBodyAsync(ctx.Request);
         string module = "MMC-AMQ-V2.5";
@@ -221,7 +239,7 @@ public sealed class SciServer
         Write(ctx, 200, "application/json", JsonSerializer.Serialize(resp));
     }
 
-    private async Task ReceiveInput(HttpListenerContext ctx, Session s, string pid)
+    private async Task ReceiveInput(HttpContext ctx, Session s, string pid)
     {
         var bytes = await ReadBodyBytesAsync(ctx.Request);
 
@@ -269,7 +287,7 @@ public sealed class SciServer
         Write(ctx, 200, "text/plain", "OK");
     }
 
-    private async Task SendOutput(HttpListenerContext ctx, Session s, string pid)
+    private async Task SendOutput(HttpContext ctx, Session s, string pid)
     {
         // On first Output GET after inputs, run the AIW with all buffered inputs.
         if (s.Outputs is null)
@@ -339,20 +357,20 @@ public sealed class SciServer
     }
 
     // ── HTTP helpers ─────────────────────────────────────────────────────────
-    private static async Task<string> ReadBodyAsync(HttpListenerRequest req)
+    private static async Task<string> ReadBodyAsync(HttpRequest req)
     {
-        using var r = new StreamReader(req.InputStream, req.ContentEncoding ?? Encoding.UTF8);
+        using var r = new StreamReader(req.Body, Encoding.UTF8);
         return await r.ReadToEndAsync();
     }
 
-    private static async Task<byte[]> ReadBodyBytesAsync(HttpListenerRequest req)
+    private static async Task<byte[]> ReadBodyBytesAsync(HttpRequest req)
     {
         using var ms = new MemoryStream();
-        await req.InputStream.CopyToAsync(ms);
+        await req.Body.CopyToAsync(ms);
         return ms.ToArray();
     }
 
-    private void WriteState(HttpListenerContext ctx, Session s)
+    private void WriteState(HttpContext ctx, Session s)
     {
         var resp = new
         {
@@ -365,13 +383,12 @@ public sealed class SciServer
         Write(ctx, 200, "application/json", JsonSerializer.Serialize(resp));
     }
 
-    private void Write(HttpListenerContext ctx, int status, string contentType, string body)
+    private void Write(HttpContext ctx, int status, string contentType, string body)
     {
         var bytes = Encoding.UTF8.GetBytes(body);
         ctx.Response.StatusCode = status;
         ctx.Response.ContentType = contentType;
-        ctx.Response.ContentLength64 = bytes.Length;
-        ctx.Response.OutputStream.Write(bytes, 0, bytes.Length);
-        ctx.Response.OutputStream.Close();
+        ctx.Response.ContentLength = bytes.Length;
+        ctx.Response.Body.Write(bytes, 0, bytes.Length);
     }
 }

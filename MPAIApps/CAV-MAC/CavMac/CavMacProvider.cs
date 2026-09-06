@@ -36,8 +36,21 @@ internal sealed class CavMacProvider : IAimProvider, IDisposable
 
     public CavMacProvider(AmdStore store, string galleryJsonPath)
     {
-        _store   = store;
-        _gallery = SubjectGallery.Load(galleryJsonPath);
+        _store = store;
+
+        // The subject gallery now lives in governed AIF Shared Storage, shared by
+        // FIR and SIR (Section 4.10). One-time migration: if the store has no
+        // subjects yet but a legacy gallery.json exists, import it so an existing
+        // enrolment is preserved; thereafter the store is authoritative. A fresh
+        // clone has an empty store and no json -> empty gallery until enrolment.
+        var shared = new AIF.SharedStorage.FileSharedStorage(
+            Mpai.Core.MpaiPaths.SharedStorage, "CAV-MAC-V2.0", "local");
+        if (shared.List(SubjectGallery.SubjectKeyPrefix).Count == 0 &&
+            !string.IsNullOrWhiteSpace(galleryJsonPath) && File.Exists(galleryJsonPath))
+        {
+            SubjectGallery.Load(galleryJsonPath).Save(shared);
+        }
+        _gallery = SubjectGallery.Load(shared);
     }
 
     public IAimProcessor Create(string aimName, IReadOnlyDictionary<string, string> settings)

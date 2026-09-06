@@ -17,8 +17,6 @@
         "VirtualCue":               { "$ref": "#/$defs/VirtualCue" },
         "MixedCue":                 { "$ref": "#/$defs/MixedCue" } } } } } },
 
-    "Trace":                        { "$ref": "https://schemas.mpai.community/AIF/V3.0/data/Trace.json" },
-
     "DataXMData":                   { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
     "DescrMetadata":                { "type": "string", "maxLength": 2048 } },
 
@@ -34,13 +32,16 @@
     "MixedRealActionIDs":           { "type": "array", "items": { "$ref": "#/$defs/MixedRealActionID" }, "uniqueItems": true },
     "MixedVirtualActionIDs":        { "type": "array", "items": { "$ref": "#/$defs/MixedVirtualActionID" }, "uniqueItems": true },
 
-    "REGroup":                      { "type": "object", "additionalProperties": false, "properties": {
+    "RECueConditions":              { "type": "object", "additionalProperties": false, "properties": {
       "REPerformanceDescriptors":   { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/REPerformanceDescriptors.json" },
       "REPerformanceStatus":        { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/REPerformanceStatus.json" },
       "REParticipantDescriptors":   { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/REParticipantDescriptors.json" },
       "REParticipantStatus":        { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/REParticipantStatus.json" },
       "REOperatorDescriptors":      { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/REOperatorDescriptors.json" },
-      "REOperatorStatus":           { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/REOperatorStatus.json" },
+      "REOperatorStatus":           { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/REOperatorStatus.json" }} },
+
+    "REGroup":                      { "type": "object", "additionalProperties": false, "properties": {
+      "RECueConditions":            { "$ref": "#/$defs/RECueConditions"},  
       "REActions":                  { "$ref": "#/$defs/RealActionIDs" },
       "VEActions":                  { "$ref": "#/$defs/VirtualActionIDs" },
       "NextCue":                    { "type": "string" } } },

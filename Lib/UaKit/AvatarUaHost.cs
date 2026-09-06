@@ -156,6 +156,11 @@ public sealed class AvatarUaHost
     {
         var store = new AmdStore(_amdDir);
         store.Scan();
+        // Dispose the WASAPI device after each capture. Back-to-back captures (e.g.
+        // a greeting "yes" then a passphrase) must each start from a CLEAN mic - a
+        // lingering device keeps buffered audio (the tail of the previous utterance
+        // or the prompt's echo) that would trip the voice-activity START immediately
+        // and end the next capture on a fragment. One capture, one fresh device.
         var mic = new WasapiAudioAcquisition();
         var soa = new SoaAimProcessor(SoaModule, mic, AimPortReader.Load(store, SoaModule), vadAutoStop: true);
         var msg = new Message

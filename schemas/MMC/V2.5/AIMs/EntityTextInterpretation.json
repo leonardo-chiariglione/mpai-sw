@@ -8,7 +8,7 @@
   "APIProfile":           "Basic",
   "Description":          "This AIM extracts the Text Personal Status from a Basic Text Object: a value for each Personal Status Factor (Cognitive State, Emotion, Social Attitude) carried by the text.",
 
-  "ExternalPorts":        [{"Name": "TextObject",  "Direction": "Input",  "DataType": "OSD-BTO-V1.5",  "Technology": "Software", "Protocol": "", "IsRemote": false},
+  "ExternalPorts":        [{"Name": "TextObject",         "Direction": "Input",  "DataType": "OSD-BTO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "TextPersonalStatus", "Direction": "Output", "DataType": "MMC-TPS-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":              [ ],
