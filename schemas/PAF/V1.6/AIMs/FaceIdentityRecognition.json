@@ -1,28 +1,40 @@
-{ "$schema":              "https://json-schema.org/draft/2020-12/schema",
-  "$comment":             "https://schemas.mpai.community/AIF/V3.0/data/AIMMetadata.json",
-  "$id":                  "https://schemas.mpai.community/PAF/V1.6/AIMs/FaceIdentityRecognition.json",
-  "title":                "Face Identity Recognition V1.6",
+{ "Identifier":       {"ImplementerID": "IIDRA-assigned", "ImplementationID": "/* String from Implementer */", "AIMName": "PAF-FIR-V1.6"},
+  "Header":            "PAF-FIR-V1.6",
 
-  "Identifier":           {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "PAF-FIR-V1.6"},
+  "APIProfile":       "Basic",
+  "Description":      "This AIM implements the face recognition function: it identifies a face based on the Visual Object that contains it. It is the visual counterpart of Speaker Identity Recognition.",
 
-  "APIProfile":           "Basic",
-  "Description":          "This AIM identifies faces in the bounding boxes of an image.",
+  "InternalTypes":   [ ],
 
-  "ExternalPorts":        [{"Name": "TextObject",          "Direction": "Input",  "DataType": "OSD-TXO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "Image",               "Direction": "Input",  "DataType": "OSD-VIO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "FaceTime",            "Direction": "Input",  "DataType": "OSD-TIM-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "VisualSceneGeometry", "Direction": "Input",  "DataType": "OSD-VSG-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "FaceID",              "Direction": "Output", "DataType": "OSD-IID-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "BoundingBox",         "Direction": "Output", "DataType": "OSD-BBX-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
+  "ExternalPorts":   [{"Name": "AuxiliaryText",          "Direction": "Input",  "DataType": "OSD-TXO-V1.5",                   "IsOptional": true, "Technology": "", "Protocol": "", "IsRemote": ""},
+                     {"Name": "VisualObject",           "Direction": "Input",  "DataType": ["OSD-BVO-V1.5", "OSD-VIO-V1.5"],                     "Technology": "", "Protocol": "", "IsRemote": ""},
+                     {"Name": "VisualSceneGeometry",    "Direction": "Input",  "DataType": "OSD-VSG-V1.5",                   "IsOptional": true, "Technology": "", "Protocol": "", "IsRemote": ""},
+                     {"Name": "FaceID",                 "Direction": "Output", "DataType": "OSD-IID-V1.5",                                       "Technology": "", "Protocol": "", "IsRemote": ""},
+                     {"Name": "BoundingBox",            "Direction": "Output", "DataType": "OSD-BBX-V1.5",                                       "Technology": "", "Protocol": "", "IsRemote": ""},
+                     {"Name": "VisualSceneDescriptors", "Direction": "Input",  "DataType": "OSD-BVS-V1.5",                   "IsOptional": true, "Technology": "", "Protocol": "", "IsRemote": ""}],
 
-  "SubAIMs":              [ ],
+  "SubAIMs":         [ ],
 
-  "Topology":             [ ],
+  "Topology":        [ ],
 
-  "Implementations":      [ ],
+  "Implementations": [{ "ImplementationURI":"/* absolute URI locating the Implementation */",
+                        "BinaryName":       "/* provided by implementer */",
+                        "Architecture":     "/* x86-64 | ARM64 */",
+                        "MASPort":          443,
+                        "Firewall":         [{ "Protocol": "TCP | UDP", "Version": "IPV4 | IPV6", "Direction": "Ingress | Egress | Both", "Range": "9990[-9999]", "Source": "0.0.0.0/0" }],
+                        "OperatingSystem":  "/* Windows | Linux | MacOS */",
+                        "Version":          "/* implementer version */",
+                        "Source":           "/* AIMStorage | MPAIStore */",
+                        "Destination":      "/* provided by implementer */" }],
 
-  "ResourcePolicies":     [ ],
+  "ResourcePolicies":[{ "Name": "Memory",               "Minimum": "/* GB */",             "Maximum": "/* GB */",             "Request": "/* GB */" },
+                      { "Name": "CPU:Number",           "Minimum": "/* integer, 0=all */", "Maximum": "/* integer, 0=all */", "Request": "/* integer */" },
+                      { "Name": "CPU:Class",            "Minimum": "/* string */",         "Maximum": "/* string */",         "Request": "/* string */" },
+                      { "Name": "GPU:Number",           "Minimum": "/* integer, 0=all */", "Maximum": "/* integer, 0=all */", "Request": "/* integer */" },
+                      { "Name": "GPU:CUDA:Class",       "Minimum": "/* string */",         "Maximum": "/* string */",         "Request": "/* string */" },
+                      { "Name": "GPU:CUDA:FrameBuffer", "Minimum": "/* GB */",             "Maximum": "/* GB */",             "Request": "/* GB */" },
+                      { "Name": "GPU:CUDA:MemorySpeed", "Minimum": "/* GB/s */",           "Maximum": "/* GB/s */",           "Request": "/* GB/s */" } ],
 
-  "DataXMData":           { },
+  "DataXMData":         { },
 
-  "Documentation":        [{"Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-paf/v1-6/"}]}
+  "Documentation":     [{"Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-paf/v1-6/"}]}

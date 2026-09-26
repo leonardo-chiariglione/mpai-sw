@@ -25,6 +25,15 @@ public sealed class EdpAimProcessor : IAimProcessor
 {
     private readonly string _instanceId;
     private readonly OllamaClient _llm;
+    // THE DIALOGUE MEMORY IS NOT KEPT HERE. It arrives on the Summary input and
+    // leaves, updated, on the EditedSummary output; the workflow carries it from
+    // one turn to the next. This AIM is shared by every App and every client of a
+    // Service, so nothing one person says may stay in it: a conversation's memory
+    // belongs to that conversation, begins empty with it and ends with it.
+    //
+    // Bounded: only the last few exchanges are carried, because a small language
+    // model given a long transcript loses the thread and breaks the reply format.
+    private const int RecentExchanges = 6;
 
     private readonly string _summaryPort;    // MMC-SUM
     private readonly string _textPort;       // OSD-BTO
@@ -61,37 +70,64 @@ public sealed class EdpAimProcessor : IAimProcessor
     public System.Threading.Tasks.Task<Message> ProcessAsync(Message message)
     {
         string? userText = ReadText(message, _textPort);
-        if (string.IsNullOrWhiteSpace(userText))
+        if (userText is null)
             return System.Threading.Tasks.Task.FromResult(
                 Message.Error(message.MessageId, _instanceId, "no Text Object on input port"));
 
-        string userStatus = VerbalisePersonalStatus(Read<EntityPersonalStatus>(message, _psPort));
+        // NO WORDS - a sound, a silence - IS NOTHING SAID: no reply, and the
+        // conversation's memory goes on as it came in.
+        if (string.IsNullOrWhiteSpace(userText))
+            return System.Threading.Tasks.Task.FromResult(new Message
+            {
+                MessageId = message.MessageId,
+                MessageType = message.MessageType,
+                Ports = new Dictionary<string, string>
+                {
+                    [_outSummaryPort] = MpaiJson.ToJson(Summary.Of(Read<Summary>(message, _summaryPort)?.Text() ?? ""))
+                }
+            });
+
+        var psIn        = Read<EntityPersonalStatus>(message, _psPort);   // MMC-EPS in (may be absent)
+        bool affect     = psIn is not null;                               // EPS in -> affect path; else plain
+        string userStatus = affect ? VerbalisePersonalStatus(psIn) : "";
         string userId     = ReadInstanceLabel(message, _userIdPort);
         string sceneClause = VerbaliseScene(message);
-        string summaryIn   = Read<Summary>(message, _summaryPort)?.Text() ?? "";
+        var memory = (Read<Summary>(message, _summaryPort)?.Text() ?? "")
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries).ToList();
+        while (memory.Count > RecentExchanges * 2) memory.RemoveAt(0);
+        string summaryIn   = string.Join("\n", memory);   // the memory the workflow carried in
 
-        string system =
-            "You are the CAV, a courteous conversational machine holding a face-to-face " +
-            "conversation with a person. Reply naturally and briefly to what the person said, " +
-            "taking account of who they are, the Personal Status they are believed to hold, and " +
-            "the scene they are in. Then choose how YOU present yourself. " +
-            "Return ONLY a compact JSON object with keys: response (your spoken reply, a short " +
-            "string), emotion (one of HAPPINESS, CALMNESS, SADNESS, ANGER, FEAR, or NEUTRAL), " +
-            "attitude (one of respectful, friendly, confident, or neutral), summary (a one-sentence " +
-            "updated running summary of the conversation). No prose outside the JSON.";
+        // System prompt. EDP INPUT->OUTPUT RULE: the machine produces a Personal
+        // Status ONLY when a Personal Status was provided as input. With no EPS in
+        // (e.g. anonymous dialogue), we neither ask the LLM for affect nor emit a
+        // machine EPS - the avatar renders neutrally.
+        string system = affect
+            ? "You are the CAV, a courteous conversational machine holding a face-to-face " +
+              "conversation with a person. Reply naturally and briefly to what the person said. " +
+              "Adapt your TONE to be appropriate and empathetic to how the person seems to feel, " +
+              "but NEVER mention, describe, name, or refer to their emotion, mood, feelings, or " +
+              "personal status - just respond naturally to what they say. " +
+              "Then choose how YOU present yourself. " +
+              "Return ONLY a compact JSON object with these exact keys: " +
+              "\"response\" (your spoken reply as a short plain string - no labels, no JSON inside it), " +
+              "\"emotion\" (one of HAPPINESS, CALMNESS, SADNESS, ANGER, FEAR, NEUTRAL), " +
+              "\"attitude\" (one of respectful, friendly, confident, neutral), " +
+              "\"summary\" (a one-sentence updated running summary). " +
+              "Output ONLY the JSON object and nothing else - no code fences, no prose before or after."
+            : "You are the CAV, a courteous conversational machine holding a face-to-face " +
+              "conversation with a person. Reply naturally and briefly to what the person said. " +
+              "Return ONLY your spoken reply as plain text - no JSON, no labels, no commentary.";
 
-        // Compose the request following the canonical EDP template: respond to the Text
-        // provided by the user (with the given ID), who is BELIEVED to hold the given
-        // Personal Status and is located in a scene populated by audio and visual objects
-        // identified by their IDs at their Points of View, respectively.
         var prompt = new StringBuilder();
         prompt.Append("Please respond to the following Text provided by the user");
         if (!string.IsNullOrWhiteSpace(userId)) prompt.Append($" with ID {userId}");
-        if (!string.IsNullOrWhiteSpace(userStatus))
-            prompt.Append($", who is believed to hold the following Personal Status: {userStatus}");
         if (!string.IsNullOrWhiteSpace(sceneClause))
-            prompt.Append($", and who is located in a scene populated by {sceneClause}");
+            prompt.Append($", who is located in a scene populated by {sceneClause}");
         prompt.AppendLine(".");
+        // The user's affect conditions TONE only - given to the model as private
+        // guidance, never to be echoed or named in the reply.
+        if (!string.IsNullOrWhiteSpace(userStatus))
+            prompt.AppendLine($"(Private tone guidance - do NOT mention this to the user: they currently seem {userStatus}. Respond with matching empathy, without ever naming their state.)");
         if (!string.IsNullOrWhiteSpace(summaryIn))
             prompt.AppendLine($"The conversation so far: {summaryIn}");
         prompt.AppendLine($"Text: \"{userText}\"");
@@ -107,28 +143,44 @@ public sealed class EdpAimProcessor : IAimProcessor
                 Message.Error(message.MessageId, _instanceId, $"LLM call failed (is Ollama running?): {ex.Message}"));
         }
 
-        var (responseText, emotion, attitude, summaryOut) = ParseReply(reply, userText);
+        // Determine the spoken response (and, in the affect path, the machine EPS).
+        string responseText;
+        EntityPersonalStatus? machinePs = null;
+        if (affect)
+        {
+            var (rt, emotion, attitude, _) = ParseReply(reply, userText);
+            responseText = rt;
+            // What the model chose - the only place it can be seen.
+            var raw = reply.Replace('\n', ' ').Trim();
+            Console.WriteLine($"[MMC-EDP-V2.5] emotion {emotion}, attitude {attitude}; model said: " +
+                              (raw.Length > 200 ? raw[..200] + "..." : raw));
+            machinePs = MachinePersonalStatus(emotion, attitude);
+        }
+        else
+        {
+            responseText = reply.Trim();   // plain text; no JSON, no affect
+        }
 
-        var machineText    = BasicTextObject.FromText(responseText);
-        var machinePs      = MachinePersonalStatus(emotion, attitude);
-        // The threaded context is a running TRANSCRIPT, not a one-sentence summary: a
-        // one-line summary silently drops specifics (a name is kept, a hobby is lost),
-        // so we append each turn verbatim. Nothing said is forgotten.
-        var transcript = string.IsNullOrWhiteSpace(summaryIn)
-            ? $"User: {userText}\nCAV: {responseText}"
-            : $"{summaryIn}\nUser: {userText}\nCAV: {responseText}";
-        var editedSummary  = Summary.Of(transcript);
+        var machineText = BasicTextObject.FromText(responseText);
+        // The memory goes back out with this exchange added, one line per turn.
+        memory.Add("User: " + userText.Replace('\n', ' ').Trim());
+        memory.Add("CAV: " + responseText.Replace('\n', ' ').Trim());
+        while (memory.Count > RecentExchanges * 2) memory.RemoveAt(0);
+        var editedSummary = Summary.Of(string.Join("\n", memory));
+
+        var ports = new Dictionary<string, string>
+        {
+            [_outTextPort]    = MpaiJson.ToJson(machineText),
+            [_outSummaryPort] = MpaiJson.ToJson(editedSummary)
+        };
+        if (machinePs is not null)                       // EPS out ONLY if EPS was in
+            ports[_outPsPort] = MpaiJson.ToJson(machinePs);
 
         return System.Threading.Tasks.Task.FromResult(new Message
         {
             MessageId = message.MessageId,
             MessageType = message.MessageType,
-            Ports = new Dictionary<string, string>
-            {
-                [_outTextPort]    = MpaiJson.ToJson(machineText),
-                [_outPsPort]      = MpaiJson.ToJson(machinePs),
-                [_outSummaryPort] = MpaiJson.ToJson(editedSummary)
-            }
+            Ports = ports
         });
     }
 
@@ -241,22 +293,95 @@ public sealed class EdpAimProcessor : IAimProcessor
     // return clean JSON.
     private static (string response, string emotion, string attitude, string summary) ParseReply(string reply, string userText)
     {
-        string response = reply.Trim(), emotion = "NEUTRAL", attitude = "neutral", summary = "";
-        int lb = reply.IndexOf('{'), rb = reply.LastIndexOf('}');
-        if (lb >= 0 && rb > lb)
+        string emotion = "NEUTRAL", attitude = "neutral", summary = "";
+        string? response = null;
+
+        var cleaned = StripFences(reply);
+        var obj = FirstBalancedObject(cleaned);
+        if (obj is not null)
         {
             try
             {
-                using var doc = JsonDocument.Parse(reply.Substring(lb, rb - lb + 1));
+                using var doc = JsonDocument.Parse(obj);
                 var root = doc.RootElement;
-                if (root.TryGetProperty("response", out var r)) response = r.GetString() ?? response;
-                if (root.TryGetProperty("emotion", out var e))  emotion  = e.GetString() ?? emotion;
-                if (root.TryGetProperty("attitude", out var a)) attitude = a.GetString() ?? attitude;
-                if (root.TryGetProperty("summary", out var s))  summary  = s.GetString() ?? summary;
+                if (root.ValueKind == JsonValueKind.Object)
+                {
+                    if (root.TryGetProperty("response", out var r) && r.ValueKind == JsonValueKind.String)
+                        response = r.GetString();
+                    if (root.TryGetProperty("emotion", out var e) && e.ValueKind == JsonValueKind.String)
+                        emotion = e.GetString() ?? emotion;
+                    if (root.TryGetProperty("attitude", out var a) && a.ValueKind == JsonValueKind.String)
+                        attitude = a.GetString() ?? attitude;
+                    if (root.TryGetProperty("summary", out var s) && s.ValueKind == JsonValueKind.String)
+                        summary = s.GetString() ?? summary;
+                }
             }
-            catch { /* keep plain-text fallback */ }
+            catch { /* fall through to a safe reply below */ }
         }
-        return (Sanitise(response), emotion, attitude, summary);
+
+        // The spoken channel must NEVER contain JSON. If we didn't get a clean
+        // "response" string, use the non-JSON remainder of the model output; if
+        // that still looks like JSON, use a safe neutral line.
+        if (string.IsNullOrWhiteSpace(response))
+        {
+            var stripped = RemoveJsonBlocks(cleaned).Trim();
+            response = LooksLikeJson(stripped) || string.IsNullOrWhiteSpace(stripped)
+                ? "I'm sorry, could you say that again?"
+                : stripped;
+        }
+
+        return (Sanitise(response!), emotion, attitude, summary);
+    }
+
+    // Remove ```json ... ``` (or ``` ... ```) fences, keeping the inner content.
+    private static string StripFences(string s)
+    {
+        if (string.IsNullOrEmpty(s)) return s ?? "";
+        s = System.Text.RegularExpressions.Regex.Replace(s, "```[a-zA-Z]*", "");
+        return s.Replace("```", "").Trim();
+    }
+
+    // Return the first balanced {...} object substring, or null. Handles nested
+    // braces and braces inside strings.
+    private static string? FirstBalancedObject(string s)
+    {
+        int start = s.IndexOf('{');
+        if (start < 0) return null;
+        int depth = 0; bool inStr = false; bool esc = false;
+        for (int i = start; i < s.Length; i++)
+        {
+            char c = s[i];
+            if (inStr)
+            {
+                if (esc) esc = false;
+                else if (c == '\\') esc = true;
+                else if (c == '"') inStr = false;
+                continue;
+            }
+            if (c == '"') { inStr = true; continue; }
+            if (c == '{') depth++;
+            else if (c == '}') { depth--; if (depth == 0) return s.Substring(start, i - start + 1); }
+        }
+        return null;
+    }
+
+    // Delete any balanced {...} blocks from the text (used to recover a plain-text
+    // reply when the model wrapped everything, or added prose around JSON).
+    private static string RemoveJsonBlocks(string s)
+    {
+        if (string.IsNullOrEmpty(s)) return s ?? "";
+        string prev;
+        do { prev = s; var obj = FirstBalancedObject(s); if (obj is null) break; s = s.Replace(obj, " "); }
+        while (s != prev);
+        return s;
+    }
+
+    private static bool LooksLikeJson(string s)
+    {
+        if (string.IsNullOrWhiteSpace(s)) return false;
+        var t = s.TrimStart();
+        return t.StartsWith("{") || t.StartsWith("[") ||
+              System.Text.RegularExpressions.Regex.IsMatch(s, @"(?i)""?(response|emotion|attitude|summary)""?\s*:");
     }
 
     // Strip any emotion/attitude labels the model leaked into the spoken response.
@@ -272,7 +397,7 @@ public sealed class EdpAimProcessor : IAimProcessor
             System.Text.RegularExpressions.RegexOptions.None);
         if (cut.Success) response = response.Substring(0, cut.Index);
         // Remove any stray trailing JSON-ish braces/quotes.
-        response = response.Trim().TrimEnd('}', '{', '"', ',', ' ');
+        response = response.Trim().Trim('{', '}', '[', ']', '"', ',', ' ');
         return response.Trim();
     }
     // Build the machine's Personal Status from the LLM's stated emotion + attitude.
@@ -282,11 +407,18 @@ public sealed class EdpAimProcessor : IAimProcessor
     {
         FactorLabel emo = emotion.ToUpperInvariant() switch
         {
-            "HAPPINESS" => FactorLabel.Of("HAPPINESS", "happy", null, 0.8),
-            "SADNESS"   => FactorLabel.Of("SADNESS", "sad", null, 0.8),
-            "ANGER"     => FactorLabel.Of("ANGER", "angry", null, 0.8),
-            "FEAR"      => FactorLabel.Of("FEAR", "fearful/scared", null, 0.8),
-            "CALMNESS"  => FactorLabel.Of("CALMNESS", "calm", null, 0.8),
+            // A small model does not always use the exact word it was given: the
+            // words it uses instead for the same emotion are taken as that emotion.
+            "HAPPINESS" or "HAPPY" or "JOY" or "JOYFUL" or "EXCITED" or "EXCITEMENT" or "DELIGHTED" or "CHEERFUL"
+                        => FactorLabel.Of("HAPPINESS", "happy", null, 0.8),
+            "SADNESS" or "SAD"
+                        => FactorLabel.Of("SADNESS", "sad", null, 0.8),
+            "ANGER" or "ANGRY"
+                        => FactorLabel.Of("ANGER", "angry", null, 0.8),
+            "FEAR" or "AFRAID" or "SCARED" or "FEARFUL"
+                        => FactorLabel.Of("FEAR", "fearful/scared", null, 0.8),
+            "CALMNESS" or "CALM"
+                        => FactorLabel.Of("CALMNESS", "calm", null, 0.8),
             _           => FactorLabel.Of("CALMNESS", "calm", null, 0.5)
         };
         SocialAttitude? att = attitude.ToLowerInvariant() switch
