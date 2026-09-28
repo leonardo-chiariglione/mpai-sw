@@ -3,7 +3,7 @@
   "title":                "AMS Data V1.1",
   "type":                 "object",
   "additionalProperties": false,
-  "required":             [ "Header", "AMSDataID", "AMSData" ],
+  "required":             [ "Header", "AMSDataID" ],
 
   "properties":           {
 
