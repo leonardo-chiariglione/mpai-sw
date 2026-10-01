@@ -6,7 +6,7 @@
   "required":               [ "Header", "PortableAvatarID" ],
   "properties":             {
 
-    "Header":               { "type": "string", "pattern": "^PAF-PAV-V[0-9]{1,2}[.][0-9]{1,2}$", "description": "Portable Avatar Header – Standard PAF-PAV-Vx.y" },
+    "Header":               { "type": "string", "const": "PAF-PAV-V1.6", "description": "Portable Avatar Header – Standard PAF-PAV-Vx.y" },
     "MInstanceID":          { "type": "string", "description": "Identifier of the M-Instance (Virtual Space) where this Portable Avatar is placed." },
     "UEnvironmentID":       { "type": "string", "description": "Identifier of the U-Environment (Real Space) associated with this Portable Avatar." },
     "PortableAvatarID":     { "type": "string", "description": "Unique identifier of this Portable Avatar instance." },

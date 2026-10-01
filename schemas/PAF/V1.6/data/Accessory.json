@@ -6,7 +6,7 @@
   "required":             [ "Type", "Accessory" ],
   "properties":           {
 
-    "Header":             { "type": "string", "pattern": "^PAF-ACC-V[0-9],{1,2},[.][0-9],{1,2}$" },
+    "Header":             { "type": "string", "const": "PAF-ACC-V1.6" },
     "MInstanceID":        { "type": "string" },
     "UEnvironmentID":     { "type": "string" },
     "AccessoryID":        { "type": "string" },

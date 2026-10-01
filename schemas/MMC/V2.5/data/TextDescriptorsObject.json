@@ -6,7 +6,7 @@
   "required":                   [ "Header", "TextDescriptorsObjectID", "TextDescriptorsData" ],
   "properties":                 {
 
-    "Header":                   { "type": "string", "pattern": "^MMC-TDO-V[0-9]{1,2}[.][0-9]{1,2}$",
+    "Header":                   { "type": "string", "const": "MMC-TDO-V2.5",
                                   "description": "Text Descriptors Object Header - Standard MMC-TDO-Vx.y" },
     "MInstanceID":              { "type": "string", "description": "Identifier of the M-Instance (Virtual Space) where this Text is or is intended to be located." },
     "UEnvironmentID":           { "type": "string", "description": "Identifier of the U-Environment (Real Space) where this Text is or is intended to be located." },

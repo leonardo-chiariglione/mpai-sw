@@ -5,11 +5,11 @@
   "required":                 [ "Header", "Time" ],
   "properties":               {
 
-    "Header":                 { "type": "string", "pattern": "MMM-3CP-V2.2" },
+    "Header":                 { "type": "string", "const": "MMM-3CP-V2.2" },
     "MInstanceID":            { "type": "string" },
     "UEnvironmentID":         { "type": "string" },
     "MUActuatePAID":          { "type": "string" },
-    "MUActuatePATime":        { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/Time.json" },
+    "MUActuatePATime":        { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SimpleTime.json" },
 
     "Time":                   { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SimpleTime.json" },
 

@@ -5,7 +5,7 @@
     "properties":  {
                        "Header":  {
                                       "type":  "string",
-                                      "pattern":  "^PRF-[0-9],{1,2},[.][0-9],{1,2}$"
+                                      "const":  "PRF-AIP-V1.0"
                                   },
                        "Profile":  {
                                        "type":  "string",

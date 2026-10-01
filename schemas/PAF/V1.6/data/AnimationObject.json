@@ -5,7 +5,7 @@
   "additionalProperties": false,
   "properties":           {
 
-    "Header":             { "type": "string", "pattern": "^PAF-AMO-V[0-9],{1,2},[.][0-9],{1,2}$" },
+    "Header":             { "type": "string", "const": "PAF-AMO-V1.6" },
     "MInstanceID":        { "type": "string" },
     "UEnvironmentID":     { "type": "string" },
     "AnimationObjectID":  { "type": "string" },

@@ -7,7 +7,7 @@
   "required":                       ["Header","ParticipantDataID"],
   "properties":                     {
 
-    "Header":                       { "type": "string", "const": "^CAV-PTD-V1.0", "description": "Participant Data Header" },
+    "Header":                       { "type": "string", "const": "XRV-PTD-V1.0", "description": "Participant Data Header" },
     "MInstanceID":                  { "type": "string", "description": "Identifier of the M-Instance (Virtual Space) associated with this Participant Data." },
     "UEnvironmentID":               { "type": "string", "description": "Identifier of the U-Environment (Real Space) associated with this Participant Data." },
     "ParticipantDataID":            { "type": "string", "description": "Identifier of this Participant Data instance." },

@@ -6,7 +6,7 @@
   "required":             [ "Header", "MoCapObjectID", "MoCapData" ],
   "properties":           {
 
-    "Header":             { "type": "string", "pattern": "^PAF-MCO-V[0-9],{1,2},[.][0-9],{1,2}$" },
+    "Header":             { "type": "string", "const": "PAF-MCO-V1.6" },
     "MInstanceID":        { "type": "string" },
     "UEnvironmentID":     { "type": "string" },
     "MoCapObjectID":      { "type": "string" },

@@ -4,7 +4,7 @@
   "type":                             "object",
   "properties":                       {
 
-    "Header":                         { "type": "string", "pattern": "^PAF-AVT-V[0-9],{1,2},[.][0-9],{1,2}$" },
+    "Header":                         { "type": "string", "const": "PAF-AVT-V1.6" },
     "MInstanceID":                    { "type": "string" },
     "UEnvironmentID":                 { "type": "string" },
     "AvatarID":                       { "type": "string" },
