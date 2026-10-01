@@ -3,7 +3,7 @@
   "title":                    "Penalties V2.2",
   "type":                     "object",
   "additionalProperties":     false,
-  "required":                 [ "Header", "Penalties" ],
+  "required":                 [ "Header", "PenaltiesData" ],
   "properties":               {
 
     "Header":                 { "type": "string", "const": "MMM-RGT-V2.2" },

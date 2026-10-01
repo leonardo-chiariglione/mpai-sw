@@ -3,7 +3,7 @@
   "title":                    "Rights V2.2",
   "type":                     "object",
   "additionalProperties":     false,
-  "required":                 [ "Header", "Rights" ],
+  "required":                 [ "Header", "RightsData" ],
   "properties":               {
 
     "Header":                 { "type": "string", "const": "^MMM-RGT-V2.2$" },

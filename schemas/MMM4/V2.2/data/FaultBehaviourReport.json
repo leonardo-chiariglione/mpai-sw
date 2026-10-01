@@ -4,7 +4,7 @@
   "description":                "Message with suspected fraudulent-deceptive-non-compliant behaviour.",
   "type":                       "object",
   "additionalProperties":       false,
-  "required":                   [ "ReportId", "ReportCreationTime", "ReporterProcess", "SuspectedCategory", "SubjectReferences" ],
+  "required":                   [ "ReportID", "ReportTime", "ReporterProcess", "SuspectedCategory", "SubjectReferences" ],
   "properties":                 {
 
     "Header":                   { "type": "string", "const": "MMM-FBR-V2.2" },

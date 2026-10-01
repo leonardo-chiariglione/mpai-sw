@@ -4,7 +4,7 @@
   "type":                     "object",
   "additionalProperties":     false,
   "required":                 [ "Header", "MInstanceID", "MEnvironmentID", "CapabilitiesID", "WalletID", "ItemCapabilities",
-                                "MInstanceCapabilities", "ProcessCapabilities", "DataExchangeMetadata" ],
+                                "MInstanceCapabilities", "ProcessCapabilities", "DataXMData" ],
   "properties":               {
 
     "Header":                 { "type": "string", "const": "MMM-CPB-V2.2" },
@@ -41,7 +41,7 @@
                                 "items": { "type": "string" } } } },
 
     "MInstanceCapabilities":  { "type": "object", "additionalProperties": false,
-                                "required": [ "CoordinateType", "Profile", "Actions", "Items", "Qualifiers",
+                                "required": [ "CoordinateType", "Profile", "Actions", "ItemTypes", "QualifierTypes",
                                               "Rules", "Rights", "PMetadata", "IMetadata" ], "properties": {
       "CoordinateType":       { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/CoordinateTypes.json" },
       "Profile":              { "type": "string", "enum": [ "Baseline", "Finance", "Management", "High" ] },
@@ -53,7 +53,7 @@
       "IMetadata":            { "type": "array", "items": { "type": "string" } } } },
 
     "ProcessCapabilities":    { "type": "object", "additionalProperties": false,
-                                "required": [ "HumanID", "SupportedApps", "Actions", "ProcessMetadata", "Processes", "Items",
+                                "required": [ "HumanID", "SupportedApps", "Actions", "ProcessMetadata", "Processes", "ItemsTypes",
                                               "ItemMetadata", "ItemQualifiers", "TransactionInfo", "CapabilityChange", "MInstances" ], 
                                 "properties": {
 

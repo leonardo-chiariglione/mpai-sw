@@ -16,7 +16,7 @@
     "InterpretPARQ":      { "type": "object", "properties": {
       "RQ1":              { "type": "object", "properties": {
         "Complement":     { "type": "string", "const": "With" },
-        "Interpretation": { "$ref": "https://schemas.mpai.community/MMM4/V2.2/data/ItemOrID.json#/$defs/InterpretionOrID" } } },
+        "Interpretation": { "$ref": "https://schemas.mpai.community/MMM4/V2.2/data/ItemOrID.json#/$defs/InterpretationOrID" } } },
       "RQ2":              { "type": "object", "properties": {
         "Complement":     { "type": "string", "const": "With" },
         "Rights":         { "$ref": "https://schemas.mpai.community/MMM4/V2.2/data/Rights.json" } } },
@@ -31,7 +31,7 @@
 
       "RS1":              { "type": "object", "properties": {
         "Complement":     { "type": "string", "const": "With" },
-        "Interpretation": { "$ref": "https://schemas.mpai.community/MMM4/V2.2/data/ItemOrID.json#/$defs/InterpretionOrID" } } },
+        "Interpretation": { "$ref": "https://schemas.mpai.community/MMM4/V2.2/data/ItemOrID.json#/$defs/InterpretationOrID" } } },
 
       "RS2":              { "type": "object", "properties": {
         "Complement":     { "type": "string", "const": "With" },

@@ -19,7 +19,7 @@
         "HideID":           { "type": "string" } } },
       "RQ2":                { "type": "object", "properties": {
         "Complement":       { "type": "string", "const": "With" },
-        "Rights":           { "$ref": "https://schemas.mpai.community/MMM4/V2.2/data/Rights" } } },
+        "Rights":           { "$ref": "https://schemas.mpai.community/MMM4/V2.2/data/Rights.json" } } },
       "RQ3":                { "type": "object", "properties": {
         "Complement":       { "type": "string", "const": "With" },
         "SPM":              { "$ref": "https://schemas.mpai.community/MMM4/V2.2/data/ServicePricingModel.json" } } } } },

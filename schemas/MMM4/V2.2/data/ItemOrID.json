@@ -9,4 +9,4 @@
     "MessageOrID":        { "oneOf": [ { "$ref": "https://schemas.mpai.community/MMM4/V2.2/data/Message.json" },         { "type": "string" } ] },    "RightsOrID":         { "oneOf": [ { "$ref": "https://schemas.mpai.community/MMM4/V2.2/data/Rights.json" },          { "type": "string" } ] },
     "RulesOrID":          { "oneOf": [ { "$ref": "https://schemas.mpai.community/MMM4/V2.2/data/Rules.json" },           { "type": "string" } ] },
     "TransactionOrID":    { "oneOf": [ { "$ref": "https://schemas.mpai.community/MMM4/V2.2/data/Transaction.json" },     { "type": "string" } ] },
-    "WalletOrID":         { "oneOf": [ { "$ref": "https://schemas.mpai.community/MMM4/V2.2/data/Rules.json" },           { "type": "string" } ] } } }
+    "WalletOrID":         { "oneOf": [ { "$ref": "https://schemas.mpai.community/MMM4/V2.2/data/Wallet.json" },          { "type": "string" } ] } } }
