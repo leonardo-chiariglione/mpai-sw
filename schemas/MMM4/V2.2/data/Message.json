@@ -16,7 +16,7 @@
                                 "DataURI":     { "type": "string", "format": "uri" } } } ] } },
 
     "Rights":                 { "$ref": "#/$defs/Rights" },
-    "DataExchangeMetadata":   { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
+    "DataXMData":             { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
     "Trace":                  { "$ref": "https://schemas.mpai.community/AIF/V3.0/data/Trace.json" },
     "DescrMetadata":          { "type": "string", "maxLength": 2048 } },
 

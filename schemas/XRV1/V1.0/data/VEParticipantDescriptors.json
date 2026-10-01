@@ -35,5 +35,5 @@
                                     { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/SpeakingAvatar.json" },
                                     { "type": "string" } ] }, "description": "Array of Avatars (object) or Avatar IDs (string)." } } } },
 
-    "DataXMdata":                   { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
+    "DataXMData":                   { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
     "DescrMetadata":                { "type": "string", "maxLength": 2048 } } }

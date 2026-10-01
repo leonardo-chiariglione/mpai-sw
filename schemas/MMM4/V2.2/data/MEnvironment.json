@@ -16,6 +16,6 @@
                             { "type": "object", "properties": { 
       "RulesID":           { "type": "string" } } } ] } },
 
-    "DataExchangeMetadata": { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
+    "DataXMData":           { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
     "DescrMetadata":        { "type": "string", "maxLength": 2048 } } }
 

@@ -19,5 +19,5 @@
         "ShowConsole":          { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/ShowConsole.json" },
         "LightingConsole":      { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/LightingConsole.json" } } },
 
-    "Dataxmdata":               { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
+    "DataXMData":               { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
     "DescrMetadata":            { "type": "string", "maxLength": 2048 } } }

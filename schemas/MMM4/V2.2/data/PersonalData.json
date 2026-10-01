@@ -18,7 +18,7 @@
                               "ActivityDataID": { "type": "string" } } } } } } },
 
     "RightsOrRightsID":     { "$ref": "#/$defs/Rights" },
-    "DataExchangeMetadata": { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
+    "DataXMData":           { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
     "DescrMetadata":        { "type": "string", "maxLength": 2048 } },
 
   "$defs":                  {
