@@ -17,6 +17,7 @@
     "VisualObjectCount":                  { "type": "integer", "minimum": 0 },
     "VisualObjects":                      { "type": "array", "minItems": 0, "items": { "type": "object", "additionalProperties": false,
                                             "required": [ "VisualObjectSpaceTime", "VisualObjectQualifier" ], "properties": {
+      "Confidence": { "type": "number", "minimum": 0, "maximum": 1, "description": "How likely it is that the Object is where the Scene Geometry places it." },
       "VisualObjectSpaceTime":            { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SpaceTime.json" },
       "VisualObjectQualifier":            { "$ref": "https://schemas.mpai.community/TFA/V1.5/data/VisualQualifier.json" } } } },
 

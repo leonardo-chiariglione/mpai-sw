@@ -63,7 +63,7 @@
       "epoch":                { "type": "string" },
       "scenario":             { "type": "string" } } },
 
-    "Uncertainty":            { "type": "object", "required": [ "source","confidence" ], "additionalProperties": false, "properties": {
+    "Uncertainty":            { "type": "object", "required": [ "source" ], "additionalProperties": false, "properties": {
       "model":                { "type": "string", "enum": [ "point","interval","distribution","other" ] },
       "params":               { "type": "object" },
       "bySource":             { "type": "array", "items": {

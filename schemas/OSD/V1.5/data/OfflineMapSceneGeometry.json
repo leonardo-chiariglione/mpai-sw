@@ -16,6 +16,7 @@
     "ObjectCount":                                  { "type": "integer", "minimum": 0 },
     "Objects":                                      { "type": "array", "items": { "type": "object", "additionalProperties": false,
       "properties":                                 {
+        "Confidence": { "type": "number", "minimum": 0, "maximum": 1, "description": "How likely it is that the Object is where the Scene Geometry places it." },
         "ObjectSpaceTime":                          { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SpaceTime.json" },
         "ObjectIDOrGeometry":                       { "$ref": "#/$defs/ObjectIDOrGeometry" } } } },
 
@@ -34,6 +35,7 @@
 
     "GeometryObject":                               { "type": "object", "required": [ "ObjectSpaceTime", "ObjectQualifier" ],
                                                       "additionalProperties": false, "properties": {
+      "Confidence": { "type": "number", "minimum": 0, "maximum": 1, "description": "How likely it is that the Object is where the Scene Geometry places it." },
       "ObjectSpaceTime":                            { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SpaceTime.json" },
       "ObjectQualifier":                            { "$ref": "https://schemas.mpai.community/TFA/V1.5/data/OfflineMapQualifier.json" } } },
 

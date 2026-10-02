@@ -130,8 +130,7 @@
       "additionalProperties": false,
       "required": [
         "Tag",
-        "Feasible",
-        "Confidence"
+        "Feasible"
       ],
       "properties": {
         "Tag": {

@@ -13,6 +13,7 @@
     "LiDAREventDescriptorsSpaceTime": { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SpaceTime.json" },
 
     "LiDAREventDescriptors":          { "type": "array", "items": { "type": "object", "additionalProperties": false, "properties": {
+      "Confidence": { "type": "number", "minimum": 0, "maximum": 1, "description": "How likely it is that the Event happened as described." },
       "LSceneIDOrLScene":             { "description": "Embedded Event Descriptors (recursive) or an Event ID (by reference).",
                                         "type": "array", "minItems": 1, "maxItems": 1, "items": { "oneOf": [
                                       { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/LiDARSceneDescriptors.json" },

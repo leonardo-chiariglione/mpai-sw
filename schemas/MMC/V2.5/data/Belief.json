@@ -11,7 +11,7 @@
     "BeliefTime":                 { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/Time.json" },
 
     "BeliefData":                 { "description": "Belief object representing a proposition the Entity holds as true",
-                                    "type": "object", "required": [ "Proposition", "Confidence" ], "properties": {
+                                    "type": "object", "required": [ "Proposition" ], "properties": {
       "Proposition":              { "description": "Structured representation of the belief as a logical statement",
                                     "$ref": "https://schemas.mpai.community/MMC/V2.5/data/Proposition.json" },
       "Confidence":               { "description": "Numeric confidence (0.0Ã¢â‚¬â€œ1.0) in the truth of the belief",

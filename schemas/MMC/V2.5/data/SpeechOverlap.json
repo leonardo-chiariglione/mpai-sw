@@ -12,6 +12,7 @@
     "SpeechQualifier":        { "$ref": "https://schemas.mpai.community/TFA/V1.5/data/SpeechQualifier.json" },
 
     "SpeechOverlapData":      { "type": "array", "items": { "type": "object", "properties": {
+      "Confidence": { "type": "number", "minimum": 0, "maximum": 1, "description": "How likely it is that the Speech overlaps as stated." },
       "SpeechObjectID":       { "type": "string" },
       "SpeechObjectTime":     { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/Time.json" } } } },
 

@@ -16,11 +16,14 @@
     "GestureDescriptorsData":       { "type": "array", "minItems": 0, "description": "Gesture Descriptors Data: the gesture-relevant subset of the body's joints and posture.",
                                     "items": { "anyOf": [
                                     { "type": "object", "additionalProperties": false, "properties": {
+      "Confidence": { "type": "number", "minimum": 0, "maximum": 1, "description": "How likely it is that the Descriptors describe the input as it is." },
       "DataLength":                 { "type": "integer" },
       "DataURI":                    { "type": "string", "format": "uri" } } },
                                     { "type": "object", "additionalProperties": false, "properties": {
+      "Confidence": { "type": "number", "minimum": 0, "maximum": 1, "description": "How likely it is that the Descriptors describe the input as it is." },
       "Data":                       { "type": "string" } } },
                                     { "type": "object", "additionalProperties": false, "properties": {
+      "Confidence": { "type": "number", "minimum": 0, "maximum": 1, "description": "How likely it is that the Descriptors describe the input as it is." },
       "DataID":                     { "type": "string" } } } ] } },
 
     "GestureDescriptorsQualifier":  { "$ref": "https://schemas.mpai.community/TFA/V1.5/data/BodyDescriptorsQualifier.json",

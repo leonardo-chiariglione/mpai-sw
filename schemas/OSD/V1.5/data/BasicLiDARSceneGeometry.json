@@ -18,6 +18,7 @@
 
     "LiDARObjects":                     { "type": "array", "minItems": 0, "items": { "type": "object", "additionalProperties": false,
                                           "required": [ "LiDARObjectSpaceTime", "LiDARObjectQualifier" ], "properties": {
+      "Confidence": { "type": "number", "minimum": 0, "maximum": 1, "description": "How likely it is that the Object is where the Scene Geometry places it." },
       "LiDARObjectSpaceTime":           { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SpaceTime.json" },
       "LiDARObjectQualifier":           { "$ref": "https://schemas.mpai.community/TFA/V1.5/data/LiDARQualifier.json" } } } },
 

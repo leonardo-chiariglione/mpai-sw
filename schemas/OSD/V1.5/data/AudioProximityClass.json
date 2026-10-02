@@ -13,7 +13,7 @@
 
     "AudioProximityClass":        { "type": "array", "description": "List of proximity classifications for each audio object.", "items": {
                                     "type": "object", "additionalProperties": false,
-                                    "required": ["AudioObjectID", "ProximityLevel", "ProximityConfidence"], "properties": {
+                                    "required": ["AudioObjectID", "ProximityLevel"], "properties": {
 
           "AudioObjectID":        { "type": "string", "description": "Unique identifier of the audio object." },
 

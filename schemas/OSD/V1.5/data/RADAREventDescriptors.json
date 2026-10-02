@@ -16,6 +16,7 @@
 
     "RADAREventDescriptors":          { "type": "array", "items": { "type": "object", "additionalProperties": false, "properties": {
 
+      "Confidence": { "type": "number", "minimum": 0, "maximum": 1, "description": "How likely it is that the Event happened as described." },
       "RSceneIDOrRScene":             { "$ref": "#/$defs/RSceneIDOrRScene" } } } },
 
     "DataXMData":                     { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },

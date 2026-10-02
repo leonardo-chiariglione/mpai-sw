@@ -86,7 +86,7 @@
       "ActivityPhase":       { "type": "string", "enum": [ "lobby","warm-up","match","quest","intermission", "ceremony","marketplace","maintenance" ] },
       "ZoneID":              { "type": "string" } } },
 
-    "VisualAffordanceItem":  { "type": "object", "required": ["Tag", "Feasible", "Confidence"], "additionalProperties": false, "properties": {
+    "VisualAffordanceItem":  { "type": "object", "required": ["Tag", "Feasible"], "additionalProperties": false, "properties": {
       "Tag":                 { "type": "string", "enum": [ "Graspable","Pushable","Openable","Rotatable", "Liftable","Insertable","Selectable" ] },
       "Feasible":            { "type": "boolean" },
       "Constraints":         { "type": "array", "items": { "$ref": "#/$defs/ConstraintItem" } },
@@ -96,7 +96,7 @@
       "FallbackApplied":     { "type": "boolean" },
       "FallbackTag":         { "type": "string", "enum": ["Selectable"] } } },
 
-    "Model3DAffordanceItem": { "type": "object", "required": ["Tag", "Feasible", "Confidence"], "additionalProperties": false, "properties": {
+    "Model3DAffordanceItem": { "type": "object", "required": ["Tag", "Feasible"], "additionalProperties": false, "properties": {
       "Tag":                 { "type": "string", "enum": [ "Graspable3D","Pushable3D","Openable3D","Rotatable3D", "Liftable3D","Insertable3D",
                                                            "Selectable3D","Transformable3D", "Attachable3D","Detachable3D", "WalkableSurface",
                                                            "ClimbableSurface", "Portal","Occluder","CollisionObject" ] },
@@ -108,7 +108,7 @@
       "FallbackApplied":     { "type": "boolean" },
       "FallbackTag":         { "type": "string", "enum": ["Selectable3D", "Transformable3D"] } } },
 
-    "AudioAffordanceItem":   { "type": "object", "required": ["Tag", "Feasible", "Confidence"], "additionalProperties": false, "properties": {
+    "AudioAffordanceItem":   { "type": "object", "required": ["Tag", "Feasible"], "additionalProperties": false, "properties": {
       "Tag":                 { "type": "string", "enum": ["AttentionCue","Notification","UrgencySignal","InteractionPrompt"] },
       "Feasible":            { "type": "boolean" },
       "Constraints":         { "type": "array", "items": { "$ref": "#/$defs/ConstraintItem" } },
@@ -122,7 +122,7 @@
       "FallbackApplied":     { "type": "boolean" },
       "FallbackTag":         { "type": "string", "enum": ["Notification"] } } },
 
-    "HapticAffordanceItem":  { "type": "object", "required": ["Tag", "Feasible", "Confidence"], "additionalProperties": false, "properties": {
+    "HapticAffordanceItem":  { "type": "object", "required": ["Tag", "Feasible"], "additionalProperties": false, "properties": {
       "Tag":                 { "type": "string", "enum": ["Touchable","Tappable","Draggable","PressureSensitive","VibratoryCue"] },
       "Feasible":            { "type": "boolean" },
       "Constraints":         { "type": "array", "items": { "$ref": "#/$defs/ConstraintItem" } },

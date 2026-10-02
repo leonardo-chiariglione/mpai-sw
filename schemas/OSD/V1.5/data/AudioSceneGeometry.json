@@ -15,6 +15,7 @@
     "AudioObjectCount":                 { "type": "integer", "minimum": 0 },
 
     "AudioSceneGeometryObjects":        { "type": "array", "items": { "type": "object", "required": ["AudioID"], "additionalProperties": false, "properties": {
+      "Confidence": { "type": "number", "minimum": 0, "maximum": 1, "description": "How likely it is that the Object is where the Scene Geometry places it." },
       "SpaceTime":                      { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SpaceTime.json" },
       "AudioObjectID":                  { "type": "array", "minItems": 1, "items": { "oneOf": [
                                         { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/AudioObject.json" },

@@ -15,6 +15,7 @@
     "ObjectCount":                  { "type": "integer", "minimum": 0 },
     "Objects":                      { "type": "array", "minItems": 0, "items": { "type": "object", "additionalProperties": false,
                                       "required": [ "ObjectSpaceTime", "ObjectQualifier" ], "properties": {
+      "Confidence": { "type": "number", "minimum": 0, "maximum": 1, "description": "How likely it is that the Object is where the Scene Geometry places it." },
       "ObjectSpaceTime":            { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SpaceTime.json" },
       "ObjectQualifier":            { "$ref": "https://schemas.mpai.community/TFA/V1.5/data/AnyQualifier.json" } } } },
 

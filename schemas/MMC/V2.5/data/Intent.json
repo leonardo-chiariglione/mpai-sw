@@ -3,7 +3,7 @@
   "title":              "Intent V2.5",
   "description":        "An EntityÃ¢â‚¬â„¢s goal-directed purpose, e.g., an attempt to do something, or an utterance representing a request or an assessment. It can be accompanied by modifiers like urgency and can be either inferred from observation of an Entity or assigned to a virtual Entity.",
   "type":               "object",
-  "required":           [ "Header", "IntentID", "Intent", "Parameters", "ConfidenceScore", "Trace" ], "properties": {
+  "required":           [ "Header", "IntentID", "Intent", "Parameters", "Trace" ], "properties": {
 
     "Header":           { "type": "string", "const": "MMC-EIT-V2.5" },
     "MInstanceID":      { "type": "string" },

@@ -19,7 +19,7 @@
       "Width":            { "type": "integer", "minimum": 0 },
       "Height":           { "type": "integer", "minimum": 0 } } },
     "TextQualifier":      { "$ref": "https://schemas.mpai.community/TFA/V1.5/data/TextQualifier.json"},
-    "TextLine":           { "type": "object", "required": [ "Text", "Confidence", "BoundingBox" ], "properties": {
+    "TextLine":           { "type": "object", "required": [ "Text", "BoundingBox" ], "properties": {
       "Text":             { "type": "string" },
       "Confidence":       { "type": "number", "minimum": 0.0, "maximum": 1.0 },
       "BoundingBox":      { "$ref": "#/$defs/BoundingBox" } } } } }

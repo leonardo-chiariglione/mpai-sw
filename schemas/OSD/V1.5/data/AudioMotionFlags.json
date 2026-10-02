@@ -9,7 +9,7 @@
 
     "AudioMotionFlags":     { "type": "array", "description": "List of motion flags for each audio object", "items": {
                               "type": "object", "additionalProperties": false,
-                              "required": ["AudioObjectID", "MotionType", "MotionConfidence"], "properties": {
+                              "required": ["AudioObjectID", "MotionType"], "properties": {
 
         "AudioObjectID":    { "type": "string", "description": "Unique identifier of the audio object." },
 

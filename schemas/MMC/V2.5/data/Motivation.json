@@ -3,7 +3,7 @@
   "title":            "Motivation V2.5",
   "description":      "Encodes inferred goal orientation or drive behind user behavior.",
   "type":             "object",
-  "required":         [ "Header", "MotivationID", "Type", "Subtype", "Strength", "Confidence" ],
+  "required":         [ "Header", "MotivationID", "Type", "Subtype", "Strength" ],
   "properties":       {
 
     "Header":         { "type": "string", "const": "MMC-MOT-V2.5" },

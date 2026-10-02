@@ -17,6 +17,7 @@
     "UltrasoundObjectCount":                  { "type": "integer", "minimum": 0 },
     "UltrasoundObjects":                      { "type": "array", "minItems": 0, "items": { "type": "object", "additionalProperties": false,
                                                 "required": [ "UltrasoundObjectSpaceTime", "UltrasoundObjectQualifier" ], "properties": {
+      "Confidence": { "type": "number", "minimum": 0, "maximum": 1, "description": "How likely it is that the Object is where the Scene Geometry places it." },
       "UltrasoundObjectSpaceTime":            { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SpaceTime.json" },
       "UltrasoundObjectQualifier":            { "$ref": "https://schemas.mpai.community/TFA/V1.5/data/UltrasoundQualifier.json" } } } },
 

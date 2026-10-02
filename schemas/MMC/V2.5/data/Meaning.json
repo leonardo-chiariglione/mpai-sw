@@ -17,18 +17,22 @@
     "Meaning":                        { "type": "object", "additionalProperties": false, "description": "Set of linguistic analysis results for the input text.", "properties": {
 
       "POS_tagging":                  { "type": "object", "additionalProperties": false, "description": "Results of Part of Speech (POS) tagging.", "properties": {
+        "Confidence": { "type": "number", "minimum": 0, "maximum": 1, "description": "How likely it is that the tagging result is right." },
         "POS_tagging_set":            { "type": "string", "description": "Identifier of the POS tagging set used." },
         "POS_tagging_result":         { "type": "string", "description": "POS tagging results for the input text." } } },
 
       "NE_tagging":                   { "type": "object", "additionalProperties": false, "description": "Results of Named Entity (NE) tagging.", "properties": {
+        "Confidence": { "type": "number", "minimum": 0, "maximum": 1, "description": "How likely it is that the tagging result is right." },
         "NE_tagging_set":             { "type": "string", "description": "Identifier of the NE tagging set used." },
         "NE_tagging_result":          { "type": "string", "description": "NE tagging results for the input text." } } },
 
       "dependency_tagging":           { "type": "object", "additionalProperties": false, "description": "Results of dependency structure tagging.", "properties": {
+        "Confidence": { "type": "number", "minimum": 0, "maximum": 1, "description": "How likely it is that the tagging result is right." },
         "dependency_tagging_set":     { "type": "string", "description": "Identifier of the dependency tagging set used." },
         "dependency_tagging_result":  { "type": "string", "description": "Dependency tagging results for the input text." } } },
 
       "SRL_tagging":                  { "type": "object", "additionalProperties": false, "description": "Results of Semantic Role Labelling (SRL) tagging.", "properties": {
+        "Confidence": { "type": "number", "minimum": 0, "maximum": 1, "description": "How likely it is that the tagging result is right." },
         "SRL_tagging_set":            { "type": "string", "description": "Identifier of the SRL tagging set used." },
         "SRL_tagging_result":         { "type": "string", "description": "SRL tagging results for the input text." } } } } },
 
