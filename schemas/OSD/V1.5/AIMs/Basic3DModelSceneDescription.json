@@ -10,7 +10,7 @@
 
   "ExternalPorts":        [{"Name": "SpaceTime",                    "Direction": "Input",  "DataType": "OSD-SPT-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "3DModelObject",                "Direction": "Input",  "DataType": "OSD-3DO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "Basic3DModelSceneDescriptors", "Direction": "Output", "DataType": "OSD-B3D-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
+                           {"Name": "Basic3DModelSceneDescriptors", "Direction": "Output", "DataType": "OSD-B3S-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":              [ ],
 
