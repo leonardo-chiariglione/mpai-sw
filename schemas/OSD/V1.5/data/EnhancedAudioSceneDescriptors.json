@@ -109,15 +109,6 @@
         "type": "string"
       }
     },
-    "SceneState": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "AcousticProfile": {
-          "$ref": "https://schemas.mpai.community/OSD/V1.5/data/AcousticProfile.json"
-        }
-      }
-    },
     "DomainRequest": {
       "type": "string"
     },
