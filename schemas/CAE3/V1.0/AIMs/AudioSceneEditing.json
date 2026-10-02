@@ -2,6 +2,7 @@
   "$comment":             "https://schemas.mpai.community/AIF/V3.0/data/AIMMetadata.json",
   "$id":                  "https://schemas.mpai.community/CAE3/V1.0/AIMs/AudioSceneEditing.json",
   "title":                "Audio Scene Editing V1.0",
+  "Header":               "CAE-ASE-V1.0",
 
   "Identifier":           {"ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "CAE-ASE-V1.0"},
 

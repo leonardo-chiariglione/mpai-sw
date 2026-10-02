@@ -53,7 +53,7 @@
     "DescrMetadata":            { "type": "string", "maxLength": 2048 } },
 
   "$defs": {
-  "ManagedObject":              { "oneOf": [
+  "ManagedObject":              { "anyOf": [
                                 { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/ObjectOrID.json#/$defs/3DModelObjectOrID" },
                                 { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/ObjectOrID.json#/$defs/AudioObjectOrID" },
                                 { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/ObjectOrID.json#/$defs/SpeechObjectOrID" },
