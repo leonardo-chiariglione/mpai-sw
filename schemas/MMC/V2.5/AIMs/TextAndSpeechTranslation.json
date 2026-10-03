@@ -4,19 +4,20 @@
   "title":                "Text and Speech Translation V2.5",
 
   "Identifier":           {"ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "MMC-TST-V2.5"},
+  "Header":               "MMC-TST-V2.5",
 
   "APIProfile":           "Basic",
   "Description":          "Text and Speech Translation. Accepts a Speech Object or a Text Object, translates into the language named by the Language Selector, and produces the translated Text Object and Speech Object. Acquisition and delivery are NOT SubAIMs of this Composite AIM: they interact with the user directly, and therefore belong to the User Agent, travelling with it when the User Agent becomes a Remote Client Application. Speech Object Acquisition and Speech Object Delivery remain AIMs in their own right where they capture from or deliver to a source outside the AIF.",
 
-  "InternalTypes":        [{"Name": "RecognisedText", "DataType": "OSD-TXO-V1.5"},
-                           {"Name": "TranslatedText", "DataType": "OSD-TXO-V1.5"}],
+  "InternalTypes":        [{"Name": "RecognisedText", "DataType": ["OSD-BTO-V1.5", "OSD-TXO-V1.5"]},
+                           {"Name": "TranslatedText", "DataType": ["OSD-BTO-V1.5", "OSD-TXO-V1.5"]}],
 
-  "ExternalPorts":        [{"Name": "InputSpeech",      "Direction": "Input",  "DataType": "OSD-SPO-V1.5",                  "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "InputText",        "Direction": "Input",  "DataType": "OSD-TXO-V1.5",                  "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+  "ExternalPorts":        [{"Name": "InputSpeech",      "Direction": "Input",  "DataType": ["OSD-BSO-V1.5", "OSD-SPO-V1.5"], "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "InputText",        "Direction": "Input",  "DataType": ["OSD-BTO-V1.5", "OSD-TXO-V1.5"], "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "LanguageSelector", "Direction": "Input",  "DataType": "OSD-SEL-V1.5", "PortNumber": 1,                     "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "MediaSelector",    "Direction": "Input",  "DataType": "OSD-SEL-V1.5", "PortNumber": 2, "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "OutputText",       "Direction": "Output", "DataType": "OSD-TXO-V1.5",                                      "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "OutputSpeech",     "Direction": "Output", "DataType": "OSD-SPO-V1.5",                                      "Technology": "Software", "Protocol": "", "IsRemote": false}],
+                           {"Name": "OutputText",       "Direction": "Output", "DataType": ["OSD-BTO-V1.5", "OSD-TXO-V1.5"],                     "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "OutputSpeech",     "Direction": "Output", "DataType": ["OSD-BSO-V1.5", "OSD-SPO-V1.5"],                     "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":              [{ "Identifier": { "ImplementerID": "/* from IIDRA */", "ImplementationID": "/* from Implementer */", "AIMName": "MMC-ASR-V2.5" } },
                            { "Identifier": { "ImplementerID": "/* from IIDRA */", "ImplementationID": "/* from Implementer */", "AIMName": "MMC-TTT-V2.5" } },
