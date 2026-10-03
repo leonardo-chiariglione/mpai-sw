@@ -44,11 +44,11 @@
 
     "Parameters":       { "description": "Optional modifiers refining execution", "type": "object", "properties": {
       "Urgency":        { "description": "Execution urgency", "type": "string", "enum": [ "low", "medium", "high" ] },
-      "ConfidenceLevel":{ "description": "User certainty", "type": "string", "enum": [ "tentative", "neutral", "assertive" ] },
+      "Confidence":{ "description": "User certainty", "type": "string", "enum": [ "tentative", "neutral", "assertive" ] },
       "TemporalCue":    { "description": "Time-related signal", "$ref": "https://schemas.mpai.community/OSD/V1.5/data/TemporalCue.json" },
       "SpatialAnchor":  { "description": "Physical reference", "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SpatialAttitude.json" } } },
 
-    "ConfidenceScore":  { "description": "Confidence in intent type inference", "type": "number", "minimum": 0.0, "maximum": 1.0 },
+    "Confidence":  { "description": "Confidence in intent type inference", "type": "number", "minimum": 0.0, "maximum": 1.0 },
 
     "DataXMData":       { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
     "DescrMetadata":    { "type": "string", "maxLength": 2048 } } }

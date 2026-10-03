@@ -17,7 +17,7 @@
                                 "$comment": "95% confidence interval [low, high] in normalized scale." },
       "source":               { "type": "string", "enum": [ "selfReport","observerReport","behavioral","inferred","blended" ],
                                 "$comment": "Primary data source" },
-      "confidence":           { "type": "number", "minimum": 0, "maximum": 1, "$comment": "Measurement confidence 0Ã¢â‚¬â€œ1" } } },
+      "Confidence":           { "type": "number", "minimum": 0, "maximum": 1, "$comment": "Measurement confidence 0-1" } } },
 
     "trait":                  { "type": "object", "required": [ "score" ], "additionalProperties": false, "properties": {
       "score":                { "$ref": "#/$defs/score" },

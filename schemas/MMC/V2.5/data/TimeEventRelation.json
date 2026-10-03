@@ -48,7 +48,7 @@
       "timezone":             { "type": "string" },
       "calendar":             { "type": "string" },
       "uncertainty":          { "type": "string", "description": "e.g., Ã‚Â±PT5S" },
-      "confidence":           { "type": "number", "minimum": 0, "maximum": 1 },
+      "Confidence":           { "type": "number", "minimum": 0, "maximum": 1 },
       "trace":                { "$ref": "#/$defs/Trace" } } },
 
     "Event":                  { "type": "object", "required": [ "eventID","type" ], "additionalProperties": false, "properties": {
@@ -68,7 +68,7 @@
       "directional":          { "type": "boolean" },
       "symmetric":            { "type": "boolean" },
       "transitive":           { "type": "boolean" },
-      "confidence":           { "type": "number", "minimum": 0, "maximum": 1 },
+      "Confidence":           { "type": "number", "minimum": 0, "maximum": 1 },
       "trace":                { "$ref": "#/$defs/Trace" } } },
 
     "Participant":            { "type": "object", "required": [ "id" ], "additionalProperties": false, "properties": {

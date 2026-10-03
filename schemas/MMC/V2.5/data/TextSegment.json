@@ -14,7 +14,7 @@
 
     "TextSegmentData":        { "type": "object", "properties": {
       "Time":                 { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/Time.json" },
-      "ConfidenceScore":      { "type": "number", "minimum": 0, "maximum": 1 },
+      "Confidence":      { "type": "number", "minimum": 0, "maximum": 1 },
       "Segment":              { "type": "array", "items": { "type": "object", "properties": {
         "Word":               { "$ref": "https://schemas.mpai.community/MMC/V2.5/data/TextWord.json" } } } } } },
 

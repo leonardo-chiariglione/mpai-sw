@@ -50,7 +50,7 @@
                           { "type": "object", "additionalProperties": false, "properties": {
         "ref":            { "type": "string", "description": "ID reference to an entity/object in the world model" },
         "text":           { "type": "string", "description": "Surface form if no ID available" } } } ] },
-      "confidence":       { "type": "number", "minimum": 0, "maximum": 1 },
+      "Confidence":       { "type": "number", "minimum": 0, "maximum": 1 },
       "provenance":       { "type": "object", "additionalProperties": false, "properties": {
         "textSpan":       { "type": "array", "items": { "type": "integer" } },
         "timeSpan":       { "type": "array", "items": { "type": "number" } } } } } } } }
