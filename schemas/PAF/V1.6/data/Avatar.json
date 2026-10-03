@@ -2,6 +2,7 @@
   "$id":                              "https://schemas.mpai.community/PAF/V1.6/data/Avatar.json",
   "title":                            "Avatar V1.6",
   "type":                             "object",
+  "required":                         [ "Header", "AvatarID" ],
   "properties":                       {
 
     "Header":                         { "type": "string", "const": "PAF-AVT-V1.6" },
@@ -20,7 +21,7 @@
 
       "SpeechObjectOrSpeechObjectID": { "type": "array", "items": { "anyOf": [
                                       { "type": "object", "properties": {
-        "SpeechObject":               { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SpeechObject.json" } } },
+        "SpeechObject":               { "anyOf": [ { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/BasicSpeechObject.json" }, { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SpeechObject.json" } ] } } },
                                       { "type": "object", "properties": {
         "SpeechObjectID":             { "type": "string" } } } ] } },
 
