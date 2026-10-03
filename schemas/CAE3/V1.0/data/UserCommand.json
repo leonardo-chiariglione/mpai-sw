@@ -48,7 +48,12 @@
         "Objects":              { "type": "array", "items": { "type": "object", "additionalProperties": false, "properties": {
           "ObjectID":           { "$ref": "#/$defs/ManagedObject" },
           "AcousticProfile":    { "$ref": "https://schemas.mpai.community/CAE3/V1.0/data/AcousticProfile.json#/$defs/Object" },
-          "SpatialAttitude":    { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SpatialAttitude.json" } } } } } } } },
+          "SpatialAttitude":    { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SpatialAttitude.json" } } } } } },
+
+      "TranslatedObjects":      { "type": "object", "additionalProperties": false, "description": "Speech Objects to translate into another language, with Text and Speech Translation (MMC-TST). The source language is the one the Speech Object's own Qualifier states.", "properties": {
+        "Objects":              { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": [ "ObjectID", "SpeechQualifier" ], "properties": {
+          "ObjectID":           { "$ref": "#/$defs/ManagedObject" },
+          "SpeechQualifier":    { "$ref": "https://schemas.mpai.community/TFA/V1.5/data/SpeechQualifier.json", "description": "The Qualifier of the translated Speech Object: its Attributes.Metadata.Language states the target language." } } } } } } } },
 
     "DataXMData":               { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
     "DescrMetadata":            { "type": "string", "maxLength": 2048 } },
