@@ -3,7 +3,7 @@
   "$id":                  "https://schemas.mpai.community/OSD/V1.5/AIMs/BasicUltrasoundSceneDescription.json",
   "title":                "Basic Ultrasound Scene Description V1.5",
 
-  "Identifier":           {"ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "OSD-BUD-V1.5"},
+  "Identifier":           {"ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "OSD-BUS-V1.5"},
 
   "APIProfile":           "Basic",
   "Description":          "This AIM implements the Basic Ultrasound Scene Description function.",

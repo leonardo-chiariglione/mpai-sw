@@ -3,7 +3,7 @@
   "$id":                  "https://schemas.mpai.community/OSD/V1.5/AIMs/BasicOfflineMapSceneDescription.json",
   "title":                "Basic Offline Map Scene Description V1.5",
 
-  "Identifier":           {"ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "OSD-BOD-V1.5"},
+  "Identifier":           {"ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "OSD-BOS-V1.5"},
 
   "APIProfile":           "Basic",
   "Description":          "This AIM implements the Basic Offline Map Scene Description function.",

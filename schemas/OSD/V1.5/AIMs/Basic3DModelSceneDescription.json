@@ -3,7 +3,7 @@
   "$id":                  "https://schemas.mpai.community/OSD/V1.5/AIMs/Basic3DModelSceneDescription.json",
   "title":                "Basic 3D Model Scene Description V1.5",
 
-  "Identifier":           {"ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "OSD-B3D-V1.5"},
+  "Identifier":           {"ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "OSD-B3S-V1.5"},
 
   "APIProfile":           "Basic",
   "Description":          "This AIM implements the Basic 3D Model Scene Description function.",

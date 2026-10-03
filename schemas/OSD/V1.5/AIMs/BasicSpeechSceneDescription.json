@@ -3,7 +3,7 @@
   "$id":                  "https://schemas.mpai.community/OSD/V1.5/AIMs/BasicSpeechSceneDescription.json",
   "title":                "Basic Speech Scene Description V1.5",
 
-  "Identifier":           {"ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "OSD-BSD-V1.5"},
+  "Identifier":           {"ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "OSD-BSS-V1.5"},
 
   "APIProfile":           "Basic",
   "Description":          "This AIM implements the Basic Speech Scene Description function.",

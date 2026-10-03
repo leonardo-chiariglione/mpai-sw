@@ -3,7 +3,7 @@
   "$id":                  "https://schemas.mpai.community/OSD/V1.5/AIMs/BasicRADARSceneDescription.json",
   "title":                "Basic RADAR Scene Description V1.5",
 
-  "Identifier":           {"ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "OSD-BRD-V1.5"},
+  "Identifier":           {"ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "OSD-BRS-V1.5"},
 
   "APIProfile":           "Basic",
   "Description":          "This AIM implements the Basic RADAR Scene Description function.",

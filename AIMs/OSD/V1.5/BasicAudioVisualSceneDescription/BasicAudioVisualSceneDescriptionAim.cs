@@ -7,7 +7,7 @@ using Mpai.Core.OSD;
 namespace Mpai.Osd.BasicAudioVisualSceneDescription;
 
 // ---------------------------------------------------------------------------
-//  Basic Audio-Visual Scene Description AIM (AIMName OSD-BMD-V1.5).
+//  Basic Audio-Visual Scene Description AIM (AIMName OSD-BMS-V1.5).
 //  Output data type: BasicAudioVisualSceneDescriptors (OSD-BMS-V1.5).
 //
 //  COMPOSES, does not ASSOCIATE. This AIM takes the per-modality Basic Scene

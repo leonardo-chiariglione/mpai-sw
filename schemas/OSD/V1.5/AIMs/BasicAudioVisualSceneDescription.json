@@ -3,7 +3,7 @@
   "$id":                  "https://schemas.mpai.community/OSD/V1.5/AIMs/BasicAudioVisualSceneDescription.json",
   "title":                "Basic Audio-Visual Scene Description V1.5",
 
-  "Identifier":           {"ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "OSD-BMD-V1.5"},
+  "Identifier":           {"ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "OSD-BMS-V1.5"},
 
   "APIProfile":           "Basic",
   "Description":          "This AIM implements the Basic Audio-Visual Scene Description function.",
