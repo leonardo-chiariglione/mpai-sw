@@ -4,6 +4,7 @@
   "title": "PersonalStatusDemultiplexing V2.5",
 
   "Identifier":   { "ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "MMC-PDX-V2.5" },
+  "Header":       "MMC-PDX-V2.5",
 
   "APIProfile":   "Basic",
   "Description":  "This AIM Demultiplexes the Personal Status of the different Modalities.",
