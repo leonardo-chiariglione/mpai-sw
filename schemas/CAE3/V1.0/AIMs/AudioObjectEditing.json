@@ -7,16 +7,15 @@
   "Identifier":           {"ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "CAE-AOE-V1.0"},
 
   "APIProfile":           "Basic",
-  "Description":          "This AIM edits an Audio Object and composes Audio Objects into one. One Object is open at a time, so a User Command need not name its target: it acts on what is open. The Object Port accepts a Basic Audio Object or a full Audio Object and the AIM knows which it was given from the value's Header - an Object holding one Object is Basic, an Object holding more than one is full, so the kind is a fact about the content rather than a declaration about the channel. Composing a Basic Audio Object with another Object produces a full Audio Object; removing all but one produces a Basic Audio Object again.",
+  "Description":          "Audio Object Editing. One Basic Audio Object is open at a time, so a User Command need not name it: a Basic Audio Object arriving is opened - from Shared Storage, by its identifier - or, new (a sound the User Agent captured), created. The User Command modifies what it is like (ModifiedObjects: the Object part of the Acoustic Profile; LUFS) and where it is heard from (UserPoV, also on its own Port). Every edit is a new version in Shared Storage. Outputs: the open Basic Audio Object, to the Module and to Audio Scene Editing, and the User Command, with its report half (UserCommandReport) saying how each action was executed.",
 
   "InternalTypes":        [],
 
-  "ExternalPorts":        [{"Name": "UserCommand", "Direction": "Input",  "DataType": "CAE-UCM-V1.0",                      "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "AudioObject", "Direction": "Input",  "DataType": ["OSD-BAO-V1.5", "OSD-AUO-V1.5"],   "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "AudioObject", "Direction": "Output", "DataType": ["OSD-BAO-V1.5", "OSD-AUO-V1.5"],   "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "SpeechObject",         "Direction": "Input",  "DataType": "OSD-BSO-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "SpeechToTranslate",    "Direction": "Output", "DataType": "OSD-BSO-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "TargetLanguage",       "Direction": "Output", "DataType": "OSD-SEL-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false}],
+  "ExternalPorts":        [{"Name": "UserCommand", "Direction": "Input", "DataType": "CAE-UCM-V1.0", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "UserPoV", "Direction": "Input", "DataType": "OSD-OPV-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "AudioObject", "Direction": "Input", "DataType": "OSD-BAO-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "EditedAudioObject", "Direction": "Output", "DataType": "OSD-BAO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "UserCommandReport", "Direction": "Output", "DataType": "CAE-UCM-V1.0", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":              [],
   "Topology":             [],

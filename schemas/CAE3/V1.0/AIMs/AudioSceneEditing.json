@@ -7,17 +7,16 @@
   "Identifier":           {"ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "CAE-ASE-V1.0"},
 
   "APIProfile":           "Basic",
-  "Description":          "This AIM composes Audio Objects into an Audio Scene, places them, and sets the listener's Point of View. One Scene is open at a time, so a User Command need not name it. The Object Port accepts a Basic Audio Object or a full one, and the Scene Ports accept Basic Audio Scene Descriptors or full ones; the Header of what arrives says which it is. An Object placed in a Scene keeps its own attributes unless the Scene provides them, in which case the Scene overrides - which is why an Object may carry a listener's Point of View of its own and a Scene's still wins.",
+  "Description":          "Audio Scene Editing. One Basic Audio Scene is open at a time, so a User Command need not name it: a Basic Audio Scene arriving is opened, and the first Object added to no open Scene creates one. The User Command places Basic Audio Objects - named by their identifiers in Shared Storage - (AddedObjects), moves them (MovedObjects), changes where they are (ChangedObjects), takes them out (RemovedObjects) and sets where the Scene is heard from (UserPoV, also on its own Port). Every edit is a new version in Shared Storage. Outputs: the open Basic Audio Scene, and the User Command, with its report half (UserCommandReport) saying how each action was executed.",
 
   "InternalTypes":        [],
 
-  "ExternalPorts":        [{"Name": "UserCommand",           "Direction": "Input",  "DataType": "CAE-UCM-V1.0",                    "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "ListenerPointOfView",   "Direction": "Input",  "DataType": "OSD-OPV-V1.5",                    "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "AudioObject",           "Direction": "Input",  "DataType": ["OSD-BAO-V1.5", "OSD-AUO-V1.5"], "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "AudioScene",            "Direction": "Input",  "DataType": ["OSD-BAS-V1.5", "OSD-ASD-V1.5"], "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "AudioSceneDescriptors", "Direction": "Output", "DataType": ["OSD-BAS-V1.5", "OSD-ASD-V1.5"], "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "ObjectCommand",        "Direction": "Input",  "DataType": "CAE-UCM-V1.0", "PortNumber": 2, "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "TranslatedSpeech",     "Direction": "Input",  "DataType": "OSD-BSO-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false}],
+  "ExternalPorts":        [{"Name": "AudioObject", "Direction": "Input", "DataType": "OSD-BAO-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "AudioScene", "Direction": "Input", "DataType": "OSD-BAS-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "UserCommand", "Direction": "Input", "DataType": "CAE-UCM-V1.0", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "UserPoV", "Direction": "Input", "DataType": "OSD-OPV-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "AudioSceneDescriptors", "Direction": "Output", "DataType": "OSD-BAS-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "UserCommandReport", "Direction": "Output", "DataType": "CAE-UCM-V1.0", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":              [],
   "Topology":             [],
