@@ -43,10 +43,27 @@ public sealed class AseAim
     // Materialize now takes a resolver, so whoever runs this AIM decides where
     // an expanded object comes from. AseAimProcessor supplies one backed by what
     // has arrived on its AudioObject Port - which is the Topology, honoured.
-    public AseAim(ISharedStorage storage)
+    // The M-Instance or U-Environment the Scenes are made in: OSD requires the first
+    // on a Basic Audio Scene. An application gives its own; ASM's own is "ASM".
+    private readonly string mInstanceId;
+
+    public AseAim(ISharedStorage storage, string mInstanceId = "ASM")
     {
         this.storage = storage;
+        this.mInstanceId = mInstanceId;
     }
+
+    // A Scene not yet placed is at the origin of its space.
+    private static SpaceTime Origin() => new()
+    {
+        SpaceTimeID = Guid.NewGuid().ToString(),
+        SpatialAttitude1 = new SpatialAttitude
+        {
+            ObjectSpatialAttitudeID = Guid.NewGuid().ToString(),
+            Position = new Position { PositionID = Guid.NewGuid().ToString(), CartPosition = [0, 0, 0] },
+            Orientation = new Orientation { OrientationID = Guid.NewGuid().ToString(), EulerAngles = [0, 0, 0] }
+        }
+    };
 
     private static readonly JsonSerializerOptions DataOptions = new() { Converters = { new JsonStringEnumConverter() } };
     private static byte[] Serialize<T>(T value) => JsonSerializer.SerializeToUtf8Bytes(value, DataOptions);
@@ -84,8 +101,10 @@ public sealed class AseAim
         var sceneId = NextId("ASD");
         storage.Put(sceneId, Serialize(new AudioSceneDescriptors
         {
+            MInstanceID = mInstanceId,
             AudioSceneDescriptorsID = sceneId,
-            ListenerPointOfView = listenerPointOfView,
+            AudioSceneDescriptorsSpaceTime = Origin(),
+            UserPoV = listenerPointOfView,
             AudioObjectCount = 1,
             AudioObjects = new() { MakeEntry(audioObjectAssetId, placement) }
         }));
@@ -122,10 +141,11 @@ public sealed class AseAim
 
         storage.Put(newId, Serialize(new AudioSceneDescriptors
         {
+            MInstanceID = mInstanceId,
             AudioSceneDescriptorsID = newId,
             AudioSceneDescriptorsTime = existingData.AudioSceneDescriptorsTime,
-            AudioSceneDescriptorsSpaceTime = existingData.AudioSceneDescriptorsSpaceTime,
-            ListenerPointOfView = listenerPointOfView ?? existingData.ListenerPointOfView,
+            AudioSceneDescriptorsSpaceTime = existingData.AudioSceneDescriptorsSpaceTime ?? Origin(),
+            UserPoV = listenerPointOfView ?? existingData.UserPoV,
             AudioObjectCount = entries.Count,
             AudioObjects = entries,
             SubAudioSceneCount = existingData.SubAudioSceneCount,
@@ -151,10 +171,11 @@ public sealed class AseAim
         var newId = NextId("ASD");
         storage.Put(newId, Serialize(new AudioSceneDescriptors
         {
+            MInstanceID = mInstanceId,
             AudioSceneDescriptorsID = newId,
             AudioSceneDescriptorsTime = existingData.AudioSceneDescriptorsTime,
-            AudioSceneDescriptorsSpaceTime = existingData.AudioSceneDescriptorsSpaceTime,
-            ListenerPointOfView = listenerPointOfView,
+            AudioSceneDescriptorsSpaceTime = existingData.AudioSceneDescriptorsSpaceTime ?? Origin(),
+            UserPoV = listenerPointOfView,
             AudioObjectCount = existingData.AudioObjectCount,
             AudioObjects = existingData.AudioObjects,
             SubAudioSceneCount = existingData.SubAudioSceneCount,
@@ -205,10 +226,11 @@ public sealed class AseAim
 
         return new AudioSceneDescriptors
         {
+            MInstanceID = mInstanceId,
             AudioSceneDescriptorsID = sceneAssetId,
             AudioSceneDescriptorsTime = scene.AudioSceneDescriptorsTime,
-            AudioSceneDescriptorsSpaceTime = scene.AudioSceneDescriptorsSpaceTime,
-            ListenerPointOfView = scene.ListenerPointOfView,
+            AudioSceneDescriptorsSpaceTime = scene.AudioSceneDescriptorsSpaceTime ?? Origin(),
+            UserPoV = scene.UserPoV,
             AudioObjectCount = objectEntries.Count,
             AudioObjects = objectEntries.Count > 0 ? objectEntries : null
         };
@@ -233,8 +255,10 @@ public sealed class AseAim
         var sceneId = NextId("BAS");
         storage.Put(sceneId, Serialize(new BasicAudioSceneDescriptors
         {
+            MInstanceID = mInstanceId,
             BasicAudioSceneDescriptorsID = sceneId,
-            ListenerPointOfView = listenerPointOfView,
+            BASSpaceTime = Origin(),
+            UserPoV = listenerPointOfView,
             AudioObjectCount = 1,
             BasicAudioSceneDescriptorsEntries = new() { MakeBasicEntry(basicAudioObjectAssetId, placement) }
         }));
@@ -268,11 +292,13 @@ public sealed class AseAim
 
         storage.Put(newId, Serialize(new BasicAudioSceneDescriptors
         {
+            MInstanceID = mInstanceId,
             BasicAudioSceneDescriptorsID = newId,
             BasicAudioSceneDescriptorsTime = existingData.BasicAudioSceneDescriptorsTime,
-            BASSpaceTime = existingData.BASSpaceTime,
-            ListenerPointOfView = existingData.ListenerPointOfView,
-            GravityValue = existingData.GravityValue,
+            BASSpaceTime = existingData.BASSpaceTime ?? Origin(),
+            UserPoV = existingData.UserPoV,
+            ClosedSpace = existingData.ClosedSpace,
+            AcousticProfile = existingData.AcousticProfile,
             AudioObjectCount = entries.Count,
             BasicAudioSceneDescriptorsEntries = entries
         }));
@@ -280,27 +306,155 @@ public sealed class AseAim
         return new RepositoryAsset { AssetId = newId, AssetType = AssetType.BAS };
     }
 
-    private static BasicAudioSceneEntry MakeBasicEntry(string basicAudioObjectAssetId, SpaceTime? placement)
-    {
-        var position = placement?.SpatialAttitude1?.Position?.CartPosition ?? new double[] { 0, 0, 0 };
-        var orientation = placement?.SpatialAttitude1?.Orientation?.EulerAngles ?? new double[] { 0, 0, 0 };
-
-        return new BasicAudioSceneEntry
+    // A member is placed - position and orientation - by its Space-Time alone.
+    // The per-member Point of View this once also wrote, a copy of the placement,
+    // is now the member's UserPoV (the author, 2026/10/02): where the member is
+    // heard from, absent unless set.
+    // A placed member moved, or taken out: a NEW version, as every edit. The member is
+    // found by its Basic Audio Object's identifier; false when the Scene has none.
+    public RepositoryAsset? ReplaceInBasicScene(string sceneAssetId, string basicAudioObjectAssetId, SpaceTime? placement) =>
+        RebuildBasicScene(sceneAssetId, basicAudioObjectAssetId, e => new BasicAudioSceneEntry
         {
-            AudioObjectIDOrAudioObject = new BasicAudioObject { BasicAudioObjectID = basicAudioObjectAssetId },
-            AudioObjectSpaceTime = placement,
-            PointOfView = new PointOfView
+            AudioObjectIDOrAudioObject = e.AudioObjectIDOrAudioObject, UserPoV = e.UserPoV, AudioObjectSpaceTime = placement ?? e.AudioObjectSpaceTime
+        });
+
+    public RepositoryAsset? RemoveFromBasicScene(string sceneAssetId, string basicAudioObjectAssetId) =>
+        RebuildBasicScene(sceneAssetId, basicAudioObjectAssetId, _ => null);
+
+    private RepositoryAsset? RebuildBasicScene(string sceneAssetId, string memberId, Func<BasicAudioSceneEntry, BasicAudioSceneEntry?> change)
+    {
+        if (!storage.Exists(sceneAssetId) || !IsType(sceneAssetId, "BAS"))
+            throw new InvalidOperationException($"{sceneAssetId} is not a stored Basic Scene.");
+        var existing = Deserialize<BasicAudioSceneDescriptors>(storage.Get(sceneAssetId));
+        var found = false;
+        var entries = new List<BasicAudioSceneEntry>();
+        foreach (var e in existing.BasicAudioSceneDescriptorsEntries)
+        {
+            if (!found && e.AudioObjectIDOrAudioObject?.BasicAudioObjectID == memberId)
             {
-                PointOfViewID = Guid.NewGuid().ToString(),
-                CartPosition = position,
-                Orientation = orientation
+                found = true;
+                if (change(e) is { } kept) entries.Add(kept);
             }
-        };
+            else entries.Add(e);
+        }
+        if (!found) return null;
+
+        var newId = NextId("BAS");
+        foreach (var e in entries)
+            if (e.AudioObjectIDOrAudioObject?.BasicAudioObjectID is { } member) PutReference(newId, member);
+        storage.Put(newId, Serialize(new BasicAudioSceneDescriptors
+        {
+            MInstanceID = mInstanceId,
+            BasicAudioSceneDescriptorsID = newId,
+            BasicAudioSceneDescriptorsTime = existing.BasicAudioSceneDescriptorsTime,
+            BASSpaceTime = existing.BASSpaceTime ?? Origin(),
+            UserPoV = existing.UserPoV,
+            ClosedSpace = existing.ClosedSpace,
+            AcousticProfile = existing.AcousticProfile,
+            AudioObjectCount = entries.Count,
+            BasicAudioSceneDescriptorsEntries = entries
+        }));
+        return new RepositoryAsset { AssetId = newId, AssetType = AssetType.BAS };
+    }
+
+    private static BasicAudioSceneEntry MakeBasicEntry(string basicAudioObjectAssetId, SpaceTime? placement) => new()
+    {
+        AudioObjectIDOrAudioObject = new BasicAudioObject { BasicAudioObjectID = basicAudioObjectAssetId },
+        AudioObjectSpaceTime = placement
+    };
+
+    // Sets where a Basic scene is heard from: a NEW version, as every edit.
+    public RepositoryAsset SetBasicSceneListener(string sceneAssetId, PointOfView userPoV)
+    {
+        if (!storage.Exists(sceneAssetId))
+            throw new InvalidOperationException($"{sceneAssetId} does not exist.");
+        if (!IsType(sceneAssetId, "BAS"))
+            throw new InvalidOperationException($"{sceneAssetId} is not a Basic Scene.");
+
+        var existing = Deserialize<BasicAudioSceneDescriptors>(storage.Get(sceneAssetId));
+        var newId = NextId("BAS");
+        foreach (var entry in existing.BasicAudioSceneDescriptorsEntries)
+            if (entry.AudioObjectIDOrAudioObject?.BasicAudioObjectID is { Length: > 0 } member)
+                PutReference(newId, member);
+
+        storage.Put(newId, Serialize(new BasicAudioSceneDescriptors
+        {
+            MInstanceID = mInstanceId,
+            BasicAudioSceneDescriptorsID = newId,
+            BasicAudioSceneDescriptorsTime = existing.BasicAudioSceneDescriptorsTime,
+            BASSpaceTime = existing.BASSpaceTime ?? Origin(),
+            UserPoV = userPoV,
+            ClosedSpace = existing.ClosedSpace,
+            AcousticProfile = existing.AcousticProfile,
+            AudioObjectCount = existing.AudioObjectCount,
+            BasicAudioSceneDescriptorsEntries = existing.BasicAudioSceneDescriptorsEntries
+        }));
+        return new RepositoryAsset { AssetId = newId, AssetType = AssetType.BAS };
+    }
+
+    // Sets the acoustics of a Basic scene (the Scene part of the Acoustic Profile): a NEW version, as every edit.
+    public RepositoryAsset SetBasicSceneAcousticProfile(string sceneAssetId, AcousticProfile acousticProfile)
+    {
+        if (!storage.Exists(sceneAssetId))
+            throw new InvalidOperationException($"{sceneAssetId} does not exist.");
+        if (!IsType(sceneAssetId, "BAS"))
+            throw new InvalidOperationException($"{sceneAssetId} is not a Basic Scene.");
+
+        var existing = Deserialize<BasicAudioSceneDescriptors>(storage.Get(sceneAssetId));
+        var newId = NextId("BAS");
+        foreach (var entry in existing.BasicAudioSceneDescriptorsEntries)
+            if (entry.AudioObjectIDOrAudioObject?.BasicAudioObjectID is { Length: > 0 } member)
+                PutReference(newId, member);
+
+        storage.Put(newId, Serialize(new BasicAudioSceneDescriptors
+        {
+            MInstanceID = mInstanceId,
+            BasicAudioSceneDescriptorsID = newId,
+            BasicAudioSceneDescriptorsTime = existing.BasicAudioSceneDescriptorsTime,
+            BASSpaceTime = existing.BASSpaceTime ?? Origin(),
+            UserPoV = existing.UserPoV,
+            ClosedSpace = existing.ClosedSpace,
+            AcousticProfile = acousticProfile,
+            AudioObjectCount = existing.AudioObjectCount,
+            BasicAudioSceneDescriptorsEntries = existing.BasicAudioSceneDescriptorsEntries
+        }));
+        return new RepositoryAsset { AssetId = newId, AssetType = AssetType.BAS };
+    }
+
+    // Sets the space a Basic scene is in - a room built round its members: a NEW version, as every edit.
+    public RepositoryAsset SetBasicSceneClosedSpace(string sceneAssetId, System.Text.Json.Nodes.JsonArray closedSpace)
+    {
+        if (!storage.Exists(sceneAssetId))
+            throw new InvalidOperationException($"{sceneAssetId} does not exist.");
+        if (!IsType(sceneAssetId, "BAS"))
+            throw new InvalidOperationException($"{sceneAssetId} is not a Basic Scene.");
+
+        var existing = Deserialize<BasicAudioSceneDescriptors>(storage.Get(sceneAssetId));
+        var newId = NextId("BAS");
+        foreach (var entry in existing.BasicAudioSceneDescriptorsEntries)
+            if (entry.AudioObjectIDOrAudioObject?.BasicAudioObjectID is { Length: > 0 } member)
+                PutReference(newId, member);
+
+        storage.Put(newId, Serialize(new BasicAudioSceneDescriptors
+        {
+            MInstanceID = mInstanceId,
+            BasicAudioSceneDescriptorsID = newId,
+            BasicAudioSceneDescriptorsTime = existing.BasicAudioSceneDescriptorsTime,
+            BASSpaceTime = existing.BASSpaceTime ?? Origin(),
+            UserPoV = existing.UserPoV,
+            ClosedSpace = closedSpace,
+            AcousticProfile = existing.AcousticProfile,
+            AudioObjectCount = existing.AudioObjectCount,
+            BasicAudioSceneDescriptorsEntries = existing.BasicAudioSceneDescriptorsEntries
+        }));
+        return new RepositoryAsset { AssetId = newId, AssetType = AssetType.BAS };
     }
 
     // Resolves a stored Basic scene into a fully self-contained structure:
     // its own fields, with every ID-stub BasicAudioObject entry replaced by
     // its full, live content.
+    public bool Has(string assetId) => storage.Exists(assetId);
+
     public BasicAudioSceneDescriptors MaterializeBasicScene(string sceneAssetId)
     {
         if (!storage.Exists(sceneAssetId))
@@ -324,17 +478,19 @@ public sealed class AseAim
                 AudioObjectIDOrAudioObject = bao,
                 AudioObjectSpaceTime = entry.AudioObjectSpaceTime,
                 AudioSceneEnrichment = entry.AudioSceneEnrichment,
-                PointOfView = entry.PointOfView
+                UserPoV = entry.UserPoV
             });
         }
 
         return new BasicAudioSceneDescriptors
         {
+            MInstanceID = mInstanceId,
             BasicAudioSceneDescriptorsID = sceneAssetId,
             BasicAudioSceneDescriptorsTime = scene.BasicAudioSceneDescriptorsTime,
-            BASSpaceTime = scene.BASSpaceTime,
-            ListenerPointOfView = scene.ListenerPointOfView,
-            GravityValue = scene.GravityValue,
+            BASSpaceTime = scene.BASSpaceTime ?? Origin(),
+            UserPoV = scene.UserPoV,
+            ClosedSpace = scene.ClosedSpace,
+            AcousticProfile = scene.AcousticProfile,
             AudioObjectCount = resolvedEntries.Count,
             BasicAudioSceneDescriptorsEntries = resolvedEntries
         };

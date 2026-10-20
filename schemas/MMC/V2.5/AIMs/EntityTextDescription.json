@@ -4,17 +4,23 @@
   "title": "EntityTextDescription V2.5",
 
   "Identifier":   { "ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "MMC-ETD-V2.5" },
+  "Header":               "MMC-ETD-V2.5",
 
   "APIProfile":   "Basic",
   "Description":  "This AIM computes the Text Descriptors.",
 
+  "InternalTypes":        [ ],
+
   "ExternalPorts":  [
-    { "Name": "TextObject"     , "Direction": "Input",   "DataType": "OSD-TXO-V1.5",  "Technology": "Software", "Protocol": "", "IsRemote": false },
-    { "Name": "TextDescriptors", "Direction": "Output",  "DataType": "MMC-TXD-V2.5",  "Technology": "Software", "Protocol": "", "IsRemote": false }
+    { "Name": "TextObject"     , "Direction": "Input",   "DataType": ["OSD-BTO-V1.5", "OSD-TXO-V1.5"],  "PortNumber": 1, "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "InputTextObject", "Direction": "Input",   "DataType": ["OSD-BTO-V1.5", "OSD-TXO-V1.5"],  "PortNumber": 2, "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "TextDescriptors", "Direction": "Output",  "DataType": "MMC-TDO-V2.5",  "Technology": "Software", "Protocol": "", "IsRemote": false }
   ],
 
   "SubAIMs":  [ ],
   "Topology":  [ ],
+
+  "AIMLicence":          "/* AIM Licence offered by the Implementer (AIF-LIC-V3.0): Grant, Term, Updates, Payment, TermsURI - or omit it if the AIM needs no AIM Licence */",
 
   "Implementations":  [
    {

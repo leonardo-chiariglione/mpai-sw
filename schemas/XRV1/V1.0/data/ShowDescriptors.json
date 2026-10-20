@@ -8,6 +8,7 @@
 
     "Header":                     { "type": "string", "const": "XRV-SHD-V1.0" },
 
+    "MInstanceID":                { "type": "string" },
     "UEnvironmentID":             { "type": "string" },
 
     "ShowDescriptorsID":          { "type": "string" },
@@ -20,7 +21,13 @@
       "REOperatorDescriptors":    { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/REOperatorDescriptors.json" },
       "VEPerformanceDescriptors": { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEPerformanceDescriptors.json" },
       "VEParticipantDescriptors": { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEParticipantDescriptors.json" },
-      "VEOperatorDescriptors":    { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEOperatorDescriptors.json" } } },
+      "VEOperatorDescriptors":    { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEOperatorDescriptors.json" },
+      "REPerformanceStatus":      { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/REPerformanceStatus.json" },
+      "REParticipantStatus":      { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/REParticipantStatus.json" },
+      "REOperatorStatus":         { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/REOperatorStatus.json" },
+      "VEPerformanceStatus":      { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEPerformanceStatus.json" },
+      "VEParticipantStatus":      { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEParticipantStatus.json" },
+      "VEOperatorStatus":         { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEOperatorStatus.json" } } },
 
     "DataXMData":                 { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
     "DescrMetadata":              { "type": "string", "maxLength": 2048 } } }

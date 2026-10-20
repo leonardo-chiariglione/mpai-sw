@@ -51,7 +51,6 @@ public sealed class AudioObjectFamily : IMediaObjectFamily<BasicAudioObject, Aud
         AudioObjectSpaceTime = previous?.AudioObjectSpaceTime ?? spaceTime,
 
         UserPoV = listener ?? previous?.UserPoV,
-        AudioObjectProperties = previous?.AudioObjectProperties,
         ParentAudioObjectIDs = previous?.ParentAudioObjectIDs,
 
         BasicAudioObjectCount = basicEntries.Count,
@@ -83,7 +82,6 @@ public sealed class AudioObjectFamily : IMediaObjectFamily<BasicAudioObject, Aud
         AudioObjectTime = stored?.AudioObjectTime,
         AudioObjectSpaceTime = stored?.AudioObjectSpaceTime,
         UserPoV = stored?.UserPoV,
-        AudioObjectProperties = stored?.AudioObjectProperties,
         ParentAudioObjectIDs = stored?.ParentAudioObjectIDs,
 
         BasicAudioObjectCount = basicChildren.Count,

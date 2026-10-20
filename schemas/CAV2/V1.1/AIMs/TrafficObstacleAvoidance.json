@@ -5,25 +5,30 @@
 
   "Identifier":   { "ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "CAV-TOA-V1.1" },
 
+  "Header":       "CAV-TOA-V1.1",
+
   "APIProfile":   "Basic",
   "Description":  "This AIM refines the Trajectory received using Alert and Road State.",
 
   "ExternalPorts":  [
-    { "Name": "FullEnvironmentDescriptorsIn" , "Direction": "Input",   "DataType": "CAV-FED-V1.1",  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "FullEnvironmentDescriptorsIn" , "Direction": "Input",   "DataType": ["CAV-FED-V1.1", "CAV-FED-V2.0"],  "Technology": "Software", "Protocol": "", "IsRemote": false },
     { "Name": "Trajectory"                   , "Direction": "Input",   "DataType": "OSD-TRJ-V1.5",  "Technology": "Software", "Protocol": "", "IsRemote": false },
-    { "Name": "AMSData"                      , "Direction": "Input",   "DataType": "CAV-AMD-V1.1",  "Technology": "Software", "Protocol": "", "IsRemote": false },
-    { "Name": "AlertIn"                      , "Direction": "Input",   "DataType": "CAV-ALT-V1.1",  "Technology": "Software", "Protocol": "", "IsRemote": false },
-    { "Name": "AMSMASMessageIn"              , "Direction": "Input",   "DataType": "CAV-AMM-V1.1",  "Technology": "Software", "Protocol": "", "IsRemote": false },
-    { "Name": "FullEnvironmentDescriptorsOut", "Direction": "Output",  "DataType": "CAV-FED-V1.1",  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "AMSData"                      , "Direction": "Input",   "DataType": "CAV-AMD-V1.1", "IsOptional": true,  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "AlertIn"                      , "Direction": "Input",   "DataType": "CAV-ALT-V1.1", "IsOptional": true,  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "AMSMASMessageIn"              , "Direction": "Input",   "DataType": "CAV-AMM-V1.1", "IsOptional": true,  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "FullEnvironmentDescriptorsOut", "Direction": "Output",  "DataType": ["CAV-FED-V1.1", "CAV-FED-V2.0"], "IsOptional": true,  "Technology": "Software", "Protocol": "", "IsRemote": false },
     { "Name": "AMSMASMessageOut"             , "Direction": "Output",  "DataType": "CAV-AMM-V1.1",  "Technology": "Software", "Protocol": "", "IsRemote": false },
-    { "Name": "RoadState"                    , "Direction": "Output",  "DataType": "CAV-RDS-V1.1",  "Technology": "Software", "Protocol": "", "IsRemote": false },
-    { "Name": "CAVState"                     , "Direction": "Output",  "DataType": "CAV-CST-V1.1",  "Technology": "Software", "Protocol": "", "IsRemote": false },
-    { "Name": "AlertOut"                     , "Direction": "Output",  "DataType": "CAV-ALT-V1.1",  "Technology": "Software", "Protocol": "", "IsRemote": false },
-    { "Name": "Interaction"                  , "Direction": "Output",  "DataType": "CAV-INT-V1.1",  "Technology": "Software", "Protocol": "", "IsRemote": false }
+    { "Name": "AMSData"                      , "Direction": "Output",  "DataType": "CAV-AMD-V1.1", "IsOptional": true,  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "RoadState"                    , "Direction": "Output",  "DataType": "CAV-RDS-V1.1", "IsOptional": true,  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "CAVState"                     , "Direction": "Output",  "DataType": "CAV-CST-V1.1", "IsOptional": true,  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "AlertOut"                     , "Direction": "Output",  "DataType": "CAV-ALT-V1.1", "IsOptional": true,  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "Interaction"                  , "Direction": "Output",  "DataType": "CAV-INT-V1.1", "IsOptional": true,  "Technology": "Software", "Protocol": "", "IsRemote": false }
   ],
 
   "SubAIMs":  [ ],
   "Topology":  [ ],
+
+  "AIMLicence":          "/* AIM Licence offered by the Implementer (AIF-LIC-V3.0): Grant, Term, Updates, Payment, TermsURI - or omit it if the AIM needs no AIM Licence */",
 
   "Implementations":  [
    {

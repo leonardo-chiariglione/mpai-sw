@@ -1,12 +1,13 @@
 { "$schema":                   "https://json-schema.org/draft/2020-12/schema",
   "$id":                       "https://schemas.mpai.community/XRV1/V1.0/data/REDataIn.json",
-  "title":                     "RE Data In  V1.0",
+  "title":                     "RE Data In V1.0",
   "type":                      "object",
   "additionalProperties":      false,
   "required":                  ["Header", "REDataInID", "REDataInTime", "REDataIn"],
   "properties":                {
 
     "Header":                  { "type": "string", "const": "XRV-RDI-V1.0" },
+    "MInstanceID":             { "type": "string" },
     "UEnvironmentID":          { "type": "string" },
     "REDataInID":              { "type": "string" },
     "REDataInTime":            { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SimpleTime.json" },
@@ -48,6 +49,13 @@
 
       "ControlObjects":        { "type": "array", "minItems": 0, "items": { "type": "object", "additionalProperties": false, "properties": {
         "ControlObject":       { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/ControlObject.json" } },
-        "required":            ["ControlObject"] } } } },
+        "required":            ["ControlObject"] } },
+
+      "TimeCodes":             { "type": "array", "minItems": 0, "items": { "type": "object", "additionalProperties": false, "properties": {
+        "TimeCodeTime":        { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SimpleTime.json" },
+        "TimeCode":            { "type": "string" } },
+        "required":            ["TimeCodeTime", "TimeCode"] } } } },
+
+    "DataXMData":              { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
 
     "DescrMetadata":           { "type": "string" } } }

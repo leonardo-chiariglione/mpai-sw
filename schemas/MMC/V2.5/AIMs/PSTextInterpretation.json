@@ -1,43 +1,29 @@
-{ "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$comment": "https://schemas.mpai.community/AIF/V3.0/data/AIMMetadata.json",
-  "$id": "https://schemas.mpai.community/MMC/V2.5/AIMs/PSTextInterpretation.json",
-  "title": "PSTextInterpretation V2.5",
+{ "$schema":              "https://json-schema.org/draft/2020-12/schema",
+  "$comment":             "https://schemas.mpai.community/AIF/V3.0/data/AIMMetadata.json",
+  "$id":                  "https://schemas.mpai.community/MMC/V2.5/AIMs/PSTextInterpretation.json",
+  "title":                "PS-Text Interpretation V2.5",
 
-  "Identifier":   { "ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "MMC-PTI-V2.5" },
+  "Header":               "MMC-PTI-V2.5",
 
-  "APIProfile":   "Basic",
-  "Description":  "This AIM extracts the Speec Personal Status from the Text Descriptors.",
+  "Identifier":           {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "MMC-PTI-V2.5"},
 
-  "ExternalPorts":  [
-    { "Name": "TextSelector"      , "Direction": "Input",   "DataType": "OSD-SEL-V1.5",  "Technology": "Software", "Protocol": "", "IsRemote": false },
-    { "Name": "TextDescriptors"   , "Direction": "Output",  "DataType": "MMC-TXD-V2.5",  "Technology": "Software", "Protocol": "", "IsRemote": false },
-    { "Name": "PersonalStatusText", "Direction": "Output",  "DataType": "MMC-TPS-V2.5",  "Technology": "Software", "Protocol": "", "IsRemote": false }
-  ],
+  "APIProfile":           "Basic",
+  "Description":          "This AIM extracts the Text Personal Status from the Text Descriptors Object: the one supplied from outside (Port 1) and the one derived by the Entity Text Description (Port 2).",
 
-  "SubAIMs":  [ ],
-  "Topology":  [ ],
+  "ExternalPorts":        [{"Name": "TextDescriptorsObject",       "Direction": "Input",  "DataType": "MMC-TDO-V2.5", "PortNumber": 1, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "EntityTextDescriptorsObject", "Direction": "Input",  "DataType": "MMC-TDO-V2.5", "PortNumber": 2, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "TextPersonalStatus",          "Direction": "Output", "DataType": "MMC-TPS-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
-  "Implementations":  [
-   {
-    "BinaryName": "/* provided by implementer */",
-    "Architecture": "/* x86-64 | ARM64 */",
-    "OperatingSystem": "/* Windows | Linux | MacOS */",
-    "Version": "/* implementer version */",
-    "Source": "/* AIMStorage | MPAIStore */",
-    "Destination": "/* provided by implementer */"
-   }
-  ],
+  "SubAIMs":              [ ],
 
-  "ResourcePolicies":  [
-    { "Name": "Memory"              , "Minimum": "/* GB */",             "Maximum": "/* GB */",             "Request": "/* GB */" },
-    { "Name": "CPU:Number"          , "Minimum": "/* integer, 0=all */", "Maximum": "/* integer, 0=all */", "Request": "/* integer */" },
-    { "Name": "CPU:Class"           , "Minimum": "/* string */",         "Maximum": "/* string */",         "Request": "/* string */" },
-    { "Name": "GPU:Number"          , "Minimum": "/* integer, 0=all */", "Maximum": "/* integer, 0=all */", "Request": "/* integer */" },
-    { "Name": "GPU:CUDA:Class"      , "Minimum": "/* string */",         "Maximum": "/* string */",         "Request": "/* string */" },
-    { "Name": "GPU:CUDA:FrameBuffer", "Minimum": "/* GB */",             "Maximum": "/* GB */",             "Request": "/* GB */" },
-    { "Name": "GPU:CUDA:MemorySpeed", "Minimum": "/* GB/s */",           "Maximum": "/* GB/s */",           "Request": "/* GB/s */" }
-  ],
+  "Topology":             [ ],
 
-  "DataXMData":  { },
+  "AIMLicence":          "/* AIM Licence offered by the Implementer (AIF-LIC-V3.0): Grant, Term, Updates, Payment, TermsURI - or omit it if the AIM needs no AIM Licence */",
 
-  "Documentation":  [{ "Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-mmc/v2-5/" }] }
+  "Implementations":      [{"BinaryName": "/* provided by implementer */", "Architecture": "/* x86-64 | ARM64 */", "OperatingSystem": "/* Windows | Linux | MacOS */", "Version": "/* implementer version */", "Source": "/* AIMStorage | MPAIStore */", "Destination": "/* provided by implementer */"}],
+
+  "ResourcePolicies":     [ ],
+
+  "DataXMData":           { },
+
+  "Documentation":        [{"Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-mmc/v2-5/"}]}

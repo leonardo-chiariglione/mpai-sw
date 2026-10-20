@@ -3,7 +3,7 @@
   "title":                    "Control Object V1.0",
   "type":                     "object",
   "additionalProperties":     false,
-  "required":                 [ "Header", "ControllerID", "ControllerSpaceTime", "ControlObjectID", "ControlData", "ControlQualifier" ],
+  "required":                 [ "Header", "ControlObjectID", "ControlData", "ControlQualifier" ],
   "properties":               {
 
     "Header":                { "type": "string", "const": "XRV-CTO-V1.0" },
@@ -12,6 +12,7 @@
     "ControlObjectID":       { "type": "string" },
     "ControlObjectTime":     { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SimpleTime.json" },
 
+    "ControllerID":          { "type": "string" },
     "ControllerSpaceTime":   { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SpaceTime.json" },
 
     "ControlData":           { "type": "string" },

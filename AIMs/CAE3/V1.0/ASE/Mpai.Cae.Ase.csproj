@@ -1,5 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- CAE-ASE-V1.0, Audio Scene Editing: composes Basic Audio Scenes of Basic
+       Audio Objects, and Audio Scenes of Objects and Scenes, in Shared Storage. -->
+
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -8,12 +11,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\Mpai.Core.csproj" />
-    <ProjectReference Include="..\..\..\..\AIF\V3.0\src\AIF.Controller\AIF.Controller.csproj" />
-    <ProjectReference Include="..\..\..\Repository\Repository\Mpai.Repository.csproj" />
+    <ProjectReference Include="..\..\..\..\AIF\Controller\AIF.Controller.csproj" />
+    <ProjectReference Include="..\..\..\..\AIF\Communication\SharedStorage\AIF.SharedStorage.csproj" />
     <ProjectReference Include="..\AOE\Mpai.Cae.Aoe.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\\..\\..\\..\\AIF\\V3.0\\src\\AIF.SharedStorage\\AIF.SharedStorage.csproj" />
-  </ItemGroup>
 </Project>

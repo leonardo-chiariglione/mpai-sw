@@ -14,22 +14,26 @@
     "ShowHeader":             { "type": "string" },
     "TitleOfProduction":      { "type": "string" },
     "Credits":                { "type": "string" },
-    "Copyright information":  { "type": "string" },
+    "CopyrightInformation":  { "type": "string" },
     "ShowDescription":        { "type": "string" },
 
     "Characters":             { "type": "array", "items": { "type": "object", "additionalProperties": false, "properties": {
       "Name":                 { "type": "string" },
       "Nickname":             { "type": "string" },
+      "CharacterID":          { "type": "object", "additionalProperties": false, "properties": { "Real": { "type": "string" }, "Virtual": { "type": "string" } } },
       "Mnemonic":             { "type": "string" } } } },
 
     "TheatricalSetList":      { "type": "array", "items": { "type": "object", "additionalProperties": false, "properties": {
       "TheatricalSet":        { "type": "array", "items": { "type": "object", "required": [], "additionalProperties": false, "properties": {
         "Name":               { "type": "string" },
         "Nickname":           { "type": "string" },
+        "SetID":              { "type": "object", "additionalProperties": false, "properties": { "Real": { "type": "string" }, "Virtual": { "type": "string" } } },
         "Mnemonic":           { "type": "string" } } } },
       "Objects":              { "type": "array", "items": { "type": "object", "additionalProperties": false, "properties": {
         "Name":               { "type": "string" },
         "Nickname":           { "type": "string" },
+        "ObjectID":           { "type": "object", "additionalProperties": false, "properties": { "Real": { "type": "string" }, "Virtual": { "type": "string" } } },
+        "ObjectType":         { "type": "string", "enum": [ "Autonomous", "Static" ] },
         "Mnemonic":           { "type": "string" } } } } } } },
 
     "Participants":           { "type": "array", "items": { "type": "object", "additionalProperties": false, "properties": {
@@ -43,5 +47,7 @@
         "Mnemonic":           { "type": "string" } } } } } } },
 
     "CueList":                { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/CueList.json#/properties/CueListData" },
+
+    "DataXMData":             { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
 
     "DescrMetadata":          { "type": "string" } } }

@@ -1,162 +1,92 @@
-# Build outputs
-**/bin/
-**/obj/
-
-# VS
-.vs/
-
-# User files
-*.user
-*.suo
-
-# Logs
-*.log
-
-# Model files
-*.onnx
-*.onnx.data
-*.bin
-*.safetensors
-*.h5
-*.pt
-*.pth
-
-# Archives
-*.zip
-
-# Generated audio
-*.wav
-
-# Model repositories
-Models/
-
-# Temporary
-*.tmp
-# --- Added for first checkpoint ---
-# Backups and old-schema copies
-*.bak
-*.bak2
-*.bak3
-**/_old_schema_backup/
-**/AMDs_Backup/
-**/*.old/
-*.old
-
-# Generated / runtime output
-Output/
-Temp/
-**/ua-ui.log
-filenames.txt
-
-# Test scratch folders (regenerable)
-AoaAodDirectTest/
-ASD_Test/
-ASE_Test/
-
-# Shortcuts
-*.lnk
-
-# Executables (tools distributed separately)
-*.exe
-
-
-**/_backups/
-MPAIApps/VisualIn/
-
-Assets/
-bin/
-obj/
-MPAIApps/AMQApp/_bin/
-*.bak_*
-_backup_*/
-*.bak_*
-_backup_*/
-
-MPAIApps/ASMApp/_bin/
-
-MPAIApps/TSTApp/_bin/
-
-GlobalStorageDemo/
-
-*.bak*
-
-TestData/gallery.json
-
-TestData/gallery.json
-
-TestData/Images/leonardo*.jpg
-TestData/Images/leonardo*.JPG
-
-# Biometric test data - never commit
-TestData/gallery-store/
-TestData/Images/enrol-*.jpg
-TestData/Images/webcam-test.jpg
-TestData/Images/access-probe.jpg
-
-# CavFace3D avatar/HDR binaries (re-fetch via MPAIApps/CavFace3D/README.md)
-TestData/Avatars/
-
-# CavApp build output + bundled binaries
-MPAIApps/HCIApp/CavApp/bin/
-MPAIApps/HCIApp/CavApp/obj/
-MPAIApps/HCIApp/CavApp/web/cav-avatar.glb
-MPAIApps/HCIApp/CavApp/web/studio.hdr
-
-MPAIApps/HCIApp/HciApi/bin/
-MPAIApps/HCIApp/HciApi/obj/
-
-MPAIApps/HCIApp/HciApi/bin/
-MPAIApps/HCIApp/HciApi/obj/
-
-# routed deploy backups
-.backups/
-
-# MMCApps published output
-MPAIApps/HCIApp/MatApp/bin/
-MPAIApps/HCIApp/MatApp/obj/
-MPAIApps/MMCApps/*.exe
-MPAIApps/MMCApps/*.dll
-MPAIApps/MMCApps/_build/
-MPAIApps/MMCApps/web/
-MPAIApps/MMCApps/MadApp/
-MPAIApps/MMCApps/MatApp/
-
-MPAIApps/MMCApps/*.WebView2/
-
-# UA Lib
-Lib/UaKit/bin/
-Lib/UaKit/obj/
-Lib/Assets/*.glb
-Lib/Assets/*.hdr
-
-# UA Lib
-Lib/UaKit/bin/
-Lib/UaKit/obj/
-Lib/Assets/*.glb
-Lib/Assets/*.hdr
-
-# WebView2 per-app user data (UaKit)
-**/MpaiUaKit/
-
-# --- build output ---
+# build output
 bin/
 obj/
 .vs/
+_build/
+_macpublish/
 *.user
 *.pdb
 *.lib
-_macpublish/
-_build/
+*.exe
 
-# --- diagnostics / scratch ---
+# diagnostics / scratch
+Test/Reports/
 *.log
 *.bak
 .backups/
 
-# --- governed storage: biometrics / runtime data must NEVER be committed ---
-SharedStorage/
-TestData/gallery.json
+# governed storage: biometrics / runtime data - NEVER commit. Access holds the Controller's data and the data of
+# the Shared Storage (AIF/Communication/SharedStorage is source, not data); machine-local.
+/AIF/Access/
+TestData/
 
-# --- OS ---
+# large model binaries - not source (kept locally; use Git LFS in the
+# distribution repo if they must ship)
+Models/
+
+# OS
 Thumbs.db
 .DS_Store
+MPAIApps/HCIApps/MatApp/MatApp.exe
+MPAIApps/HCIApps/MatApp/src/*.bak*
+MPAIApps/HCIApps/MatApp/src/*.allbak
+MPAIApps/HCIApps/MatApp/src/*.flowbak
+MPAIApps/HCIApps/MatApp/src/*.langbak
+
+# transient
+mas-server*.json
+# ...except the Linux template, which holds no token.
+!Apps/MAS/Service/linux/mas-server.json
+tree.txt
+_stale/
+*.bak
+*.bak2
+*.premas
+*.preclient
+*.fdotest
+*.hangbak
+*.north
+*.northbak
+*.removed
+testcerts/
+
+# transient - the rule, not a list of instances
+*.pre*
+_removed/
+
+# transient, wherever they are
+*.allbak
+*.flowbak
+*.langbak
+*.hangbak
+*.northbak
+
+*.zip
+
+# backups made by the Apply/Prepare scripts
+_backup-*/
+
+# the public instance on Windows, published Release (Apps/MAS/Service/windows/publish.ps1)
+/Support/deploy/
+
+# the ABV demo server certificate (made on first run)
+Apps/ABV/AVS/Server/abv-cert.pfx
+Apps/ABV/AVS/Server/bin/
+Apps/ABV/AVS/Server/obj/
+
+# the logs of the AllApps launchers
+/AllApps/logs/
+
+# generated or machine-local, never source (2026-10-20): the CAV simulation recordings, the root deploy folder (the schema upload lists are in Support/deploy), certificates and keys, and what the runs of the CAE-USC Apps and the EAE demo leave in Test
+/Demos/
+/deploy/
+*.pfx
+/Test/EaeApp/
+/Test/EaeReal/
+/Test/SrsApp/
+/Test/EesApp/
+/Test/ArpApp/
+/Test/OpenVoice/
+/Test/eae-deck-png/
+/Test/eae-sep-png/
+/Test/*.pptx

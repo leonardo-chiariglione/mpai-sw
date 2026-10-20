@@ -1,33 +1,74 @@
 namespace Mpai.Core;
 
-// Resolves the application root at runtime so the app is portable: it walks up
-// from the running assembly's location to the first ancestor containing both an
-// "AIMs" and a "Models" folder, and treats that as the root. A clone unzipped
-// anywhere then finds its own Models/TestData/AMDs/SharedStorage. Falls back to
-// the historical dev location.
+// Resolves the application root at runtime so the app is portable.
+//
+// The root is the first ancestor of the running executable that contains the
+// parts present in EVERY clone: the "AIMs" folder AND the "AIF/UserAgent" folder. Models/
+// and AIF/Access/ (its data) are machine-local (distributed separately) and are NOT
+// required to locate the root. A clone unzipped anywhere therefore finds its own
+// AIMs/AMDs, AIMs/aim-settings.json and AIF/UserAgent/Assets, whether or not models are present.
 public static class MpaiPaths
 {
     private static string? _root;
     public static string Root => _root ??= FindRoot();
 
+    // A directory is the application root if it holds both the AIMs and the
+    // User-Agent side. These ship in the repository; Models/ need not.
+    private static bool IsRoot(string dir) =>
+        System.IO.Directory.Exists(System.IO.Path.Combine(dir, "AIMs")) &&
+        System.IO.Directory.Exists(System.IO.Path.Combine(dir, "AIF", "UserAgent"));
+
     private static string FindRoot()
     {
-        var d = new System.IO.DirectoryInfo(System.AppContext.BaseDirectory);
-        while (d != null)
+        // Single-file apps extract to a temp dir, so AppContext.BaseDirectory is
+        // NOT the install folder; try the real executable location first.
+        var starts = new[]
         {
-            if (System.IO.Directory.Exists(System.IO.Path.Combine(d.FullName, "AIMs")) &&
-                System.IO.Directory.Exists(System.IO.Path.Combine(d.FullName, "Models")))
-                return d.FullName;
-            d = d.Parent;
+            System.IO.Path.GetDirectoryName(System.Environment.ProcessPath ?? ""),
+            System.AppContext.BaseDirectory
+        };
+
+        // 1) The repository root: an ancestor holding both AIMs and AIF/UserAgent.
+        foreach (var start in starts)
+        {
+            if (string.IsNullOrEmpty(start)) continue;
+            for (var d = new System.IO.DirectoryInfo(start); d != null; d = d.Parent)
+                if (IsRoot(d.FullName)) return d.FullName;
         }
-        return @"D:\AI";   // dev fallback
+
+        // 2) Looser: an ancestor holding AIMs (in case the AIF/UserAgent layout differs).
+        foreach (var start in starts)
+        {
+            if (string.IsNullOrEmpty(start)) continue;
+            for (var d = new System.IO.DirectoryInfo(start); d != null; d = d.Parent)
+                if (System.IO.Directory.Exists(System.IO.Path.Combine(d.FullName, "AIMs")))
+                    return d.FullName;
+        }
+
+        // 3) Last resort: the executable's own folder. NEVER a hard-coded path.
+        return System.IO.Path.GetDirectoryName(System.Environment.ProcessPath ?? "")
+               ?? System.AppContext.BaseDirectory;
     }
 
     public static string Model(string fileName) => System.IO.Path.Combine(Root, "Models", fileName);
+
+    // A SETTING THAT NAMES A PLACE MUST NOT NAME A MACHINE. Models are found under
+    // Models\ beside the application, but the programs that read them - piper,
+    // whisper-cli - are named by setting and were named absolutely, so a published
+    // installation pointed at one person's drive. Resolved here against the root
+    // the application already computes from its own location, so a relative
+    // setting works wherever the folder is placed, and an absolute one still
+    // works for anyone who wants it.
+    public static string Resolve(string? path) =>
+        string.IsNullOrWhiteSpace(path) ? "" :
+        System.IO.Path.IsPathRooted(path) ? path :
+        System.IO.Path.Combine(Root, path);
     public static string Gallery       => System.IO.Path.Combine(Root, "TestData", "gallery.json");
     public static string Amds          => System.IO.Path.Combine(Root, "AIMs", "AMDs");
     public static string Settings      => System.IO.Path.Combine(Root, "AIMs", "aim-settings.json");
-    public static string Assets        => System.IO.Path.Combine(Root, "Lib", "Assets");
+    public static string Assets        => System.IO.Path.Combine(Root, "AIF", "UserAgent", "Assets");
     // The governed Shared Storage area (AIF Shared Storage backing folder).
-    public static string SharedStorage => System.IO.Path.Combine(Root, "SharedStorage");
+    public static string SharedStorage => System.IO.Path.Combine(Root, "AIF", "Access", "SharedStorage");
+    // Access, the Controller's static or slowly changing data (AIF V3.0, Storage 6).
+    public static string Access        => System.IO.Path.Combine(Root, "AIF", "Access");
 }

@@ -38,7 +38,15 @@ public sealed class AoeAim
 {
     private readonly ISharedStorage storage;
 
-    public AoeAim(ISharedStorage storage) => this.storage = storage;
+    // The M-Instance or U-Environment the Objects are made in: OSD requires the
+    // first on an Audio Object. An application gives its own; ASM's own is "ASM".
+    private readonly string mInstanceId;
+
+    public AoeAim(ISharedStorage storage, string mInstanceId = "ASM")
+    {
+        this.storage = storage;
+        this.mInstanceId = mInstanceId;
+    }
 
     private static readonly JsonSerializerOptions DataOptions = new() { Converters = { new JsonStringEnumConverter() } };
     private static byte[] Serialize<T>(T value) => JsonSerializer.SerializeToUtf8Bytes(value, DataOptions);
@@ -120,6 +128,54 @@ public sealed class AoeAim
     // This used to mint an AUO immediately, wrapping the BAO as "the degenerate
     // case of an AudioObject with no sub-objects". That made every acquisition a
     // full Object of one, which is the case your rule says cannot exist.
+    // AN AUDIO OBJECT THE USER AGENT READ FROM OUTSIDE (its external storage): its sounds are stored one by one, as new Objects here - whatever identifiers they came with
+    // are another storage's - and the Audio Object is composed of them again, its own place and time folded into theirs.
+    public RepositoryAsset StoreAudioObject(AudioObject auo)
+    {
+        var placed = new List<(string ChildId, SpaceTime? Placement)>();
+        foreach (var b in auo.BasicAudioObjects ?? [])
+        {
+            if (b.BAObjectIDOrBAObject is not { } bao || bao.Data.Length == 0) throw new InvalidOperationException("The Audio Object names a sound it does not hold.");
+            placed.Add((CreateObject(bao).AssetId, Within(auo.AudioObjectSpaceTime, b.BasicAudioObjectSpaceTime)));
+        }
+        foreach (var s in auo.SubAudioObjects ?? [])
+        {
+            if (s.SubAObjectIDOrSubAObject is not { } sub) throw new InvalidOperationException("The Audio Object names an Audio Object it does not hold.");
+            placed.Add((StoreAudioObject(sub).AssetId, Within(auo.AudioObjectSpaceTime, s.SubAudioObjectSpaceTime)));
+        }
+        if (placed.Count == 0) throw new InvalidOperationException("The Audio Object holds no sound.");
+        return Compose(placed, auo.UserPoV);
+    }
+
+    private static SpaceTime Within(SpaceTime? outer, SpaceTime? inner)
+    {
+        static double[] P(SpaceTime? s) => s?.SpatialAttitude1?.Position?.CartPosition is { Length: >= 3 } c ? c : new double[3];
+        static double Yaw(SpaceTime? s) => s?.SpatialAttitude1?.Orientation?.EulerAngles is { Length: >= 3 } a ? a[2] : 0;
+        static double Seconds(double v, string? unit) => unit switch { "01" => v / 1e3, "10" => v / 1e6, "11" => v / 1e9, _ => v };
+        static TimeSegment? Segment(SpaceTime? s) => s?.Time?.SimpleTimeData?.FirstOrDefault(x => x.TimeType == false);
+        double Start(SpaceTime? s) => Segment(s) is { } g ? Seconds(g.StartTime, g.TimeUnit) : 0;
+        double? End(SpaceTime? s) => Segment(s) is { } g && g.EndTime > g.StartTime ? Seconds(g.EndTime, g.TimeUnit) : null;
+
+        var (o, i) = (P(outer), P(inner));
+        var from = Start(outer);
+        var begins = from + Start(inner);
+        var ends = End(inner) is { } e ? from + e : (double?)null;
+        return new SpaceTime
+        {
+            SpatialAttitude1 = new SpatialAttitude
+            {
+                ObjectSpatialAttitudeID = Guid.NewGuid().ToString(),
+                Position = new Position { PositionID = Guid.NewGuid().ToString(), CartPosition = [o[0] + i[0], o[1] + i[1], o[2] + i[2]] },
+                Orientation = new Orientation { OrientationID = Guid.NewGuid().ToString(), EulerAngles = [0, 0, Yaw(outer) + Yaw(inner)] }
+            },
+            Time = new SimpleTime
+            {
+                SimpleTimeID = Guid.NewGuid().ToString(),
+                SimpleTimeData = { new TimeSegment { FlagsByte = 0, StartTime = begins, EndTime = ends is { } x && x > begins ? x : begins, AccuracyMode = "single", AccuracyPlusMinus = 0.0, TimeType = false, TimeUnit = "00" } }
+            }
+        };
+    }
+
     public RepositoryAsset CreateObject(BasicAudioObject bao)
     {
         var baoId = NextId("BAO");
@@ -214,10 +270,10 @@ public sealed class AoeAim
 
         storage.Put(newId, Serialize(new AudioObject
         {
+            MInstanceID = mInstanceId,
             AudioObjectID = newId,
             AudioObjectTime = existingData?.AudioObjectTime,
             AudioObjectSpaceTime = containerPlacement,
-            AudioObjectProperties = existingData?.AudioObjectProperties,
             ParentAudioObjectIDs = existingData?.ParentAudioObjectIDs,
             BasicAudioObjectCount = basicEntries.Count,
             BasicAudioObjects = basicEntries.Count > 0 ? basicEntries : null,
@@ -287,6 +343,7 @@ public sealed class AoeAim
 
         storage.Put(newId, Serialize(new AudioObject
         {
+            MInstanceID = mInstanceId,
             AudioObjectID = newId,
 
             // The frame the placed Objects sit in.
@@ -359,11 +416,11 @@ public sealed class AoeAim
 
         storage.Put(newId, Serialize(new AudioObject
         {
+            MInstanceID = mInstanceId,
             AudioObjectID = newId,
             AudioObjectTime = existingData.AudioObjectTime,
             AudioObjectSpaceTime = existingData.AudioObjectSpaceTime,
             UserPoV = listenerPointOfView ?? existingData.UserPoV,
-            AudioObjectProperties = acousticProfile ?? existingData.AudioObjectProperties,
             ParentAudioObjectIDs = existingData.ParentAudioObjectIDs,
             DescrMetadata = descrMetadata ?? existingData.DescrMetadata,
             BasicAudioObjectCount = basicEntries.Count,
@@ -405,7 +462,7 @@ public sealed class AoeAim
             ParentObjects = existingData.ParentObjects,
             ChildObjects = existingData.ChildObjects,
             BasicAudioObjectData = existingData.BasicAudioObjectData,
-            ListenerPointOfView = listenerPointOfView ?? existingData.ListenerPointOfView,
+            UserPoV = listenerPointOfView ?? existingData.UserPoV,
             BasicAudioObjectProperties = new BasicAudioObjectProperties
             {
                 BasicAudioObjectSpaceTime = existingProps.BasicAudioObjectSpaceTime,
@@ -475,11 +532,11 @@ public sealed class AoeAim
 
         storage.Put(newId, Serialize(new AudioObject
         {
+            MInstanceID = mInstanceId,
             AudioObjectID = newId,
             AudioObjectTime = existingData.AudioObjectTime,
             AudioObjectSpaceTime = existingData.AudioObjectSpaceTime,
             UserPoV = existingData.UserPoV,
-            AudioObjectProperties = existingData.AudioObjectProperties,
             ParentAudioObjectIDs = existingData.ParentAudioObjectIDs,
             DescrMetadata = existingData.DescrMetadata,
             BasicAudioObjectCount = basicEntries.Count,
@@ -537,11 +594,11 @@ public sealed class AoeAim
 
         storage.Put(newId, Serialize(new AudioObject
         {
+            MInstanceID = mInstanceId,
             AudioObjectID = newId,
             AudioObjectTime = existingData.AudioObjectTime,
             AudioObjectSpaceTime = existingData.AudioObjectSpaceTime,
             UserPoV = existingData.UserPoV,
-            AudioObjectProperties = existingData.AudioObjectProperties,
             ParentAudioObjectIDs = existingData.ParentAudioObjectIDs,
             BasicAudioObjectCount = basicEntries.Count,
             BasicAudioObjects = basicEntries.Count > 0 ? basicEntries : null,
@@ -585,7 +642,7 @@ public sealed class AoeAim
     //
     // A lone Basic Object is AT THE ORIGIN - it is the thing being auditioned,
     // and there is nothing to move it relative to. What the user may move is the
-    // EAR, which is why the schema puts ListenerPointOfView on the Basic Object
+    // EAR, which is why the schema puts UserPoV on the Basic Object
     // itself. Auditioning one Object is listening to a scene of one; when the
     // Object is later placed in a real Scene, the Scene's listener overrides
     // this one, per the rule that a context overrides what it provides.
@@ -625,7 +682,7 @@ public sealed class AoeAim
             ParentObjects = existingData.ParentObjects,
             ChildObjects = existingData.ChildObjects,
             BasicAudioObjectData = existingData.BasicAudioObjectData,
-            ListenerPointOfView = listenerPointOfView ?? existingData.ListenerPointOfView,
+            UserPoV = listenerPointOfView ?? existingData.UserPoV,
             BasicAudioObjectProperties = updatedProps,
             AudioQualifier = existingData.AudioQualifier,
             DataXMData = existingData.DataXMData,
@@ -657,16 +714,21 @@ public sealed class AoeAim
         if (!IsType(audioObjectAssetId, "AUO"))
             throw new InvalidOperationException($"{audioObjectAssetId} is not an AudioObject.");
 
+        // AN AUDIO OBJECT HAS NO ACOUSTIC PROFILE (the author, 2026/10/02): as the
+        // Qualifier, it belongs to the Basic Objects, each with its own.
+        if (acousticProfile is not null)
+            throw new InvalidOperationException("An Audio Object has no Acoustic Profile: its Basic Audio Objects have one each.");
+
         var existingData = Deserialize<AudioObject>(storage.Get(audioObjectAssetId));
 
         var newId = NextId("AUO");
         storage.Put(newId, Serialize(new AudioObject
         {
+            MInstanceID = mInstanceId,
             AudioObjectID = newId,
             AudioObjectTime = existingData.AudioObjectTime,
             AudioObjectSpaceTime = placement ?? existingData.AudioObjectSpaceTime,
             UserPoV = listenerPointOfView ?? existingData.UserPoV,
-            AudioObjectProperties = acousticProfile ?? existingData.AudioObjectProperties,
             ParentAudioObjectIDs = parentAudioObjectIDs ?? existingData.ParentAudioObjectIDs,
             BasicAudioObjectCount = existingData.BasicAudioObjectCount,
             BasicAudioObjects = existingData.BasicAudioObjects,
@@ -710,7 +772,7 @@ public sealed class AoeAim
             ParentObjects = existingData.ParentObjects,
             ChildObjects = existingData.ChildObjects,
             BasicAudioObjectData = existingData.BasicAudioObjectData,
-            ListenerPointOfView = existingData.ListenerPointOfView,
+            UserPoV = existingData.UserPoV,
             BasicAudioObjectProperties = existingData.BasicAudioObjectProperties,
             AudioQualifier = existingData.AudioQualifier,
             DataXMData = existingData.DataXMData,
@@ -735,11 +797,11 @@ public sealed class AoeAim
 
         storage.Put(newId, Serialize(new AudioObject
         {
+            MInstanceID = mInstanceId,
             AudioObjectID = newId,
             AudioObjectTime = existingData.AudioObjectTime,
             AudioObjectSpaceTime = existingData.AudioObjectSpaceTime,
             UserPoV = existingData.UserPoV,
-            AudioObjectProperties = existingData.AudioObjectProperties,
             ParentAudioObjectIDs = existingData.ParentAudioObjectIDs,
             BasicAudioObjectCount = existingData.BasicAudioObjectCount,
             BasicAudioObjects = existingData.BasicAudioObjects,
@@ -764,8 +826,17 @@ public sealed class AoeAim
     // CREATE: a Basic Audio Object arriving with an identifier already in the
     // repository is being opened for editing; one without is new. Without this,
     // an existing Basic Audio Object could never be edited, only replaced.
+    // The Object as Shared Storage keeps it (JSON).
+    public byte[] Raw(string assetId) => storage.Get(assetId);
+
     public bool Has(string assetId) =>
         !string.IsNullOrWhiteSpace(assetId) && storage.Exists(assetId);
+
+    // A stored Basic Audio Object, as it is.
+    public BasicAudioObject Get(string basicAudioObjectAssetId) =>
+        IsType(basicAudioObjectAssetId, "BAO") && storage.Exists(basicAudioObjectAssetId)
+            ? Deserialize<BasicAudioObject>(storage.Get(basicAudioObjectAssetId))
+            : throw new InvalidOperationException($"{basicAudioObjectAssetId} is not a stored Basic Audio Object.");
 
     public AudioObject Materialize(string audioObjectAssetId)
     {
@@ -781,6 +852,7 @@ public sealed class AoeAim
 
             return new AudioObject
             {
+                MInstanceID = mInstanceId,
                 AudioObjectID = audioObjectAssetId,
                 BasicAudioObjectCount = 1,
                 BasicAudioObjects = new List<BasicAudioObjectEntry>
@@ -817,13 +889,13 @@ public sealed class AoeAim
 
         return new AudioObject
         {
+            MInstanceID = mInstanceId,
             // AssetId is always authoritative for identity - the domain
             // payload's own AudioObjectID has no independent way of being
             // kept in sync, so it is not trusted here.
             AudioObjectID = audioObjectAssetId,
             AudioObjectTime = audioObject.AudioObjectTime,
             AudioObjectSpaceTime = audioObject.AudioObjectSpaceTime,
-            AudioObjectProperties = audioObject.AudioObjectProperties,
             ParentAudioObjectIDs = audioObject.ParentAudioObjectIDs,
             BasicAudioObjectCount = basicChildren.Count,
             BasicAudioObjects = basicChildren.Count > 0 ? basicChildren : null,

@@ -1,124 +1,113 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-
 using Mpai.Core;
-
 using RapidOcrNet;
-
-// Disambiguate our data model TextLine from RapidOcrNet.TextLine.
-using RtxTextLine = Mpai.Core.TextLine;
+using SkiaSharp;
 
 namespace Mpai.Aims.Ocr;
 
-// RapidOcrNet implementation of MMC-OCR-V2.5.
-// Uses the PaddleOCR PP-OCRv5 detection+recognition ONNX models (Apache-2.0),
-// the same ONNX-Runtime family as the Whisper/BLIP/Piper AIMs.
-// Image processing uses only SkiaSharp (no System.Drawing, no OpenCV).
+// MMC-OCR-V2.5 with RapidOcrNet: PaddleOCR's PP-OCRv5 detection, orientation and latin
+// recognition models (Apache-2.0) on ONNX Runtime; the image decoded by SkiaSharp.
 //
-// Models: the RapidOcrNet package ships the PP-OCRv5 latin models and copies
-// them to models/v5/ next to the binary. With no config paths, InitModels()
-// loads those bundled models. Explicit paths override them.
+// A LINE'S BOX (the author, 2026/10/01): the Space-Time of a line in the Text Object
+// gives its box on the page by two Positions - SpatialAttitude1 its top-left corner,
+// SpatialAttitude2 its bottom-right corner - in the pixels of the image, X to the
+// right, Y down, Z = 0. The page's own Space-Time is the whole image, (0, 0) to
+// (width, height). A line's confidence, the mean of its characters', is in its Data
+// Exchange Metadata.
 public sealed class RapidOcrAim : IOcrAim, IDisposable
 {
-    private readonly RapidOcr _ocr;
+    private readonly RapidOcr _ocr = new();
+    private readonly string _source;
 
-    public RapidOcrAim(RapidOcrConfiguration? config = null)
+    public RapidOcrAim(string source, RapidOcrConfiguration? config = null)
     {
-        _ocr = new RapidOcr();
-
+        _source = source;
         if (config is not null && !string.IsNullOrWhiteSpace(config.DetModel))
-        {
-            _ocr.InitModels(
-                config.DetModel,
-                config.ClsModel,
-                config.RecModel,
-                config.KeysFile);
-        }
+            _ocr.InitModels(config.DetModel, config.ClsModel, config.RecModel, config.KeysFile);
         else
-        {
-            _ocr.InitModels();   // bundled PP-OCRv5 latin models
-        }
+            _ocr.InitModels();   // the PP-OCRv5 latin models the package carries
     }
 
-    public Task<RecognisedText> ProcessAsync(BasicVisualObject image)
+    public Task<TextObject> ProcessAsync(BasicVisualObject image, (double X, double Y)? around = null)
     {
-        // Prefer the file path; fall back to writing bytes to a temp file.
-        string path;
-        string? tempPath = null;
-        if (!string.IsNullOrWhiteSpace(image.FileName) && File.Exists(image.FileName))
-        {
-            path = image.FileName;
-        }
-        else
-        {
-            tempPath = Path.Combine(Path.GetTempPath(),
-                Guid.NewGuid().ToString("N") + ".png");
-            File.WriteAllBytes(tempPath, image.Data);
-            path = tempPath;
-        }
-
-        try
-        {
-            var result = _ocr.Detect(path, RapidOcrOptions.Default);
-
-            var lines = new List<RtxTextLine>();
-            if (result?.TextBlocks is not null)
+        var page = Guid.NewGuid().ToString();
+        using var bitmap = image.Data.Length > 0 ? SKBitmap.Decode(image.Data) : null;
+        if (bitmap is null)
+            return Task.FromResult(new TextObject
             {
-                foreach (var block in result.TextBlocks)
-                {
-                    var xs = block.BoxPoints.Select(p => (int)p.X).ToArray();
-                    var ys = block.BoxPoints.Select(p => (int)p.Y).ToArray();
-                    int minX = xs.Min(), minY = ys.Min();
-                    int maxX = xs.Max(), maxY = ys.Max();
-
-                    double conf = block.CharScores is { Length: > 0 }
-                        ? block.CharScores.Average()
-                        : 0.0;
-
-                    lines.Add(new RtxTextLine
-                    {
-                        Text        = BasicTextObject.FromText(block.Text ?? string.Empty),
-                        Confidence  = conf,
-                        BoundingBox = new BoundingBox
-                        {
-                            X = minX, Y = minY,
-                            Width = maxX - minX, Height = maxY - minY
-                        }
-                    });
-                }
-            }
-
-            // Reading order: top-to-bottom, then left-to-right.
-            lines = lines
-                .OrderBy(l => l.BoundingBox.Y)
-                .ThenBy(l => l.BoundingBox.X)
-                .ToList();
-
-            return Task.FromResult(new RecognisedText
-            {
-                RecognisedTextID = Guid.NewGuid().ToString(),
-                TextLines        = lines
+                TextObjectID = page, TextObjectSpaceTime = Box(page, 0, 0, 0, 0), BasicTextObjectCount = 0,
+                DescrMetadata = image.Data.Length > 0 ? "the image could not be decoded" : "no image"
             });
-        }
-        finally
+
+        // A BAND OF THE PAGE IS READ, not the whole of it. The detector gives nothing on a whole scan of a dense newspaper page
+        // (a six-column page of 2048 x 2830 px, with the noise of the scan, gave no line at all) and gives its lines when it is
+        // shown a band in the full width of the page; and the person reads one column, of which some twenty to fifty lines are
+        // enough. The band is about the point (or at the top of the page, given none): Band px tall, the page's whole width.
+        const int Band = 1400;
+        int height = Math.Min(Band, bitmap.Height);
+        int top = around is { } at ? (int)Math.Clamp(at.Y - height / 2.0, 0, bitmap.Height - height) : 0;
+        using var band = new SKBitmap(bitmap.Width, height);
+        bitmap.ExtractSubset(band, new SKRectI(0, top, bitmap.Width, top + height));
+        var result = _ocr.Detect(band, RapidOcrOptions.Default with { MaxSideLen = Math.Max(1024, Math.Max(band.Width, band.Height)) });
+        var lines = new List<(int X0, int Y0, int X1, int Y1, string Text, double Confidence)>();
+        foreach (var block in result?.TextBlocks ?? [])
         {
-            if (tempPath is not null && File.Exists(tempPath))
-                File.Delete(tempPath);
+            if (string.IsNullOrWhiteSpace(block.Text)) continue;
+            var xs = block.BoxPoints.Select(p => (int)Math.Round((double)p.X)).ToArray();
+            var ys = block.BoxPoints.Select(p => (int)Math.Round((double)p.Y) + top).ToArray();   // in the pixels of the whole page
+            var confidence = block.CharScores is { Length: > 0 } scores ? scores.Average() : 0.0;
+            lines.Add((xs.Min(), ys.Min(), xs.Max(), ys.Max(), block.Text.Trim(), confidence));
         }
+        // Reading order: down the page, then left to right.
+        var entries = lines.OrderBy(l => l.Y0).ThenBy(l => l.X0).Select(l =>
+        {
+            var id = Guid.NewGuid().ToString();
+            var line = new BasicTextObject
+            {
+                BasicTextObjectID = id,
+                BasicTextData = [new InlineTextData(l.Text)],
+                DataXMData = new DataExchangeMetadata
+                {
+                    DataID = id, Source = [new ProcessInstanceRef { ImplementerAIMID = _source }],
+                    Confidence = Math.Round(Math.Clamp(l.Confidence, 0, 1), 4)
+                }
+            };
+            return new BasicTextObjectEntry { BasicTextObjectSpaceTime = Box(id, l.X0, l.Y0, l.X1, l.Y1), BTObjectIDOrBTObject = [line] };
+        }).ToList();
+
+        return Task.FromResult(new TextObject
+        {
+            TextObjectID = page,
+            TextObjectSpaceTime = Box(page, 0, 0, bitmap.Width, bitmap.Height),
+            BasicTextObjectCount = entries.Count,
+            BasicTextObjects = entries
+        });
     }
+
+    // A box on the page: its top-left corner at SpatialAttitude1, its bottom-right at
+    // SpatialAttitude2.
+    public static SpaceTime Box(string id, double x0, double y0, double x1, double y1) => new()
+    {
+        SpaceTimeID = id + "-ST",
+        SpatialAttitude1 = Corner(id + "-TL", x0, y0),
+        SpatialAttitude2 = Corner(id + "-BR", x1, y1),
+        Time = new SimpleTime { SimpleTimeID = id + "-T" }
+    };
+
+    private static SpatialAttitude Corner(string id, double x, double y) => new()
+    {
+        ObjectSpatialAttitudeID = id,
+        Position = new Position { PositionID = id + "-P", CartPosition = [x, y, 0] },
+        Orientation = new Orientation { OrientationID = id + "-O" }
+    };
 
     public void Dispose() => _ocr.Dispose();
 }
 
-// Optional model configuration. When DetModel is empty the AIM uses
-// RapidOcrNet's bundled models.
+// The four model files; absent, the models the package carries.
 public sealed class RapidOcrConfiguration
 {
-    public string DetModel { get; init; } = string.Empty;
-    public string ClsModel { get; init; } = string.Empty;
-    public string RecModel { get; init; } = string.Empty;
-    public string KeysFile { get; init; } = string.Empty;
+    public string DetModel { get; init; } = "";
+    public string ClsModel { get; init; } = "";
+    public string RecModel { get; init; } = "";
+    public string KeysFile { get; init; } = "";
 }

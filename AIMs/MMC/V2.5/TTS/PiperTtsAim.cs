@@ -64,7 +64,7 @@ public sealed record PiperVoice(
 //  The output Speech Qualifier is built by the three-part transform:
 //    inherit   : Language carries over from the input Text Qualifier
 //    determine : Format (WAV + PCM), Source = Synthetic, SpeakerType = Agent
-//                â€” facts only this (Piper) AIM knows, from what it builds
+//                facts only this (Piper) AIM knows, from what it builds
 //    provenance: the spoken text is embedded as ContentDescription.TextObject
 //
 //  The Language it inherits also CHOOSES THE VOICE when more than one is
@@ -79,6 +79,9 @@ public sealed class PiperTtsAim : ITtsAim
     // Primary language code -> voice. Empty when built with a single voice.
     private readonly IReadOnlyDictionary<string, PiperVoice> _voices;
 
+    // ONE TTS SERVES EVERY CLIENT AND EVERY MODULE. The Controller retains this
+    // AIM and shares it, so a call's prosody travels as a parameter, never in a
+    // field another call could overwrite mid-synthesis.
     private readonly HashSet<string> _warned = new();
 
     public PiperTtsAim(IMpaiTtsV1 piper, PiperVoiceProfile voice)
@@ -98,28 +101,34 @@ public sealed class PiperTtsAim : ITtsAim
         _voices = voices;
     }
 
-    public async Task<BasicSpeechObject> ProcessAsync(BasicTextObject text)
+    public Task<BasicSpeechObject> ProcessAsync(BasicTextObject text) => ProcessAsync(text, "");
+
+    // Overload carrying extra Piper flags (prosody) derived from a Speech Personal
+    // Status by the AIF processor. Empty => neutral synthesis (unchanged).
+    public async Task<BasicSpeechObject> ProcessAsync(BasicTextObject text, string prosodyArgs)
     {
+        prosodyArgs ??= "";
         var selected = SelectVoice(text);
 
         // A voice can fail where the translation succeeded - an installed piper
-        // binary too old for a voice's phoneme map, for one, which is what
-        // "aÉª is not a single codepoint" means. Letting that throw discards the
-        // TRANSLATION as well, which is the primary result: the whole AIW returns
-        // an error and the text nobody can now hear is also text nobody can read.
+        // binary too old for a voice's phoneme map, for one. Letting that throw
+        // discards the TRANSLATION as well, which is the primary result: the whole
+        // Module returns an error and the text nobody can now hear is also text
+        // nobody can read.
         //
         // So: try the chosen voice, fall back to the default, and if that fails
         // too, return an EMPTY Speech Object. The Composite AIM then still
         // delivers Output Text, and the log says why nothing was spoken.
         try
         {
-            return await SynthesiseAsync(text, selected);
+            return await SynthesiseAsync(text, selected, prosodyArgs);
         }
         catch (Exception failure)
         {
-            Console.WriteLine(
-                $"[MMC-TTS-V2.5] the {selected.Profile.LanguageCode ?? "chosen"} voice failed: " +
-                $"{Summarise(failure.Message)}");
+            // A WINDOWED APPLICATION HAS NO CONSOLE. This wrote to one, so a voice
+            // that failed said so to nobody and the avatar mouthed in silence.
+            Mpai.Core.AimLog.Write("MMC-TTS-V2.5",
+                $"the {selected.Profile.LanguageCode ?? "chosen"} voice failed: {Summarise(failure.Message)}");
         }
 
         var fallback = new PiperVoice(_piper, _voice);
@@ -129,11 +138,11 @@ public sealed class PiperTtsAim : ITtsAim
             try
             {
                 Console.WriteLine("[MMC-TTS-V2.5] falling back to the default voice.");
-                return await SynthesiseAsync(text, fallback);
+                return await SynthesiseAsync(text, fallback, prosodyArgs);
             }
             catch (Exception failure)
             {
-                Console.WriteLine($"[MMC-TTS-V2.5] the default voice failed too: {Summarise(failure.Message)}");
+                Mpai.Core.AimLog.Write("MMC-TTS-V2.5", $"the default voice failed too: {Summarise(failure.Message)}");
             }
         }
 
@@ -144,10 +153,10 @@ public sealed class PiperTtsAim : ITtsAim
             BuildSpeechQualifier(text, _voice));
     }
 
-    private async Task<BasicSpeechObject> SynthesiseAsync(BasicTextObject text, PiperVoice voice)
+    private async Task<BasicSpeechObject> SynthesiseAsync(BasicTextObject text, PiperVoice voice, string prosodyArgs)
     {
         // Synthesise: Piper produces WAV bytes from the inline text.
-        var wav = await voice.Engine.GenerateAsync(text.GetText(), "{}");
+        var wav = await voice.Engine.GenerateAsync(text.GetText(), prosodyArgs);
 
         // Build the output Speech Qualifier and attach it to the Basic Speech Object.
         var qualifier = BuildSpeechQualifier(text, voice.Profile);
@@ -176,7 +185,9 @@ public sealed class PiperTtsAim : ITtsAim
 
         // Speaking Italian text in an English voice is a defect, not a detail.
         // Say so once per language rather than let it pass unnoticed.
-        if (_warned.Add(requested))
+        bool first;
+        lock (_warned) first = _warned.Add(requested);
+        if (first)
         {
             Console.WriteLine(
                 $"[MMC-TTS-V2.5] no voice configured for language '{requested}'; " +
@@ -221,8 +232,7 @@ public sealed class PiperTtsAim : ITtsAim
                     SamplingFrequency = voice.SampleRate,
 
                     // Precision, not SamplePrecision: the bits used to represent
-                    // a sample. Every caller wrote the bit depth into the wrong
-                    // field - consistently, which is why nobody noticed.
+                    // a sample.
                     Precision = voice.SamplePrecisionBits
                 }
             },

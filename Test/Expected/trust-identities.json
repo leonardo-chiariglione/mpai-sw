@@ -1,0 +1,12 @@
+{
+  "another AIM's key": "its own",
+  "the AIM's CII against its schema": "valid",
+  "the AIM's CII, checked": "Valid",
+  "the AIM's credential against its schema": "valid",
+  "the AIM's credential says": "AIMInstance TST#1/1TST-UPP-V1.0-I01, of TST-UPP-V1.0, issued by controller-1",
+  "the AIM's credential, by the Controller's anchor": "Valid",
+  "the AIM's key, the one its CII names": "yes",
+  "the AIM's lifecycle credential against its schema": "valid",
+  "the AIM's lifecycle: Created": "Valid",
+  "the Controller's Trust Anchor against its schema": "valid"
+}

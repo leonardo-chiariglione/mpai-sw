@@ -6,7 +6,7 @@
   "additionalProperties":   false,
   "properties":             {
 
-    "Header":               { "type": "string", "const": "CAE-DLS-V1.5" },
+    "Header":               { "type": "string", "const": "CAE-DLS-V2.5" },
     "MInstanceID":          { "type": "string" },
     "UEnvironmentID":       { "type": "string" },
     "DamagedListID":        { "type": "string" },

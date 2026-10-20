@@ -8,6 +8,7 @@
 
   "ExternalPorts":   [{"Name": "WeatherData",                 "Direction": "Input",  "DataType": "CAV-WDT-V1.1",                     "Technology": "", "Protocol": "", "IsRemote": ""},
                      {"Name": "FullEnvironmentDescriptors",  "Direction": "Input",  "DataType": "CAV-FED-V1.1",                     "Technology": "", "Protocol": "", "IsRemote": ""},
+                     {"Name": "BasicAudioSceneDescriptors",  "Direction": "Input",  "DataType": "OSD-BAS-V1.5",                     "Technology": "", "Protocol": "", "IsRemote": ""},
                      {"Name": "VisualSceneDescriptors",      "Direction": "Input",  "DataType": "OSD-VSD-V1.5",                     "Technology": "", "Protocol": "", "IsRemote": ""},
                      {"Name": "RADARSceneDescriptors",       "Direction": "Input",  "DataType": "OSD-RSD-V1.5",                     "Technology": "", "Protocol": "", "IsRemote": ""},
                      {"Name": "LiDARSceneDescriptors",       "Direction": "Input",  "DataType": "OSD-LSD-V1.5",                     "Technology": "", "Protocol": "", "IsRemote": ""},
@@ -18,6 +19,8 @@
   "SubAIMs":         [ ],
 
   "Topology":        [ ],
+
+  "AIMLicence":          "/* AIM Licence offered by the Implementer (AIF-LIC-V3.0): Grant, Term, Updates, Payment, TermsURI - or omit it if the AIM needs no AIM Licence */",
 
   "Implementations": [{ "ImplementationURI":"/* absolute URI locating the Implementation */",
                         "BinaryName":       "/* provided by implementer */",

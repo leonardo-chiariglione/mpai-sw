@@ -10,9 +10,9 @@
     "UEnvironmentID":        { "type": "string" },
     "EventID":               { "type": "string" },
 
-    "EventTime":             { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/Time.json" },
+    "EventTime":             { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SimpleTime.json" },
 
-    "AVSceneDescriptors":    { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SpatialAttitude.json" },
+    "AVSceneDescriptors":    { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/AudioVisualSceneDescriptors.json" },
 
     "EventData":             { "type": "array", "items": { "type": "object", "properties": {
 
@@ -40,5 +40,7 @@
       "Fog":                 { "type": "string" },
       "Fire":                { "type": "string" },
       "Pyro":                { "type": "string" } } } },
+
+    "DataXMData":            { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
 
     "DescrMetadata":         { "type": "string" } } }

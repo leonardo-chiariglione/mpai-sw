@@ -1,46 +1,49 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 using AIF.Controller;
 using Mpai.Core;
 
 namespace Mpai.Aims.Ocr;
 
-// MMC-OCR-V2.5 — self-contained IAimProcessor.
-// Reads its own port names from 1MMC-OCR-V2.5-I01.json at startup.
-// Pure: a Visual Object in, Recognised Text out. No OS access, no adapter.
+// MMC-OCR-V2.5 as an AIF IAimProcessor: a Basic Visual Object (OSD-BVO) in, a Text
+// Object (OSD-TXO) out - the page's lines.
 public sealed class OcrAimProcessor : IAimProcessor
 {
-    private readonly string   _inputPort;
-    private readonly string   _outputPort;
-    private readonly IOcrAim  _ocr;
+    private readonly string _inputPort;    // OSD-BVO-V1.5
+    private readonly string _pointPort;    // OSD-PNT-V1.5, optional: where on the page to read
+    private readonly string _outputPort;   // OSD-TXO-V1.5
+    private readonly IOcrAim _ocr;
 
     public string InstanceId { get; }
 
-    public OcrAimProcessor(
-        string   instanceId,
-        IOcrAim  ocr,
-        AimPortReader ports)
+    public OcrAimProcessor(string instanceId, IOcrAim ocr, AimPortReader ports)
     {
         InstanceId  = instanceId;
         _ocr        = ocr;
-        _inputPort  = ports.Input("OSD-VIO-V1.5");
-        _outputPort = ports.Output("MMC-RTX-V2.5");
+        _inputPort  = ports.Input("OSD-BVO-V1.5");
+        _pointPort  = ports.InputOrDefault("OSD-PNT-V1.5", "");
+        _outputPort = ports.Output("OSD-TXO-V1.5");
     }
 
     public async Task<Message> ProcessAsync(Message message)
     {
-        var image = MpaiJson.FromJson<BasicVisualObject>(message.Ports[_inputPort]);
-        var text  = await _ocr.ProcessAsync(image);
-        var json  = MpaiJson.ToJson(text);
-
+        var image = message.Ports.TryGetValue(_inputPort, out var json) && !string.IsNullOrWhiteSpace(json)
+            ? MpaiJson.FromJson<BasicVisualObject>(json) ?? new BasicVisualObject()
+            : new BasicVisualObject();
+        (double X, double Y)? around = null;
+        if (_pointPort.Length > 0 && message.Ports.TryGetValue(_pointPort, out var pointJson) && !string.IsNullOrWhiteSpace(pointJson))
+        {
+            var p = System.Text.Json.Nodes.JsonNode.Parse(pointJson);
+            var c = p?["Coordinates"] ?? p;                       // the Point: Coordinates {X, Y}; X and Y alone are accepted
+            if (c?["X"] is { } x && c["Y"] is { } y) around = ((double)x, (double)y);
+        }
+        var text = await _ocr.ProcessAsync(image, around);
+        var output = MpaiJson.ToJson(text);
         return new Message
         {
             MessageId   = message.MessageId,
-            MessageType = "RecognisedText",
-            DataType    = text.Header,
-            Payload     = json,
-            Ports       = new Dictionary<string, string> { [_outputPort] = json }
+            MessageType = "TextObject",
+            DataType    = "OSD-TXO-V1.5",
+            Payload     = output,
+            Ports       = new Dictionary<string, string> { [_outputPort] = output }
         };
     }
 }

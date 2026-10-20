@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The Videoconference Client Receiver (PAF-VCR-V1.6) of the Avatar-Based Videoconference: ONE AIM (the former Multimodal Scene Creation) and its provider.
+       The demultiplexing it needs is the routine of Portable Avatar Demultiplexing (Mpai.Paf.Pdx). It runs continuously on its own Ports. -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\AIF\Controller\AIF.Controller.csproj" />
+    <ProjectReference Include="..\..\..\..\Store\AIF.Store.csproj" />
+    <ProjectReference Include="..\PDX\Mpai.Paf.Pdx.csproj" />
+  </ItemGroup>
+
+</Project>

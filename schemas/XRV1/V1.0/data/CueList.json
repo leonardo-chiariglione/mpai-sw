@@ -12,10 +12,10 @@
     "CueListTime":                  { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SimpleTime.json" },
 
     "CueListData":                  { "type": "array", "items": { "type": "object", "required": ["Cue"], "additionalProperties": false, "properties": {
-      "Cue":                        { "type": "object", "additionalProperties": false, "properties": {
+      "Cue":                        { "type": "array", "minItems": 1, "items": { "type": "object", "additionalProperties": false, "minProperties": 1, "maxProperties": 1, "properties": {
         "RealCue":                  { "$ref": "#/$defs/RealCue" },
         "VirtualCue":               { "$ref": "#/$defs/VirtualCue" },
-        "MixedCue":                 { "$ref": "#/$defs/MixedCue" } } } } } },
+        "MixedCue":                 { "$ref": "#/$defs/MixedCue" } } } } } } },
 
     "DataXMData":                   { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
     "DescrMetadata":                { "type": "string", "maxLength": 2048 } },
@@ -40,36 +40,29 @@
       "REOperatorDescriptors":      { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/REOperatorDescriptors.json" },
       "REOperatorStatus":           { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/REOperatorStatus.json" }} },
 
+    "VECueConditions":              { "type": "object", "additionalProperties": false, "properties": {
+      "VEPerformanceDescriptors":   { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEPerformanceDescriptors.json" },
+      "VEPerformanceStatus":        { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEPerformanceStatus.json" },
+      "VEParticipantDescriptors":   { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEParticipantDescriptors.json" },
+      "VEParticipantStatus":        { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEParticipantStatus.json" },
+      "VEOperatorDescriptors":      { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEOperatorDescriptors.json" },
+      "VEOperatorStatus":           { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEOperatorStatus.json" }} },
+
     "REGroup":                      { "type": "object", "additionalProperties": false, "properties": {
-      "RECueConditions":            { "$ref": "#/$defs/RECueConditions"},  
+      "RECueConditions":            { "$ref": "#/$defs/RECueConditions" },
       "REActions":                  { "$ref": "#/$defs/RealActionIDs" },
       "VEActions":                  { "$ref": "#/$defs/VirtualActionIDs" },
       "NextCue":                    { "type": "string" } } },
 
     "VEGroup":                      { "type": "object", "additionalProperties": false, "properties": {
-      "VEPerformanceDescriptors":   { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEPerformanceDescriptors.json" },
-      "VEPerformanceStatus":        { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEPerformanceStatus.json" },
-      "VEParticipantDescriptors":   { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEParticipantDescriptors.json" },
-      "VEParticipantStatus":        { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEParticipantStatus.json" },
-      "VEOperatorDescriptors":      { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEOperatorDescriptors.json" },
-      "VEOperatorStatus":           { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEOperatorStatus.json" },
+      "VECueConditions":            { "$ref": "#/$defs/VECueConditions" },
       "REActions":                  { "$ref": "#/$defs/RealActionIDs" },
       "VEActions":                  { "$ref": "#/$defs/VirtualActionIDs" },
       "NextCue":                    { "type": "string" } } },
 
     "MEGroup":                      { "type": "object", "additionalProperties": false, "properties": {
-      "REPerformanceDescriptors":   { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/REPerformanceDescriptors.json" },
-      "REPerformanceStatus":        { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/REPerformanceStatus.json" },
-      "REParticipantDescriptors":   { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/REParticipantDescriptors.json" },
-      "REParticipantStatus":        { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/REParticipantStatus.json" },
-      "REOperatorDescriptors":      { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/REOperatorDescriptors.json" },
-      "REOperatorStatus":           { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/REOperatorStatus.json" },
-      "VEPerformanceDescriptors":   { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEPerformanceDescriptors.json" },
-      "VEPerformanceStatus":        { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEPerformanceStatus.json" },
-      "VEParticipantDescriptors":   { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEParticipantDescriptors.json" },
-      "VEParticipantStatus":        { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEParticipantStatus.json" },
-      "VEOperatorDescriptors":      { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEOperatorDescriptors.json" },
-      "VEOperatorStatus":           { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/VEOperatorStatus.json" },
+      "RECueConditions":            { "$ref": "#/$defs/RECueConditions" },
+      "VECueConditions":            { "$ref": "#/$defs/VECueConditions" },
       "REActions":                  { "$ref": "#/$defs/MixedRealActionIDs" },
       "VEActions":                  { "$ref": "#/$defs/MixedVirtualActionIDs" },
       "NextCue":                    { "type": "string" } } },
@@ -84,4 +77,16 @@
 
     "MixedCue":                     { "type": "object", "additionalProperties": false, "required": ["MECueID", "MEGroups"], "properties": {
       "MECueID":                    { "type": "string" },
+      "MEGroups":                   { "type": "array", "items": { "$ref": "#/$defs/MEGroup" } } } },
+
+    "RealSubCue":                   { "type": "object", "additionalProperties": false, "required": ["RESubCueID", "REGroups"], "properties": {
+      "RESubCueID":                 { "type": "string" },
+      "REGroups":                   { "type": "array", "items": { "$ref": "#/$defs/REGroup" } } } },
+
+    "VirtualSubCue":                { "type": "object", "additionalProperties": false, "required": ["VESubCueID", "VEGroups"], "properties": {
+      "VESubCueID":                 { "type": "string" },
+      "VEGroups":                   { "type": "array", "items": { "$ref": "#/$defs/VEGroup" } } } },
+
+    "MixedSubCue":                  { "type": "object", "additionalProperties": false, "required": ["MESubCueID", "MEGroups"], "properties": {
+      "MESubCueID":                 { "type": "string" },
       "MEGroups":                   { "type": "array", "items": { "$ref": "#/$defs/MEGroup" } } } } } }

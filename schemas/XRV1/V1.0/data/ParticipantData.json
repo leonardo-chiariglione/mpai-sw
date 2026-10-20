@@ -12,6 +12,7 @@
     "UEnvironmentID":               { "type": "string", "description": "Identifier of the U-Environment (Real Space) associated with this Participant Data." },
     "ParticipantDataID":            { "type": "string", "description": "Identifier of this Participant Data instance." },
     "ParticipantDataTime":          { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SimpleTime.json", "description": "Time information associated with this Participant Data instance." },
+    "ParticipantID":                { "type": "string", "description": "Identifier of the Participant the data are about (non-identifying)." },
 
     "ParticipantAttendanceHistory": { "type": "array",  "description": "Participant Attendance history.", "items": {
                                       "type": "object", "additionalProperties": false, "required": ["VisitNumber","DateOfVisit","TicketClass","ParticipantCategory"], "properties": {
@@ -31,5 +32,5 @@
         "AttributeMnemonic":        { "type": "string", "description": "Attribute mnemonic." },
         "AttributeValue":           { "type": "string", "description": "Attribute value." } } } } } } },
   
-    "DataXMData":                   { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json", "description": "MPAI-PTF Data Exchange Metadata providing provenance, authorisation, legal, security, and confidence information associated with this RE Participant Data instance in a trusted data exchange context." },
-    "DescrMetadata":                { "type": "string", "maxLength": 2048, "description": "Human-readable descriptive metadata of the RPD instance (plain text, max 2048 characters)." } } }
+    "DataXMData":                   { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json", "description": "MPAI-PTF Data Exchange Metadata providing provenance, authorisation, legal, security, and confidence information associated with this Participant Data instance in a trusted data exchange context." },
+    "DescrMetadata":                { "type": "string", "maxLength": 2048, "description": "Human-readable descriptive metadata of the Participant Data instance (plain text, max 2048 characters)." } } }

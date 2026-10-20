@@ -1,6 +1,6 @@
 { "$schema":                    "https://json-schema.org/draft/2020-12/schema",
   "$id":                        "https://schemas.mpai.community/XRV1/V1.0/data/VEOperatorDescriptors.json",
-  "title":                      "VEOperatorDescriptors",
+  "title":                      "VE Operator Descriptors V1.0",
   "description":                "Descriptors for Virtual Environment operator consoles and context.",
   "type":                       "object",
   "additionalProperties":       false,

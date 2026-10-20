@@ -1,0 +1,6 @@
+{
+  "a Portable Avatar that is only a Model, by ID": "valid",
+  "a Portable Avatar with its Speech, Face and Body Descriptors": "valid",
+  "the Portable Avatar keeps the Model": "avatars/thalia.glb",
+  "the Portable Avatar's face and body": "face, BVH"
+}

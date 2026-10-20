@@ -1,30 +1,29 @@
-using System.Collections.Generic;
+using Mpai.Core;
 
 namespace Mpai.Aims.Ocr;
 
-// Builds the RapidOcrNet-backed OCR AIM from deployment settings.
-//
-// Settings (all optional): DetModel, ClsModel, RecModel, KeysFile.
-// If DetModel is absent the AIM uses RapidOcrNet's bundled models.
+// Builds MMC-OCR-V2.5 from deployment settings: DetModel, ClsModel, RecModel and
+// KeysFile (Models/OCR, see MODELS.md); a relative path is resolved against the
+// application's root. With DetModel not set, the models the package carries.
 public static class OcrFactory
 {
-    public static IOcrAim Create(
-        IReadOnlyDictionary<string, string> settings)
+    public static IOcrAim Create(string instanceId, IReadOnlyDictionary<string, string> settings)
     {
-        var det = Get(settings, "DetModel");
-        if (string.IsNullOrWhiteSpace(det))
-            return new RapidOcrAim();   // bundled models
-
-        return new RapidOcrAim(new RapidOcrConfiguration
+        var det = Value(settings, "DetModel");
+        if (det is null)
+        {
+            Console.WriteLine($"[{instanceId}] DetModel not set - using the models RapidOcrNet carries.");
+            return new RapidOcrAim(instanceId);
+        }
+        return new RapidOcrAim(instanceId, new RapidOcrConfiguration
         {
             DetModel = det,
-            ClsModel = Get(settings, "ClsModel"),
-            RecModel = Get(settings, "RecModel"),
-            KeysFile = Get(settings, "KeysFile")
+            ClsModel = Value(settings, "ClsModel") ?? "",
+            RecModel = Value(settings, "RecModel") ?? "",
+            KeysFile = Value(settings, "KeysFile") ?? ""
         });
     }
 
-    private static string Get(
-        IReadOnlyDictionary<string, string> settings, string key) =>
-        settings.TryGetValue(key, out var v) ? v : string.Empty;
+    private static string? Value(IReadOnlyDictionary<string, string> settings, string key) =>
+        settings.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value) ? MpaiPaths.Resolve(value) : null;
 }

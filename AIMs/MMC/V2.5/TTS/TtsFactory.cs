@@ -32,7 +32,10 @@ public static class TtsFactory
             new PiperProcessRunner(
                 new PiperConfiguration
                 {
-                    ExecutablePath = Setting(settings, "PiperExecutable")
+                    ExecutablePath = Setting(settings, "PiperExecutable"),
+                    // "PiperResident": "false" starts piper for every text, as before.
+                    Resident = !(settings.TryGetValue("PiperResident", out var resident) &&
+                                 resident.Equals("false", StringComparison.OrdinalIgnoreCase))
                 });
 
         var defaultVoice =
@@ -74,20 +77,27 @@ public static class TtsFactory
             if (language.Length == 0 || string.IsNullOrWhiteSpace(setting.Value))
                 continue;
 
-            var modelPath = setting.Value;
+            // RESOLVED, LIKE EVERY OTHER PATH. These are read from the dictionary
+            // directly rather than through Setting(), so they were used exactly as
+            // written - and a relative path then depended on the working directory
+            // rather than on where the application lives. The applications happened
+            // to run from a directory where it held; a Service started elsewhere
+            // found no voice at all and said nothing but 'not found'.
+            var modelPath = Mpai.Core.MpaiPaths.Resolve(setting.Value);
 
             // Piper ships "x.onnx" beside "x.onnx.json"; allow an override.
             var configKey  = ConfigPrefix + setting.Key.Substring(VoicePrefix.Length);
             var configPath =
                 settings.TryGetValue(configKey, out var explicitConfig) &&
                 !string.IsNullOrWhiteSpace(explicitConfig)
-                    ? explicitConfig
+                    ? Mpai.Core.MpaiPaths.Resolve(explicitConfig)
                     : modelPath + ".json";
 
             if (!File.Exists(modelPath))
             {
                 Console.WriteLine(
-                    $"[MMC-TTS-V2.5] voice for '{language}' not found at {modelPath}; ignored.");
+                    $"[MMC-TTS-V2.5] voice for '{language}' not found at {modelPath}; ignored. " +
+                    $"(root: {Mpai.Core.MpaiPaths.Root})");
                 continue;
             }
 
@@ -147,6 +157,10 @@ public static class TtsFactory
                 $"MMC-TTS-V2.5 setting '{key}' is missing.");
         }
 
-        return value;
+        // A RELATIVE SETTING IS RESOLVED AGAINST THE APPLICATION'S OWN ROOT.
+        // Every setting here names a file - a model, or the program that reads
+        // one - and naming it absolutely binds the installation to one machine.
+        // A user must be able to put the folder where they like and run it.
+        return Mpai.Core.MpaiPaths.Resolve(value);
     }
 }

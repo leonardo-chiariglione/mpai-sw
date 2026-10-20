@@ -1,5 +1,5 @@
-﻿using System;
-using System.Linq;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using AIF.Controller;
@@ -9,232 +9,177 @@ using Mpai.Core.OSD;
 
 namespace Mpai.Cae.Aoe;
 
-// CAE-AOE-V1.0 — the AIF-facing half of Audio Object Editing.
+// CAE-AOE-V1.0 - Audio Object Editing, as the author's Reference Model of Audio Scene
+// Management draws it (CAE Reference Models, 2026/10/04): User Command, User PoV and
+// a Basic Audio Object in; the Basic Audio Object as edited, and the User Command
+// with its report, out. The Object goes on to Audio Scene Editing.
 //
-// OPEN BY PORT, ACT BY COMMAND.
+// OPEN BY PORT, ACT BY COMMAND. One Object is open at a time, so no Command has to
+// name its target. A Basic Audio Object arriving is opened when Shared Storage holds
+// it (by its identifier), and created when it is new - a sound the User Agent
+// captured. Then a User Command acts on what is open:
 //
-// This AIM edits ONE object at a time, so no Command has to name its target.
-// What is open is decided by which Port delivered something:
+//   ModifiedObjects   what it is like: loudness (LUFS) and the Object part of the
+//                     Acoustic Profile
+//   UserPoV           where it is heard from, when heard on its own
+//   AddedObjects      the named Objects, each with its place and its time, make a new
+//                     Audio Object (AUO), which is kept in Shared Storage; the report
+//                     names it (ResultID). The Module gives a User Agent an Audio
+//                     Object that way: the User Agent reads it in Shared Storage.
 //
-//   BasicAudioObject   a Basic Audio Object — from CAE-AOA, or opened
-//   AudioObject        an existing composed object, opened
-//
-// The Data Type answers a question that would otherwise need the content
-// inspected. A Basic Audio Object arriving with no Command is a creation, and
-// creation opens implicitly.
-//
-// Then a User Command acts on whatever is open. WHICH FIELD IS POPULATED IS THE
-// OPERATION - there is no operation name to validate:
-//
-//   AddedObjects      compose the named objects into the open one
-//   ChangedObjects    EXTERNAL attributes: where it is, how it is placed
-//   ModifiedObjects   INTERNAL attributes: what it is like
-//
-// A Command carrying none of those three is not this AIM's; it is left alone
-// rather than treated as an error, because one Command is broadcast to whichever
-// AIM its Port leads to and the others simply have nothing to do.
-//
-// The engine underneath is AoeAim, unchanged. This class adds no editing
-// behaviour: it turns Ports into calls and a result into a Port.
+// Every edit is a new version in Shared Storage. Where an Object is in a Scene is
+// Audio Scene Editing's (AddedObjects, MovedObjects, ChangedObjects): a command
+// naming those here is reported as not supported, not silently dropped.
 public sealed class AoeAimProcessor : IAimProcessor
 {
     private readonly AoeAim _aoe;
 
     private readonly string _commandPort;
-    private readonly string _basicPort;
+    private readonly string _povPort;
     private readonly string _objectPort;
-    private readonly string _outputPort;
+    private readonly string _objectOut;
+    private readonly string _reportOut;
+    private readonly string _auoIn;       // an Audio Object the User Agent read from its external storage
+    private readonly string _auoOut;      // the Audio Object this made (composed, or stored from outside)
 
-    // What is open, between runs. The run is stateless; the AIM is not. That is
-    // what lets an interactive session be a sequence of runs rather than one
-    // long one, with the assets themselves in Shared Storage.
-    private string? _openObjectId;
-    private string? _openBasicId;
+    // What is open, between runs.
+    private string? _open;
+    private readonly UndoJournal _undo = new();
+    private string? _composed;            // the Audio Object a command of this run made
 
     public string InstanceId { get; }
 
-    public AoeAimProcessor(
-        string        instanceId,
-        AoeAim        aoe,
-        AimPortReader ports)
+    public AoeAimProcessor(string instanceId, AoeAim aoe, AimPortReader ports)
     {
         InstanceId   = instanceId;
         _aoe         = aoe;
-
         _commandPort = ports.Input("CAE-UCM-V1.0");
-        _basicPort   = ports.Input("OSD-BAO-V1.5");
-        _objectPort  = ports.Input("OSD-AUO-V1.5");
-        _outputPort  = ports.Output("OSD-AUO-V1.5");
+        _povPort     = ports.InputOrDefault("OSD-OPV-V1.5", "");
+        _objectPort  = ports.Input("OSD-BAO-V1.5");
+        _objectOut   = ports.Output("OSD-BAO-V1.5");
+        _reportOut   = ports.OutputOrDefault("CAE-UCM-V1.0", "");
+        _auoIn       = ports.InputOrDefault("OSD-AUO-V1.5", "");
+        _auoOut      = ports.OutputOrDefault("OSD-AUO-V1.5", "");
     }
 
     public Task<Message> ProcessAsync(Message message)
     {
-        // 1. opening, by Port.
-        if (message.Ports.TryGetValue(_objectPort, out var openJson))
+        var outputs = new Dictionary<string, string>();
+
+        // 1. opening, or creating, by Port.
+        if (message.Ports.TryGetValue(_objectPort, out var objectJson) && !string.IsNullOrWhiteSpace(objectJson))
         {
-            var opened = MpaiJson.FromJson<AudioObject>(openJson);
-            if (!string.IsNullOrWhiteSpace(opened.AudioObjectID))
-            {
-                _openObjectId = opened.AudioObjectID;
-                Console.WriteLine($"[CAE-AOE-V1.0] opened {_openObjectId}");
-            }
+            var basic = MpaiJson.FromJson<BasicAudioObject>(objectJson);
+            _open = !string.IsNullOrWhiteSpace(basic.BasicAudioObjectID) && _aoe.Has(basic.BasicAudioObjectID) ? basic.BasicAudioObjectID : _aoe.CreateObject(basic).AssetId;      // an Object with no identifier, or one the storage does not hold, is a new one
+            Console.WriteLine($"[CAE-AOE-V1.0] open {_open}");
         }
 
-        if (message.Ports.TryGetValue(_basicPort, out var basicJson))
+        // 1b. an Audio Object read from outside is stored here, and given back as stored.
+        string? made = null;
+        if (_auoIn.Length > 0 && message.Ports.TryGetValue(_auoIn, out var auoJson) && !string.IsNullOrWhiteSpace(auoJson))
         {
-            var basic = MpaiJson.FromJson<BasicAudioObject>(basicJson);
-
-            // OPEN or CREATE, and the identifier decides. A Basic Audio Object
-            // already in the repository is being opened for editing; one that is
-            // not is new - a capture from CAE-AOA, say.
-            //
-            // The first version of this file treated EVERY arriving Basic Audio
-            // Object as a creation, which meant an existing one could never be
-            // edited, only replaced. That contradicted the whole point of this
-            // AIM knowing whether it is editing a basic object or a composed one.
-            if (_aoe.Has(basic.BasicAudioObjectID))
-            {
-                _openBasicId = basic.BasicAudioObjectID;
-                Console.WriteLine($"[CAE-AOE-V1.0] opened basic {_openBasicId}");
-            }
-            else
-            {
-                var asset     = _aoe.CreateObject(basic);
-                _openObjectId = asset.AssetId;
-                _openBasicId  = BasicOf(_openObjectId);
-                Console.WriteLine($"[CAE-AOE-V1.0] created and opened {_openObjectId}");
-            }
+            made = _aoe.StoreAudioObject(MpaiJson.FromJson<AudioObject>(auoJson)).AssetId;
+            Console.WriteLine($"[CAE-AOE-V1.0] audio object {made}");
         }
 
-        // 2. acting, by Command.
-        if (message.Ports.TryGetValue(_commandPort, out var commandJson))
+        // 2. a User PoV on its Port: where the open Object is heard from.
+        if (_povPort.Length > 0 && _open is not null && message.Ports.TryGetValue(_povPort, out var povJson) && !string.IsNullOrWhiteSpace(povJson))
+            _open = _aoe.EditBasicObjectProperties(_open, listenerPointOfView: MpaiJson.FromJson<PointOfView>(povJson)).AssetId;
+
+        // 3. acting, by Command; the report goes back under the command's identifier.
+        if (message.Ports.TryGetValue(_commandPort, out var commandJson) && !string.IsNullOrWhiteSpace(commandJson))
         {
             var command = MpaiJson.FromJson<UserCommand>(commandJson);
-            Apply(command);
+            var report = new CommandReport(command);
+            if (command.UserCommandData?.RevokedUserCommandID is { } revoked) _undo.Revoke(revoked, report);
+            else
+            {
+                var before = _open;
+                Apply(command, report);
+                _undo.RecordVersions(command.UserCommandID, before, _open, () => _open, v => _open = v);
+            }
+            if (_reportOut.Length > 0) outputs[_reportOut] = MpaiJson.ToJson(report.Report());
         }
 
-        // 3. the open object, as it now stands.
-        if (_openObjectId is null)
-            return Task.FromResult(Nothing(message));
+        // 3b. an Audio Object made, as it is kept in Shared Storage.
+        if (made is null) made = _composed;
+        _composed = null;
+        if (made is not null && _auoOut.Length > 0) outputs[_auoOut] = MpaiJson.ToJson(_aoe.Materialize(made));         // whole: the Objects it is made of are in it
 
-        var materialised = _aoe.Materialize(_openObjectId);
-
+        // 4. the open Object, as it now stands.
+        if (_open is not null) outputs[_objectOut] = MpaiJson.ToJson(_aoe.Get(_open));
         return Task.FromResult(new Message
         {
             MessageId   = Guid.NewGuid().ToString(),
-            MessageType = "AudioObject",
-            Ports       = { [_outputPort] = MpaiJson.ToJson(materialised) }
+            MessageType = _open is null ? "NoOpenObject" : "BasicAudioObject",
+            DataType    = _open is null ? "" : "OSD-BAO-V1.5",
+            Ports       = outputs
         });
     }
 
-    private void Apply(UserCommand command)
+    // The Objects, each with its place and its time, as ONE new Audio Object.
+    private void Compose(ObjectPlacements composed, PointOfView? pov, CommandReport report)
+    {
+        var parts = new List<(string, SpaceTime?)>();
+        foreach (var entry in composed.Objects)
+        {
+            var id = !string.IsNullOrWhiteSpace(entry.ObjectID?.ObjectID) ? entry.ObjectID!.ObjectID : entry.ObjectID?.BasicAudioObject?.BasicAudioObjectID;
+            if (string.IsNullOrWhiteSpace(id) || !_aoe.Has(id)) { report.Failed("AddedObjects", id, "an Audio Object is made of Objects that Shared Storage holds, named by their identifiers"); return; }
+            parts.Add((id, entry.SpatialAttitude is null ? null : new SpaceTime { SpatialAttitude1 = entry.SpatialAttitude, Time = entry.SpatialAttitude.SpatialAttitudeTime ?? new SimpleTime() }));
+        }
+        try { _composed = _aoe.Compose(parts, pov).AssetId; report.Done("AddedObjects", null, _composed); }
+        catch (Exception e) { report.Failed("AddedObjects", null, e.Message); }
+    }
+
+    private void Apply(UserCommand command, CommandReport report)
     {
         var data = command.UserCommandData;
         if (data is null) return;
+        const string inScene = "where an Object is in a Scene is Audio Scene Editing's";
+        foreach (var (action, any) in new[] { ("MovedObjects", data.MovedObjects is { Objects.Count: > 0 }),
+                                              ("ChangedObjects", data.ChangedObjects is { Objects.Count: > 0 }),
+                                              ("RemovedObjects", data.RemovedObjects is { Objects.Count: > 0 }) })
+            if (any) report.NotSupported(action, _open, inScene);
+        if (data.TranslatedObjects is { Objects.Count: > 0 })
+            report.NotSupported("TranslatedObjects", _open, "speech is translated by Speech Object Editing");
 
-        if (_openObjectId is null)
+        if (data.AddedObjects is { Objects.Count: > 0 } composed) Compose(composed, data.UserPoV, report);
+
+        // The Object the command modifies, where it gives one - itself, or its identifier - is the one open from here on.
+        if (data.ModifiedObjects is { Objects.Count: > 0 } first && first.Objects[0].ObjectID is { } target)
         {
-            Console.WriteLine("[CAE-AOE-V1.0] a Command arrived with nothing open - ignored.");
+            var given = !string.IsNullOrWhiteSpace(target.ObjectID) ? target.ObjectID : target.BasicAudioObject?.BasicAudioObjectID;
+            if (!string.IsNullOrWhiteSpace(given) && _aoe.Has(given)) _open = given;
+        }
+
+        if (_open is null)
+        {
+            if (data.UserPoV is not null || data.ModifiedObjects is { Objects.Count: > 0 } || data.LUFS is not null)
+                report.Failed("ModifiedObjects", null, "no Basic Audio Object is open");
             return;
         }
 
-        // Compose: add each named object as a child of the open one.
-        if (data.AddedObjects is { Objects.Count: > 0 } added)
+        if (data.UserPoV is not null)
         {
-            foreach (var entry in added.Objects)
-            {
-                var childId = IdOf(entry.ObjectID);
-                if (childId is null) continue;
-
-                _openObjectId = _aoe.AddSubObject(_openObjectId, childId).AssetId;
-                Console.WriteLine($"[CAE-AOE-V1.0] added {childId} -> {_openObjectId}");
-            }
+            var before = _open;
+            _open = _aoe.EditBasicObjectProperties(_open, listenerPointOfView: data.UserPoV).AssetId;
+            report.Done("UserPoV", before, _open);
         }
 
-        // EXTERNAL attributes.
-        if (data.ChangedObjects is { Objects.Count: > 0 } changed)
-        {
-            foreach (var entry in changed.Objects)
-            {
-                _openObjectId = _aoe.EditObjectProperties(
-                    _openObjectId,
-                    acousticProfile: entry.AcousticProfile,
-                    placement:       Placement(entry.SpatialAttitude)).AssetId;
-
-                Console.WriteLine($"[CAE-AOE-V1.0] changed (external) -> {_openObjectId}");
-            }
-        }
-
-        // INTERNAL attributes: what the object IS - frequency range, loudness,
-        // spectrogram. They belong to the Basic Audio Object inside whatever is
-        // OPEN, symmetrically with ChangedObjects above, which edits the open
-        // object's external attributes.
-        //
-        // An earlier version took the identifier from the Command entry instead,
-        // so a Command could modify an object other than the one open. That was
-        // wrong twice over: it broke the symmetry, and it contradicted the rule
-        // that no Command needs to name its target because one thing is open.
+        // What the Object is like: its loudness and its Acoustic Profile (Object part). The Object is the one open, or the one the entry gives (the Object itself, or its
+        // identifier), which is then open.
         if (data.ModifiedObjects is { Objects.Count: > 0 } modified)
+            foreach (var entry in modified.Objects)
+            {
+                var before = _open;
+                _open = _aoe.EditBasicObjectProperties(_open, level: data.LUFS, acousticProfile: entry.AcousticProfile).AssetId;
+                report.Done("ModifiedObjects", before, _open);
+            }
+        else if (data.LUFS is { } lufs)
         {
-            var basicId = _openBasicId ?? BasicOf(_openObjectId);
-
-            if (basicId is null)
-            {
-                Console.WriteLine("[CAE-AOE-V1.0] nothing open has a Basic Audio Object to modify.");
-            }
-            else
-            {
-                foreach (var entry in modified.Objects)
-                {
-                    _aoe.EditBasicObjectProperties(
-                        basicId,
-                        level:           data.LUFS,
-                        acousticProfile: entry.AcousticProfile);
-
-                    Console.WriteLine($"[CAE-AOE-V1.0] modified (internal) {basicId}");
-                }
-            }
+            var before = _open;
+            _open = _aoe.EditBasicObjectProperties(_open, level: lufs).AssetId;
+            report.Done("LUFS", before, _open);
         }
     }
-
-    // The Basic Audio Object inside a composed one. Materialize expands the
-    // children, so the identifier is there to be read rather than tracked.
-    private string? BasicOf(string? audioObjectId)
-    {
-        if (audioObjectId is null) return null;
-
-        try
-        {
-            var expanded = _aoe.Materialize(audioObjectId);
-            return expanded.BasicAudioObjects?.Count > 0
-                ? expanded.BasicAudioObjects[0].BAObjectIDOrBAObject?.BasicAudioObjectID
-                : null;
-        }
-        catch (Exception failure)
-        {
-            Console.WriteLine($"[CAE-AOE-V1.0] could not read the basic component: {failure.Message}");
-            return null;
-        }
-    }
-
-    // A SpatialAttitude from a Command becomes the T0 attitude of a SpaceTime,
-    // which is what the engine takes. The schema and the engine were evidently
-    // drawn from the same picture: SpaceTime holds exactly this.
-    private static SpaceTime? Placement(SpatialAttitude? attitude) =>
-        attitude is null ? null : new SpaceTime { SpatialAttitude1 = attitude };
-
-    // ObjectOrID: usually the identifier alone, the content coming from Shared
-    // Storage.
-    private static string? IdOf(ManagedObject? managed) =>
-        managed is null ? null
-        : !string.IsNullOrWhiteSpace(managed.ObjectID)               ? managed.ObjectID
-        : !string.IsNullOrWhiteSpace(managed.AudioObject?.AudioObjectID) ? managed.AudioObject!.AudioObjectID
-        : null;
-
-    private Message Nothing(Message message) => new()
-    {
-        MessageId   = Guid.NewGuid().ToString(),
-        MessageType = "NoOpenObject",
-        Ports       = { }
-    };
 }

@@ -3,7 +3,7 @@
   "title":                       "Lighting Console V1.0",
   "type":                        "object",
   "additionalProperties":        false,
-  "required":                    [ "Header", "LightingConsoleID", "LightingConsoleSpaceTime", "LightingCommands" ],
+  "required":                    [ "Header", "LightingConsoleID", "LightingCommands" ],
   "properties":                  {
 
     "Header":                    { "type": "string", "const": "XRV-LTC-V1.0" },
@@ -11,6 +11,8 @@
     "UEnvironmentID":            { "type": "string" },
     "LightingConsoleID":         { "type": "string" },
     "LightingConsoleTime":       { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SimpleTime.json" },
+
+    "LightingConsoleSpaceTime":  { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SpaceTime.json" },
     "LightingCueNumber":         { "type": "number" },
 
     "MasterDimmer":              { "type": "number" },
@@ -38,7 +40,7 @@
         "ControlObject":         { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/ControlObject.json" } } },
 
       "Prism":                   { "type": "object", "additionalProperties": false, "properties": {
-        "GoboID":                { "type": "string" },
+        "PrismID":               { "type": "string" },
         "Rotation":              { "type": "boolean" },
         "Direction":             { "type": "number" },
         "Rate":                  { "type": "number" },

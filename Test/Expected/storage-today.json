@@ -1,0 +1,15 @@
+{
+  "TST-ESB: a GNSS Object written": "OK 'OSD-BVO-V1.5:0 OSD-OSA-V1.5:0 CAV-GNO-V2.0:1 CAV-WDT-V2.0:0 CAV-FED-V2.0:0'",
+  "TST-MPC against the schema": "valid",
+  "TST-MPC: rules given, then a write": "OK; #1 'k: NotAuthorised'; #3 'Notes: OK'",
+  "TST-MPC: the other AIM reads it": "OK; #2 'NotFound'",
+  "TST-MPS: rules given, then a write": "OK; #1 'k: OK'",
+  "TST-MPS: the other AIM reads it": "OK; #2 'NotAuthorised'",
+  "TST-RCA against the schema": "valid",
+  "TST-RCA: an input, then its echo": "OK 'a1'; files at the Module's location: 6",
+  "TST-REC: an input, then its echo": "OK 'a1'; files at the Module's location: 0",
+  "TST-SHA writes": "OK; #1 's: OK'",
+  "TST-SHB reads it": "OK; #1 'NotAuthorised'",
+  "stream in a workflow": "read as: StartModule; Stream",
+  "the Controller API's calls for a record": "present"
+}

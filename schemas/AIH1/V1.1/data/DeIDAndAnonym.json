@@ -2,6 +2,7 @@
   "$id":                        "https://schemas.mpai.community/AIH1/V1.1/data/DeIDAndAnonym.json",
   "title":                      "De-Identification and Anonymisation V1.1",
   "type":                       "object",
+  "required":                   [ "Header", "DeIDAndAnonymID", "DeIDAndAnonymTime", "DeIDAndAnonymData" ],
   "properties":                 {
 
     "Header":                   { "type": "string", "const": "AIH-DIA-V1.1" },
@@ -12,14 +13,16 @@
     "EndUserID":                { "type": "string" },
 
     "DeIDAndAnonymData":        { "type": "array", "items": { "oneOf": [
-                                { "type": "object", "properties": {
-      "Request":                { "type": "object", "properties": {
+                                { "type": "object", "additionalProperties": false, "required": [ "Request" ], "properties": {
+      "Request":                { "type": "object", "required": [ "Tokens" ], "properties": {
         "AIHDataID":            { "type": "string" },
-        "DeIDAndAnonymType":    { "type": "string", "Enum": [ "De-Identify", "Anonymise", "De-Identify and Anonymise" ] },
-        "DeIDAndAnonymAlgoID":  { "type": "string" } } } } },
-                                { "type": "object", "properties": {
+        "DeIDAndAnonymType":    { "type": "string", "enum": [ "De-Identify", "Anonymise", "De-Identify and Anonymise" ] },
+        "DeIDAndAnonymAlgoID":  { "type": "string" },
+        "Tokens":               { "$ref": "https://schemas.mpai.community/AIH1/V1.1/data/Tokens.json", "description": "The Tokens the End User was given on registering: the request is served if they grant the De-ID and Anonym service." } } } } },
+                                { "type": "object", "additionalProperties": false, "required": [ "Response" ], "properties": {
       "Response":               { "type": "object", "properties": {
-        "AIHDataID":            { "type": "string" },
+        "AIHDataID":            { "type": "string", "description": "Identifier of the AIH Data that was de-identified or anonymised." },
+        "NewAIHDataID":         { "type": "string", "description": "Identifier of the AIH Data that results: the de-identified or anonymised copy." },
         "ProcessingState":      { "type": "boolean" } } } } } ] } },
 
     "DataXMData":               { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },

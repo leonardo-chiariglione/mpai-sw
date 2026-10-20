@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 
 using Microsoft.ML.OnnxRuntime;
+using Mpai.Onnx;
 using Microsoft.ML.OnnxRuntime.Tensors;
 
 using SixLabors.ImageSharp;
@@ -19,7 +20,7 @@ namespace Mpai.Paf.Fir;
 //  their embeddings have high cosine similarity.
 //
 //  Model: glintr100.onnx (ResNet100 ArcFace, Apache-2.0, from fal/AuraFace-v1),
-//  staged under D:\AI\Models\. Input 112x112 RGB, output a 512-float embedding.
+//  staged under Models\. Input 112x112 RGB, output a 512-float embedding.
 //  ONNX Runtime + ImageSharp, matching the TIQ/SCRFD pattern.
 //
 //  NOT compile-verified / not run here. The 112x112 preprocessing and the
@@ -37,7 +38,7 @@ public sealed class ArcFaceRecogniser : IDisposable
 
     public ArcFaceRecogniser(string modelPath)
     {
-        _session = new InferenceSession(modelPath);
+        _session = OnnxSessions.Create(modelPath);
     }
 
     // Embedding for an already-cropped, roughly face-only image.

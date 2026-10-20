@@ -1,0 +1,25 @@
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-NOP-V1.0-I01", "AIMName": "1TST-NOP-V1.0-I01"},
+  "Header":           "TST-NOP-V1.0",
+
+  "APIProfile":       "Basic",
+  "Description":      "Test: declares an output and never produces it.",
+
+  "InternalTypes":    [],
+
+  "ExternalPorts":    [{"Name": "Text",  "Direction": "Input",  "DataType": "TST-TXT-V1.0",                     "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "Never", "Direction": "Output", "DataType": "TST-TXT-V1.0", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false}],
+
+  "SubAIMs":          [],
+
+  "Topology":         [],
+
+  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/blob/main/Test/Mpai.Aif.Tests/ControllerTests.cs",
+                        "MASPort":           443,
+                        "BinaryName":        "Mpai.Aif.Tests",
+                        "Architecture":      "x86-64",
+                        "OperatingSystem":   "Windows",
+                        "Version":           "1.0",
+                        "Source":            "AIMStorage"}],
+  "ResourcePolicies": [],
+  "DataXMData":       {},
+  "Documentation":    []}

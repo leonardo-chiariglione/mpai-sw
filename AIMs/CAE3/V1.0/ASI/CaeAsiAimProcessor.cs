@@ -75,7 +75,7 @@ public sealed class CaeAsiAimProcessor : IAimProcessor
                 BasicSpeechObjectID       = obj.BasicAudioObjectID,
                 BasicSpeechObjectSpaceTime = obj.BasicAudioObjectTime,
                 Data                      = bytes ?? Array.Empty<byte>(),
-                SpeechQualifier           = SpeechQualifierMono16k()
+                SpeechQualifier           = SpeechQualifierFrom(obj.AudioQualifier)
             };
             ports[_speechPort] = MpaiJson.ToJson(bso);
         }
@@ -110,7 +110,18 @@ public sealed class CaeAsiAimProcessor : IAimProcessor
 
     // The Speech Qualifier ASI attaches to a discovered speech object: mono, 16 kHz,
     // 16-bit PCM (the format the speech consumers use).
-    private static SpeechQualifier SpeechQualifierMono16k() => new()
+    // REQUALIFICATION KEEPS THE DATA, SO IT MUST DESCRIBE THE DATA IT KEPT. This
+    // AIM is the one place where a medium is reclassified, and nature forces it: a
+    // scene is captured as sound waves, and only here is it discovered that an
+    // object is speech. The bytes are unchanged, so the sampling frequency and the
+    // precision are whatever the acquisition determined - 48 kHz in a scene, not
+    // the 16 kHz the recognisers happen to want.
+    //
+    // Asserting 16 kHz over 48 kHz samples is worse than declaring nothing: every
+    // consumer that obeys the Qualifier then decodes at a third of the rate,
+    // silently. A Speech Object at 48 kHz is a perfectly good Speech Object; where
+    // a consumer needs another rate, CAE-QCV is composed in to convert it.
+    private static SpeechQualifier SpeechQualifierFrom(AudioQualifier? audio) => new()
     {
         Header            = "TFA-SPQ-V1.5",
         SpeechQualifierID = Guid.NewGuid().ToString(),
@@ -118,7 +129,7 @@ public sealed class CaeAsiAimProcessor : IAimProcessor
         {
             ContentFormats = new SpeechContentFormats
             {
-                RawData = new Pcm { Header = "TFA-PCM-V1.5", SamplingFrequency = 16000, Precision = 16 }
+                RawData = audio?.Formats?.ContentFormat?.RawData?.SampleSpace
             }
         },
         Attributes = new SpeechAttributes

@@ -60,13 +60,14 @@ public sealed class NluAimProcessor : IAimProcessor
     {
         // Prefer Recognised Text (from ASR) if present, else the directly-typed Input Text.
         string? text = ReadText(message, _recognisedTextPort) ?? ReadText(message, _inputTextPort);
-        if (string.IsNullOrWhiteSpace(text))
+        text ??= "";
+        if (false)   // empty text is allowed: NLU emits empty descriptors, Module continues
             return System.Threading.Tasks.Task.FromResult(
                 Message.Error(message.MessageId, _instanceId, "no Input Text or Recognised Text on input ports"));
 
         string refined = Refine(text);
         var basic = Analyse(refined);
-        var textDescriptors = TextDescriptorsObject.FromBasic(basic);
+        var textDescriptors = TextDescriptorsObject.FromTaggings(basic);
         var refinedObject = BasicTextObject.FromText(refined);
         var textPersonalStatus = EstimatePersonalStatus(refined);
 
@@ -98,14 +99,13 @@ public sealed class NluAimProcessor : IAimProcessor
         return collapsed.Trim();
     }
 
-    // Produce the Basic Text Descriptors (the four taggings) for the text. POS and
-    // NE are filled by the simple tagger; dependency and SRL are left null.
-    private static BasicTextDescriptors Analyse(string text)
+    // Produce the four taggings for the text. POS and NE are filled by the simple
+    // tagger; dependency and SRL are left null.
+    private static TextTaggings Analyse(string text)
     {
         var tokens = Tokenise(text);
-        return new BasicTextDescriptors
+        return new TextTaggings
         {
-            BasicTextDescriptorsID = Guid.NewGuid().ToString(),
             TextDescriptorsData = new TextDescriptorsData
             {
                 POS_tagging = new Tagging { Set = PosSet, Result = PosTag(tokens) },
@@ -153,6 +153,7 @@ public sealed class NluAimProcessor : IAimProcessor
         // Ensure at least one Factor is present: default to a calm Emotion.
         if (emotion is null && cognitiveState is null && socialAttitude is null)
             emotion = Emotion.Of(FactorLabel.Of("CALMNESS", "calm", null, 0.5));
+        MpaiDiag.Emotion("NLU", $"positive {pos} negative {neg} -> {emotion?.Category ?? "no emotion"}; \"{text}\"");
 
         return new TextPersonalStatus
         {

@@ -14,10 +14,6 @@ namespace Mpai.Core.OSD;
 // (BVH, SMPL, glTF, ...), chosen because 3D posture expresses the body's SEMANTICS
 // for Personal Status. This implementation emits a BVH skeleton; the Qualifier
 // records ContentFormat = "BVH".
-//
-// Gesture is a SUBSET of Body: a Gesture Descriptors Object shares the PAF-BDO
-// header and the SAME single Qualifier (TFA-BDQ) and content-format enumeration,
-// carrying the gesture-relevant subset of the body's joints.
 public sealed class BodyDescriptorsObject
 {
     public string Header { get; init; } = "PAF-BDO-V1.6";
@@ -41,6 +37,13 @@ public sealed class BodyDescriptorsObject
             BodyDescriptorsQualifier = BodyDescriptorsQualifier.For(contentFormat)
         };
 
+    // THE BODY AS THE SPATIAL ATTITUDES OF ITS NODES (the author, 2026/10/11: the body descriptors should simply be the OSA of the nodes between joints): the
+    // content format that says so, and the Object built from the Spatial Attitudes (OSD-OSA-V1.5), one for each node, as a JSON array.
+    public const string NodeAttitudes = "OSA (Spatial Attitudes of the nodes between joints, OSD-OSA-V1.5)";
+
+    public static BodyDescriptorsObject FromNodeAttitudes(IEnumerable<string> spatialAttitudes)
+        => FromContent("[" + string.Join(",", spatialAttitudes) + "]", NodeAttitudes);
+
     // The descriptor data carried inline, if present (e.g. the BVH text).
     public string? Content() => BodyDescriptorsData.FirstOrDefault(d => d.Data is not null)?.Data;
 
@@ -56,7 +59,7 @@ public sealed class BodyDescriptorsDataItem
     public string? DataID { get; init; }       // by identifier
 }
 
-// TFA-BDQ-V1.5 - Body Descriptors Qualifier. Shared by Body AND Gesture. Mirrors
+// TFA-BDQ-V1.5 - Body Descriptors Qualifier. Shared by the Body Descriptors Object. Mirrors
 // schemas/TFA/V1.5/data/BodyDescriptorsQualifier.json: a Format object whose
 // ContentFormat is a value from BodyDescriptorsContentFormats.json.
 public sealed class BodyDescriptorsQualifier

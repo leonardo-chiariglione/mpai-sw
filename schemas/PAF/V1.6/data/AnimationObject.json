@@ -3,6 +3,7 @@
   "title":                "Animation Object V1.6",
   "type":                 "object",
   "additionalProperties": false,
+  "required":             [ "Header", "AnimationObjectID", "AnimationObjectData" ],
   "properties":           {
 
     "Header":             { "type": "string", "const": "PAF-AMO-V1.6" },

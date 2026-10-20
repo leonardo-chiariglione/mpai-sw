@@ -16,6 +16,12 @@ public sealed class PiperProcessRunner : IPiperProcessRunner
         PiperSynthesisRequest request,
         CancellationToken cancellationToken = default)
     {
+        // Resident: the voice stays loaded. Nothing to say is said by the one-shot
+        // piper, as before: a resident piper answers an empty line with nothing.
+        if (_configuration.Resident && !string.IsNullOrWhiteSpace(request.Text))
+            return await ResidentPiper.For(_configuration.ExecutablePath, request)
+                .SynthesizeAsync(request.Text, _configuration.SynthesisTimeout, cancellationToken);
+
         var tempDirectory =
             Path.Combine(
                 Path.GetTempPath(),
@@ -46,7 +52,10 @@ public sealed class PiperProcessRunner : IPiperProcessRunner
                     Arguments =
                         $"-m \"{request.ModelPath}\" " +
                         $"-c \"{request.ConfigPath}\" " +
-                        $"-f \"{outputPath}\"",
+                        $"-f \"{outputPath}\"" +
+                        (string.IsNullOrWhiteSpace(request.ExtraArgs)
+                            ? ""
+                            : " " + request.ExtraArgs),
 
                     RedirectStandardInput = true,
                     RedirectStandardError = true,

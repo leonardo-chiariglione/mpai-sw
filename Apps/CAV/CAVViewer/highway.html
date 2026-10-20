@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CAV on the highway</title>
+<!--
+  THE HIGHWAY OF TEST PHASE 1 (M3253), AS A RUN OF THE CAV SHOWS IT. The page draws the road around the CAV seen from
+  above - the CAV in red, the other vehicles where they truly are, where the ESS believes the vehicles ahead are, and
+  what the rear camera sees coming up behind - next to the pictures of the two cameras, the speeds, and the numbers.
+  Two ways to use it:
+    live    - served by a running test: it reads ./state, ./frame.png and ./rear.png as they are made. The run goes as fast
+              as the CAV's processing allows, which is slower than real time: what is shown is a slow motion, and says by how much.
+    replay  - opened from a recording's folder (index.html beside data.js, f/ and r/): it plays the recording at the
+              speed of real life, or as asked (play, pause, speed, a slider).
+  The lateral scale is three times the longitudinal one, so that the lanes can be seen.
+-->
+<style>
+  :root { --bg: #14181d; --panel: #1d232b; --text: #e6e8eb; --muted: #9aa3ad; --ok: #6fcf97; --warn: #f2c94c; --bad: #eb5757; --ess: #56ccf2; --cav: #ff3b3b; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.4 system-ui, Arial, sans-serif; }
+  .wrap { max-width: 1260px; margin: 0 auto; padding: 12px; }
+  h1 { font-size: 16px; margin: 4px 0 8px; font-weight: 600; }
+  h1 span { color: var(--muted); font-weight: 400; }
+  .panel { background: var(--panel); border-radius: 8px; padding: 8px; }
+  canvas { display: block; width: 100%; height: auto; border-radius: 4px; }
+  .row { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 420px) 1fr; gap: 12px; margin-top: 12px; }
+  @media (max-width: 1000px) { .row { grid-template-columns: 1fr; } }
+  img { width: 100%; height: auto; border-radius: 4px; background: #000; display: block; aspect-ratio: 16 / 9; }
+  table { width: 100%; border-collapse: collapse; } td { padding: 2px 4px; border-bottom: 1px solid #2a323c; font-size: 13px; }
+  td:first-child { color: var(--muted); } td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+  .legend { color: var(--muted); font-size: 12px; margin-top: 6px; }
+  .legend b { font-weight: 600; } .c-ess { color: var(--ess); } .c-truth { color: var(--warn); } .c-cav { color: var(--cav); }
+  #status.done { color: var(--ok); }
+  #controls { display: none; align-items: center; gap: 10px; margin: 8px 0 0; }
+  #controls button, #controls select, #controls a.btn { background: #2a323c; color: var(--text); border: 0; border-radius: 6px; padding: 5px 12px; font-size: 14px; cursor: pointer; text-decoration: none; display: inline-block; }
+  #controls input[type=range] { flex: 1; } #clock { font-variant-numeric: tabular-nums; min-width: 110px; text-align: right; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>CAV on the highway <span id="label"></span> - <span id="status">waiting for the run...</span></h1>
+  <div class="panel">
+    <canvas id="road" width="1200" height="270"></canvas>
+    <div class="legend"><b class="c-cav">Red</b>: the CAV. <b class="c-truth">Yellow line</b>: the gap to the vehicle ahead, from the truth.
+      <b class="c-ess">Blue diamonds</b>: where the CAV's sensors place the vehicles ahead (front camera, ESS) and behind (rear camera, with the closing speed). Lateral scale x3.</div>
+    <div id="caption" style="display:none;margin:10px 2px 4px;font-size:19px;line-height:1.45;min-height:56px"></div>
+    <div id="controls">
+      <a class="btn" id="menubtn" href="../index.html" style="display:none">&larr; Menu</a>
+      <button id="play">Pause</button>
+      <button id="voice" data-on="1" style="display:none">Voice: on</button><span id="voiceinfo" style="font-size:13px;opacity:.8"></span>
+      <select id="speed"><option value="0.5">x0.5</option><option value="1" selected>x1</option><option value="2">x2</option><option value="4">x4</option></select>
+      <input id="slider" type="range" min="0" max="0" value="0"><span id="clock"></span>
+    </div>
+  </div>
+  <div class="row">
+    <div class="panel"><img id="cam" alt="front camera"><div class="legend">Front camera, as the ESS reads it (reduced to 640 x 360).</div></div>
+    <div class="panel" id="rearpanel"><img id="rear" alt="rear camera"><div class="legend">Rear camera, a window of its full resolution picture, around the horizon: the road behind, far.</div></div>
+    <div class="panel" id="telepanel" style="display:none"><img id="tele" alt="telephoto camera"><div class="legend">Telephoto camera, a window of its full resolution picture around the horizon: what the CAV reads far ahead - the indicator of the car in front.</div></div>
+    <div class="panel"><table id="hud"></table><canvas id="chart" width="560" height="200" style="margin-top:8px"></canvas>
+      <div class="legend">Speeds, last 60 s: <b>CAV</b>, <b class="c-truth">vehicle ahead</b>, planned (dashed).</div></div>
+  </div>
+</div>
+<script src="data.js" onerror="void 0"></script>
+<script src="narration.js" onerror="void 0"></script>
+<script>
+let SX = 5; const BEHIND = 100;                          // pixels a metre along the road (at a junction the view is fixed on it); metres shown behind the CAV
+let SY = 15, YLOW = 4.5;                                 // pixels a metre across the road (at a junction: true scale, and the crossing road shown to the south); metres shown south of the lanes
+const road = document.getElementById('road'), g = road.getContext('2d');
+const chart = document.getElementById('chart'), c = chart.getContext('2d');
+const $ = id => document.getElementById(id);
+const yPx = y => road.height - 22 - (y + YLOW) * SY;
+const kmh = v => (v * 3.6).toFixed(0);
+const pad = n => String(n).padStart(6, '0');
+const REPLAY = window.REPLAY;
+let history = [];
+
+let ZK = 0;                                              // how far the view has zoomed in on a pass (0 .. 1)
+const PASSING = /^(pulling|passing|passed|hurrying|abandons)/;
+function draw(s) {
+  const W = road.width, H = road.height;
+  const lead = (s.vehicles || []).find(v => v.id === 'Lead');
+  let x0;
+  if (s.follow) {                                         // the view follows the CAV a long way ahead, and closes on the pass: the two cars and the junction
+    ZK += ((PASSING.test(s.status || '') ? 1 : 0) - ZK) * 0.12;
+    SX = 4 + (14 - 4) * ZK; SY = 7 + (14 - 7) * ZK; YLOW = 22 + (7 - 22) * ZK;
+    const cx = (s.ego.x + (lead ? lead.x : s.ego.x + 30)) / 2;
+    x0 = (s.ego.x - 70) * (1 - ZK) + (cx - W / (2 * 14)) * ZK;
+  } else {
+    SX = s.junction ? 6 : 5; SY = s.junction ? 5 : 15; YLOW = s.junction ? 36 : 4.5;
+    x0 = s.junction ? s.junction.x - road.width / (2 * SX) : s.ego.x - BEHIND;   // at a junction the view is centred on it: both cars are in it as they come
+  }
+  const xPx = x => (x - x0) * SX;
+  g.clearRect(0, 0, W, H);
+  g.fillStyle = '#3d5a35'; g.fillRect(0, 0, W, H);                                           // grass
+  g.fillStyle = '#5a5e64'; g.fillRect(0, yPx(5.85), W, yPx(-4.25) - yPx(5.85));              // the paved width, shoulders included
+  g.fillStyle = '#4a4e54'; g.fillRect(0, yPx(5.25), W, yPx(-1.75) - yPx(5.25));              // the two lanes
+  g.fillStyle = '#e8e8e8';
+  g.fillRect(0, yPx(-1.75) - 1, W, 2); g.fillRect(0, yPx(5.25) - 1, W, 2);                    // the edge lines
+  for (let x = Math.floor(x0 / 16) * 16; x < x0 + W / SX; x += 16) g.fillRect(xPx(x), yPx(1.75) - 1, 4 * SX, 2);   // dashes: 4 m every 16
+  if (!s.junction) { g.fillStyle = '#b8bcc2'; g.fillRect(0, yPx(5.85) - 3, W, 4); }             // the guard rail
+  if (s.junction) {                                                                            // the road that crosses: two lanes, north and south of the highway
+    const jx0 = xPx(s.junction.x - s.junction.half * 2), jw = s.junction.half * 4 * SX;
+    g.fillStyle = '#5a5e64'; g.fillRect(jx0 - 6, 0, jw + 12, H);
+    g.fillStyle = '#4a4e54'; g.fillRect(jx0, 0, jw, H);
+    g.fillRect(jx0 - 6, yPx(5.25), jw + 12, yPx(-1.75) - yPx(5.25));                            // the crossing itself
+    g.fillStyle = '#e8e8e8'; g.fillRect(xPx(s.junction.x) - 1, 0, 2, yPx(5.25)); g.fillRect(xPx(s.junction.x) - 1, yPx(-1.75), 2, H - yPx(-1.75));
+  }
+  g.fillStyle = '#9aa3ad'; g.font = '11px system-ui';
+  const ref = s.junction && !s.follow ? s.junction.x : s.ego.x + s.ego.length / 2;               // distances from the CAV's front, or from the junction
+  const step = SX > 8 ? 10 : 20;
+  for (let d = Math.ceil((x0 - ref) / step) * step; d <= (x0 + W / SX - ref); d += step) {
+    const px = xPx(ref + d); g.fillRect(px, H - 18, 1, 6);
+    if (d !== 0) g.fillText((d > 0 ? '+' : '') + d + ' m', px + 3, H - 6);
+  }
+
+  // what the CAV's planner is working on: it weighs a pass (wants), is out (pulling, passing, hurrying) or has just returned (passed)
+  const active = s.follow && /^(wants|pulling|passing|hurrying|abandons|passed)/.test(s.status || '');
+  const turnAt = active && s.junction && lead && lead.x < s.junction.x - 12 ? s.junction.x - 12 : null;          // where it predicts the car ahead turns off: the junction of its map
+  if (active && s.free && s.free > 0) {                                                          // the stretch of the lane that comes the other way the CAV knows to be clear
+    const xf = s.ego.x + s.ego.length / 2;
+    g.fillStyle = 'rgba(111,207,151,0.30)'; g.fillRect(xPx(xf), yPx(5.25), s.free * SX, yPx(1.75) - yPx(5.25));
+    g.fillStyle = '#6fcf97'; g.font = '12px system-ui'; g.fillText('lane clear for ' + s.free + ' m', Math.max(4, xPx(xf)) + 6, yPx(5.25) + 15);
+  }
+  if (turnAt != null && s.turnAt != null && lead && turnAt > lead.x) {                                           // where the CAV predicts the car ahead will turn off
+    g.save(); g.setLineDash([7, 5]); g.lineWidth = 2; g.strokeStyle = '#f2c94c';
+    g.beginPath(); g.moveTo(xPx(lead.x), yPx(lead.y)); g.lineTo(xPx(turnAt), yPx(lead.y));
+    g.quadraticCurveTo(xPx(turnAt + 10), yPx(lead.y), xPx(turnAt + 10), yPx(lead.y - 10)); g.lineTo(xPx(turnAt + 10), yPx(lead.y - 40)); g.stroke(); g.restore();
+    g.fillStyle = '#f2c94c'; g.font = '12px system-ui'; g.fillText('predicted turn', xPx(turnAt) - 30, yPx(lead.y) + 26);
+  }
+
+  const car = (v, ego) => {
+    const px = xPx(v.x - v.len / 2), py = yPx(v.y + v.wid / 2), w = v.len * SX, h = v.wid * SY;
+    g.fillStyle = ego ? '#ff3b3b' : `rgb(${v.paint[0]},${v.paint[1]},${v.paint[2]})`;
+    g.save(); g.translate(xPx(v.x), yPx(v.y)); g.scale(SX, -SY); g.rotate(v.h || 0);           // in metres: forward is +x, left is +y
+    g.fillRect(-v.len / 2, -v.wid / 2, v.len, v.wid);
+    g.lineWidth = (ego ? 3 : 1) / SY; g.strokeStyle = ego ? '#ffffff' : '#101418'; g.strokeRect(-v.len / 2, -v.wid / 2, v.len, v.wid);
+    if (v.ind) { g.fillStyle = '#ffb000'; g.strokeStyle = '#fff3c4'; g.lineWidth = 0.08;       // the indicator, lit: the corners of its front and rear, on the side it turns to
+      for (const sx of [v.len / 2 - 0.4, -v.len / 2 + 0.4]) { g.beginPath(); g.ellipse(sx, (v.ind === 1 ? 1 : -1) * (v.wid / 2 - 0.2), 0.45, 0.45, 0, 0, 7); g.fill(); g.stroke(); } }
+    g.restore();
+    g.fillStyle = ego ? '#ff8080' : '#e6e8eb'; g.font = (ego ? 'bold ' : '') + '11px system-ui';
+    g.fillText(ego ? 'CAV ' + kmh(v.speed) + ' km/h' : (v.id === 'Lead' ? 'car ahead' : v.id) + ' ' + kmh(v.speed), px, py - 3);
+  };
+  for (const v of s.vehicles) if (Math.abs(v.x - s.ego.x) < 260) car(v, false);
+  car({ x: s.ego.x, y: s.ego.y, len: s.ego.length, wid: s.ego.width, speed: s.ego.speed }, true);
+
+  if (s.gap != null) {                                                                         // the gap ahead, from the truth
+    const xf = s.ego.x + s.ego.length / 2, y = yPx(s.ego.y);
+    g.strokeStyle = '#f2c94c'; g.lineWidth = 2; g.beginPath(); g.moveTo(xPx(xf), y); g.lineTo(xPx(xf + s.gap), y); g.stroke();
+    g.fillStyle = '#f2c94c'; g.font = '12px system-ui'; g.fillText(s.gap.toFixed(1) + ' m', xPx(xf + s.gap / 2) - 18, y - 6);
+  }
+  const diamond = (px, py, label, label2) => {
+    g.strokeStyle = '#56ccf2'; g.fillStyle = 'rgba(86,204,242,0.30)'; g.lineWidth = 2;
+    g.beginPath(); g.moveTo(px, py - 9); g.lineTo(px + 7, py); g.lineTo(px, py + 9); g.lineTo(px - 7, py); g.closePath(); g.fill(); g.stroke();
+    g.fillStyle = '#56ccf2'; g.font = '11px system-ui'; g.fillText(label, px - 20, py + 24); if (label2) g.fillText(label2, px - 20, py + 36);
+  };
+  for (const o of s.ess || []) diamond(xPx(s.ego.x + s.ego.length / 2 + o.ahead), yPx(s.ego.y + o.left), o.cls + ' ' + o.ahead.toFixed(0) + ' m');
+  for (const r of s.rear || []) {                                                              // seen behind: the vehicle's front, behind the CAV's rear
+    const closing = r.closing == null ? '' : (r.closing >= 0 ? 'closing ' : 'opening ') + Math.abs(r.closing).toFixed(1) + ' m/s';
+    diamond(xPx(s.ego.x - s.ego.length / 2 - r.behind), yPx(s.ego.y + r.left), r.behind.toFixed(0) + ' m', closing);
+  }
+}
+
+function drawChart() {
+  const W = chart.width, H = chart.height, L = 38, B = 20, T = 8, R = 8;
+  c.clearRect(0, 0, W, H);
+  if (history.length < 2) return;
+  const t1 = history[history.length - 1].t, t0 = Math.max(0, t1 - 60);
+  const rows = history.filter(h => h.t >= t0);
+  const vmax = Math.max(40, ...rows.map(h => Math.max(h.v, h.lead ?? 0, h.planned)));
+  const X = t => L + (t - t0) / 60 * (W - L - R), Y = v => H - B - v / vmax * (H - B - T);
+  c.strokeStyle = '#2a323c'; c.fillStyle = '#9aa3ad'; c.font = '11px system-ui'; c.lineWidth = 1;
+  for (let v = 0; v <= vmax; v += 10) { c.beginPath(); c.moveTo(L, Y(v)); c.lineTo(W - R, Y(v)); c.stroke(); c.fillText((v * 3.6).toFixed(0), 4, Y(v) + 4); }
+  c.fillText('km/h', 4, 10);
+  for (let s = 0; s <= 60; s += 15) c.fillText('-' + (60 - s) + ' s', X(t0 + s) - 12, H - 5);
+  const line = (key, color, dash) => {
+    c.beginPath(); c.strokeStyle = color; c.lineWidth = 2; c.setLineDash(dash || []);
+    let started = false;
+    for (const h of rows) { const v = h[key]; if (v == null) { started = false; continue; } started ? c.lineTo(X(h.t), Y(v)) : c.moveTo(X(h.t), Y(v)); started = true; }
+    c.stroke(); c.setLineDash([]);
+  };
+  line('planned', '#6fcf97', [6, 4]); line('lead', '#f2c94c'); line('v', '#ff5a5a');
+}
+
+function hud(s, rate) {
+  const behind = (s.rear || []).slice().sort((a, b) => a.behind - b.behind).slice(0, 3)
+    .map(r => `${r.behind.toFixed(0)} m` + (r.closing == null ? '' : `, ${r.closing >= 0 ? '+' : ''}${r.closing.toFixed(1)} m/s`)).join('<br>') || 'none seen';
+  const rows = [
+    ['Simulated time', s.t.toFixed(1) + ' s'],
+    ['CAV speed', kmh(s.ego.speed) + ' km/h (planned ' + kmh(s.planned) + ')'],
+    ['Acceleration asked', (s.command ?? 0).toFixed(2) + ' m/s2'],
+    ['Gap ahead (truth)', s.gap == null ? '-' : s.gap.toFixed(1) + ' m'],
+    ['Vehicle ahead (ESS)', s.essGap == null ? 'not seen' : s.essGap.toFixed(1) + ' m'],
+    ['Behind, rear camera', behind],
+    ['Alerts so far', s.alerts],
+    ...(s.plan ? [['Planner (prototype)', s.plan]] : []),
+    ...(s.status ? [['CAV planner', s.status]] : []),
+    [REPLAY ? 'Replay' : 'Speed of the run', rate],
+  ];
+  $('hud').innerHTML = rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
+}
+
+function show(s, live) {
+  draw(s);
+  hud(s, live ? ((s.wall > 0 ? s.t / s.wall : 0).toFixed(2) + 'x real time' + (s.wall > s.t ? ' (slow motion)' : '')) : 'x' + $('speed').value);
+  if (live && (!history.length || history[history.length - 1].t !== s.t)) history.push({ t: s.t, v: s.ego.speed, lead: s.leadSpeed, planned: s.planned });
+  drawChart();
+  $('label').textContent = s.label ? '- ' + s.label : '';
+}
+
+// ---- live: the state the run makes ------------------------------------------------------------
+let lastStep = -1;
+async function poll() {
+  try {
+    const s = await (await fetch('state', { cache: 'no-store' })).json();
+    if (s.step !== undefined && s.step !== lastStep) {
+      lastStep = s.step; show(s, true);
+      $('cam').src = 'frame.png?s=' + s.step;
+      if (s.rearPic != null) $('rear').src = 'rear.png?s=' + s.rearPic;
+      if (s.tele != null) { $('telepanel').style.display = ''; $('rearpanel').style.display = s.rearPic != null ? '' : 'none'; $('tele').src = 'tele.png?s=' + s.tele; }
+      $('status').textContent = s.done ? 'run finished' : 'running'; $('status').className = s.done ? 'done' : '';
+    }
+  } catch (e) { /* the run has not started, or has ended: try again */ }
+  setTimeout(poll, 120);
+}
+
+
+// ---- narration: sentences at given times, shown as a caption and spoken (the browser's voice; it needs a click first) ----
+// A junction run: the replay starts where something happens (the car that turns is within 330 m), and says what is shown, from the run's own data.
+function startIndex(S) {
+  if (S[0].follow) { const k = S.findIndex(s => s.turnAt != null); return k < 0 ? 0 : Math.max(0, k - 100); }    // 10 s before the CAV predicts the turn
+  if (!S[0].junction) return 0;
+  const k = S.findIndex(s => s.vehicles.some(v => v.x - s.ego.x < 330 && v.x > s.ego.x)), b = S.findIndex(s => s.t > 25 && s.ego.acc < -0.6);
+  const m = [k, b].filter(x => x >= 0);
+  return m.length ? Math.max(0, Math.min(...m) - 35) : 0;                           // where the car is first near, or where the CAV first reacts: 3.5 s before
+}
+function overtakeCues(S) {
+  const first = f => S.find(f) || null, lead = s => (s.vehicles || []).find(v => v.id === 'Lead');
+  const k0 = startIndex(S), cues = [], add = (t, text) => { if (t != null) cues.push({ t, text }); };
+  const wants = first(s => (lead(s) || {}).ind > 0), pull = first(s => /^pulling/.test(s.status || ''));
+  const turn = first(s => s.turnAt != null), out = first(s => s.ego.y > 1.75);
+  const ahead = first(s => { const v = lead(s); return v && s.ego.x - s.ego.length / 2 > v.x + v.len / 2; });
+  const back = out ? first(s => s.t > out.t && s.ego.y < 0.3 && /^(passed|following)/.test(s.status || '')) : null;
+  const turned = first(s => { const v = lead(s); return v && Math.abs(v.h) > 0.25; });
+  add(S[k0].t, 'The CAV (red) follows an ordinary car: it is not connected, it tells nothing. A junction with a side road to the right is on the CAV\u2019s map. The lane of the opposite direction is empty.');
+  add(wants ? wants.t : null, 'The car ahead slows down and lights its right indicator. The CAV reads it in the telephoto picture.');
+  add(turn ? turn.t : null, 'With the junction on its map, the CAV predicts the turn: the car will leave the road to the right (the dashed line).');
+  add(pull ? pull.t : null, 'The other lane is seen clear for as far as the pass needs (the green stretch): the CAV pulls out to pass.');
+  add(out ? out.t + 0.5 : null, 'In the other lane the CAV speeds up and draws level with the slowing car.');
+  add(ahead ? ahead.t : null, 'The CAV is ahead of the car, which goes on slowing for its turn.');
+  add(back ? back.t : null, 'The CAV is back in its own lane. The pass is over.');
+  add(turned ? turned.t : null, 'The car turns right into the side road, behind the CAV.');
+  return cues.sort((a, b) => a.t - b.t);
+}
+function junctionCues(S, label) {  const first = f => S.find(f) || null, car = s => s.vehicles.find(v => v.id === 'Turning');
+  const how = /tells/.test(label) ? 'route' : /indicator/.test(label) ? 'lights' : 'nothing';
+  const seen = first(s => { const v = car(s); return v && v.x - s.ego.x < 330 && v.x > s.ego.x; });
+  const ind = first(s => { const v = car(s); return v && v.ind; });
+  const brake = first(s => s.t > 25 && s.ego.acc < -0.6);
+  const turn = first(s => { const v = car(s); return v && Math.abs(v.h - Math.PI) > 0.25; });
+  const clear = first(s => { const v = car(s); return v && v.y < -4; });
+  const end = S[S.length - 1], crashed = end.t < S[0].t + 60 && S.length < 650;
+  const cues = [];
+  const add = (t, text) => { if (t != null) cues.push({ t, text }); };
+  if (seen) {
+    const t0 = Math.min(seen.t, brake ? brake.t : 1e9) - 3.5;
+    add(t0, 'The CAV (red) drives toward a junction at ' + kmh(S.find(s => s.t >= t0).ego.speed) + ' km/h. An oncoming car (blue) is coming the other way, and it is going to turn left across the CAV’s lane.');
+    add(t0 + 2.5, { route: 'The oncoming car is a connected vehicle: it tells the CAV where it is going, a left turn across its way.',
+                  lights: 'The oncoming car tells nothing. The CAV can only see it, and read its indicator in the telephoto picture.',
+                  nothing: 'The oncoming car tells nothing and shows no indicator. To the CAV it is just a car coming the other way.' }[how]);
+  }
+  if (ind) add(ind.t, 'The indicator blinks: the car is going to turn left.');
+  if (brake) add(brake.t, { route: 'The CAV slows down in good time: it knows about the turn from the route it was told.',
+                            lights: 'The CAV has read the indicator and brakes. It saw it late, so the braking is hard.',
+                            nothing: 'The CAV brakes only when the car is already in its way.' }[how]);
+  if (turn) add(turn.t, 'The car turns left, across the CAV’s lane.');
+  if (crashed) add(end.t - 0.2,'Told nothing, the CAV meets the car in its lane: the collision the other two runs avoid.');
+  else if (clear) add(clear.t, 'The car has cleared the road. The CAV passes the junction without touching it.');
+  return cues.sort((a, b) => a.t - b.t);
+}
+const CUES = window.NARRATION || (REPLAY && REPLAY.states[0] && REPLAY.states[0].follow ? overtakeCues(REPLAY.states) : REPLAY && REPLAY.states[0] && REPLAY.states[0].junction ? junctionCues(REPLAY.states, REPLAY.label || '') : []);
+let cueShown = -1;
+function pickVoice() {
+  const v = speechSynthesis.getVoices().filter(x => /^en/i.test(x.lang));
+  return v.find(x => /natural|online/i.test(x.name)) || v.find(x => /en-GB|en-US/i.test(x.lang)) || v[0] || null;
+}
+function say(text) {
+  if (!('speechSynthesis' in window)) { $('voiceinfo').textContent = ' this browser has no speech'; return; }
+  speechSynthesis.cancel(); speechSynthesis.resume();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-US'; u.rate = Math.min(1.6, Math.max(0.8, Math.sqrt(+$('speed').value)));
+  const v = pickVoice(); if (v) u.voice = v;
+  u.onstart = () => { $('voiceinfo').textContent = ''; };
+  u.onerror = e => { if (e.error !== 'canceled' && e.error !== 'interrupted') $('voiceinfo').textContent = ' voice error: ' + e.error; };
+  window.__utterance = u;                                   // kept: the browser may drop a speech object nothing refers to
+  setTimeout(() => speechSynthesis.speak(u), 150);          // a speak right after a cancel is lost by some browsers
+}
+function updateCue(t, speak) {
+  let k = -1;
+  for (let j = 0; j < CUES.length; j++) if (CUES[j].t <= t) k = j;
+  if (k === cueShown) return;
+  cueShown = k;
+  $('caption').textContent = k >= 0 ? CUES[k].text : '';
+  if (speak && k >= 0 && $('voice').dataset.on === '1') say(CUES[k].text);
+}
+if ('speechSynthesis' in window) {
+  speechSynthesis.cancel(); speechSynthesis.resume();       // a speech left paused by an earlier page stays paused in the browser
+  window.addEventListener('pagehide', () => speechSynthesis.cancel());
+}
+
+// ---- replay: a recording --------------------------------------------------------------------
+function replay() {
+  const states = REPLAY.states, n = states.length, dt = n > 1 ? states[1].t - states[0].t : 0.1;
+  $('controls').style.display = 'flex';
+  if (location.protocol === 'file:' || /\/(behind|overtake|traffic|truck)\//.test(location.pathname)) $('menubtn').style.display = '';
+  $('slider').max = n - 1;
+  let i = startIndex(states), playing = true, last = performance.now(), carry = 0, shown = -1;
+  if (states[0].junction) $('speed').value = '0.5';                                 // the junction is over in a few seconds: half speed
+  if (CUES.length) {
+    $('caption').style.display = 'block'; $('voice').style.display = '';
+    $('voice').onclick = () => { const on = $('voice').dataset.on !== '1'; $('voice').dataset.on = on ? '1' : '0'; $('voice').textContent = 'Voice: ' + (on ? 'on' : 'off'); if (!on && 'speechSynthesis' in window) speechSynthesis.cancel(); if (on) say('The voice is on.'); };
+    if ('speechSynthesis' in window) speechSynthesis.getVoices();
+    const first = () => { removeEventListener('pointerdown', first); removeEventListener('keydown', first); cueShown = -1; if (playing) updateCue(states[i].t, true); };
+    addEventListener('pointerdown', first); addEventListener('keydown', first);
+  }
+  const render = () => {
+    const s = states[i];
+    history = states.slice(Math.max(0, i - Math.round(60 / dt)), i + 1).map(x => ({ t: x.t, v: x.ego.speed, lead: x.leadSpeed, planned: x.planned }));
+    show(s, false);
+    if (CUES.length) updateCue(s.t, playing);
+    if (s.front != null) $('cam').src = 'f/' + pad(s.front) + '.jpg';
+    if (s.rearPic != null) $('rear').src = 'r/' + pad(s.rearPic) + '.jpg';
+    if (s.tele != null) { $('telepanel').style.display = ''; $('rearpanel').style.display = s.rearPic != null ? '' : 'none'; $('tele').src = 't/' + pad(s.tele) + '.jpg'; }
+    $('slider').value = i; $('clock').textContent = s.t.toFixed(1) + ' / ' + states[n - 1].t.toFixed(0) + ' s';
+    $('status').textContent = playing ? 'replay' : 'paused'; $('status').className = '';
+    shown = i;
+  };
+  $('play').onclick = () => { playing = !playing; $('play').textContent = playing ? 'Pause' : 'Play'; if (playing && i >= n - 1) { i = 0; cueShown = -1; } last = performance.now();
+    if ('speechSynthesis' in window && CUES.length) { if (playing) { if (speechSynthesis.paused) speechSynthesis.resume(); } else speechSynthesis.pause(); }
+    if (playing && CUES.length) cueShown = -1;
+    render(); };
+  $('speed').onchange = () => render();
+  $('slider').oninput = e => { i = +e.target.value; render(); };
+  window.addEventListener('keydown', e => {
+    if (e.key === ' ') { e.preventDefault(); $('play').click(); }
+    else if (e.key === 'ArrowRight') { i = Math.min(n - 1, i + 10); render(); }
+    else if (e.key === 'ArrowLeft') { i = Math.max(0, i - 10); render(); }
+  });
+  const tick = now => {
+    if (playing) {
+      carry += (now - last) / 1000 * (+$('speed').value) * (states[i].follow && PASSING.test(states[i].status || '') ? 0.5 : 1) / dt; last = now;    // half speed through a pass
+      const whole = Math.floor(carry); carry -= whole;
+      if (whole > 0) { i = Math.min(n - 1, i + whole); if (i !== shown) render(); if (i >= n - 1) { playing = false; $('play').textContent = 'Play'; render(); } }
+    } else last = now;
+    requestAnimationFrame(tick);
+  };
+  render(); requestAnimationFrame(tick);
+}
+
+if (REPLAY) replay(); else poll();
+</script>
+</body>
+</html>

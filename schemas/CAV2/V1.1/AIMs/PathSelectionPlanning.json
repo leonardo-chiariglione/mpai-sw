@@ -5,21 +5,26 @@
 
   "Identifier":   { "ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "CAV-PSP-V1.1" },
 
+  "Header":       "CAV-PSP-V1.1",
+
   "APIProfile":   "Basic",
   "Description":  "This AIM selects a Path.",
 
   "ExternalPorts":  [
-    { "Name": "FullEnvironmentDescriptors", "Direction": "Input",   "DataType": "CAV-FED-V1.1",  "Technology": "Software", "Protocol": "", "IsRemote": false },
-    { "Name": "AMSData"                   , "Direction": "Input",   "DataType": "CAV-AMD-V1.1",  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "BasicOfflineMapObject", "Direction": "Input",   "DataType": "OSD-BOO-V1.5",  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "FullEnvironmentDescriptors", "Direction": "Input",   "DataType": ["CAV-FED-V1.1", "CAV-FED-V2.0"],  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "AMSData"                   , "Direction": "Input",   "DataType": "CAV-AMD-V1.1", "IsOptional": true,  "Technology": "Software", "Protocol": "", "IsRemote": false },
     { "Name": "RouteRequest"              , "Direction": "Input",   "DataType": "CAV-INT-V1.1",  "Technology": "Software", "Protocol": "", "PortNumber": 1, "IsRemote": false },
-    { "Name": "PathResponse"              , "Direction": "Input",   "DataType": "CAV-INT-V1.1",  "Technology": "Software", "Protocol": "", "PortNumber": 2, "IsRemote": false },
-    { "Name": "RouteResponse"             , "Direction": "Output",  "DataType": "CAV-INT-V1.1",  "Technology": "Software", "Protocol": "", "IsRemote": false },
-    { "Name": "PathRequest"               , "Direction": "Output",  "DataType": "CAV-INT-V1.1",  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "PathResponse"              , "Direction": "Input",   "DataType": "CAV-INT-V1.1", "IsOptional": true,  "Technology": "Software", "Protocol": "", "PortNumber": 2, "IsRemote": false },
+    { "Name": "RouteResponse"             , "Direction": "Output",  "DataType": "CAV-INT-V1.1", "PortNumber": 1,  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "PathRequest"               , "Direction": "Output",  "DataType": "CAV-INT-V1.1", "PortNumber": 2, "IsOptional": true,  "Technology": "Software", "Protocol": "", "IsRemote": false },
     { "Name": "Path"                      , "Direction": "Output",  "DataType": "OSD-PAT-V1.5",  "Technology": "Software", "Protocol": "", "IsRemote": false }
   ],
 
   "SubAIMs":  [ ],
   "Topology":  [ ],
+
+  "AIMLicence":          "/* AIM Licence offered by the Implementer (AIF-LIC-V3.0): Grant, Term, Updates, Payment, TermsURI - or omit it if the AIM needs no AIM Licence */",
 
   "Implementations":  [
    {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Microsoft.ML.OnnxRuntime;
+using Mpai.Onnx;
 using Microsoft.ML.OnnxRuntime.Tensors;
 
 using SixLabors.ImageSharp;
@@ -20,7 +21,7 @@ namespace Mpai.Osd.VisualScene;
 //  the 80 COCO categories (person, car, bicycle, ...). Identifying WHICH car or
 //  WHOSE face is downstream work; this only says "a car is here".
 //
-//  Model: yolox_s.onnx (Apache-2.0, Megvii YOLOX), staged under D:\AI\Models\.
+//  Model: yolox_s.onnx (Apache-2.0, Megvii YOLOX), staged under Models\.
 //  ONNX Runtime + ImageSharp, matching the ScrfdFaceDetector pattern exactly.
 //
 //  NOT COMPILE-VERIFIED and NOT RUN here. Two parts are the standard places a
@@ -52,7 +53,7 @@ public sealed class YoloxObjectDetector : IDisposable
         float scoreThreshold = 0.3f,
         float nmsThreshold = 0.45f)
     {
-        _session = new InferenceSession(modelPath);
+        _session = OnnxSessions.Create(modelPath);
         _inputSize = inputSize;
         _scoreThreshold = scoreThreshold;
         _nmsThreshold = nmsThreshold;

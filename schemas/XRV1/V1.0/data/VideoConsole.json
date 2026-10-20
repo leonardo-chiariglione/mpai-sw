@@ -1,6 +1,6 @@
 { "$schema":                    "https://json-schema.org/draft/2020-12/schema",
   "$id":                        "https://schemas.mpai.community/XRV1/V1.0/data/VideoConsole.json",
-  "title":                      "VideoConsole",
+  "title":                      "Video Console V1.0",
   "description":                "Descriptor for video console configuration and effects.",
   "type":                       "object",
   "additionalProperties":       false,
@@ -23,7 +23,7 @@
       "Elements":               { "type": "array", "items": { "type": "object", "additionalProperties": false, "properties": {
 
         "ClipSelection":        { "type": "string" },
-        "Volume":               { "type": "string" },
+        "Volume":               { "type": "number" },
         "VideoRouting":         { "type": "string" },
 
         "VideoEffects":         { "type": "object", "additionalProperties": false, "properties": {

@@ -3,7 +3,7 @@
   "title":                    "Dance Object V1.0",
   "type":                     "object",
   "additionalProperties":     false,
-  "required":                 [ "Header", "DancelerID", "DancelerTime", "DanceObjectID", "DanceData", "DanceQualifier" ],
+  "required":                 [ "Header", "DanceObjectID", "DanceObjectTime", "DanceData", "DanceQualifier" ],
   "properties":               {
 
     "Header":                { "type": "string", "const": "XRV-DCO-V1.0" },

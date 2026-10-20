@@ -48,7 +48,8 @@ public sealed class SubjectGallery
 
     // Enrol / update a subject from already-computed embeddings. Either may be
     // null (partial enrolment: face-only or voice-only).
-    public void EnrolEmbeddings(string subjectId, float[]? face = null, float[]? voice = null)
+    public void EnrolEmbeddings(string subjectId, float[]? face = null, float[]? voice = null,
+                                string? faceTime = null, string? speechTime = null)
     {
         if (string.IsNullOrWhiteSpace(subjectId))
             throw new ArgumentException("subjectId required", nameof(subjectId));
@@ -59,17 +60,23 @@ public sealed class SubjectGallery
         }
         if (face is not null) s.FaceEmbedding = face;
         if (voice is not null) s.VoiceEmbedding = voice;
+        if (faceTime is not null) s.FaceTime = faceTime;
+        if (speechTime is not null) s.SpeechTime = speechTime;
     }
 
     public bool Remove(string subjectId) => _subjects.Remove(subjectId);
     public bool Contains(string subjectId) => _subjects.ContainsKey(subjectId);
+
+    // What is matched against: the subjects as they are, a Refresh on another thread
+    // notwithstanding.
+    private List<Subject> Snapshot() { lock (_refresh) return _subjects.Values.ToList(); }
 
     // ---- Top-1 identification (Model 1: the gallery IS FIR's and SIR's DB) --
 
     public GalleryMatch? IdentifyFace(float[] probeFace)
     {
         string? bestId = null; float bestSim = float.NegativeInfinity;
-        foreach (var s in _subjects.Values)
+        foreach (var s in Snapshot())
             if (s.FaceEmbedding is not null)
             {
                 float sim = Cosine(probeFace, s.FaceEmbedding);
@@ -82,7 +89,7 @@ public sealed class SubjectGallery
     public GalleryMatch? IdentifyVoice(float[] probeVoice)
     {
         string? bestId = null; float bestSim = float.NegativeInfinity;
-        foreach (var s in _subjects.Values)
+        foreach (var s in Snapshot())
             if (s.VoiceEmbedding is not null)
             {
                 float sim = Cosine(probeVoice, s.VoiceEmbedding);
@@ -97,7 +104,7 @@ public sealed class SubjectGallery
     public List<SubjectScore> ScoreFace(float[] probeFace)
     {
         var scores = new List<SubjectScore>();
-        foreach (var s in _subjects.Values)
+        foreach (var s in Snapshot())
             if (s.FaceEmbedding is not null)
                 scores.Add(new SubjectScore(s.SubjectId, Cosine(probeFace, s.FaceEmbedding)));
         return scores;
@@ -106,7 +113,7 @@ public sealed class SubjectGallery
     public List<SubjectScore> ScoreVoice(float[] probeVoice)
     {
         var scores = new List<SubjectScore>();
-        foreach (var s in _subjects.Values)
+        foreach (var s in Snapshot())
             if (s.VoiceEmbedding is not null)
                 scores.Add(new SubjectScore(s.SubjectId, Cosine(probeVoice, s.VoiceEmbedding)));
         return scores;
@@ -131,7 +138,7 @@ public sealed class SubjectGallery
         {
             Subjects = _subjects.Values.Select(s => new SubjectDto
             {
-                SubjectId = s.SubjectId, FaceEmbedding = s.FaceEmbedding, VoiceEmbedding = s.VoiceEmbedding
+                SubjectId = s.SubjectId, FaceEmbedding = s.FaceEmbedding, VoiceEmbedding = s.VoiceEmbedding, FaceTime = s.FaceTime, SpeechTime = s.SpeechTime
             }).ToList()
         };
         File.WriteAllText(path, JsonSerializer.Serialize(dto, JsonOpts));
@@ -144,7 +151,7 @@ public sealed class SubjectGallery
         var dto = JsonSerializer.Deserialize<GalleryDto>(File.ReadAllText(path), JsonOpts);
         if (dto?.Subjects is null) return g;
         foreach (var s in dto.Subjects)
-            g._subjects[s.SubjectId] = new Subject { SubjectId = s.SubjectId, FaceEmbedding = s.FaceEmbedding, VoiceEmbedding = s.VoiceEmbedding };
+            g._subjects[s.SubjectId] = new Subject { SubjectId = s.SubjectId, FaceEmbedding = s.FaceEmbedding, VoiceEmbedding = s.VoiceEmbedding, FaceTime = s.FaceTime, SpeechTime = s.SpeechTime };
         return g;
     }
 
@@ -157,30 +164,107 @@ public sealed class SubjectGallery
 
     public void Save(AIF.SharedStorage.ISharedStorage store)
     {
-        foreach (var s in _subjects.Values)
+        foreach (var s in Snapshot())
         {
-            var dto = new SubjectDto { SubjectId = s.SubjectId, FaceEmbedding = s.FaceEmbedding, VoiceEmbedding = s.VoiceEmbedding };
-            store.Put(SubjectKeyPrefix + s.SubjectId,
+            var dto = new SubjectDto { SubjectId = s.SubjectId, FaceEmbedding = s.FaceEmbedding, VoiceEmbedding = s.VoiceEmbedding, FaceTime = s.FaceTime, SpeechTime = s.SpeechTime };
+            store.MPAI_AIFM_SharedStorage_Put(SubjectKeyPrefix + s.SubjectId,
                 System.Text.Encoding.UTF8.GetBytes(JsonSerializer.Serialize(dto, JsonOpts)));
         }
     }
 
+    // Persist ONLY the named subject (one key), merging with what is already
+    // stored so a face-only write and a later voice-only write accumulate rather
+    // than overwrite. Never throws: a persistence hiccup must not abort enrolment
+    // inside the Module. Enrolment uses this - one Put per enrolment, not a full
+    // gallery rewrite.
+    public void SaveSubject(AIF.SharedStorage.ISharedStorage store, string subjectId)
+    {
+        if (!_subjects.TryGetValue(subjectId, out var s)) return;
+        var key = SubjectKeyPrefix + subjectId;
+
+        SubjectDto dto = new SubjectDto { SubjectId = subjectId };
+        try
+        {
+            if (store.MPAI_AIFM_SharedStorage_Exists(key))
+            {
+                var existing = JsonSerializer.Deserialize<SubjectDto>(
+                    System.Text.Encoding.UTF8.GetString(store.MPAI_AIFM_SharedStorage_Get(key)), JsonOpts);
+                if (existing is not null) dto = existing;
+            }
+        }
+        catch { dto = new SubjectDto { SubjectId = subjectId }; }
+
+        if (s.FaceEmbedding  is not null) { dto.FaceEmbedding  = s.FaceEmbedding;  dto.FaceTime   = s.FaceTime; }
+        if (s.VoiceEmbedding is not null) { dto.VoiceEmbedding = s.VoiceEmbedding; dto.SpeechTime = s.SpeechTime; }
+        dto.SubjectId = subjectId;
+
+        store.MPAI_AIFM_SharedStorage_Put(key, System.Text.Encoding.UTF8.GetBytes(JsonSerializer.Serialize(dto, JsonOpts)));
+    }
     public static SubjectGallery Load(AIF.SharedStorage.ISharedStorage store,
                                       float faceThreshold = 0.35f, float voiceThreshold = 0.45f)
     {
         var g = new SubjectGallery(faceThreshold, voiceThreshold);
-        foreach (var key in store.List(SubjectKeyPrefix))
+        foreach (var key in store.MPAI_AIFM_SharedStorage_List(SubjectKeyPrefix))
         {
             var dto = JsonSerializer.Deserialize<SubjectDto>(
-                System.Text.Encoding.UTF8.GetString(store.Get(key)), JsonOpts);
+                System.Text.Encoding.UTF8.GetString(store.MPAI_AIFM_SharedStorage_Get(key)), JsonOpts);
             if (dto is null) continue;
             g._subjects[dto.SubjectId] = new Subject
             {
-                SubjectId = dto.SubjectId, FaceEmbedding = dto.FaceEmbedding, VoiceEmbedding = dto.VoiceEmbedding
+                SubjectId = dto.SubjectId, FaceEmbedding = dto.FaceEmbedding, VoiceEmbedding = dto.VoiceEmbedding,
+                FaceTime = dto.FaceTime, SpeechTime = dto.SpeechTime
             };
         }
         return g;
     }
+
+    // THE GALLERY KEPT CURRENT (M3245 3.2). On a Service the gallery changes while
+    // its Modules run: ACR registers a person, a session's subjects are deleted when
+    // it closes. Refresh reads the subjects stored since the last look and drops
+    // those gone - each subject read once, the thousands already known left alone;
+    // one stored in the last minutes is read again where it changed, since a face
+    // and a voice are registered one after the other.
+    public void Refresh(AIF.SharedStorage.ISharedStorage store)
+    {
+        lock (_refresh)
+        {
+            var keys = store.MPAI_AIFM_SharedStorage_List(SubjectKeyPrefix).ToHashSet();
+            foreach (var id in _subjects.Keys.Where(id => !keys.Contains(SubjectKeyPrefix + id)).ToList())
+            {
+                _subjects.Remove(id);
+                _stored.Remove(id);
+            }
+            foreach (var key in keys)
+            {
+                var id = key[SubjectKeyPrefix.Length..];
+                DateTime? at = null;
+                if (_subjects.ContainsKey(id))
+                {
+                    if (!_stored.TryGetValue(id, out var seen) || DateTime.UtcNow - seen.SeenAt > Recent) continue;
+                    try { at = store.MPAI_AIFM_SharedStorage_GetKeyInfo(key).StoredAt; } catch { continue; }
+                    if (at == seen.StoredAt) continue;
+                }
+                try
+                {
+                    var dto = JsonSerializer.Deserialize<SubjectDto>(System.Text.Encoding.UTF8.GetString(store.MPAI_AIFM_SharedStorage_Get(key)), JsonOpts);
+                    if (dto is null) continue;
+                    _subjects[id] = new Subject
+                    {
+                        SubjectId = dto.SubjectId, FaceEmbedding = dto.FaceEmbedding, VoiceEmbedding = dto.VoiceEmbedding,
+                        FaceTime = dto.FaceTime, SpeechTime = dto.SpeechTime
+                    };
+                    if (_loaded) _stored[id] = (at ?? store.MPAI_AIFM_SharedStorage_GetKeyInfo(key).StoredAt, DateTime.UtcNow);
+                }
+                catch { /* gone, or being written: read at the next look */ }
+            }
+            _loaded = true;
+        }
+    }
+
+    private static readonly TimeSpan Recent = TimeSpan.FromMinutes(10);
+    private readonly object _refresh = new();
+    private readonly Dictionary<string, (DateTime StoredAt, DateTime SeenAt)> _stored = new();
+    private bool _loaded;
 
     private static readonly JsonSerializerOptions JsonOpts = new() { WriteIndented = true };
 
@@ -189,6 +273,8 @@ public sealed class SubjectGallery
         public string SubjectId { get; init; } = "";
         public float[]? FaceEmbedding { get; set; }
         public float[]? VoiceEmbedding { get; set; }
+        public string? FaceTime { get; set; }     // OSD-STM (JSON), acquisition time - recorded by ACR, ignored by MAC
+        public string? SpeechTime { get; set; }
     }
     private sealed class GalleryDto { public List<SubjectDto> Subjects { get; set; } = new(); }
     private sealed class SubjectDto
@@ -196,6 +282,8 @@ public sealed class SubjectGallery
         public string SubjectId { get; set; } = "";
         public float[]? FaceEmbedding { get; set; }
         public float[]? VoiceEmbedding { get; set; }
+        public string? FaceTime { get; set; }
+        public string? SpeechTime { get; set; }
     }
 }
 

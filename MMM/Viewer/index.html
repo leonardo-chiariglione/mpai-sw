@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M-Instance viewer</title>
+<!--
+  THE M-ENVIRONMENT OF AN M-INSTANCE, AS IT CAN BE SEEN (MMM-TEC V2.2). The page reads
+  the M-Instance's snapshot (./state) twice a second and draws it: its M-Locations as
+  pads on the ground, a Location placed at another (a Room on its Parcel) as a room
+  there, shown only once perceptible; each Persona, with its 3D Model, where MM-Add
+  and MM-Move put it, walking there when it moves. The Process Actions just performed
+  are listed in the corner.
+-->
+<style>
+  :root { --bg: #1d2128; --panel: rgba(20,24,30,.82); --text: #e6e8eb; --muted: #9aa3ad; --ok: #6fcf97; --no: #eb5757; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 13px/1.4 system-ui, Arial, sans-serif; overflow: hidden; }
+  #panel { position: absolute; top: 12px; left: 12px; max-width: min(420px, calc(100vw - 24px)); background: var(--panel); border-radius: 8px; padding: 10px 12px; }
+  #panel h1 { font-size: 14px; margin: 0 0 6px; }
+  #recent div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ok { color: var(--ok); } .no { color: var(--no); } .muted { color: var(--muted); }
+  #caption { position: absolute; left: 50%; bottom: 28px; transform: translateX(-50%); max-width: calc(100vw - 48px); background: var(--panel); border-radius: 10px; padding: 12px 22px; text-align: center; font-size: 22px; font-weight: 600; cursor: pointer; user-select: none; }
+  #caption small { display: block; margin-top: 4px; font-size: 13px; font-weight: 400; color: var(--muted); }
+  #caption[hidden] { display: none; }
+  #captionNote { margin-top: 6px; font-size: 15px; font-weight: 400; color: #f2c94c; max-width: 760px; }
+  #captionNote:empty { display: none; }
+  .label { color: #fff; font: 12px system-ui, Arial; background: rgba(0,0,0,.55); padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "./lib/three/three.module.js",
+  "three/addons/": "./lib/three/addons/"
+}}
+</script>
+</head>
+<body>
+<div id="panel"><h1 id="title">M-Instance</h1><div id="recent" class="muted">waiting for the M-Instance...</div></div>
+<button id="voiceBtn" style="position:fixed;top:10px;right:10px;z-index:20;background:var(--panel);color:inherit;border:1px solid #444;border-radius:8px;padding:6px 14px;font-size:14px;cursor:pointer">Voice: on</button>
+<div id="caption" hidden><span id="captionText"></span><div id="captionNote"></div><small id="captionHint"></small></div>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
+
+// ---------------------------------------------------------------- the stage
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(devicePixelRatio); renderer.setSize(innerWidth, innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
+const labels = new CSS2DRenderer(); labels.setSize(innerWidth, innerHeight);
+Object.assign(labels.domElement.style, { position: 'absolute', top: '0', pointerEvents: 'none' });
+document.body.appendChild(labels.domElement);
+
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x2a3038);
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x3a3a3a, 1.0));
+const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(8, 14, 10); sun.castShadow = true;
+Object.assign(sun.shadow.camera, { left: -20, right: 20, top: 20, bottom: -20 }); sun.shadow.mapSize.set(2048, 2048);
+scene.add(sun);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ color: 0x3b4450, roughness: 1 }));
+ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+
+// The camera frames the M-Environment (about 30 m across) whatever the window's shape.
+const camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.1, 300);
+const controls = new OrbitControls(camera, renderer.domElement);
+function frame() {
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+  const halfWidth = 16, hfov = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect);
+  const dist = Math.max(halfWidth / Math.tan(hfov / 2), 14);
+  const dir = new THREE.Vector3(0, 0.55, 0.83).normalize();
+  const look = new URLSearchParams(location.search).get('look');   // ?look=x,y: frame the place at x east, y north (a meeting room), closer
+  const [lx, ly] = look ? look.split(',').map(Number) : [null, null];
+  if (look) controls.target.set(lx, 0.5, -ly); else controls.target.set(1, 0.5, 1);
+  camera.position.copy(controls.target).addScaledVector(dir, look ? dist * 0.55 : dist); controls.update();
+}
+frame();
+addEventListener('resize', () => { frame(); renderer.setSize(innerWidth, innerHeight); labels.setSize(innerWidth, innerHeight); });
+
+function label(text) {
+  const d = document.createElement('div'); d.className = 'label'; d.textContent = text;
+  return new CSS2DObject(d);
+}
+
+// ---------------------------------------------------------------- Locations
+// An M-Location: a pad on the ground, its name and owner above it. A Location placed
+// at another: a room - floor, glass walls - drawn only when perceptible.
+const drawn = new Map();   // ID -> { object, kind, ... }
+
+function pad(t) {
+  const g = new THREE.Group();
+  const color = t.Public ? 0x4f6d8c : 0x5d8a5a;
+  const m = new THREE.Mesh(new THREE.BoxGeometry(t.Size, 0.06, t.Size), new THREE.MeshStandardMaterial({ color, roughness: 0.9 }));
+  m.position.y = 0.03; m.receiveShadow = true; g.add(m);
+  const l = label(''); l.position.set(0, 0.1, t.Size / 2 + 0.4); g.add(l); g.userData.label = l;
+  return g;
+}
+
+function room(t) {
+  const g = new THREE.Group(); const s = t.Size, h = 2.6;
+  const floor = new THREE.Mesh(new THREE.BoxGeometry(s, 0.08, s), new THREE.MeshStandardMaterial({ color: 0xb59a74, roughness: 0.7 }));
+  floor.position.y = 0.1; floor.receiveShadow = true; g.add(floor);
+  const glass = new THREE.MeshPhysicalMaterial({ color: 0xcfe6ff, transparent: true, opacity: 0.22, roughness: 0.1, side: THREE.DoubleSide, depthWrite: false });
+  const frame = new THREE.MeshStandardMaterial({ color: 0xe8e8e8, roughness: 0.5 });
+  for (const [x, z, w, d] of [[0, -s / 2, s, 0.05], [-s / 2, 0, 0.05, s], [s / 2, 0, 0.05, s], [-s / 4 - 0.3, s / 2, s / 2 - 0.6, 0.05], [s / 4 + 0.3, s / 2, s / 2 - 0.6, 0.05]]) {
+    const wall = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), glass); wall.position.set(x, h / 2 + 0.1, z); g.add(wall);
+    const top = new THREE.Mesh(new THREE.BoxGeometry(w || 0.05, 0.08, d || 0.05), frame); top.position.set(x, h + 0.1, z); g.add(top);
+  }
+  const l = label(''); l.position.set(0, h + 0.5, 0); g.add(l); g.userData.label = l;
+  return g;
+}
+
+// ---------------------------------------------------------------- Personae
+// Their 3D Models (Rocketbox, MMM/Viewer/personae): the opacity material made
+// transparent; measured as their skeleton poses them; arms brought down from the
+// T-pose they come in.
+const loader = new GLTFLoader(); const models = new Map();
+async function persona(t) {
+  const file = t.Model ?? 'Persona1.glb';
+  if (!models.has(file)) models.set(file, loader.loadAsync('personae/' + file));
+  const gltf = await models.get(file);
+  const root = cloneSkinned(gltf.scene);   // one per Persona, the skeleton bound to its own bones
+  root.traverse(o => {
+    if (o.isMesh) {
+      o.castShadow = true; o.frustumCulled = false;
+      for (const m of [].concat(o.material)) if (/opacity/i.test(m.name)) { m.transparent = true; m.alphaTest = 0.35; m.side = THREE.DoubleSide; }
+    }
+    // Biped upper arms (Bip01 L/R UpperArm): about their local X, down to the sides.
+    if (o.isBone && /L.?UpperArm$/i.test(o.name)) o.rotateX(THREE.MathUtils.degToRad(78));
+    if (o.isBone && /R.?UpperArm$/i.test(o.name)) o.rotateX(THREE.MathUtils.degToRad(-78));
+  });
+  root.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(root, true); const h = box.max.y - box.min.y;
+  root.scale.setScalar(1.7 / h); root.updateMatrixWorld(true);
+  box.setFromObject(root, true); root.position.y -= box.min.y;
+  const g = new THREE.Group(); g.add(root);
+  const l = label(t.ID); l.position.set(0, 1.95, 0); g.add(l); g.userData.label = l;
+  return g;
+}
+
+// ---------------------------------------------------------------- the presenter
+// In a manual demonstration the server waits for this before the next step.
+let manual = false;
+const nextStep = () => { if (manual) fetch('next', { method: 'POST' }).catch(() => {}); };
+const backStep = () => { if (manual) fetch('back', { method: 'POST' }).catch(() => {}); };
+addEventListener('keydown', e => {
+  if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'ArrowRight' || e.key === 'Enter') { e.preventDefault(); nextStep(); }
+  else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') { e.preventDefault(); backStep(); }
+});
+document.getElementById('caption').addEventListener('click', nextStep);
+
+
+// ---------------------------------------------------------------- the voice
+// Each step's caption and note are read aloud by the browser's voice when the step changes. A browser lets a page speak
+// only after the person has pressed a key or clicked: the first step is spoken after the first press.
+let voiceOn = true, spoken = null;
+function pickVoice() {
+  const v = speechSynthesis.getVoices().filter(x => /^en/i.test(x.lang));
+  return v.find(x => /natural|online/i.test(x.name)) || v.find(x => /en-GB|en-US/i.test(x.lang)) || v[0] || null;
+}
+function say(text) {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel(); speechSynthesis.resume();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-US'; u.rate = 1;
+  const v = pickVoice(); if (v) u.voice = v;
+  window.__utterance = u;                                   // kept: the browser may drop a speech object nothing refers to
+  setTimeout(() => speechSynthesis.speak(u), 150);          // a speak right after a cancel is lost by some browsers
+}
+if ('speechSynthesis' in window) {
+  speechSynthesis.cancel(); speechSynthesis.resume(); speechSynthesis.getVoices();
+  addEventListener('pagehide', () => speechSynthesis.cancel());
+}
+document.getElementById('voiceBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  voiceOn = !voiceOn;
+  document.getElementById('voiceBtn').textContent = 'Voice: ' + (voiceOn ? 'on' : 'off');
+  if (!('speechSynthesis' in window)) return;
+  if (voiceOn) say(spoken || 'The voice is on.'); else speechSynthesis.cancel();
+});
+
+// ---------------------------------------------------------------- the client (?user=Name)
+// The human's side of a User: it drives the devices - the keys and the screen here - and renders; the logic is the M-Instance's. It performs Process
+// Actions on the MMM-API as its User: Register (once), MM-Add (its Persona at the Metaverse Square), MM-Capture (what it sees there, from its Point of View,
+// five times a second) and MM-Move (where it stands and which way it looks). What it draws is only what MM-Capture returned.
+const userName = new URLSearchParams(location.search).get('user');
+const client = userName ? { name: userName, human: userName + '-human', persona: new URLSearchParams(location.search).get('persona') ?? userName + '-Persona', personae: [userName + '-Persona'], at: 'MVS', loc: 'MVS', ox: 0, oy: 0, seated: false, token: null, x: 0, y: 0, yaw: 0, sent: '', things: [], heard: [], status: 'joining...', keys: new Set() } : null;
+const HALF = 3.8;   // the Square is 8 m across
+const spatial = (id, x, y, yaw) => ({ Header: 'OSD-OSA-V1.5', ObjectSpatialAttitudeID: id,
+  Position: { Header: 'OSD-OPS-V1.5', PositionID: id + '-P', CartPosition: [x, y, 0] },
+  Orientation: { Header: 'OSD-OOR-V1.5', OrientationID: id + '-O', Orientation: [yaw, 0, 0] } });   // yaw, pitch, roll: degrees (provisional convention: zero looks north, positive turns to the west)
+async function act(path, source, complements) {
+  const rs = await fetch('/api/v2.2/' + path, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': crypto.randomUUID(), ...(client.token ? { Authorization: 'Bearer ' + client.token } : {}) },
+    body: JSON.stringify({ SourceProcessID: source, Action: '', Complements: complements }) });
+  return { http: rs.status, tokens: rs.headers.get('MMM-Tokens'), body: await rs.json().catch(() => null) };
+}
+async function join() {
+  const profile = { Header: 'MMM-PPR-V2.2', MInstanceID: 'MI1', humanID: client.human, PersonalProfileID: 'Profile-' + client.human,
+    PersonalProfile: { Data: [{ FirstName: client.name }], Processes: [{ ProcessIDOrProcess: [{ ProcessID: client.name }], PersonaIDOrPersona: [...new Set([userName + '-Persona', client.persona])].map(p => ({ PersonaID: p })) }] } };   // a User has its own Personae: the ones it registers with
+  const reg = await act('identity/register', client.human, { With: [profile] });
+  if (reg.http !== 201) { client.status = `cannot register: ${reg.http} ${reg.body?.paStatus?.detail ?? ''}`; return; }
+  client.token = (reg.tokens ?? '').split(',').map(p => p.split('=')).find(p => p[0] === client.name)?.[1];
+  let h = 0; for (const c of client.name) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  client.x = Math.cos(h % 628 / 100) * 2.5; client.y = Math.sin(h % 628 / 100) * 2.5; client.yaw = Number(new URLSearchParams(location.search).get('yaw') ?? 0);
+  const add = await act('locate/mm-add', client.name, { Nil: client.persona, At: client.at, With: [spatial('SA-' + client.name, client.x, client.y, client.yaw)] });
+  client.status = add.http === 200 ? `${client.name}: in ${client.at}` : `cannot join: ${add.http}`;
+  if (add.http === 200 && new URLSearchParams(location.search).has('meet')) await sit();
+  if (add.http === 200) { capture(); setInterval(capture, 200); setInterval(sendPose, 150); }
+}
+// The meeting (&meet): the User asks the AVS Service for a seat (MM-Send), reads which it was given, and moves its Persona there (MM-Move) with the right
+// the AVS Service gave it. The AVS Service and the Secretary are Processes of the M-Instance; the client is only this User.
+const simpleTime = id => ({ Header: 'OSD-STM-V1.5', SimpleTimeID: id, SimpleTimeData: [{ FlagsByte: 3, StartTime: 1767254400000, EndTime: 1767254400000, AccuracyMode: 'single', AccuracyPlusMinus: 1 }] });
+const message = (id, text) => ({ Header: 'MMM-MSG-V2.2', MInstanceID: 'MI1', MessageID: id, MessageData: [{ MessageData: text }] });
+async function sit() {
+  // Who is in the meeting is the convener's decision (&convene; &invite=Name,Name): the room is open only to the invited. Not invited, the User waits for the
+  // invitation - a Message of the AVS Service - and asks again.
+  const q = new URLSearchParams(location.search), tell = (id, text) => act('communicate/mm-send', client.name, { Nil: id, To: 'AVS', With: [message(id, text)] });
+  const read = async id => { const rs = await fetch(`/api/v2.2/items/${id}`, { headers: { Authorization: 'Bearer ' + client.token } }); return rs.ok ? (await rs.json()).ItemValueOrRef?.[0]?.MessageData?.[0]?.MessageData : null; };
+  const pause = ms => new Promise(r => setTimeout(r, ms));
+  if (q.has('convene')) { await tell(`Convene-${client.name}-${Date.now()}`, 'convene'); for (const u of (q.get('invite') ?? '').split(',').filter(Boolean)) await tell(`Invite-${u}-${Date.now()}`, 'invite;user=' + u); }
+  let told = null;
+  for (let attempt = 0; attempt < 120 && !(told ?? '').startsWith('seat='); attempt++) {
+    const join = `Join-${client.name}-${Date.now()}`;   // each request has its own identifier, and so its own answer
+    await tell(join, 'join;persona=' + client.persona);   // the Persona it brings to this meeting: one of its own
+    told = null;
+    for (let i = 0; i < 50 && !told; i++) { await pause(200); told = await read(`Seat-${join}`); }   // the AVS Service answers within a moment
+    if (told === 'not invited') { client.status = `${client.name}: waiting for an invitation`; for (let i = 0; i < 20 && !(await read(`Invitation-${client.name}`)); i++) await pause(500); }
+  }
+  const seat = Object.fromEntries((told ?? '').split(';').map(p => p.split('=')));
+  if (!seat.seat) { client.status = `${client.name}: no seat (${told ?? 'no answer'})`; return; }
+  const pa = `PA-Sit-${client.persona}`;
+  const sitPA = { Header: 'MMM-2MP-V2.2', MInstanceID: 'MI1', MMMovePAID: pa, Time: simpleTime(pa + '-T'),
+    MMMovePARQ: { RQ1: { Complement: 'Nil', ItemID: client.persona }, RQ3: { Complement: 'To', PointOfView2: { Header: 'OSD-OPV-V1.5', PointOfViewID: seat.seat, CartPosition: [0, 0, 0], Orientation: [0, 0, 0] } } } };
+  const right = { Header: 'MMM-RGT-V2.2', MInstanceID: 'MI1', RightsID: 'Seat-Move-' + client.persona, RightsData: [{ DeonticVerb: 'May', Level: 'Acquired', PAIDOrPA: [{ ProcessActionID: pa }] }] };
+  const yaw = Number(seat.yaw);
+  const mv = await act('locate/mm-move', client.name, { Nil: client.persona, From: 'MVS', To: seat.seat, With: [spatial('SA-' + client.name + '-Seat', 0, 0, yaw), sitPA, right] });
+  if (mv.http !== 200) { client.status = `${client.name}: cannot sit: ${mv.http}`; return; }
+  Object.assign(client, { loc: seat.seat, at: seat.room, ox: Number(seat.x), oy: Number(seat.y), x: Number(seat.x), y: Number(seat.y), yaw, seated: true, sent: '' });
+  client.status = `${client.name}: seated at ${seat.seat}`;
+  if (new URLSearchParams(location.search).has('mic')) microphone();
+}
+
+// THE MICROPHONE (&mic): the client captures and streams. When the User starts to speak - a voice activity detection of the level - it declares a Speech Object at its seat at
+// once: the time it lasts (3 s), its Speech Qualifier (raw PCM, stream format WebSocket) and where its data is delivered from. The data goes out as it is captured, over a
+// WebSocket, and whoever has chosen to hear this User opens the same kind of WebSocket and receives it from the start. Nothing is redefined until the time is over: if the
+// User is still speaking, the next Speech Object takes over; if it stops, the stream ends.
+async function microphone() {
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); }
+  catch (e) { client.status += ' (no microphone)'; return; }
+  const ctx = new AudioContext({ sampleRate: 16000 });
+  const src = ctx.createMediaStreamSource(stream), node = ctx.createScriptProcessor(1024, 1, 1);
+  const RATE = ctx.sampleRate, THRESHOLD = 0.02, HANG = 0.7 * RATE, PRE = 0.2 * RATE, DURATION = 3000;
+  let pre = [], current = null, silent = 0, n = 0;
+  const level = f => Math.sqrt(f.reduce((s, v) => s + v * v, 0) / f.length);
+  const int16 = f => { const p = new Int16Array(f.length); for (let i = 0; i < f.length; i++) p[i] = Math.max(-1, Math.min(1, f[i])) * 32767; return p; };
+  const time = (id, a, b) => ({ Header: 'OSD-STM-V1.5', SimpleTimeID: id, SimpleTimeData: [{ FlagsByte: 3, StartTime: a, EndTime: b, AccuracyMode: 'single', AccuracyPlusMinus: 1 }] });
+  function begin(first) {   // declares the Speech Object; its data follows as it is captured
+    const id = `Speech-${client.name}-${++n}-${Date.now()}`, start = Date.now() - Math.round(first.length * 1000 / RATE), end = start + DURATION;
+    const so = { Header: 'OSD-BSO-V1.5', MInstanceID: 'MI1', BasicSpeechObjectID: id, BasicSpeechObjectTime: time(id + '-T', start, end),
+      BasicSpeechObjectData: [{ DataURI: `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/v2.2/speech/${id}/listen` }],
+      BasicSpeechDataQualifier: { Header: 'TFA-SPQ-V1.5', MInstanceID: 'MI1', SpeechQualifierID: id + '-Q', SpeechQualifierTime: time(id + '-QT', start, end), SubTypes: {},
+        Formats: { ContentFormats: { RawData: { Header: 'TFA-PCM-V1.5', PCM: { SamplingFrequency: RATE, SamplePrecision: 16 } } }, TransportFormats: { StreamFormat: 'WebSocket' } },
+        Attributes: { Source: 'Real', Device: { DeviceRole: 'Capture', DeviceType: 'Microphone', CaptureConfiguration: { ChannelCount: 1, SamplingMode: 'Mono' } } } } };
+    const o = { id, end, queue: [int16(first)], ws: null, ready: false };
+    act('locate/mm-add', client.name, { Nil: id, At: client.loc, With: [so] }).then(r => {
+      if (r.http !== 200) { o.dead = true; return; }
+      o.ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/v2.2/speech/${id}?token=${encodeURIComponent(client.token)}`);
+      o.ws.binaryType = 'arraybuffer';
+      o.ws.onopen = () => { o.ready = true; for (const p of o.queue.splice(0)) o.ws.send(p.buffer); if (o.closing) o.ws.close(); };
+    });
+    return o;
+  }
+  const feed = (o, f) => { const p = int16(f); if (o.ready) o.ws.send(p.buffer); else o.queue.push(p); };
+  const finish = o => { o.closing = true; if (o.ready) o.ws.close(); };
+  node.onaudioprocess = e => {
+    if (!client.seated) return;
+    const f = Array.from(e.inputBuffer.getChannelData(0)), loud = level(f) > THRESHOLD, now = Date.now();
+    if (!current) {
+      if (!loud) { pre.push(...f); if (pre.length > PRE) pre = pre.slice(pre.length - PRE); return; }
+      current = begin(pre.concat(f)); pre = []; silent = 0; return;
+    }
+    if (current.dead) { current = null; return; }
+    feed(current, f); silent = loud ? 0 : silent + f.length;
+    if (silent >= HANG) { finish(current); current = null; }
+    else if (now >= current.end) { finish(current); current = begin(f); silent = 0; }   // the time is over and the User is still speaking: the next Speech Object takes over
+  };
+  src.connect(node); node.connect(ctx.destination);
+  client.status += ' - listening';
+}
+async function capture() {   // MM-Capture: the Things of the M-Location that this Point of View sees
+  const pov = { Header: 'OSD-OPV-V1.5', PointOfViewID: 'POV-' + client.name, CartPosition: [client.x, client.y, 1.6], Orientation: [client.yaw, 0, 0] };
+  const r = await act('locate/mm-capture', client.name, { At: client.at, With: [pov] });
+  const scene = r.body?.complements?.With?.[0]?.ItemValueOrRef?.[0];
+  if (r.http === 200 && scene) { client.things = scene.Things; for (const t of scene.Things) if (t.Kind === 'Speech') hear(t); }
+}
+
+// HEARING: a Speech Object in the room is what somebody said, or is saying. Hearing is the receiver's decision - from Anna, not from Carla: the panel lists who is in the room
+// and this User ticks whom it hears (&hear=Anna,Bruno starts with only those) - and its client opens the Speech Object's address, a WebSocket, the stream format its Speech
+// Qualifier declares, so that it understands what it receives: 16 kHz mono PCM from the start of the Speech Object and as it goes on. It is played as it arrives, from the
+// seat it is said at, as the Persona's ears would hear it (a panner at the seat; the listener is where this User sits and looks), with a little buffer. What the User says itself it does not play back.
+const heard = new Set(); let hearCtx = null;
+const wants = new Map(), hearParam = new URLSearchParams(location.search).get('hear');   // who this User has chosen to hear (or not)
+const wantsFrom = who => wants.has(who) ? wants.get(who) : (hearParam === null || hearParam.split(',').includes(who));
+function ears() { hearCtx ??= new AudioContext(); if (hearCtx.state === 'suspended') hearCtx.resume().catch(() => {}); return hearCtx; }
+for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, () => { if (client) ears(); });   // a browser lets a page play sound only after a press or a click
+function renderEars() {
+  const owners = [...new Set(client.things.filter(t => t.Kind === 'Persona' && t.Owner && t.Owner !== client.name).map(t => t.Owner))].sort();
+  const key = owners.map(o => o + wantsFrom(o)).join();
+  if (key === renderEars.key) return; renderEars.key = key;
+  let box = document.getElementById('ears');
+  if (!box) { box = document.createElement('div'); box.id = 'ears'; box.style.marginTop = '6px'; document.getElementById('panel').appendChild(box); }
+  box.replaceChildren(...owners.map(o => { const l = document.createElement('label'), c = document.createElement('input'); l.style.display = 'block'; c.type = 'checkbox'; c.checked = wantsFrom(o); c.onchange = () => wants.set(o, c.checked); l.append(c, ' hear ' + o); return l; }));
+}
+function hear(t) {
+  if (heard.has(t.ID) || t.Owner === client.name || !wantsFrom(t.Owner)) return;
+  if (!t.Streaming && Date.now() - t.End > 3000) return;   // what was said some time ago is not replayed to a newcomer
+  heard.add(t.ID);
+  const ctx = ears(), pan = ctx.createPanner(), ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/v2.2/speech/${t.ID}/listen?token=${encodeURIComponent(client.token)}`);
+  pan.panningModel = 'HRTF'; pan.distanceModel = 'inverse'; pan.refDistance = 1;
+  pan.positionX.value = t.X; pan.positionY.value = 1.5; pan.positionZ.value = -t.Y;   // x east, y up, z towards the south: the axes of the viewer
+  pan.connect(ctx.destination); ws.binaryType = 'arraybuffer';
+  let carry = new Uint8Array(0), next = 0, first = true;
+  ws.onmessage = e => {
+    const value = new Uint8Array(e.data), bytes = new Uint8Array(carry.length + value.length); bytes.set(carry); bytes.set(value, carry.length);
+    const n = bytes.length >> 1; carry = bytes.slice(n * 2); if (!n) return;
+    const buf = ctx.createBuffer(1, n, 16000), ch = buf.getChannelData(0), dv = new DataView(bytes.buffer);
+    for (let i = 0; i < n; i++) ch[i] = dv.getInt16(2 * i, true) / 32768;
+    const s = ctx.createBufferSource(); s.buffer = buf; s.connect(pan);
+    const at = Math.max(next, ctx.currentTime + 0.12); s.start(at); next = at + n / 16000;
+    if (first) { first = false; client.heard.push(`${t.Owner} (first sound ${Date.now() - t.Start} ms after it began)`); }
+  };
+}
+async function sendPose() {   // MM-Move: the Persona stands where its User put it, looking where it looks
+  const key = [client.x, client.y, client.yaw].map(v => v.toFixed(2)).join(' ');
+  if (key === client.sent) return; client.sent = key;
+  await act('locate/mm-move', client.name, { Nil: client.persona, From: client.loc, To: client.loc, With: [spatial('SA-' + client.name, client.x - client.ox, client.y - client.oy, client.yaw)] });
+}
+if (client) {
+  controls.enabled = false;
+  addEventListener('keydown', e => client.keys.add(e.key.toLowerCase()));
+  addEventListener('keyup', e => client.keys.delete(e.key.toLowerCase()));
+  join();
+}
+function drive(dt) {   // the keys: W/S or up/down walk, A/D or left/right turn; the camera is the Persona's eyes
+  const k = client.keys, rad = client.yaw * Math.PI / 180;
+  let fwd = (k.has('w') || k.has('arrowup') ? 1 : 0) - (k.has('s') || k.has('arrowdown') ? 1 : 0);
+  const turn = (k.has('a') || k.has('arrowleft') ? 1 : 0) - (k.has('d') || k.has('arrowright') ? 1 : 0);
+  client.yaw = (client.yaw + turn * 90 * dt + 360) % 360;
+  if (client.seated) fwd = 0;   // seated: it turns its head, it does not walk
+  client.x = client.seated ? client.x : Math.max(-HALF, Math.min(HALF, client.x - Math.sin(rad) * fwd * 2 * dt));   // yaw 0 looks north (+y); positive yaw turns to the west (-x)
+  client.y = client.seated ? client.y : Math.max(-HALF, Math.min(HALF, client.y + Math.cos(rad) * fwd * 2 * dt));
+  camera.position.set(client.x, 1.6, -client.y); camera.rotation.set(0, rad, 0, 'YXZ');
+  const L = hearCtx?.listener;   // the ears are where the eyes are
+  if (L?.positionX) { L.positionX.value = client.x; L.positionY.value = 1.6; L.positionZ.value = -client.y; L.forwardX.value = -Math.sin(rad); L.forwardY.value = 0; L.forwardZ.value = -Math.cos(rad); L.upX.value = 0; L.upY.value = 1; L.upZ.value = 0; }   // three.js looks along -z (north) at rotation 0
+}
+
+// ---------------------------------------------------------------- the M-Instance
+async function refresh() {
+  let state;
+  if (client) {
+    state = { MInstanceID: 'MI1', Performed: 0, Recent: [], Things: client.things, Hidden: [] };
+    document.getElementById('title').textContent = client.status;
+    renderEars();
+    document.title = client.heard.length ? 'heard: ' + client.heard.join(', ') : 'M-Instance viewer';   // what the tab says: what this User has heard
+    document.getElementById('recent').textContent = 'W/S walk, A/D turn. You see what MM-Capture returns: ' + client.things.filter(t => t.Kind === 'Persona').map(t => t.ID).join(', ') + (client.heard.length ? ' - heard: ' + client.heard.join(', ') : '');
+  } else {
+    try { state = await (await fetch('state', { cache: 'no-store' })).json(); } catch { return; }
+  }
+  if (!client) document.getElementById('title').textContent = `M-Instance ${state.MInstanceID} - ${state.Performed} Process Actions`;
+  if (!client) document.getElementById('recent').innerHTML = (state.Recent ?? []).slice().reverse().map(a =>
+    `<div><span class="${a.Http < 300 ? 'ok' : 'no'}">${a.Http} ${a.Status}</span> ${a.Source} → ${a.Action} (${a.Destination})</div>`).join('') || 'no Process Action yet';
+
+  // A demonstration in progress: the step just shown, and how to go on (Space, right arrow, a click).
+  manual = !!state.Manual;
+  document.getElementById('caption').hidden = !state.Caption;
+  document.getElementById('captionText').textContent = state.Caption ?? '';
+  document.getElementById('captionNote').textContent = state.Note ?? '';
+  const line = state.Say || [state.Caption, state.Note].filter(Boolean).join('. ');
+  if (line !== spoken) { spoken = line; if (line && voiceOn) say(line); else if (!line && 'speechSynthesis' in window) speechSynthesis.cancel(); }
+  document.getElementById('captionHint').textContent = manual ? 'Space, up arrow or click: next step  ·  down arrow: previous step' : '';
+
+  const hidden = new Set(state.Hidden ?? []);   // not drawn yet: a demonstration brings them in
+  const seen = new Set();
+  for (const t of state.Things) {
+    seen.add(t.ID);
+    const isRoom = t.Kind === 'Location' && t.At;
+    const shape = t.Kind === 'Persona' ? 'persona' : isRoom ? 'room' : t.Kind === 'Location' ? 'pad' : null;
+    if (!shape) continue;
+    let d = drawn.get(t.ID);
+    if (d && d.shape !== shape) { scene.remove(d.object); d.object.userData.label?.element.remove(); drawn.delete(t.ID); d = null; }
+    if (!d) {
+      const object = shape === 'persona' ? await persona(t) : shape === 'room' ? room(t) : pad(t);
+      object.position.set(t.X, t.Z ?? 0, -t.Y); scene.add(object);          // the axes of space - X east, Y north, Z up - to those of three.js: x east, y up, z towards the viewer (south)
+      d = { object, shape, target: new THREE.Vector3(t.X, t.Z ?? 0, -t.Y) }; drawn.set(t.ID, d);
+    }
+    d.target.set(t.X, (t.Z ?? 0) + (isRoom ? 0.06 : 0), -t.Y);
+    d.yaw = t.Yaw ?? null;
+    if (t.Kind === 'Persona' && t.At) {
+      const at = state.Things.find(x => x.ID === t.At);
+      d.target.y = (t.Depth ?? (at?.At ? 2 : 1)) >= 2 ? 0.14 : 0.06;   // standing on a room's floor, or on a pad
+    }
+    // Shown: what is perceptible and placed - a Persona once added, a Location that is
+    // a place of its own or has been placed (a Room on its Parcel).
+    d.object.visible = t.Perceptible !== false && (t.Kind !== 'Persona' || !!t.At) && !hidden.has(t.ID) && !(client && t.ID === client.persona);   // you do not see your own Persona from inside it
+    const l = d.object.userData.label;
+    if (l) l.visible = d.object.visible;
+    if (l) l.element.textContent = t.Kind === 'Persona' ? `${t.ID}${t.Animation ? ' (animated)' : ''}` : `${t.ID}${t.Owner ? ' - ' + t.Owner : ''}${t.Public ? ' (open)' : ''}`;
+  }
+  for (const [id, d] of drawn) if (!seen.has(id)) { d.object.visible = false; if (d.object.userData.label) d.object.userData.label.visible = false; }
+}
+
+// Personae walk to where they now are, at about 2 m/s, facing the way they go.
+const clock = new THREE.Clock();
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(clock.getDelta(), 0.1);
+  for (const d of drawn.values()) {
+    const p = d.object.position, to = d.target, dist = p.distanceTo(to);
+    if (dist > 0.01) {
+      const step = Math.min(dist, 2.0 * dt * Math.max(1, dist / 3));
+      const dir = to.clone().sub(p).normalize();
+      if (Math.hypot(dir.x, dir.z) > 0.2) d.object.rotation.y = Math.atan2(dir.x, dir.z);
+      p.addScaledVector(dir, step);
+    }
+    if (d.yaw != null) d.object.rotation.y = Math.PI + d.yaw * Math.PI / 180;   // a Persona looks where its yaw says (the model faces +z at rest; yaw 0 is north, -z)
+  }
+  if (client) drive(dt); else controls.update(); renderer.render(scene, camera); labels.render(scene, camera);
+});
+await refresh(); setInterval(refresh, 500);
+window.viewerReady = true;
+</script>
+</body>
+</html>

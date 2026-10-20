@@ -1,0 +1,14 @@
+{
+  "a member added": "Invalid",
+  "a nested value changed": "Invalid",
+  "members reordered, whitespace added": "Valid",
+  "no Signature": "Missing",
+  "signed, verified": "Valid",
+  "the KeyID": "key-A",
+  "the KeyID of a key not known": "UnknownKey",
+  "the KeyID of another known key": "Invalid",
+  "the Signature": "128 hexadecimal characters",
+  "the Signature changed": "Invalid",
+  "the same without its KeyID": "/ properties: Some properties did not match the required schema: [\"MessageType\"]; / required: Required properties [\"KeyID\"] are not present; / required: Required properties [\"Response\"] are not present; /MessageType const: Expected \"\\u0022TrustResponse\\u0022\"",
+  "the signed TrustMessage against its schema": "valid"
+}

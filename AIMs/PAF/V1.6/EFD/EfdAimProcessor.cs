@@ -34,11 +34,14 @@ public sealed class EfdAimProcessor : IAimProcessor
 
     private readonly string _inPort;
     private readonly string _outPort;
+    private readonly string _textPort;
+    private readonly AIF.SharedStorage.ISharedStorage _store;
 
     public EfdAimProcessor(
         string instanceId,
         ScrfdFaceDetector detector,
         ArcFaceRecogniser recogniser,
+        AIF.SharedStorage.ISharedStorage store,
         AimPortReader ports)
     {
         _instanceId = instanceId;
@@ -46,6 +49,8 @@ public sealed class EfdAimProcessor : IAimProcessor
         _recogniser = recogniser;
         _inPort     = ports.Input("OSD-BVO-V1.5");
         _outPort    = ports.Output("PAF-FDO-V1.6");
+        _textPort   = ports.InputOrDefault("OSD-BTO-V1.5", 1, string.Empty);   // the OSD-BTO the subject is keyed by, optional
+        _store      = store;
     }
 
     public string InstanceId => _instanceId;
@@ -72,6 +77,32 @@ public sealed class EfdAimProcessor : IAimProcessor
         var embedding = _recogniser.Embed(crop);
 
         var fdo = FaceDescriptorsObject.FromEmbedding(embedding, ContentFormat);
+
+        // Stamp the acquisition time, which the Visual Object carries, into the
+        // Face Descriptors Object.
+        SimpleTime? faceTime = picture.BasicVisualObjectTime?.Time is { SimpleTimeData.Count: > 0 } t ? t : null;
+        if (faceTime is not null)
+            fdo = new FaceDescriptorsObject
+            {
+                FaceDescriptorsObjectID   = fdo.FaceDescriptorsObjectID,
+                FaceDescriptorsObjectTime = faceTime,
+                FaceDescriptorsData       = fdo.FaceDescriptorsData,
+                FaceDescriptorsQualifier  = fdo.FaceDescriptorsQualifier
+            };
+
+        // Persist the FACE half to the gallery (Shared Storage, via the Controller API).
+        if (message.Ports.TryGetValue(_textPort, out var nmJson) && !string.IsNullOrWhiteSpace(nmJson))
+        {
+            var name = MpaiJson.FromJson<BasicTextObject>(nmJson)?.GetText();
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                var ftJson = fdo.FaceDescriptorsObjectTime is null ? null : MpaiJson.ToJson(fdo.FaceDescriptorsObjectTime);
+                var g = Mpai.Core.SubjectGallery.Load(_store);
+                g.EnrolEmbeddings(name!, face: embedding, faceTime: ftJson);
+                g.SaveSubject(_store, name!);
+                AimLog.Write("PAF-EFD-V1.6", $"enrolled the FACE half of '{name}'.");
+            }
+        }
 
         return System.Threading.Tasks.Task.FromResult(new Message
         {

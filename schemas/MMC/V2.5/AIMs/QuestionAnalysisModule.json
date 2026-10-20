@@ -1,42 +1,37 @@
-{ "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$comment": "https://schemas.mpai.community/AIF/V3.0/data/AIMMetadata.json",
-  "$id": "https://schemas.mpai.community/MMC/V2.5/AIMs/QuestionAnalysisModule.json",
-  "title": "QuestionAnalysisModule V2.5",
+{ "Identifier":       {"ImplementerID": "IIDRA-assigned", "ImplementationID": "MMC-QAM-V2.5-I01", "AIMName": "MMC-QAM-V2.5"},
+  "Header":            "MMC-QAM-V2.5",
 
-  "Identifier":   { "ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "MMC-QAM-V2.5" },
+  "APIProfile":       "Basic",
+  "Description":      "Question Analysis Module: analyses the Text Descriptors Object of a question (the former Meaning) and gives its Intention - what is being asked: the topic, the focus, the lexical and the semantic answer type and the domain of the question. Ports as the composite MMC-MQA (slide 16 of the MMC Reference Models) uses it; the AIM has no slide of its own.",
 
-  "APIProfile":   "Basic",
-  "Description":  "This AIM implements the question analysis function.",
+  "InternalTypes":        [],
 
-  "ExternalPorts":  [
-    { "Name": "Meaning"  , "Direction": "Input",   "DataType": "MMC-MEA-V2.5",  "Technology": "Software", "Protocol": "", "IsRemote": false },
-    { "Name": "Intention", "Direction": "Output",  "DataType": "MMC-INT-V2.5",  "Technology": "Software", "Protocol": "", "IsRemote": false }
-  ],
+  "ExternalPorts":        [{"Name": "TextDescriptors", "Direction": "Input", "DataType": "MMC-TDO-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                          {"Name": "Intention", "Direction": "Output", "DataType": "MMC-INT-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
-  "SubAIMs":  [ ],
-  "Topology":  [ ],
+  "SubAIMs":              [],
 
-  "Implementations":  [
-   {
-    "BinaryName": "/* provided by implementer */",
-    "Architecture": "/* x86-64 | ARM64 */",
-    "OperatingSystem": "/* Windows | Linux | MacOS */",
-    "Version": "/* implementer version */",
-    "Source": "/* AIMStorage | MPAIStore */",
-    "Destination": "/* provided by implementer */"
-   }
-  ],
+  "Topology":             [],
 
-  "ResourcePolicies":  [
-    { "Name": "Memory"              , "Minimum": "/* GB */",             "Maximum": "/* GB */",             "Request": "/* GB */" },
-    { "Name": "CPU:Number"          , "Minimum": "/* integer, 0=all */", "Maximum": "/* integer, 0=all */", "Request": "/* integer */" },
-    { "Name": "CPU:Class"           , "Minimum": "/* string */",         "Maximum": "/* string */",         "Request": "/* string */" },
-    { "Name": "GPU:Number"          , "Minimum": "/* integer, 0=all */", "Maximum": "/* integer, 0=all */", "Request": "/* integer */" },
-    { "Name": "GPU:CUDA:Class"      , "Minimum": "/* string */",         "Maximum": "/* string */",         "Request": "/* string */" },
-    { "Name": "GPU:CUDA:FrameBuffer", "Minimum": "/* GB */",             "Maximum": "/* GB */",             "Request": "/* GB */" },
-    { "Name": "GPU:CUDA:MemorySpeed", "Minimum": "/* GB/s */",           "Maximum": "/* GB/s */",           "Request": "/* GB/s */" }
-  ],
+  "AIMLicence":          "/* AIM Licence offered by the Implementer (AIF-LIC-V3.0): Grant, Term, Updates, Payment, TermsURI - or omit it if the AIM needs no AIM Licence */",
 
-  "DataXMData":  { },
+  "Implementations": [{ "ImplementationURI":"/* absolute URI locating the Implementation */",
+                        "BinaryName":       "/* provided by implementer */",
+                        "Architecture":     "/* x86-64 | ARM64 */",
+                        "MASPort":          443,
+                        "Firewall":         [{ "Protocol": "TCP | UDP", "Version": "IPV4 | IPV6", "Direction": "Ingress | Egress | Both", "Range": "9990[-9999]", "Source": "0.0.0.0/0" }],
+                        "OperatingSystem":  "/* Windows | Linux | MacOS */",
+                        "Version":          "/* implementer version */",
+                        "Source":           "/* AIMStorage | MPAIStore */",
+                        "Destination":      "/* provided by implementer */" }],
 
-  "Documentation":  [{ "Type": "Tutorial", "URI": "https://mpai.community/standards/mpai-mmc/v2-5/" }] }
+  "ResourcePolicies":[{ "Name": "Memory",               "Minimum": "/* GB */",             "Maximum": "/* GB */",             "Request": "/* GB */" },
+                      { "Name": "CPU:Number",           "Minimum": "/* integer, 0=all */", "Maximum": "/* integer, 0=all */", "Request": "/* integer */" },
+                      { "Name": "CPU:Class",            "Minimum": "/* string */",         "Maximum": "/* string */",         "Request": "/* string */" },
+                      { "Name": "GPU:Number",           "Minimum": "/* integer, 0=all */", "Maximum": "/* integer, 0=all */", "Request": "/* integer */" },
+                      { "Name": "GPU:CUDA:Class",       "Minimum": "/* string */",         "Maximum": "/* string */",         "Request": "/* string */" },
+                      { "Name": "GPU:CUDA:FrameBuffer", "Minimum": "/* GB */",             "Maximum": "/* GB */",             "Request": "/* GB */" },
+                      { "Name": "GPU:CUDA:MemorySpeed", "Minimum": "/* GB/s */",           "Maximum": "/* GB/s */",           "Request": "/* GB/s */" } ],
+
+  "DataXMData":         { },
+  "Documentation":     [{"Type": "Specification", "URI": "https://mpai.community/standards/mpai-mmc/v2-5/"}]}

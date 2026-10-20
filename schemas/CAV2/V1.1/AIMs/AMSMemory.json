@@ -5,23 +5,29 @@
 
   "Identifier":   { "ImplementerID": "/* String from IIDRA */", "ImplementationID": "/* String from Implementer */", "AIMName": "CAV-AMM-V1.1" },
 
+  "Header":       "CAV-AMM-V1.1",
+
   "APIProfile":   "Basic",
   "Description":  "This AIM records AMS decisions.",
 
   "ExternalPorts":  [
-    { "Name": "FullEnvironmentDescriptors", "Direction": "Input",   "DataType": "CAV-FED-V1.1",  "Technology": "Software", "Protocol": "", "IsRemote": false },
-    { "Name": "Route"                     , "Direction": "Input",   "DataType": "CAV-RTE-V1.1",  "Technology": "Software", "Protocol": "", "IsRemote": false },
-    { "Name": "Path"                      , "Direction": "Input",   "DataType": "OSD-PAT-V1.5",  "Technology": "Software", "Protocol": "", "IsRemote": false },
-    { "Name": "Trajectory"                , "Direction": "Input",   "DataType": "OSD-TRJ-V1.5",  "Technology": "Software", "Protocol": "", "IsRemote": false },
-    { "Name": "Alert"                     , "Direction": "Input",   "DataType": "CAV-ALT-V1.1",  "Technology": "Software", "Protocol": "", "IsRemote": false },
-    { "Name": "RoadState"                 , "Direction": "Input",   "DataType": "CAV-RDS-V1.1",  "Technology": "Software", "Protocol": "", "IsRemote": false },
-    { "Name": "CAVState"                  , "Direction": "Input",   "DataType": "CAV-CST-V1.1",  "Technology": "Software", "Protocol": "", "IsRemote": false },
-    { "Name": "AMSMASMessage"             , "Direction": "Input",   "DataType": "CAV-AMM-V1.1",  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "FullEnvironmentDescriptors", "Direction": "Input",   "DataType": ["CAV-FED-V1.1", "CAV-FED-V2.0"], "IsOptional": true,  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "Route"                     , "Direction": "Input",   "DataType": "CAV-RTE-V1.1", "IsOptional": true,  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "Path"                      , "Direction": "Input",   "DataType": "OSD-PAT-V1.5", "IsOptional": true,  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "Trajectory"                , "Direction": "Input",   "DataType": "OSD-TRJ-V1.5", "IsOptional": true,  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "Alert"                     , "Direction": "Input",   "DataType": "CAV-ALT-V1.1", "IsOptional": true,  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "RoadState"                 , "Direction": "Input",   "DataType": "CAV-RDS-V1.1", "IsOptional": true,  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "CAVState"                  , "Direction": "Input",   "DataType": "CAV-CST-V1.1", "IsOptional": true,  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "AMSMASMessage"             , "Direction": "Input",   "DataType": "CAV-AMM-V1.1", "IsOptional": true,  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "AMSData"                   , "Direction": "Input",   "DataType": "CAV-AMD-V1.1", "PortNumber": 1, "IsOptional": true,  "Technology": "Software", "Protocol": "", "IsRemote": false },
+    { "Name": "AMSData"                   , "Direction": "Input",   "DataType": "CAV-AMD-V1.1", "PortNumber": 2, "IsOptional": true,  "Technology": "Software", "Protocol": "", "IsRemote": false },
     { "Name": "AMSData"                   , "Direction": "Output",  "DataType": "CAV-AMD-V1.1",  "Technology": "Software", "Protocol": "", "IsRemote": false }
   ],
 
   "SubAIMs":  [ ],
   "Topology":  [ ],
+
+  "AIMLicence":          "/* AIM Licence offered by the Implementer (AIF-LIC-V3.0): Grant, Term, Updates, Payment, TermsURI - or omit it if the AIM needs no AIM Licence */",
 
   "Implementations":  [
    {

@@ -38,6 +38,9 @@ public sealed class FirAimProcessor : IAimProcessor
     private readonly ScrfdFaceDetector          _detector;
     private readonly ArcFaceRecogniser          _recogniser;
     private readonly SubjectGallery             _gallery;
+    // Where the gallery is kept, where it changes while the AIM runs (a Service,
+    // M3245): read again before each match.
+    private readonly AIF.SharedStorage.ISharedStorage? _galleryStore;
 
     public string InstanceId { get; }
 
@@ -46,12 +49,14 @@ public sealed class FirAimProcessor : IAimProcessor
         ScrfdFaceDetector detector,
         ArcFaceRecogniser recogniser,
         SubjectGallery gallery,
-        AimPortReader ports)
+        AimPortReader ports,
+        AIF.SharedStorage.ISharedStorage? galleryStore = null)
     {
         InstanceId  = instanceId;
         _detector   = detector;
         _recogniser = recogniser;
         _gallery    = gallery;
+        _galleryStore = galleryStore;
         _visualPort = ports.Input("OSD-BVO-V1.5");
         _iidPort    = ports.Output("OSD-IID-V1.5");
         _bbxPort    = ports.Output("OSD-BBX-V1.5");
@@ -92,6 +97,7 @@ public sealed class FirAimProcessor : IAimProcessor
         // Detect faces (SCRFD separates them); take the user's face = the most
         // prominent (largest area) when several are present.
         var faces = _detector.Detect(picture.Data);
+        Mpai.Core.MpaiDiag.Append("mac-diag.log", "[FIR] type=" + (picture.VisualQualifier?.Attributes?.VisualObjectType ?? "nil") + " bytes=" + (picture.Data == null ? 0 : picture.Data.Length) + " faces=" + faces.Count + System.Environment.NewLine);
         if (faces.Count == 0)
         {
             // No face found: emit a coarse "no identity" IID and an empty BBX so
@@ -147,8 +153,10 @@ public sealed class FirAimProcessor : IAimProcessor
     // Embed the crop and match the gallery -> layered person IID (or coarse "face").
     private InstanceIdentifier IdentifyCrop(Image<Rgb24> crop)
     {
+        if (_galleryStore is not null) _gallery.Refresh(_galleryStore);
         var fir = new FaceIdentityRecognitionAim(_recogniser, _gallery);
         var iid = fir.Identify(crop);
+        try { var __c = iid?.InstanceIdentifierData; var __top = (__c != null && __c.Count > 0) ? __c[0] : null; Mpai.Core.MpaiDiag.Append("mac-diag.log", "[FIR] IID label=" + (__top == null ? "nil" : __top.InstanceLabel) + " conf=" + (__top == null ? "nil" : __top.LabelConfidenceLevel.ToString("F3")) + " candidates=" + (__c == null ? 0 : __c.Count) + System.Environment.NewLine); } catch { }
         return iid;
     }
 

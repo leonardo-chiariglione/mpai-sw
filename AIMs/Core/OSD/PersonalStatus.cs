@@ -7,13 +7,13 @@ namespace Mpai.Core.OSD;
 // Personal Status has three Factors - Cognitive State, Emotion, Social Attitude -
 // each a LABEL chosen from that Factor's standard three-level set (Category /
 // General Adjectival / Specific Adjectival) plus an optional Degree in [0,1]. The
-// Factors are carried per modality (Text, Speech, Face, Gesture) by a modality
+// Factors are carried per modality (Text, Speech, Face, Body) by a modality
 // Personal Status object, and the per-modality split is conveyed by the Entity
 // Personal Status. These classes mirror the data schemas:
 //   MMC/V2.5/data/Emotion.json          (MMC-EEM-V2.5)
 //   MMC/V2.5/data/CognitiveState.json   (MMC-ECS-V2.5)
 //   MMC/V2.5/data/SocialAttitude.json   (MMC-ESA-V2.5)
-//   MMC/V2.5/data/TextPersonalStatus.json   (MMC-TPS-V2.5)  [+ Speech/Face/Gesture]
+//   MMC/V2.5/data/TextPersonalStatus.json   (MMC-TPS-V2.5)  [+ Speech/Face/Body]
 //   MMC/V2.5/data/EntityPersonalStatus.json (MMC-EPS-V2.5)
 //
 // The three Factor objects share the same shape - a chosen label (Category +
@@ -124,14 +124,39 @@ public sealed class FacePersonalStatus
     public SocialAttitude? FaceSocialAttitude { get; init; }
 }
 
-// MMC-GPS-V2.5 - Gesture Personal Status.
-public sealed class GesturePersonalStatus
+// MMC-BPS-V2.5 - Body Personal Status. Gesture, in all its forms, is a subset of the body: the
+// Personal Status of a gesture is carried here.
+public sealed class BodyPersonalStatus
 {
-    public string Header { get; init; } = "MMC-GPS-V2.5";
-    public string GesturePersonalStatusID { get; init; } = Guid.NewGuid().ToString();
-    public CognitiveState? GestureCognitiveState { get; init; }
-    public Emotion? GestureEmotion { get; init; }
-    public SocialAttitude? GestureSocialAttitude { get; init; }
+    public string Header { get; init; } = "MMC-BPS-V2.5";
+    public string BodyPersonalStatusID { get; init; } = Guid.NewGuid().ToString();
+    public CognitiveState? BodyCognitiveState { get; init; }
+    public Emotion? BodyEmotion { get; init; }
+    public SocialAttitude? BodySocialAttitude { get; init; }
+}
+
+// THE PERSONAL STATUS IN THE ENTITY STATE (the author, 2026/10/13): a Portable Avatar carries an Entity State; it is implemented as the Personal Status, the other
+// elements of the Entity State being left out for the time being. Its Cognitive State, Emotion and Social Attitude are those of the Entity Personal Status - the first
+// modality that has each, in the order Text, Speech, Face, Body.
+public static class EntityStates
+{
+    public static System.Text.Json.Nodes.JsonObject OfPersonalStatus(EntityPersonalStatus status)
+    {
+        var emotion = status.TextPersonalStatus?.TextEmotion ?? status.SpeechPersonalStatus?.SpeechEmotion ?? status.FacePersonalStatus?.FaceEmotion ?? status.BodyPersonalStatus?.BodyEmotion;
+        var cognitive = status.TextPersonalStatus?.TextCognitiveState ?? status.SpeechPersonalStatus?.SpeechCognitiveState ?? status.FacePersonalStatus?.FaceCognitiveState ?? status.BodyPersonalStatus?.BodyCognitiveState;
+        var social = status.TextPersonalStatus?.TextSocialAttitude ?? status.SpeechPersonalStatus?.SpeechSocialAttitude ?? status.FacePersonalStatus?.FaceSocialAttitude ?? status.BodyPersonalStatus?.BodySocialAttitude;
+        var state = new System.Text.Json.Nodes.JsonObject { ["Header"] = "MMC-EST-V2.5", ["EntityStateID"] = Guid.NewGuid().ToString() };
+        if (cognitive is not null) state["CognitiveState"] = System.Text.Json.Nodes.JsonNode.Parse(MpaiJson.ToJson(cognitive));
+        if (emotion is not null) state["Emotion"] = System.Text.Json.Nodes.JsonNode.Parse(MpaiJson.ToJson(emotion));
+        if (social is not null) state["SocialAttitude"] = System.Text.Json.Nodes.JsonNode.Parse(MpaiJson.ToJson(social));
+        return state;
+    }
+
+    public static System.Text.Json.Nodes.JsonObject? OfPersonalStatus(string entityPersonalStatusJson)
+    {
+        try { return MpaiJson.FromJson<EntityPersonalStatus>(entityPersonalStatusJson) is { } status ? OfPersonalStatus(status) : null; }
+        catch { return null; }
+    }
 }
 
 // MMC-EPS-V2.5 - Entity Personal Status: the modality container, assembled by
@@ -144,5 +169,5 @@ public sealed class EntityPersonalStatus
     public TextPersonalStatus? TextPersonalStatus { get; init; }
     public SpeechPersonalStatus? SpeechPersonalStatus { get; init; }
     public FacePersonalStatus? FacePersonalStatus { get; init; }
-    public GesturePersonalStatus? GesturePersonalStatus { get; init; }
+    public BodyPersonalStatus? BodyPersonalStatus { get; init; }
 }

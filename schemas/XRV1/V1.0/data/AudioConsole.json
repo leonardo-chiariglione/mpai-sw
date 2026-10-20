@@ -3,6 +3,7 @@
   "title":                    "Audio Console V1.0",
   "type":                     "object", 
   "additionalProperties":     false, 
+  "required":                 [ "Header", "AudioConsoleID", "AudioConsoleData" ],
   "properties":               {
 
     "Header":                { "type": "string", "const": "XRV-AUC-V1.0" },
@@ -20,7 +21,7 @@
       "MetaverseObject":     { "$ref": "https://schemas.mpai.community/XRV1/V1.0/data/MetaverseObject.json" },
 
       "TrackSelection":      { "type": "string" },
-      "Volume":              { "type": "string" },
+      "Volume":              { "type": "number" },
       "AudioRouting":        { "type": "string" },
       "AudioEffects":        { "type": "object", "properties": {
 

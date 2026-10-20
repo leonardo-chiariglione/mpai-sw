@@ -26,16 +26,21 @@ public sealed class EsdAimProcessor : IAimProcessor
 
     private readonly string _inPort;
     private readonly string _outPort;
+    private readonly string _textPort;
+    private readonly AIF.SharedStorage.ISharedStorage _store;
 
     public EsdAimProcessor(
         string instanceId,
         SpeakerEmbedder embedder,
+        AIF.SharedStorage.ISharedStorage store,
         AimPortReader ports)
     {
         _instanceId = instanceId;
         _embedder   = embedder;
         _inPort     = ports.Input("OSD-BSO-V1.5");
         _outPort    = ports.Output("MMC-SDO-V2.5");
+        _textPort   = ports.InputOrDefault("OSD-BTO-V1.5", 1, string.Empty);   // the OSD-BTO the subject is keyed by, optional
+        _store      = store;
     }
 
     public string InstanceId => _instanceId;
@@ -52,10 +57,36 @@ public sealed class EsdAimProcessor : IAimProcessor
                 Message.Error(message.MessageId, _instanceId, "empty Speech Object"));
 
         // Embed the speech - the same path SIR uses (mono 16k -> ECAPA).
-        var samples   = WavReader.ReadMono16k(speech.Data);
+        var samples   = WavReader.ReadMono16k(speech);
         var embedding = _embedder.Embed(samples);
 
         var sdo = SpeechDescriptorsObject.FromEmbedding(embedding, ContentFormat);
+
+        // Stamp the acquisition time, which the Speech Object carries, into the
+        // Speech Descriptors Object.
+        SimpleTime? speechTime = speech.BasicSpeechObjectTime;
+        if (speechTime is not null)
+            sdo = new SpeechDescriptorsObject
+            {
+                SpeechDescriptorsObjectID   = sdo.SpeechDescriptorsObjectID,
+                SpeechDescriptorsObjectTime = speechTime,
+                SpeechDescriptorsData       = sdo.SpeechDescriptorsData,
+                SpeechDescriptorsQualifier  = sdo.SpeechDescriptorsQualifier
+            };
+
+        // Persist the VOICE half to the gallery (Shared Storage, via the Controller API).
+        if (message.Ports.TryGetValue(_textPort, out var nmJson) && !string.IsNullOrWhiteSpace(nmJson))
+        {
+            var name = MpaiJson.FromJson<BasicTextObject>(nmJson)?.GetText();
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                var stJson = sdo.SpeechDescriptorsObjectTime is null ? null : MpaiJson.ToJson(sdo.SpeechDescriptorsObjectTime);
+                var g = Mpai.Core.SubjectGallery.Load(_store);
+                g.EnrolEmbeddings(name!, voice: embedding, speechTime: stJson);
+                g.SaveSubject(_store, name!);
+                AimLog.Write("MMC-ESD-V2.5", $"enrolled the VOICE half of '{name}'.");
+            }
+        }
 
         return System.Threading.Tasks.Task.FromResult(new Message
         {
