@@ -15,13 +15,25 @@ namespace Mpai.Mmm.Client;
 public static class Meeting
 {
     public const string Parcel = "MeetingParcel", Room = "MeetingRoom", Avs = "AVS", Secretary = "Secretary", Asr = "ASR", SecretaryPersona = "Secretary-Persona", Minutes = "Minutes-" + Room;
-    public const double ParcelX = 12, ParcelY = 0;   // where the parcel is, in metres (east, north)
+    public static double ParcelX { get; set; } = 12;
+    public static double ParcelY { get; set; } = 0;   // where the parcel is, in metres (east, north); the world sets them
+    // In the world of the MMM (World.Setup) the doors of the building are Rights: the AVS Service gives them to the Users it invites. Doors: the Locations behind them.
+    public static bool DoorsNeedRights { get; set; }
+    public static string[] Doors { get; set; } = [];
+    // The lady at the counter of the atrium: a machine Process of the M-Instance with a Persona of its own, which stands where the world says and answers visitors (the Multimodal Conversation
+    // Avatar). Null: there is none.
+    public static (string Persona, string Model, string At, double X, double Y, double Yaw)? Reception { get; set; }
+    public const string ReceptionService = "Reception";
 
     // The seats around the table: place within the Room (metres: x east, y north) and the yaw of a Persona looking at the table's centre (0 looks north).
-    public static readonly (string ID, double X, double Y, double Yaw)[] Seats =
+    private static readonly (string ID, double X, double Y, double Yaw)[] DefaultSeats =
     [
         ($"{Room}-S1", 0, 2.5, 180), ($"{Room}-S2", 0, -2.5, 0), ($"{Room}-S3", -2.5, 0, 270), ($"{Room}-S4", 2.5, 0, 90)
     ];
+    public static (string ID, double X, double Y, double Yaw)[] Seats { get; set; } = DefaultSeats;
+
+    // What the world (World.Setup) changes - where the building is, the seats, the doors - is put back as it was: the meeting of the demonstrations and of the tests is the one above.
+    public static void Reset() { ParcelX = 12; ParcelY = 0; Seats = DefaultSeats; DoorsNeedRights = false; Doors = []; Reception = null; }
 
     // What the M-Instance starts with: the Services, the Room and its Seats. The Parcel, the Room and the Seats are the AVS Service's: not public, so that
     // entering needs a Right, which the AVS Service gives.
@@ -49,14 +61,30 @@ public static class Meeting
     public static JsonObject SpeakPA(string user, string seat) =>
         Uc2.PA("MMM-2DP-V2.2", "MMAdd", SpeakID(user), ("RQ2", "At", "MLocationID", seat));
 
+    // The right to share a screen in the room - to place a Visual Object that is a stream there: the convener's only, for now.
+    public static string ShareID(string user) => $"PA-Share-{user}";
+    public static JsonObject SharePA(string user) => Uc2.PA("MMM-2DP-V2.2", "MMAdd", ShareID(user), ("RQ2", "At", "MLocationID", Room));
+
     // What a User asks: to join, with the Persona it brings (one of its own; if it names none, the one of its name).
     public static string JoinText(string persona) => $"join;persona={persona}";
 
     // What the AVS Service tells a User: its seat, and the Persona the right is for.
-    public static string SeatText((string ID, double X, double Y, double Yaw) seat, string persona)
+    public static string SeatText((string ID, double X, double Y, double Yaw) seat, string persona, bool convener = false)
     {
         var w = WorldOf(seat);
-        return string.Create(CultureInfo.InvariantCulture, $"seat={seat.ID};x={w.X};y={w.Y};yaw={seat.Yaw};room={Room};persona={persona}");
+        return string.Create(CultureInfo.InvariantCulture, $"seat={seat.ID};x={w.X};y={w.Y};yaw={seat.Yaw};room={Room};persona={persona}") + (convener ? ";convener=1" : "");
+    }
+
+    // THE RIGHTS OF A MEETING last as long as the meeting does: they carry its period (RightsTime, a Simple Time from its start to its end) and the AVS Service withdraws them when it ends.
+    public static JsonObject ForTheMeeting(JsonObject rights, DateTimeOffset start, DateTimeOffset? end)
+    {
+        if (end is null) return rights;
+        rights["RightsTime"] = new JsonObject
+        {
+            ["Header"] = "OSD-STM-V1.5", ["SimpleTimeID"] = rights["RightsID"] + "-T",
+            ["SimpleTimeData"] = new JsonArray(new JsonObject { ["FlagsByte"] = 3, ["StartTime"] = start.ToUnixTimeMilliseconds(), ["EndTime"] = end.Value.ToUnixTimeMilliseconds(), ["AccuracyMode"] = "single", ["AccuracyPlusMinus"] = 1 })
+        };
+        return rights;
     }
 
     public static Dictionary<string, string> ParseSeat(string text) =>
@@ -75,6 +103,7 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
     private readonly List<(string Speaker, long SpeechMs, long TotalMs)> latencies = [];
     private readonly MmmClient avs = new(http, Meeting.Avs, m.TokenOf(Meeting.Avs));
     private readonly MmmClient secretary = new(http, Meeting.Secretary, m.TokenOf(Meeting.Secretary));
+    private readonly MmmClient? reception = Meeting.Reception is null ? null : new(http, Meeting.ReceptionService, m.TokenOf(Meeting.ReceptionService));
     private readonly Dictionary<string, string> seatOf = new();               // User -> seat
     private readonly HashSet<string> handled = new();
     private readonly List<string> minutes = [];
@@ -90,6 +119,31 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
 
     public IReadOnlyList<string> TheMinutes => minutes;
 
+    // When the meeting ends (null: when the convener ends it): the rights it gave last until then. Ended: it is over, and nobody is given a seat or a door any more.
+    public DateTimeOffset? EndsAt { get; set; }
+    public Func<DateTimeOffset> Clock { get; set; } = () => DateTimeOffset.UtcNow;     // the time the meeting goes by (a test moves it)
+    private DateTimeOffset? began;
+    private bool ended;
+    public bool Ended => ended;
+    private JsonObject Meant(JsonObject rights) => Meeting.ForTheMeeting(rights, began ??= Clock(), EndsAt);
+
+    // THE END OF THE MEETING: the AVS Service withdraws the rights of every participant - the doors, the seat, the speech - and tells the Secretary. What the participants had of the
+    // meeting (the minutes) they keep; they get no more, and cannot come in again.
+    public async Task EndAsync()
+    {
+        if (ended) return;
+        ended = true;
+        m.StopScreens();                                       // a screen shared in the room is over with the meeting
+        foreach (var user in seatOf.Keys.Concat(invited).Where(u => u != Meeting.Secretary).Distinct().ToList()) await Revoke(user);
+        await Say(avs, $"Ended-{++sequence}", Meeting.Secretary, "ended");
+    }
+
+    // The Users invited before anybody has registered (--invite A,B,C): the first is the convener. Each is given its seat, and the right to the doors, when it asks to join.
+    public void Preinvite(IEnumerable<string> users)
+    {
+        foreach (var u in users) { convener ??= u; invited.Add(u); }
+    }
+
     // For each Speech Object that reached the minutes: who, how long it lasts, and how long from the Secretary getting it to its words being in the minutes.
     public IReadOnlyList<(string Speaker, long SpeechMs, long TotalMs)> Latencies { get { lock (latencies) return latencies.ToList(); } }
 
@@ -100,6 +154,8 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
         if (started) return;          // once: a second MM-Add would put the Secretary's Persona back at the Square
         started = true;
         await secretary.PerformAsync("MM-Add", Uc2.C(Meeting.SecretaryPersona, at: "MVS", with: Uc2.SpatialAttitude("SA-Secretary", 0, 3)));
+        if (reception is not null && Meeting.Reception is { } r)             // the lady at the counter, in the atrium, facing the door
+            await reception.PerformAsync("MM-Add", Uc2.C(r.Persona, at: r.At, with: SeatedAt("SA-Reception", r.Yaw, r.X, r.Y)));
         await Say(secretary, "Join-Secretary", Meeting.Avs, Meeting.JoinText(Meeting.SecretaryPersona));
     }
 
@@ -111,6 +167,7 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
         await one.WaitAsync();
         try
         {
+            if (EndsAt is { } until && !ended && Clock() >= until) await EndAsync();
             foreach (var (id, from) in await avs.InboxAsync())
             {
                 if (!handled.Add($"{Meeting.Avs}|{id}")) continue;
@@ -127,8 +184,13 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
                     if (from != convener) { await Say(avs, $"Refused-{id}", from, "only the convener decides who is in the meeting"); continue; }
                     if (text.StartsWith("invite", StringComparison.Ordinal)) await Invite(who); else await Revoke(who);
                 }
+                else if (text == "end")
+                {
+                    if (from == convener) await EndAsync(); else await Say(avs, $"Refused-{id}", from, "only the convener ends the meeting");
+                }
                 else if (text.StartsWith("join", StringComparison.Ordinal))
                 {
+                    if (ended) { await Say(avs, $"Seat-{id}", from, "the meeting is over"); continue; }
                     if (!invited.Contains(from)) { await Say(avs, $"Seat-{id}", from, "not invited"); continue; }   // the answer is to this request: a User asks again after it is invited
                     var persona = Meeting.ParseSeat(text.Replace("join;", "")).GetValueOrDefault("persona") ?? $"{from}-Persona";
                     await Seat(from, persona, $"Seat-{id}");
@@ -223,6 +285,20 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
         foreach (var u in only is null ? participants.ToList() : [only]) await Say(secretary, $"{Meeting.Minutes}-for-{u}", u, text);
     }
 
+    // The doors of the building are Rights the AVS Service gives a User when it invites it, and takes back when it takes the User out (the world of the MMM).
+    private async Task Doors(string user, bool grant)
+    {
+        if (!Meeting.DoorsNeedRights) return;
+        var with = new List<JsonNode>();
+        foreach (var door in Meeting.Doors)
+        {
+            with.Add(World.DoorPA(user, door));
+            var right = Uc2.Rights($"Door-{(grant ? "Right" : "Revoke")}-{user}-{door}", grant ? "May" : "May Not", "Granted", World.DoorID(user, door));
+            with.Add(grant ? Meant(right) : right);
+        }
+        await avs.PerformAsync("Rights Change", Uc2.C(user, with: with.ToArray()));
+    }
+
     private async Task Invite(string user)
     {
         invited.Add(user);
@@ -233,6 +309,8 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
     private async Task Revoke(string user)
     {
         invited.Remove(user);
+        await Doors(user, false);
+        if (user == convener) await avs.PerformAsync("Rights Change", Uc2.C(user, with: [Meeting.SharePA(user), Uc2.Rights($"Share-Revoke-{user}", "May Not", "Granted", Meeting.ShareID(user))]));
         if (personaOf.TryGetValue(user, out var persona) && seatOf.TryGetValue(user, out var seatId))
             await avs.PerformAsync("Rights Change", Uc2.C(user, with: [Meeting.SitPA(persona, seatId), Uc2.Rights($"Seat-Revoke-{persona}", "May Not", "Granted", Meeting.SitID(persona)),
                                                                        Meeting.SpeakPA(user, seatId), Uc2.Rights($"Speak-Revoke-{user}", "May Not", "Granted", Meeting.SpeakID(user))]));
@@ -250,9 +328,12 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
         }
         var pa = Meeting.SitPA(persona, seatId);   // the Persona the User brings: the right is for it (a User moves only Personae it owns, whatever it is told)
         // ...and the right to place what it says at that seat.
-        await avs.PerformAsync("Rights Change", Uc2.C(user, with: [pa, Uc2.Rights($"Seat-Right-{persona}", "May", "Granted", Meeting.SitID(persona)),
-                                                                   Meeting.SpeakPA(user, seatId), Uc2.Rights($"Speak-Right-{user}", "May", "Granted", Meeting.SpeakID(user))]));
-        await Say(avs, replyId, user, Meeting.SeatText(Meeting.Seats.First(s => s.ID == seatId), persona));
+        await avs.PerformAsync("Rights Change", Uc2.C(user, with: [pa, Meant(Uc2.Rights($"Seat-Right-{persona}", "May", "Granted", Meeting.SitID(persona))),
+                                                                   Meeting.SpeakPA(user, seatId), Meant(Uc2.Rights($"Speak-Right-{user}", "May", "Granted", Meeting.SpeakID(user)))]));
+        if (user == convener)            // the convener's: to share a screen in the room (the others see it)
+            await avs.PerformAsync("Rights Change", Uc2.C(user, with: [Meeting.SharePA(user), Meant(Uc2.Rights($"Share-Right-{user}", "May", "Granted", Meeting.ShareID(user)))]));
+        await Doors(user, true);         // in the world of the MMM: and the right to go through the doors of the building to it
+        await Say(avs, replyId, user, Meeting.SeatText(Meeting.Seats.First(s => s.ID == seatId), persona, user == convener));
     }
 
     // The Secretary moves its Persona to the seat it was given.
@@ -265,9 +346,9 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
     }
 
     // The Spatial Attitude of a Persona at its seat: at the seat's centre, looking at the table's.
-    public static JsonObject SeatedAt(string id, double yaw)
+    public static JsonObject SeatedAt(string id, double yaw, double x = 0, double y = 0)
     {
-        var sa = Uc2.SpatialAttitude(id);
+        var sa = Uc2.SpatialAttitude(id, x, y);
         sa["Orientation"]!["Orientation"] = new JsonArray(yaw, 0.0, 0.0);
         return sa;
     }

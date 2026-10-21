@@ -1,39 +1,178 @@
-# MPAI reference software
+# MPAI HCI Applications - MAC, ACR, MAD, MAT
 
-Reference software for the standards of MPAI - Moving Picture, Audio and Data Coding by Artificial Intelligence (<https://mpai.community>), written for the
-AI Framework **MPAI-AIF V3.0**: AI Modules (AIMs) with their Metadata, Controllers that run them, User Agents that run workflows, and Applications built on them.
-Contact: secretariat@mpai.community. Licence: BSD-3-Clause (`LICENSE`); what others made and is included is in `THIRD-PARTY-NOTICES.md`.
+Reference **Human-CAV Interaction (HCI)** applications built on the
+**MPAI-AIF** AI Framework. Each application is a genuine AIF **Module** (a graph
+of AI Modules) executed by the AIF **Controller** and driven by a **User Agent**.
+The applications share a common runtime, a common set of AI Modules (AIMs), and a
+common Speaking-Avatar user-interface library.
 
-This is reference and demonstration software. Where an AIM stands in for a technology the standard leaves to the Implementer (a neural network, a film reader), the code says so.
+Developed by MPAI - Moving Picture, Audio and Data Coding by Artificial
+Intelligence (<https://mpai.community>). Contact: secretariat@mpai.community.
 
-## What is in it
+Relevant MPAI Technical Specifications:
 
-| Folder | What |
-|---|---|
-| `schemas` | The JSON Schemas of the standards: Data Types, and the Metadata (L2) of the AIMs (also on <https://schemas.mpai.community>) |
-| `AIF` | The AI Framework: Controller and its API, AIM host, Port Data, Trust, Storage, and the User Agent (`UserAgent`: the workflow interpreter and devices, the clients) |
-| `AIMs` | The AIMs, by standard (CAE, MMC, OSD, PAF, AIH, NNW, ...), and `AIMs/AMDs`: the Metadata (L3) of every AIM and Module that has code |
-| `Apps` | The Applications: Thalia (MAS-App with MAD, AMQ, MAT, MPD), ABV (avatar videoconference), AIH (health), CAE (Audio Scene Management, Speech Restoration, Emotion Enhanced Speech, Audio Recording Preservation, Enhanced Audioconference Experience), CAV (connected autonomous vehicle), MMC standalone programs |
-| `Store` | The MPAI Store: the repository of AIMs and the checks a Controller makes of what it obtains |
-| `MMM`, `MKG` | The metaverse meeting demonstration; the MPAI Knowledge Graph and the scripts that build it |
-| `Test` | The tests (xUnit) and the recorded states they compare with (`Test/Expected`) |
-| `AllApps` | Windows launchers, one double-click for each program |
-| `docs` | Guides and design notes |
+- **MPAI-AIF** - AI Framework (Controller, AIMs, AIWs/Modules, User Agent, Store): <https://mpai.community/standards/mpai-aif/>
+- **MPAI-MMC** - Multimodal Conversation (ASR, EDP dialogue, TTS, SIR/ESD speaker, SOA): <https://mpai.community/standards/mpai-mmc/>
+- **MPAI-PAF** - Portable Avatar Format (RSR rendering, PSD, GFD, FIR/EFD face): <https://mpai.community/standards/mpai-paf/>
+- **MPAI-OSD** - Object and Scene Description (IDR reconciliation, visual scene, time): <https://mpai.community/standards/mpai-osd/>
 
-## Build and test
+---
 
-.NET 10 SDK, Windows (several programs use Windows Forms or WPF; the Service also has a Linux guide). 
+## The applications
+
+| App | Name | Purpose | Guidelines |
+|---|---|---|---|
+| **MAC** | Multimodal Access Control | Recognise a person from **face and voice** and grant or deny access; access is granted only when both modalities agree. | [User](MPAIApps/HCIApps/MacApp/docs/MAC-User.md) / [Developer](MPAIApps/HCIApps/MacApp/docs/MAC-Developer.md) |
+| **ACR** | Access Control Registration | **Enrol** a new person's face and voice into the gallery that MAC reads. | [User](MPAIApps/HCIApps/AcrApp/docs/ACR-User.md) / [Developer](MPAIApps/HCIApps/AcrApp/docs/ACR-Developer.md) |
+| **MAD** | Multimodal Anonymous Dialogue | Hold a spoken **conversation** with a Portable Avatar; no identity, a local LLM composes the replies. | [User](MPAIApps/HCIApps/MadApp/docs/MAD-User.md) / [Developer](MPAIApps/HCIApps/MadApp/docs/MAD-Developer.md) |
+| **MAT** | Multimodal Anonymous Translation | Speak or type in one language; the Portable Avatar **translates** and speaks it in another. | [User](MPAIApps/HCIApps/MatApp/docs/MAT-User.md) / [Developer](MPAIApps/HCIApps/MatApp/docs/MAT-Developer.md) |
+
+Each application presents a 3-D **Portable Avatar** that guides the user by voice.
+
+---
+
+## Architecture
+
+### AIF in brief
+
+MPAI-AIF organises an application around a few standard notions:
+
+- **AIM (AI Module)** - a unit of processing with typed input and output ports.
+  At a port, **only the data type matters**, not the port name.
+- **Module (AIW)** - a *composite* AIM: a graph of sub-AIMs wired by data type.
+  A Module is defined by an **L3** descriptor (JSON, under `AIMs/AMDs/`) that
+  lists its sub-AIMs, its boundary ports, and the internal topology.
+- **Controller** - the runtime. Given a Module's L3 it instantiates each sub-AIM
+  through a **provider**, wires them, and executes the graph. It exposes
+  `MPAI_AIFU_MODULE_Start / RunAsync / ResumeAsync / Stop` to the User Agent.
+- **User Agent (UA)** - the application "brain with I/O limbs". It acquires and
+  delivers real-world data (camera, microphone, the avatar) and **orchestrates**
+  the Controller. The UA is *not* part of the Module.
+- **Data types & qualifiers** - every port carries a typed object with a
+  qualifier (format, attributes). The JSON schemas of the data types are under
+  `schemas/`.
+- **Shared Storage** - a governed store; MAC/ACR use it as the enrolment gallery.
+
+### The pattern used by every app
 
 ```
-dotnet build Test/Mpai.Aif.Tests/Mpai.Aif.Tests.csproj
-dotnet test  Test/Mpai.Aif.Tests --filter "Group=Fast"      # minutes
-dotnet test  Test/Mpai.Aif.Tests --filter "Group=Slow"      # starts programs and engines: run it when you can wait
+User Agent  --drives-->  Controller  --builds & runs-->  Module (sub-AIMs)
+   |  (acquire face/voice/speech, present the avatar)          |
+   \------------------ boundary inputs / outputs --------------/
 ```
 
-The AI models (speech, vision, OCR, language, voice) are not in the repository: `docs/MAS-App-Models.md` and `docs/models-provenance.md` say what each is and where to get it. Without them the tests that need them are skipped.
+- The UA drives the Module only through the Controller.
+- A **provider** (a small switch class per app) constructs the leaf AIMs named by
+  the Module's L3.
+- The UA's behaviour is described by a **WDL** guidebook, the `.orch` file under
+  `AIF/UserAgent/Orchestration/`, which the UA code realises.
 
-## Where to start
+### How the three apps are composed
 
-- `docs/MPAI-Software.md`: an overview, and the ideas in one page (AIM, Module, Controller, User Agent, Port addressed by Data Type and Port Number).
-- `docs/MAS-App-User.md`, `docs/MAS-App-Developer.md`: using and extending Thalia.
-- `Apps/CAE/<App>/README.md`: each CAE-USC App, with how to run it; `AllApps/README.txt` lists every launcher.
+| App | Module (L3) | Leaf AIMs (via the app's provider) |
+|---|---|---|
+| MAC | `MMC-MAC-V2.5` | `PAF-FIR` (SCRFD+ArcFace face), `MMC-SIR` (ECAPA voice), `OSD-IDR` (reconcile), `PAF-RSR` -> `PAF-PSD` + `MMC-TTS` + `PAF-SAF` (avatar) |
+| ACR | `MMC-ACR-V2.5` | `PAF-EFD` (face descriptors), `MMC-ESD` (speech descriptors), `PAF-RSR` (avatar prompts) |
+| MAD | `MMC-MAD-V2.5` | `MMC-ASR` (Whisper speech->text), `MMC-EDP` (local LLM via Ollama), `PAF-RSR` (avatar reply) |
+| MAT | `MMC-MAT-V2.5` | `MMC-ASR` (Whisper speech->text), `MMC-TTT` (M2M100 translation), `PAF-RSR` (avatar speaks the translation) |
+
+`PAF-RSR` (Response and Scene Rendering) is a composite of `PAF-PSD` + `MMC-TTS` + `PAF-SAF`,
+and `PAF-SAF` (Portable Avatar Formation) a composite of `PAF-GFD` + `PAF-GBD` + `PAF-SAS`; it is shared by all the apps.
+It takes the reply's Text and an Avatar - the model the client holds - and outputs a
+Portable Avatar (`XRV-SAV`): the speech, and the face and body motion that go with it. Whoever
+requested it places it: `PAF-SAR` (Scene and Avatar Rendering), a separate AIM, takes the Speaking
+Avatar, a Scene (`OSD-BMS` of an Audio Scene and a 3D Model Scene), a Point of View and the Avatar PoV
+where the requester wants the avatar, and gives the 3D Model Scene with the avatar (`OSD-B3S`), which the client's 3D
+page draws, and the Multimodal Scene (`OSD-BMS`) of the audio, the speech and the 3D scene; or, with
+its setting `SceneOutputs` at `2D` (or `Both`), the Audio Scene (`OSD-BAS`) with the avatar's speech and the
+Visual Scene (`OSD-BVS`) of an MP4 of the whole view, drawn off screen with that page in Edge or Chromium
+and encoded by ffmpeg. Capture and delivery are the User Agent's, never an AIM's: the
+Units of its Physical Layer (`AIF/UserAgent/PhysicalLayer`) - microphone with voice activity
+detection, camera (Windows Media Capture), loudspeaker, the avatar page - and a test
+(`UserAgentIsolationTests`) keeps every User Agent project free of AIM code.
+
+---
+
+## Repository layout
+
+```
+AIF/              the AI Framework
+  AimHost/ Communication/{Channels,GlobalStorage,SharedStorage}/ Controller/ ControllerApi/
+  Metadata/ PortData/ Trust/ RootOfTrust/
+  UserAgent/      the User Agent: Assets, Clients (AsmStudio, Browser, Desktop), Orchestration, Rca, RcaConsole,
+                  Remote, Wdl, PhysicalLayer, UaKit (with SpatialAudio)
+  Access/         local data of the access service (not published)
+AIMs/             the AIMs: AMDs, Core, Providers, Onnx, AIH/V1.1, CAE3/V1.0, CAV/V2.0, CVE/V1.0, MMC/V2.5, OSD/V1.5, PAF/V1.6,
+                  aim-settings.json, Build-Packages.ps1
+Apps/             the applications, one folder per standard: ABV (VCT, AVS, VCR, VMS), AIH (HSP: the Health Front End and Back End), CAE (ASM), CAV (CAO, CAVViewer,
+                  HCIApps), MAS (Server, Service, the launcher, MAS-App, Language), MMC (ACR, AMQ, MAC, MAD, MAT, MPD, NPR)
+Demos/            recordings of the CAV simulation
+docs/             the documents of the software
+MKG/              the MPAI Knowledge Graph
+MMM/              the Metaverse Meeting software: Api, Client, Instance, Server, Viewer
+Models/           the AI models (local, not published)
+schemas/          the JSON schemas of the standards
+Store/            the MPAI Store: the core, Service, App
+Support/          local files that are not source (deploy)
+Test/             the tests: AsmApp, AsmVoice, CAV (recordings code), Data, Expected, legacy, Mpai.Aif.Tests, Reports, Results
+```
+
+---
+
+## Prerequisites
+
+- **.NET 10 SDK**, Windows (the UIs are WPF + WebView2).
+- A **webcam** and **microphone** for MAC and ACR.
+- For **MAD**: a running local **LLM via Ollama** and the **Whisper** CLI + model
+  (see the MAD Developer guide).
+- **Model files are NOT included** in this repository (size and licensing). Each
+  application's *Models & Prerequisites* section lists exactly which models it
+  needs, with file names, sizes, **SHA-256** and sources; obtain them separately
+  and place them under `Models/` (or set the paths in `AIMs/aim-settings.json`).
+
+---
+
+## Build & run
+
+Each application has a build script that produces a single-file executable:
+
+```
+Apps\MMC\MAC\Standalone\MacAppBuild.bat     ->  MacApp.exe
+Apps\MMC\ACR\Standalone\AcrAppBuild.bat     ->  AcrApp.exe
+Apps\MMC\MAD\Standalone\App\MadAppBuild.bat ->  MadApp.exe
+```
+
+An application resolves its root (to find `AIMs/`, `Models/`, `AIF/UserAgent/`,
+`SharedStorage/`) from the executable's location. For the full per-application
+build closure (which projects, L3s, schemas and models are required), see that
+application's **Developer** guide. MAD additionally requires Ollama running with
+the configured model.
+
+---
+
+## Models
+
+Model binaries are distributed separately. The per-application Developer guides
+give a **Models & Prerequisites** table with, for each model: the settings key
+(and fallback path), file name, size, **SHA-256** (the authoritative identity -
+verify a downloaded file with `Get-FileHash <file> -Algorithm SHA256`), and the
+source. Families used: InsightFace (SCRFD detector, ArcFace recogniser),
+SpeechBrain ECAPA-TDNN (speaker), Piper (text-to-speech voices),
+whisper.cpp (speech-to-text), and an Ollama-served local LLM for dialogue.
+
+---
+
+## Status
+
+These are reference implementations demonstrating MPAI-AIF end to end. Face and
+speaker recognition quality depends on enrolment and on lighting/acoustic
+conditions. MAD requires a running local LLM; response latency reflects local
+inference. Biometric galleries are user data and are not part of this repository.
+
+---
+
+## Licence
+
+**BSD 3-Clause License** - `Copyright (c) 2026 MPAI - Moving Picture, Audio and
+Data Coding by Artificial Intelligence`. See [`LICENSE`](LICENSE). Each
+application folder also carries a copy of the licence.
