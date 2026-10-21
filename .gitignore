@@ -96,3 +96,5 @@ MMM/Viewer/personae/catalogue/*.glb
 MMM/tools/cloudflared.exe
 MMM/tools/FBX2glTF-windows-x86_64/
 MMM/tools/Microsoft-Rocketbox/
+
+/MKG/
