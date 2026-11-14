@@ -63,6 +63,7 @@ public sealed class Step
     public string?  Module        { get; init; }   // which Module the request names
     public PortRef? Port          { get; init; }   // Take, Acquire, Type
     public string?  Literal       { get; init; }   // Take: an inline value, if given
+    public bool     LiteralIsInstance { get; init; }   // Take: the value is an instance of the Data Type = { ... }, not a text = "..." (AIF V3.0, Workflow Description, 3)
     public IReadOnlyList<PortRef> Ports  { get; init; } = Array.Empty<PortRef>();  // Give
     public IReadOnlyList<string>  Labels { get; init; } = Array.Empty<string>();   // Present, Display
     public string?  Text          { get; init; }   // Prompt: the words

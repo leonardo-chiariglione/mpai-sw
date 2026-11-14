@@ -22,6 +22,16 @@ public static class SpeechObject
     {
         var root = JsonNode.Parse(json) as JsonObject ?? throw new FormatException("A Speech Object is a JSON object.");
         if (root["Header"]?.GetValue<string>() != Header) throw new FormatException($"Not a Speech Object: Header {root["Header"]}.");
+        // THE SAME OBJECT IN THE FORM OF MPAI.CORE (BasicSpeechObject: one Data, the Speech Qualifier as SpeechQualifier.Format), which is how the MPAI-MAS Service
+        // gives a Module the speech a client captured (Mpai.Aif.PortData.BasicSpeechObjectCodec): read as the schema's form says the same.
+        if (root["BasicSpeechObjectData"] is null && root["Data"] is JsonValue flat)
+        {
+            var format = root["SpeechQualifier"]?["Format"];
+            var rawPcm = format?["ContentFormats"]?["RawData"] as JsonObject;
+            var bytesOf = Convert.FromBase64String(flat.GetValue<string>());
+            if (rawPcm is null) return [Audio.FromWav(bytesOf)];
+            return [FromPcm(bytesOf, new JsonObject { ["SamplingFrequency"] = rawPcm["SamplingFrequency"]?.DeepClone(), ["SamplePrecision"] = (rawPcm["SamplePrecision"] ?? rawPcm["Precision"])?.DeepClone() })];
+        }
         var list = root["BasicSpeechObjectData"] as JsonArray ?? throw new FormatException("The Speech Object has no BasicSpeechObjectData.");
         var formats = root["BasicSpeechDataQualifier"]?["Formats"];
         var file = formats?["TransportFormats"]?["FileFormat"]?.GetValue<string>();

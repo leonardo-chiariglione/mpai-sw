@@ -28,7 +28,7 @@ on Start:
     # --- first she asks whether the person wants to ask about a picture (the answer is spoken or typed) ---
 
     prompt "Do you want to ask a question about a picture?"
-    acquire Wanted (OSD-BTO-V1.5) = { "Attributes": { "TextRole": "YesNo" } }
+    acquire Wanted (OSD-BTO-V1.5) = { "TextQualifier": { "Attributes": { "TextRole": "YesNo" } } }
 
     branch on Wanted contains "yes" {
 
@@ -37,7 +37,7 @@ on Start:
             # --- the picture the person chooses: the image folder opens, and the picture is shown on the stage ---
 
             prompt "Please select a picture."
-            acquire Picture (OSD-BVO-V1.5) = { "Formats": { "Content": { "2D": { "Static": "JPEG" } } } }
+            acquire Picture (OSD-BVO-V1.5) = { "VisualQualifier": { "Formats": { "Content": { "2D": { "Static": "JPEG" } } } } }
             present Picture
 
             # --- the question, spoken or typed, whichever comes first ---
@@ -63,7 +63,7 @@ on Start:
             # --- another picture? yes: she asks to select it; else she says so and the App ends ---
 
             prompt "Do you want to ask a question about another picture?"
-            acquire Another (OSD-BTO-V1.5) = { "Attributes": { "TextRole": "YesNo" } }
+            acquire Another (OSD-BTO-V1.5) = { "TextQualifier": { "Attributes": { "TextRole": "YesNo" } } }
 
             branch on Another contains "yes" {
                 wait 1s

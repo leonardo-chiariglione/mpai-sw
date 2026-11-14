@@ -386,7 +386,8 @@ public sealed class WorkflowReader
                     return new Step { Kind = StepKind.Take, Port = dd.Port, Text = fd.Groups["device"].Value, FromDevice = true, Line = n };
                 }
                 var od = ReadDatum(n, rest);
-                return new Step { Kind = StepKind.Take, Port = od.Port, Literal = od.Literal, Line = n };
+                var written = rest.IndexOf('=') is var eq and >= 0 ? rest[(eq + 1)..].TrimStart() : "";
+                return new Step { Kind = StepKind.Take, Port = od.Port, Literal = od.Literal, LiteralIsInstance = od.Literal is not null && written.StartsWith('{'), Line = n };
             }
 
             case "askfor":
@@ -483,7 +484,7 @@ public sealed class WorkflowReader
 
             int indent = s.Length - s.TrimStart().Length;
 
-            if (joined.Count > 0 && IsContinuation(t))
+            if (joined.Count > 0 && (IsContinuation(t) || OpenValue(joined[joined.Count - 1].Text)))
             {
                 var last = joined[joined.Count - 1];
                 joined[joined.Count - 1] = new SourceLine(last.Line, last.Text + " " + t, last.Indent);
@@ -491,6 +492,24 @@ public sealed class WorkflowReader
             else joined.Add(new SourceLine(i + 1, t, indent));
         }
         return joined;
+    }
+
+    // A VALUE STILL OPEN: the line gives a datum a value = { ... } whose braces are not yet closed, so the next line, even one that begins with a brace, continues it
+    // (an instance written over several lines, as JSON is). Braces inside strings are not counted.
+    private static bool OpenValue(string line)
+    {
+        var at = line.IndexOf("= {", StringComparison.Ordinal);
+        if (at < 0) return false;
+        int depth = 0; bool quoted = false;
+        for (int i = at + 2; i < line.Length; i++)
+        {
+            var c = line[i];
+            if (c == '\\' && quoted) { i++; continue; }
+            if (c == '"') quoted = !quoted;
+            else if (!quoted && c == '{') depth++;
+            else if (!quoted && c == '}') depth--;
+        }
+        return depth > 0;
     }
 
     // One acquisition: its datum, whether it waits for the speaker to stop, and

@@ -185,6 +185,22 @@ window.rca = (() => {
     } catch (e) { console.error(e); }
   }
 
+  // SPEECH TO HEAR, by itself (not the avatar's): a WAV played to its end; the promise is kept when it has ended.
+  let heard = null;
+  function playWav(wavBase64) {
+    return new Promise(resolve => {
+      try {
+        if (heard) { heard.pause(); heard = null; }
+        const audio = new Audio('data:audio/wav;base64,' + wavBase64);
+        heard = audio;
+        audio.onended = () => resolve();
+        audio.onerror = () => resolve();
+        stamp('playWav: speech to hear');
+        audio.play().catch(() => resolve());
+      } catch (e) { console.error(e); resolve(); }
+    });
+  }
+
   function focus(id) { const e = document.getElementById(id); if (e) e.focus(); }
 
   // THE PIXEL OF A PICTURE UNDER A CLICK: the picture's own pixels (X to the right, Y down), whatever size it is shown at; null outside it.
@@ -225,5 +241,5 @@ window.rca = (() => {
     if (e && e.requestFullscreen) e.requestFullscreen().catch(err => console.error(err));
   }
 
-  return { unlock, captureSpeech, abandonCapture, captureFrame, abandonFrame, present, silence, focus, imagePoint, watchVideo, fullScreen, presence, stamp };
+  return { unlock, captureSpeech, abandonCapture, captureFrame, abandonFrame, present, playWav, silence, focus, imagePoint, watchVideo, fullScreen, presence, stamp };
 })();

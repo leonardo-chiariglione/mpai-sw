@@ -39,7 +39,7 @@ on Start:
     ask   LookPortableAvatar (PAF-PAV-V1.6)
     present LookPortableAvatar
 
-    acquire UserFace (OSD-BVO-V1.5) = { "Attributes": { "VisualObjectType": "Face" } }
+    acquire UserFace (OSD-BVO-V1.5) = { "VisualQualifier": { "Attributes": { "VisualObjectType": "Face" } } }
 
     offer Speak (OSD-BTO-V1.5:1) = "Now please say a short sentence, so that I can learn your voice."
     offer AvatarModel (OSD-B3O-V1.5:1)

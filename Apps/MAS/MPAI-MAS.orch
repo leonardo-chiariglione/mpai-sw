@@ -31,7 +31,7 @@ on Start:
     present WelcomePortableAvatar
 
     # With others using the Service now, she says so; alone, she says nothing.
-    acquire Company (OSD-BTO-V1.5) = { "Attributes": { "TextRole": "Concurrency" } }
+    acquire Company (OSD-BTO-V1.5) = { "TextQualifier": { "Attributes": { "TextRole": "Concurrency" } } }
     branch on Company {
         offer Company (OSD-BTO-V1.5:1)
         offer AvatarModel (OSD-B3O-V1.5:1)
@@ -41,7 +41,7 @@ on Start:
 
     loop until Stop:
 
-        acquire Chosen (OSD-BTO-V1.5) = { "Attributes": { "TextRole": "AppName" } }
+        acquire Chosen (OSD-BTO-V1.5) = { "TextQualifier": { "Attributes": { "TextRole": "AppName" } } }
         run Chosen
 
         offer Again (OSD-BTO-V1.5:1) = "Do you want to try another App?"

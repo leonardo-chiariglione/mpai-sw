@@ -88,6 +88,24 @@ public partial class RcaShell : ComponentBase
     private TaskCompletionSource<(string Name, byte[] Data)?>? picture;
     private string? stageImage, stageTitle;
 
+    // A WAV FILE OF SPEECH the person chooses, instead of speaking (an App that asks for speech "via VAD or" a WAV file).
+    private bool choosingSpeechFile;
+    private TaskCompletionSource<(string Name, byte[] Data)?>? speechFile;
+
+    // AN EMOTION AND ITS DEGREE (MMC-EEM-V2.5): the categories of MPAI-MMC, a list and a slider.
+    private static readonly (string Category, string Name)[] Emotions =
+    [
+        ("ANGER", "Anger"), ("CALMNESS", "Calmness"), ("DISGUST", "Disgust"), ("FEAR", "Fear"), ("HAPPINESS", "Happiness"),
+        ("HURT", "Hurt"), ("PRIDE/SHAME", "Pride or shame"), ("RETROSPECTION", "Retrospection"), ("SADNESS", "Sadness")
+    ];
+    private bool choosingEmotion;
+    private string emotionPick = "SADNESS";
+    private int emotionDegree = 50;
+    private TaskCompletionSource<(string Category, double Degree)?>? emotion;
+
+    // SPEECH GIVEN BACK TO HEAR (a Speech Object an App presents): the last one, to play again.
+    private string? lastSpeechWav;
+
     // THE VIDEO ON THE STAGE: the frame's address while a video plays, and what ends it (ended, closed, stopped, error).
     private string? stageVideo;
     private TaskCompletionSource<string>? videoDone;
@@ -294,6 +312,21 @@ public partial class RcaShell : ComponentBase
         // text typed first, ends the capture at once.
         devices.RegisterAcquire("OSD-BSO-V1.5", async (viaVad, wanted, abandon) =>
         {
+            // SPEECH FROM A WAV FILE, where the workflow asks for one (its Speech Qualifier: FileFormat WAV): the person chooses the file; speaking first abandons it.
+            if ((wanted ?? "").Contains("\"WAV\"", StringComparison.Ordinal))
+            {
+                var tcs = new TaskCompletionSource<(string Name, byte[] Data)?>(TaskCreationOptions.RunContinuationsAsynchronously);
+                speechFile = tcs; choosingSpeechFile = true;
+                Refresh();
+                var stopFile = (_appStopping ?? _stopping)?.Token ?? CancellationToken.None;
+                using var s1 = stopFile.Register(() => tcs.TrySetResult(null));
+                using var s2 = abandon.Register(() => tcs.TrySetResult(null));
+                var chosen = await tcs.Task;
+                choosingSpeechFile = false; Refresh();
+                if (chosen is not { } c) return null;
+                if (SpeechWav.Pcm16kMono(c.Data) is not { Length: > 0 } fromFile) { Instruct("That is not a WAV file I can read."); return null; }
+                return MpaiJson.ToJson(SpeechPackaging.FromPcm16k(fromFile, _sourceLanguage));
+            }
             Instruct("Speak when you are ready.");
             var stop = (_appStopping ?? _stopping)?.Token ?? CancellationToken.None;
             using var claims = new CancellationTokenSource();
@@ -379,6 +412,25 @@ public partial class RcaShell : ComponentBase
             var name = await picked.Task;
             showApps = false; Refresh();
             return name is null ? null : MpaiJson.ToJson(BasicTextObject.FromText(name));
+        });
+
+        // AN EMOTION AND ITS DEGREE: chosen from the list of MPAI-MMC and set with the slider.
+        devices.RegisterAcquire("MMC-EEM-V2.5", async (_, _) =>
+        {
+            var tcs = new TaskCompletionSource<(string, double)?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            emotion = tcs; choosingEmotion = true;
+            Refresh();
+            var stop = (_appStopping ?? _stopping)?.Token ?? CancellationToken.None;
+            using var r = stop.Register(() => tcs.TrySetResult(null));
+            var picked = await tcs.Task;
+            choosingEmotion = false; Refresh();
+            if (picked is not { } p) return null;
+            return new System.Text.Json.Nodes.JsonObject
+            {
+                ["Header"] = "MMC-EEM-V2.5",
+                ["EmotionCategory"] = new System.Text.Json.Nodes.JsonObject { [p.Item1] = new System.Text.Json.Nodes.JsonObject() },
+                ["Degree"] = p.Item2
+            }.ToJsonString();
         });
 
         // THE LANGUAGES, input and output together, as one Language Selector.
@@ -490,6 +542,16 @@ public partial class RcaShell : ComponentBase
             }
         });
 
+        // SPEECH TO HEAR: a Speech Object an App presents by itself (not with a face, which is the avatar's), played, and kept to be played again.
+        devices.RegisterPresent("speech", async data =>
+        {
+            if (!data.TryGetValue("OSD-BSO-V1.5", out var speech) || data.ContainsKey("PAF-FDO-V1.6")) return;
+            if (SpeechWav.ToWav(speech) is not { } wav) { Instruct("I could not play the speech I was given."); return; }
+            lastSpeechWav = Convert.ToBase64String(wav);
+            Refresh();
+            await Js.InvokeVoidAsync("rca.playWav", lastSpeechWav);
+        });
+
         // THE STAGE: a picture the person handed over.
         devices.RegisterPresent("stage", data =>
         {
@@ -578,6 +640,26 @@ public partial class RcaShell : ComponentBase
     {
         var waiting = languages; languages = null;
         waiting?.TrySetResult((langFrom, langTo));
+    }
+
+    private async Task SpeechFileChosen(InputFileChangeEventArgs e)
+    {
+        using var stream = e.File.OpenReadStream(maxAllowedSize: 50 * 1024 * 1024);
+        using var memory = new MemoryStream();
+        await stream.CopyToAsync(memory);
+        var waiting = speechFile; speechFile = null;
+        waiting?.TrySetResult((e.File.Name, memory.ToArray()));
+    }
+
+    private void EmotionChosen()
+    {
+        var waiting = emotion; emotion = null;
+        waiting?.TrySetResult((emotionPick, emotionDegree / 100.0));
+    }
+
+    private async Task PlayAgain()
+    {
+        if (lastSpeechWav is not null) await Js.InvokeVoidAsync("rca.playWav", lastSpeechWav);
     }
 
     private async Task PictureChosen(InputFileChangeEventArgs e)

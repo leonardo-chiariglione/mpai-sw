@@ -110,6 +110,7 @@ public partial class MainWindow : Window
             _stopping?.Cancel();
         };
         SendButton.Click  += (_, _) => SendTyped();
+        PlayAgainButton.Click += (_, _) => { if (_lastSpeechWav is { } again) _ = Task.Run(() => PlayWav(again)); };
         TypedBox.KeyDown  += (_, e) => { if (e.Key == System.Windows.Input.Key.Enter) SendTyped(); };
         TypedBox.TextChanged += (_, _) => { if (_typed is not null && TypedBox.Text.Length > 0) try { _typingClaims?.Cancel(); } catch { } };
 
@@ -635,8 +636,10 @@ public partial class MainWindow : Window
         if (string.IsNullOrWhiteSpace(qualifierJson)) return null;
         try
         {
+            // what is asked is a part of the Visual Object: its Visual Qualifier (AIF V3.0, Workflow Description, 3)
             using var doc = System.Text.Json.JsonDocument.Parse(qualifierJson);
-            if (doc.RootElement.TryGetProperty("Formats", out var f) &&
+            if (doc.RootElement.TryGetProperty("VisualQualifier", out var q) &&
+                q.TryGetProperty("Formats", out var f) &&
                 f.TryGetProperty("Content", out var c) &&
                 c.TryGetProperty("2D", out var d) &&
                 d.TryGetProperty("Static", out var s))
@@ -862,6 +865,22 @@ public partial class MainWindow : Window
         // half of every enrolment failed in silence.
         devices.RegisterAcquire("OSD-BSO-V1.5", async (viaVad, wanted, abandon) =>
         {
+            // SPEECH FROM A WAV FILE, where the workflow asks for one (its Speech Qualifier: FileFormat WAV): a small window offers the choice; speaking first closes it.
+            if ((wanted ?? "").Contains("\"WAV\"", StringComparison.Ordinal))
+            {
+                var stopFile = (_appStopping ?? _stopping)?.Token ?? CancellationToken.None;
+                var file = await ChooseSpeechFileAsync(CancellationTokenSource.CreateLinkedTokenSource(stopFile, abandon).Token);
+                if (file is null) return null;
+                if (SpeechWav.Pcm16kMono(await File.ReadAllBytesAsync(file)) is not { Length: > 0 } pcm) { Instruct("That is not a WAV file I can read."); return null; }
+                var fromFile = BasicSpeechObject.FromData(pcm, new SpeechQualifier
+                {
+                    SpeechQualifierID = Guid.NewGuid().ToString(),
+                    Format = new SpeechFormat { ContentFormats = new SpeechContentFormats { RawData = new Pcm { SamplingFrequency = 16000, Precision = 16 } } },
+                    Attributes = new SpeechAttributes { Source = SpeechSource.Real }
+                });
+                if (_sourceLanguage is { } fileLanguage) fromFile = WithLanguage(fromFile, fileLanguage);
+                return MpaiJson.ToJson(fromFile);
+            }
             Instruct("Speak when you are ready.");
             // STOP DOES NOT WAIT FOR THE MICROPHONE. A capture ends only when the
             // person stops speaking; a Stop pressed while listening is answered at
@@ -884,6 +903,29 @@ public partial class MainWindow : Window
         // THE LANGUAGES, CHOSEN BY THE PERSON. A Language Selector names two: the
         // one the person will speak or write, and the one the answer is to be in.
         // Both are asked for together and returned as one datum.
+        // AN EMOTION AND ITS DEGREE: chosen from the list of MPAI-MMC and set with a slider.
+        devices.RegisterAcquire("MMC-EEM-V2.5", async (_, _) =>
+        {
+            var picked = await Dispatcher.InvokeAsync(ChooseEmotion);
+            if (picked is not { } p) return null;
+            return new System.Text.Json.Nodes.JsonObject
+            {
+                ["Header"] = "MMC-EEM-V2.5",
+                ["EmotionCategory"] = new System.Text.Json.Nodes.JsonObject { [p.Category] = new System.Text.Json.Nodes.JsonObject() },
+                ["Degree"] = p.Degree
+            }.ToJsonString();
+        });
+
+        // SPEECH TO HEAR: a Speech Object an App presents by itself (not with a face, which is the avatar's), played, and kept to be played again.
+        devices.RegisterPresent("speech", async data =>
+        {
+            if (!data.TryGetValue("OSD-BSO-V1.5", out var speech) || data.ContainsKey("PAF-FDO-V1.6")) return;
+            if (SpeechWav.ToWav(speech) is not { } wav) { Instruct("I could not play the speech I was given."); return; }
+            _lastSpeechWav = wav;
+            await Dispatcher.InvokeAsync(() => PlayAgainButton.Visibility = Visibility.Visible);
+            await Task.Run(() => PlayWav(wav));
+        });
+
         devices.RegisterAcquire("OSD-SEL-V1.5", async (_, _) =>
         {
             Instruct("Choose the input and output languages.");
@@ -1198,6 +1240,82 @@ public partial class MainWindow : Window
         ("en", "English"),  ("it", "Italiano"), ("es", "Espanol"), ("pt", "Portugues"),
         ("fr", "Francais"), ("de", "Deutsch"),  ("el", "Ellinika"), ("ja", "Nihongo"), ("zh", "Zhongwen")
     };
+
+    // THE EMOTIONS OF MPAI-MMC (MMC-EEM-V2.5), by their categories.
+    private static readonly (string Category, string Name)[] Emotions =
+    [
+        ("ANGER", "Anger"), ("CALMNESS", "Calmness"), ("DISGUST", "Disgust"), ("FEAR", "Fear"), ("HAPPINESS", "Happiness"),
+        ("HURT", "Hurt"), ("PRIDE/SHAME", "Pride or shame"), ("RETROSPECTION", "Retrospection"), ("SADNESS", "Sadness")
+    ];
+    private string _lastEmotion = "SADNESS";
+    private double _lastDegree = 0.5;
+    private byte[]? _lastSpeechWav;
+
+    // A small window with the list of emotions and a slider for how strong; the previous choice is offered again.
+    private (string Category, double Degree)? ChooseEmotion()
+    {
+        var box = new System.Windows.Controls.ComboBox { Width = 200, Margin = new Thickness(0, 4, 0, 10) };
+        foreach (var (category, name) in Emotions) box.Items.Add(new System.Windows.Controls.ComboBoxItem { Content = name, Tag = category });
+        box.SelectedIndex = Math.Max(0, Array.FindIndex(Emotions, e => e.Category == _lastEmotion));
+        var slider = new System.Windows.Controls.Slider { Minimum = 0, Maximum = 100, TickFrequency = 5, IsSnapToTickEnabled = true, Value = _lastDegree * 100, Width = 200 };
+        var shown = new System.Windows.Controls.TextBlock { Margin = new Thickness(0, 2, 0, 10) };
+        void Show() => shown.Text = $"{slider.Value:0} %";
+        slider.ValueChanged += (_, _) => Show(); Show();
+        var ok = new System.Windows.Controls.Button { Content = "OK", Width = 80, IsDefault = true, HorizontalAlignment = HorizontalAlignment.Right };
+        var panel = new System.Windows.Controls.StackPanel { Margin = new Thickness(16) };
+        panel.Children.Add(new System.Windows.Controls.TextBlock { Text = "Emotion" });
+        panel.Children.Add(box);
+        panel.Children.Add(new System.Windows.Controls.TextBlock { Text = "How strong" });
+        panel.Children.Add(slider);
+        panel.Children.Add(shown);
+        panel.Children.Add(ok);
+        var dialog = new Window
+        {
+            Title = "Emotion", Content = panel, Owner = this,
+            SizeToContent = SizeToContent.WidthAndHeight, ResizeMode = ResizeMode.NoResize,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner
+        };
+        ok.Click += (_, _) => dialog.DialogResult = true;
+        if (dialog.ShowDialog() != true) return null;
+        _lastEmotion = (box.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Tag as string ?? "SADNESS";
+        _lastDegree = slider.Value / 100.0;
+        return (_lastEmotion, _lastDegree);
+    }
+
+    // A WAV FILE OF SPEECH, instead of speaking: a small window that stays while the microphone listens; choosing a file, or the person speaking first, ends it.
+    private async Task<string?> ChooseSpeechFileAsync(CancellationToken abandon)
+    {
+        var chosen = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        Window? window = null;
+        await Dispatcher.InvokeAsync(() =>
+        {
+            var pick = new System.Windows.Controls.Button { Content = "Choose a WAV file...", Width = 180, Height = 30 };
+            window = new Window
+            {
+                Title = "Or a WAV file", Content = new System.Windows.Controls.StackPanel { Margin = new Thickness(16), Children = { pick } }, Owner = this,
+                SizeToContent = SizeToContent.WidthAndHeight, ResizeMode = ResizeMode.NoResize, ShowActivated = false,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+            pick.Click += (_, _) =>
+            {
+                var dialog = new OpenFileDialog { Filter = "WAV files (*.wav)|*.wav", Title = "Speech" };
+                if (dialog.ShowDialog(window) == true) chosen.TrySetResult(dialog.FileName);
+            };
+            window.Closed += (_, _) => chosen.TrySetResult(null);
+            window.Show();
+        });
+        using var r = abandon.Register(() => chosen.TrySetResult(null));
+        var file = await chosen.Task;
+        await Dispatcher.InvokeAsync(() => { try { window?.Close(); } catch { } });
+        return file;
+    }
+
+    // Speech to hear, played to its end.
+    private static void PlayWav(byte[] wav)
+    {
+        using var player = new System.Media.SoundPlayer(new MemoryStream(wav));
+        player.PlaySync();
+    }
 
     // A small window with the two languages, as a translation App offers them.
     // The previous choice is offered again.

@@ -1,13 +1,16 @@
 # =============================================================================
 #  SME.orch - Speak Model with Emotion (CAE-USC V2.5)
-#  Workflow Description Language v0.3, AIF V3.0
+#  Workflow Description Language, AIF V3.0
 #
 #  One Controller, one Module, which executes by exchange. Emotionless speech takes
 #  the emotion of a MODEL UTTERANCE by its prosody: Speech Feature Analysis 1 extracts
-#  the prosodic features of the model utterance (given the Mode Selector), and
-#  Prosodic Emotion Insertion applies them to the emotionless speech. The User Agent
-#  offers each datum to its Port, by Data Type and Port Number, from the device the
-#  App gave it.
+#  the prosodic features of the model utterance (the Mode Selector says the prosodic
+#  pathway), and Prosodic Emotion Insertion applies them to the emotionless speech.
+#
+#  The same workflow for the stand-alone App and for the MAS App: the person gives
+#  the emotionless speech and the model utterance (each from the microphone, or a WAV
+#  file); the Mode Selector is the App's, written here as an instance of its Data Type
+#  (AIF V3.0, Workflow Description, 3).
 # =============================================================================
 
 workflow SME over 1CAE-SME-V2.5-I01
@@ -16,12 +19,37 @@ on Start:
 
     ask Controller to start
 
-    offer   ModeSelector     (OSD-SEL-V1.5:1) from device "ModeSelector"
-    offer   Model            (OSD-BSO-V1.5:1) from device "Model"
-    offer   Speech           (OSD-BSO-V1.5:2) from device "Speech"
+    prompt "Speak Model with Emotion gives speech that has no emotion the emotion of another sentence, the model. Say a sentence in a flat voice, then give the model, a sentence spoken with a clear emotion, and you will hear your sentence again, with the emotion of the model."
 
-    ask     Result           (OSD-BSO-V1.5:1)
-    present Result
+    loop until Stop:
+
+        # --- the emotionless speech: from the microphone, or a WAV file ---
+        prompt "Say a sentence in a flat voice, without emotion, or choose a WAV file."
+        acquire Speech (OSD-BSO-V1.5) via VAD
+             or SpeechFile (OSD-BSO-V1.5) = { "BasicSpeechDataQualifier": { "Formats": { "TransportFormats": { "FileFormat": "WAV" } } } }
+
+        # --- the model utterance: from the microphone, or a WAV file ---
+        prompt "Now the model: say a sentence with a clear emotion, angry or sad for example, or choose a WAV file."
+        acquire Model (OSD-BSO-V1.5) via VAD
+             or ModelFile (OSD-BSO-V1.5) = { "BasicSpeechDataQualifier": { "Formats": { "TransportFormats": { "FileFormat": "WAV" } } } }
+
+        # --- the Module is given the App's pathway, the model and the speech ---
+        offer ModeSelector (OSD-SEL-V1.5:1) = { "Header": "OSD-SEL-V1.5", "SelectorID": "prosodic" }
+        branch on ModelFile {
+            offer ModelFile (OSD-BSO-V1.5:1)
+        } else {
+            offer Model (OSD-BSO-V1.5:1)
+        }
+        branch on SpeechFile {
+            offer SpeechFile (OSD-BSO-V1.5:2)
+        } else {
+            offer Speech (OSD-BSO-V1.5:2)
+        }
+
+        # --- and gives the speech with the emotion of the model, which is played ---
+        ask     Result (OSD-BSO-V1.5)
+        prompt "Here is your sentence, with the emotion of the model."
+        present Result
 
 on Stop:
     ask Controller to stop

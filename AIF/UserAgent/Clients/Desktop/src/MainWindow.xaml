@@ -122,6 +122,9 @@
     <DockPanel Grid.Row="3" Margin="0,0,0,8" LastChildFill="True">
       <Button DockPanel.Dock="Left" x:Name="StopButton"  Content="Stop"         Width="90"  Height="30" Margin="0,0,8,0" IsEnabled="False"
               VerticalAlignment="Top"/>
+      <!-- Speech an App gave back to hear, played again on request. -->
+      <Button DockPanel.Dock="Left" x:Name="PlayAgainButton" Content="Play again" Width="100" Height="30" Margin="0,0,8,0" Visibility="Collapsed"
+              VerticalAlignment="Top"/>
       <!-- Enter comes before the text box so that the text box, last, takes all the room left. -->
       <Button DockPanel.Dock="Right" x:Name="SendButton"  Content="Enter"        Width="70"  Height="30" IsEnabled="False"
               VerticalAlignment="Top"/>

@@ -73,6 +73,8 @@ public sealed class PortDataCodecs
             .Register(new JsonObjectCodec("OSD-MSD-V1.5"))
             .Register(new JsonObjectCodec("OSD-OPV-V1.5"))
             .Register(new JsonObjectCodec("CAE-UCM-V1.0"))
+            // the Emotion an App gives a Module (CAE-USC Add Emotion to Speech): the JSON instance of its schema, inside and on the wire
+            .Register(new JsonObjectCodec("MMC-EEM-V2.5"))
             // Company Performance Prediction (MPAI-CUI CPP V2.1): the descriptors and statements are written and read as the JSON instance of their schema, inside and on the wire.
             .Register(new JsonObjectCodec("CUI-FND-V2.1"))
             .Register(new JsonObjectCodec("CUI-GVS-V2.1"))

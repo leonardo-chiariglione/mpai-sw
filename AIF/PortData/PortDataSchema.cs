@@ -47,6 +47,8 @@ public static class PortDataSchema
         ["OSD-SEL-V1.5"] = "OSD/V1.5/data/Selector.json",
         ["OSD-PNT-V1.5"] = "OSD/V1.5/data/Point.json",
         ["MMC-SUM-V2.5"] = "MMC/V2.5/data/Summary.json",
+        ["MMC-EEM-V2.5"] = "MMC/V2.5/data/Emotion.json",
+        ["OSD-BMO-V1.5"] = "OSD/V1.5/data/BasicMultimodalObject.json",
         ["PAF-FDO-V1.6"] = "PAF/V1.6/data/FaceDescriptorsObject.json",
 
         // The Data Types of the Environment Sensing Subsystem (M3219 3.6).
@@ -99,6 +101,77 @@ public static class PortDataSchema
             var said = new StringBuilder();
             Describe(result, said, 0);
             return said.ToString().Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        }
+    }
+
+    // THE ELEMENTS OF A PART OF AN INSTANCE that its schema does not have (AIF V3.0, Workflow Description, 3: an acquired datum may be given only some of the
+    // elements of its instance - its Qualifier, for example). Each element the part names is looked for among the properties its schema allows at that place, following
+    // $ref, allOf, anyOf and oneOf; a place whose schema says nothing of its properties, or allows others, accepts any. Values are not checked: a part is not an
+    // instance. Null where no schema is known for the Data Type.
+    public static IReadOnlyList<string>? ElementsNotIn(string dataType, string json)
+    {
+        if (Root is null || !Files.TryGetValue(dataType, out var relative)) return null;
+        var file = Path.GetFullPath(Path.Combine(Root, relative.Replace('/', Path.DirectorySeparatorChar)));
+        if (!File.Exists(file)) return null;
+        var missing = new List<string>();
+        Walk(JsonNode.Parse(json), (JsonNode.Parse(File.ReadAllText(file)), file), "", missing, 0);
+        return missing;
+    }
+
+    private static readonly ConcurrentDictionary<string, JsonNode?> RawSchemas = new(StringComparer.OrdinalIgnoreCase);
+
+    // The schema node a $ref names: a published URL (mapped to the local copy) or a fragment of the same file.
+    private static (JsonNode? Node, string File) Resolve(JsonNode? node, string file)
+    {
+        for (var depth = 0; depth < 16 && node is JsonObject o && o["$ref"]?.GetValue<string>() is { } reference; depth++)
+        {
+            var hash = reference.IndexOf('#');
+            var target = hash < 0 ? reference : reference[..hash];
+            var fragment = hash < 0 ? "" : reference[(hash + 1)..];
+            if (target.Length > 0)
+                file = target.StartsWith(Authority, StringComparison.OrdinalIgnoreCase)
+                    ? Path.GetFullPath(Path.Combine(Root!, target[Authority.Length..].Replace('/', Path.DirectorySeparatorChar)))
+                    : Path.GetFullPath(Path.Combine(Path.GetDirectoryName(file)!, target.Replace('/', Path.DirectorySeparatorChar)));
+            node = RawSchemas.GetOrAdd(file, f => File.Exists(f) ? JsonNode.Parse(File.ReadAllText(f)) : null);
+            foreach (var step in fragment.Split('/', StringSplitOptions.RemoveEmptyEntries))
+                node = node?[step.Replace("~1", "/").Replace("~0", "~")];
+        }
+        return (node, file);
+    }
+
+    private static void Walk(JsonNode? part, (JsonNode? Node, string File) schema, string at, List<string> missing, int depth)
+    {
+        if (depth > 32 || part is null) return;
+        var (node, file) = Resolve(schema.Node, schema.File);
+        if (node is not JsonObject s) return;
+        if (part is JsonArray array)
+        {
+            if (s["items"] is { } items) foreach (var element in array) Walk(element, (items, file), at + "[]", missing, depth + 1);
+            return;
+        }
+        if (part is not JsonObject o) return;
+
+        // the properties this place allows: its own and those of the schemas it combines
+        var allowed = new Dictionary<string, (JsonNode?, string)>(StringComparer.Ordinal);
+        var closed = false;
+        void Collect(JsonObject x, string f, int d)
+        {
+            if (d > 8) return;
+            if (x["properties"] is JsonObject p)
+            {
+                foreach (var (k, v) in p) allowed.TryAdd(k, (v, f));
+                if (x["additionalProperties"] is JsonValue a && a.GetValueKind() == JsonValueKind.False) closed = true;
+            }
+            foreach (var combiner in new[] { "allOf", "anyOf", "oneOf" })
+                foreach (var sub in (x[combiner] as JsonArray) ?? [])
+                    if (Resolve(sub, f) is { Node: JsonObject r } resolved) Collect(r, resolved.File, d + 1);
+        }
+        Collect(s, file, 0);
+        if (allowed.Count == 0) return;
+        foreach (var (key, value) in o)
+        {
+            if (allowed.TryGetValue(key, out var sub)) Walk(value, sub, at + "/" + key, missing, depth + 1);
+            else missing.Add(at + "/" + key);                // a part names only elements the schema defines, even where it allows others
         }
     }
 

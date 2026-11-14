@@ -261,7 +261,7 @@ internal static class Program
         if (approving)
         {
             var approvals = new AIF.Store.MpaiStore(amdDir);
-            var providers = new IAimProvider[] { new AmqProvider(store), new MacProvider(store), new AcrProvider(store), new NprProvider(store), new McaProvider(store), new MtsProvider(store), new AmcProvider(store) };
+            var providers = new IAimProvider[] { new AmqProvider(store), new MacProvider(store), new AcrProvider(store), new NprProvider(store), new McaProvider(store), new MtsProvider(store), new AmcProvider(store), new Mpai.Cae.Usc.UscProvider(store) };
             foreach (var aim in store.GetCatalog().Select(c => c.AIMName).Distinct().OrderBy(a => a, StringComparer.Ordinal))
             {
                 var file = providers.Select(p => p.ImplementationOf(aim)).FirstOrDefault(f => f is not null);
@@ -285,6 +285,7 @@ internal static class Program
             providers.Add(new McaProvider(s));
             providers.Add(new MtsProvider(s));
             providers.Add(new AmcProvider(s));
+            providers.Add(new Mpai.Cae.Usc.UscProvider(s));     // CAE-USC V2.5: the Modules of Add Emotion to Speech and Speak Model with Emotion
             return new CompositeProvider(providers.ToArray());
         });
 

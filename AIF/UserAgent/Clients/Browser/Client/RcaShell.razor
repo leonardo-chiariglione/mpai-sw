@@ -86,6 +86,29 @@
     <div class="picture"><InputFile OnChange="PictureChosen" accept="image/*" /></div>
   }
 
+  @if (choosingSpeechFile)
+  {
+    <div class="picture"><label>Or choose a WAV file: <InputFile OnChange="SpeechFileChosen" accept=".wav,audio/wav,audio/x-wav" /></label></div>
+  }
+
+  @if (choosingEmotion)
+  {
+    <div class="languages">
+      <label>Emotion
+        <select @bind="emotionPick">@foreach (var e in Emotions) { <option value="@e.Category">@e.Name</option> }</select>
+      </label>
+      <label>How strong
+        <input type="range" min="0" max="100" step="5" @bind="emotionDegree" @bind:event="oninput" /> @emotionDegree %
+      </label>
+      <button @onclick="EmotionChosen">OK</button>
+    </div>
+  }
+
+  @if (lastSpeechWav is not null)
+  {
+    <div class="languages"><button @onclick="PlayAgain">Play again</button></div>
+  }
+
   <div class="row">
     @if (!started)
     {

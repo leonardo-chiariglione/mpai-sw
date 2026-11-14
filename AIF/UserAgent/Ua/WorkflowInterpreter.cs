@@ -83,6 +83,7 @@ public sealed class WorkflowInterpreter
     {
         current = workflow;
         say($"workflow {workflow.Name} over {string.Join(", ", workflow.Modules)}");
+        Verify(workflow, say);
         // ended by Stop, or by an 'on Degraded:' that stopped the Module while it executed continuously
         using var walk = CancellationTokenSource.CreateLinkedTokenSource(stop);
         walking = walk;
@@ -447,8 +448,10 @@ public sealed class WorkflowInterpreter
                 // is one an earlier step obtained, found by its label.
                 var json = step.FromDevice ? await FromDeviceAsync(step, stop)
                     : step.Literal is not null
-                    ? Literal(step.Port!.DataType, Fill(step.Literal))
+                    ? step.LiteralIsInstance ? step.Literal.Trim() : Literal(step.Port!.DataType, Fill(step.Literal))
                     : Known(step.Port!.Label, step.Line);
+                // a value the workflow wrote is also the datum of its label, so that a later step can show it ('display Welcome')
+                if (step.Literal is not null && step.Port!.Label.Length > 0) data[step.Port.Label] = (step.Port.DataType, json);
                 Take(step, json);
                 break;
             }
@@ -712,7 +715,7 @@ public sealed class WorkflowInterpreter
             {
                 var o = Mpai.Core.MpaiJson.FromJson<Mpai.Core.BasicVisualObject>(json);
                 if (o is not null && o.Data.Length == 0 && o.VisualQualifier is not null)
-                    return Mpai.Core.MpaiJson.ToJson(o.VisualQualifier);
+                    return new System.Text.Json.Nodes.JsonObject { ["VisualQualifier"] = System.Text.Json.Nodes.JsonNode.Parse(Mpai.Core.MpaiJson.ToJson(o.VisualQualifier)) }.ToJsonString();   // what is asked is a part of the instance
             }
         }
         catch { /* an Object that will not deserialise is not a counter-offer */ }
@@ -897,6 +900,43 @@ public sealed class WorkflowInterpreter
     }
 
     // A literal in a workflow is words; the Data Type says what to make of them: a Text Object, or an ID (string - a machine's ID, a nickname).
+    // A VALUE WRITTEN IN THE WORKFLOW (AIF V3.0, Workflow Description, 3): an instance of the JSON schema of the Data Type = { ... }, or a literal text = "...".
+
+    // THE VALUES A WORKFLOW WRITES ARE CHECKED BEFORE IT RUNS. An instance given to 'offer' shall be valid against the schema of its Data Type; the part of an instance
+    // given to 'acquire' (or 'type') shall name only elements of that schema. A Workflow that fails is refused, naming the line. Where this interpreter knows no schema
+    // of the Data Type, the value cannot be checked: it is said, and the Header, if the value has one, must still be the Data Type's.
+    public static void Verify(Workflow workflow, Action<string>? say = null)
+    {
+        IEnumerable<Step> All(IEnumerable<Step> steps) =>
+            steps.SelectMany(s => new[] { s }.Concat(All(s.Body)).Concat(All(s.Else)).Concat(All(s.Alternatives)));
+        foreach (var step in All(workflow.OnStart.Concat(workflow.OnStop).Concat(workflow.OnDegraded)))
+        {
+            var type = step.Port?.DataType;
+            if (type is null) continue;
+            if (step.Kind == StepKind.Take && step.Literal is { } literal && step.LiteralIsInstance)
+            {
+                System.Text.Json.Nodes.JsonNode? value;
+                try { value = System.Text.Json.Nodes.JsonNode.Parse(literal); }
+                catch (System.Text.Json.JsonException bad) { throw new WorkflowReader.WorkflowSyntaxError(step.Line, $"the value of {step.Port} is not JSON: {bad.Message}"); }
+                if (value?["Header"] is { } header && header.ToString() != type)
+                    throw new WorkflowReader.WorkflowSyntaxError(step.Line, $"the value of {step.Port} has the Header {header}, not {type}.");
+                var wrong = Mpai.Aif.PortData.PortDataSchema.Violations(type, literal);
+                if (wrong is null) say?.Invoke($"line {step.Line}: no schema of {type} is known here: the value of {step.Port} is not checked");
+                else if (wrong.Count > 0)
+                    throw new WorkflowReader.WorkflowSyntaxError(step.Line, $"the value of {step.Port} is not a valid instance of {type}:{string.Join(";", wrong.Take(5))}");
+            }
+            else if (step.Kind is StepKind.Acquire or StepKind.Type && step.Qualifier is { } part)
+            {
+                try { System.Text.Json.Nodes.JsonNode.Parse(part); }
+                catch (System.Text.Json.JsonException bad) { throw new WorkflowReader.WorkflowSyntaxError(step.Line, $"what is asked of {step.Port} is not JSON: {bad.Message}"); }
+                var unknown = Mpai.Aif.PortData.PortDataSchema.ElementsNotIn(type, part);
+                if (unknown is null) say?.Invoke($"line {step.Line}: no schema of {type} is known here: what is asked of {step.Port} is not checked");
+                else if (unknown.Count > 0)
+                    throw new WorkflowReader.WorkflowSyntaxError(step.Line, $"what is asked of {step.Port} names what {type} does not have: {string.Join(", ", unknown)}");
+            }
+        }
+    }
+
     private static string Literal(string dataType, string text) =>
         dataType.StartsWith("OSD-BTO", StringComparison.OrdinalIgnoreCase)
             ? Mpai.Core.MpaiJson.ToJson(Mpai.Core.BasicTextObject.FromText(text))

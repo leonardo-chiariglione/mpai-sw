@@ -29,16 +29,22 @@ internal static class Program
             Console.WriteLine("Starting the Module (a first start takes a while)...");
             using var module = ModuleHost.Start(Module, null, Console.WriteLine);
 
+            // THE SAME WORKFLOW AS IN THE MAS APP: the speech and then the model are acquired (here the files given, as WAV files, in that order); the Mode Selector is the
+            // workflow's own. The workflow repeats until it is stopped: the App stops it when it has the speech with the emotion.
             string? given = null;
-            string Selector(string id) => new JsonObject { ["Header"] = "OSD-SEL-V1.5", ["SelectorID"] = id }.ToJsonString();
-            GivenDevice Of(string type, string json) => new(type, json);
+            using var done = new System.Threading.CancellationTokenSource();
+            var files = new SpeechFiles(Inputs.SpeechObjectOf("neutral", speech), Inputs.SpeechObjectOf("model", model));
             var devices = new DeviceRegistry()
-                .RegisterDevice("ModeSelector", Of("OSD-SEL-V1.5", Selector("prosodic")))
-                .RegisterDevice("Model", Of("OSD-BSO-V1.5", Inputs.SpeechObjectOf("model", model)))
-                .RegisterDevice("Speech", Of("OSD-BSO-V1.5", Inputs.SpeechObjectOf("neutral", speech)))
-                .RegisterPresent("file", d => { if (d.TryGetValue("OSD-BSO-V1.5", out var s)) given = s; return Task.CompletedTask; });
+                .RegisterAcquire("OSD-BSO-V1.5", files.AcquireAsync)
+                .RegisterPresent("file", d =>
+                {
+                    if (d.TryGetValue("Prompt", out var said)) Console.WriteLine(said);
+                    if (d.TryGetValue("OSD-BSO-V1.5", out var s)) { given = s; done.Cancel(); }
+                    return Task.CompletedTask;
+                });
             Console.WriteLine("Adding the emotion...");
-            new WorkflowRun(module.Api, Path.Combine(ModuleHost.Root, "Apps", "CAE", "SME", "SME.orch"), devices, Environment.GetEnvironmentVariable("MPAI_DIAG") == "1" ? Console.WriteLine : null).Run();
+            try { new WorkflowRun(module.Api, Path.Combine(ModuleHost.Root, "Apps", "CAE", "SME", "SME.orch"), devices, Environment.GetEnvironmentVariable("MPAI_DIAG") == "1" ? Console.WriteLine : null).Run(done.Token); }
+            catch (OperationCanceledException) when (given is not null) { }
 
             if (given is null) throw new InvalidOperationException("The Module gave no speech.");
             foreach (var file in Inputs.WriteSpeech(given, output)) Console.WriteLine("Speech with emotion: " + file);
