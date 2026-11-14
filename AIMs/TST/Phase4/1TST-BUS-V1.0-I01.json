@@ -24,7 +24,7 @@
                        { "Output": { "AIMName": "1TST-BRA-V1.0-I01", "PortName": "Read" }, "Input": { "AIMName": "",                  "PortName": "Out1" } },
                        { "Output": { "AIMName": "1TST-BRB-V1.0-I01", "PortName": "Read" }, "Input": { "AIMName": "",                  "PortName": "Out2" } }],
 
-  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/blob/main/Test/Mpai.Aif.Tests/ContinuousTests.cs",
+  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/Test/Mpai.Aif.Tests/ContinuousTests.cs",
                         "MASPort":           443,
                         "BinaryName":        "Mpai.Aif.Tests",
                         "Architecture":      "x86-64",

@@ -74,7 +74,7 @@
     },
     {
       "Name": "reference-voices",
-      "Uri": "https://raw.githubusercontent.com/leonardo-chiariglione/mpai-cav/main/AIMs/MMC/V2.5/SIR/Data/reference-voices.features",
+      "Uri": "https://raw.githubusercontent.com/leonardo-chiariglione/mpai-sw/main/AIMs/MMC/V2.5/SIR/Data/reference-voices.features",
       "Sha256": "64FF8B125FB035E2DA92B19B06ACBC55B63C69CDD9FDAA85C16AA15EE5DD642B",
       "ValidWith": [
         "38FDFC7D2BC9E2925349BAAB9639FCAF4B4C755BE83EE7D616B6E3FBC9D5EAB3"
@@ -90,7 +90,7 @@
   ],
   "Implementations": [
     {
-      "ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/tree/main/AIMs/MMC/V2.5/SIR",
+      "ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/MMC/V2.5/SIR",
       "MASPort": 443,
       "BinaryName": "Mpai.Mmc.Sir",
       "Architecture": "x86-64",

@@ -39,7 +39,7 @@
   "Topology": [],
   "Implementations": [
     {
-      "ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/tree/main/AIMs/OSD/V1.5/TMA",
+      "ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/OSD/V1.5/TMA",
       "MASPort": 443,
       "BinaryName": "Mpai.Osd.Tma",
       "Architecture": "x86-64",

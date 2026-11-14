@@ -55,7 +55,7 @@ public class AihAimsTests : IDisposable
     {
         var provider = new AihProvider(store);
         var problems = new List<string>();
-        const string Repo = "https://github.com/leonardo-chiariglione/mpai-cav/tree/main/";
+        const string Repo = "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/";
         foreach (var file in Directory.GetFiles(Repository.Amds, "1AIH-*-V1.1-I01.json"))
         {
             var aim = Path.GetFileNameWithoutExtension(file);

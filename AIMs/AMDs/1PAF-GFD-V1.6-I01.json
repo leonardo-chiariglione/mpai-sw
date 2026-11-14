@@ -14,7 +14,7 @@
 
   "Topology":         [],
 
-  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/tree/main/AIMs/PAF/V1.6/GFD",
+  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/PAF/V1.6/GFD",
                         "MASPort":           443,
                         "BinaryName":        "Mpai.Paf.Gfd",
                         "Architecture":      "x86-64",

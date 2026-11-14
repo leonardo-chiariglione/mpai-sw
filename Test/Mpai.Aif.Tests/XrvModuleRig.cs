@@ -96,7 +96,7 @@ public sealed class XrvModuleRig : IDisposable
         ["Header"] = "TST-XRM-V1.0", ["APIProfile"] = "Basic", ["Execution"] = "Continuous",
         ["Description"] = "A TEST Module of the XRV-LTP Cue engine (not the Live Theatrical Performance): Action Generation and the Performance, Participant and Operator Status Interpretation AIMs.",
         ["ExternalPorts"] = ports, ["SubAIMs"] = subs, ["Topology"] = topology,
-        ["Implementations"] = new JsonArray(new JsonObject { ["ImplementationURI"] = "https://github.com/leonardo-chiariglione/mpai-cav/tree/main/AIMs/XRV1/V1.0/Provider", ["MASPort"] = 443, ["BinaryName"] = "Mpai.Xrv", ["Architecture"] = "x86-64", ["OperatingSystem"] = "Windows", ["Version"] = "1.0", ["Source"] = "AIMStorage" }),
+        ["Implementations"] = new JsonArray(new JsonObject { ["ImplementationURI"] = "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/XRV1/V1.0/Provider", ["MASPort"] = 443, ["BinaryName"] = "Mpai.Xrv", ["Architecture"] = "x86-64", ["OperatingSystem"] = "Windows", ["Version"] = "1.0", ["Source"] = "AIMStorage" }),
         ["ResourcePolicies"] = new JsonArray(new JsonObject { ["Name"] = "Memory", ["Minimum"] = "1 GB", ["Request"] = "4 GB", ["Maximum"] = "8 GB" }),
         ["DataXMData"] = new JsonObject(),
         ["Documentation"] = new JsonArray(new JsonObject { ["Type"] = "Specification", ["URI"] = "https://mpai.community/standards/mpai-xrv/ltp/v1-0/" })

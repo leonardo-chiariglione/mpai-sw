@@ -13,7 +13,7 @@
   "SubAIMs":              [],
   "Topology":             [],
 
-  "Implementations":      [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/tree/main/AIMs/MMC/V2.5/CTS",
+  "Implementations":      [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/MMC/V2.5/CTS",
                             "MASPort":          443,
                             "BinaryName":       "Mpai.Mmc.Cts",
                             "Architecture":     "x86-64",

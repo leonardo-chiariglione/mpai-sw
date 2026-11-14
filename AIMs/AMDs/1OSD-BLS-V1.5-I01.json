@@ -16,7 +16,7 @@
 
   "Topology":             [],
 
-  "Implementations":      [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/tree/main/AIMs/OSD/V1.5/BLS",
+  "Implementations":      [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/OSD/V1.5/BLS",
                             "MASPort":           443,
                             "BinaryName":        "Mpai.Osd.Bls",
                             "Architecture":      "x86-64",

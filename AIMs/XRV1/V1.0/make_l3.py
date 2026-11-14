@@ -39,7 +39,7 @@ for acr, (l2file, folder, slug) in AIMS.items():
   "ExternalPorts":    [{ports}],
   "SubAIMs":          [],
   "Topology":         [],
-  "Implementations":  [{{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/tree/main/AIMs/XRV1/V1.0/{acr}", "MASPort": 443, "BinaryName": "Mpai.Xrv.{folder}", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "1.0", "Source": "AIMStorage"}}],
+  "Implementations":  [{{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/XRV1/V1.0/{acr}", "MASPort": 443, "BinaryName": "Mpai.Xrv.{folder}", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "1.0", "Source": "AIMStorage"}}],
   "ResourcePolicies": [{{"Name": "Memory", "Minimum": "0.5 GB", "Request": "1 GB", "Maximum": "4 GB"}},
                        {{"Name": "CPU:Class", "Minimum": "Low", "Request": "Low", "Maximum": "Medium"}}],
   "DataXMData":       {{}},

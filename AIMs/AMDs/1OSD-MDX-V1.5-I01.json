@@ -150,7 +150,7 @@
   "Topology": [],
   "Implementations": [
     {
-      "ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/tree/main/AIMs/OSD/V1.5/MDX",
+      "ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/OSD/V1.5/MDX",
       "MASPort": 443,
       "BinaryName": "Mpai.Osd.Mdx",
       "Architecture": "x86-64",

@@ -32,7 +32,7 @@
                           {"Output": {"AIMName": "", "DataType": "string"}, "Input": {"AIMName": "1PAF-PMX-V1.6-I01", "DataType": "string"}},
                           {"Output": {"AIMName": "1MMC-TTS-V2.5-I01", "DataType": "OSD-BSO-V1.5"}, "Input": {"AIMName": "1PAF-PMX-V1.6-I01", "DataType": "OSD-BSO-V1.5"}}],
 
-  "Implementations":      [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/blob/main/AIMs/AMDs/1MMC-MTS-V2.5-I01.json",
+  "Implementations":      [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/AIMs/AMDs/1MMC-MTS-V2.5-I01.json",
                             "BinaryName": "Mpai.Mmc.Mts",
                             "Architecture": "x86-64",
                             "OperatingSystem": "Windows",

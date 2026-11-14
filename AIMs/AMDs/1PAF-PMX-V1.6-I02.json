@@ -27,7 +27,7 @@
 
   "Topology":         [],
 
-  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/tree/main/AIMs/PAF/V1.6/PMX",
+  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/PAF/V1.6/PMX",
                         "MASPort":           443,
                         "BinaryName":        "Mpai.Paf.Pmx",
                         "Architecture":      "x86-64",

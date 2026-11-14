@@ -9,7 +9,7 @@
                        {"Name": "EgoSpatialAttitude", "Direction": "Output", "DataType": "OSD-OSA-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
   "SubAIMs":          [],
   "Topology":         [],
-  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/blob/main/AIMs/AMDs/1CAV-SAG-V2.0-I01.json", "BinaryName": "Mpai.Cav.Ess", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "2.0", "Source": "AIMStorage"}],
+  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/AIMs/AMDs/1CAV-SAG-V2.0-I01.json", "BinaryName": "Mpai.Cav.Ess", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "2.0", "Source": "AIMStorage"}],
   "ResourcePolicies": [{"Name": "Memory", "Minimum": "1 GB", "Request": "2 GB", "Maximum": "4 GB"},
                        {"Name": "CPU:Class", "Minimum": "Low", "Request": "Medium", "Maximum": "High"}],
   "DataXMData":       {},

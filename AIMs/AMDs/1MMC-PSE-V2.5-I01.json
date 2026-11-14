@@ -24,7 +24,7 @@
                           {"Output":{"AIMName":"1PAF-FPE-V1.6-I01","DataType":"MMC-FPS-V2.5"},"Input":{"AIMName":"1MMC-PMX-V2.5-I01","DataType":"MMC-FPS-V2.5"}},
                           {"Output":{"AIMName":"1MMC-PMX-V2.5-I01","DataType":"MMC-EPS-V2.5"},"Input":{"AIMName":"","DataType":"MMC-EPS-V2.5","PortNumber":1}}],
 
-  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/blob/main/AIMs/AMDs/1MMC-PSE-V2.5-I01.json",
+  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/AIMs/AMDs/1MMC-PSE-V2.5-I01.json",
                         "MASPort":           443,
                         "BinaryName":        "Mpai.Mmc.Pse",
                         "Architecture":      "x86-64",

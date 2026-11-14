@@ -27,7 +27,7 @@
                            {"Output": {"AIMName": "", "DataType": "string"}, "Input": {"AIMName": "1PAF-PMX-V1.6-I01", "DataType": "string"}},
                            {"Output": {"AIMName": "1PAF-PMX-V1.6-I01", "DataType": "PAF-PAV-V1.6"}, "Input": {"AIMName": "", "DataType": "PAF-PAV-V1.6"}}],
 
-  "Implementations":      [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/blob/main/AIMs/AMDs/1MMC-NPR-V2.5-I01.json",
+  "Implementations":      [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/AIMs/AMDs/1MMC-NPR-V2.5-I01.json",
                             "BinaryName": "Mpai.Mmc.Ocr",
                             "Architecture": "x86-64",
                             "OperatingSystem": "Windows",

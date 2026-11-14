@@ -13,7 +13,7 @@
 
   "AccessSources":   [{"Name": "pose-landmarks", "Uri": "https://huggingface.co/opencv/pose_estimation_mediapipe/resolve/8cd55743af63a8578effaf144a68cb58f6450fe9/pose_estimation_mediapipe_2023mar.onnx", "Sha256": "9D89C599319A18FB7D2E28451A883476164543182BAFCA5F09EB2CF767ED2F3F", "Setting": "PoseModel", "AsFile": "pose_estimation_mediapipe_2023mar.onnx", "Terms": {"Licence": "Apache-2.0 (OpenCV Zoo: all files of the directory; the weights are those of the MediaPipe Pose Landmarker, whose model card states Apache-2.0)", "Uri": "https://huggingface.co/opencv/pose_estimation_mediapipe/blob/8cd55743af63a8578effaf144a68cb58f6450fe9/LICENSE", "PersonalData": false}, "Description": "The body keypoint model (BlazePose GHUM, MediaPipe Pose, 33 keypoints), converted from the TFLite model to ONNX by the OpenCV Zoo with tf2onnx."}],
 
-  "Implementations": [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/tree/main/AIMs/PAF/V1.6/EBD", "MASPort": 443, "BinaryName": "Mpai.Paf.Ebd", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "1.6", "Source": "AIMStorage"}],
+  "Implementations": [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/PAF/V1.6/EBD", "MASPort": 443, "BinaryName": "Mpai.Paf.Ebd", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "1.6", "Source": "AIMStorage"}],
 
   "ResourcePolicies":[{"Name": "Memory",    "Minimum": "1 GB", "Request": "1 GB", "Maximum": "2 GB"},
                       {"Name": "CPU:Class", "Minimum": "Medium", "Request": "High", "Maximum": "High"}],

@@ -36,7 +36,7 @@
                            {"Output": {"AIMName": "1MMC-EDP-V2.5-I03", "DataType": "OSD-BTO-V1.5"}, "Input": {"AIMName": "", "DataType": "OSD-BTO-V1.5", "PortNumber": 2}},
                            {"Output": {"AIMName": "1MMC-TTS-V2.5-I01", "DataType": "OSD-BSO-V1.5"}, "Input": {"AIMName": "", "DataType": "OSD-BSO-V1.5", "PortNumber": 1}}],
 
-  "Implementations":      [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/blob/main/AIMs/AMDs/1MMC-VCI-V2.5-I01.json", "BinaryName": "Mpai.Providers", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "2.5", "Source": "AIMStorage"}],
+  "Implementations":      [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/AIMs/AMDs/1MMC-VCI-V2.5-I01.json", "BinaryName": "Mpai.Providers", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "2.5", "Source": "AIMStorage"}],
 
   "ResourcePolicies":     [{"Name": "Memory",    "Minimum": "1 GB", "Request": "2 GB", "Maximum": "4 GB"},
                            {"Name": "CPU:Class", "Minimum": "Medium", "Request": "High", "Maximum": "High"}],

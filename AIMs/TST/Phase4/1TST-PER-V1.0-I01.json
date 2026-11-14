@@ -19,7 +19,7 @@
                        { "Output": { "AIMName": "",                  "PortName": "Input" }, "Input": { "AIMName": "1TST-DLN-V1.0-I01", "PortName": "Input" } },
                        { "Output": { "AIMName": "1TST-DLN-V1.0-I01", "PortName": "Late"  }, "Input": { "AIMName": "",                  "PortName": "Late"  } }],
 
-  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/blob/main/Test/Mpai.Aif.Tests/ContinuousTests.cs",
+  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/Test/Mpai.Aif.Tests/ContinuousTests.cs",
                         "MASPort":           443,
                         "BinaryName":        "Mpai.Aif.Tests",
                         "Architecture":      "x86-64",

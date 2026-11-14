@@ -20,7 +20,7 @@
                        { "Output": { "AIMName": "1TST-PWR-V1.0-I01", "PortName": "Payload" }, "Input": { "AIMName": "",                  "PortName": "Payload" } },
                        { "Output": { "AIMName": "1TST-PRD-V1.0-I01", "PortName": "Length"  }, "Input": { "AIMName": "",                  "PortName": "Length"  } }],
 
-  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/blob/main/Test/Mpai.Aif.Tests/ContinuousTests.cs",
+  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/Test/Mpai.Aif.Tests/ContinuousTests.cs",
                         "MASPort":           443,
                         "BinaryName":        "Mpai.Aif.Tests",
                         "Architecture":      "x86-64",

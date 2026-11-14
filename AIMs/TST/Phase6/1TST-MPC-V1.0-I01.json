@@ -26,7 +26,7 @@
                        { "Output": { "AIMName": "",                  "PortName": "Rule"    }, "Input": { "AIMName": "1TST-SGV-V1.0-I01", "PortName": "Rule"    } },
                        { "Output": { "AIMName": "1TST-SGV-V1.0-I01", "PortName": "Ruled"   }, "Input": { "AIMName": "",                  "PortName": "Ruled"   } }],
 
-  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/blob/main/Test/Mpai.Aif.Tests/StorageTests.cs",
+  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/Test/Mpai.Aif.Tests/StorageTests.cs",
                         "MASPort":           443,
                         "BinaryName":        "Mpai.Aif.Tests",
                         "Architecture":      "x86-64",

@@ -14,7 +14,7 @@
 
   "Topology":         [],
 
-  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/tree/main/AIMs/PAF/V1.6/GBD",
+  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/PAF/V1.6/GBD",
                         "MASPort":           443,
                         "BinaryName":        "Mpai.Paf.Gbd",
                         "Architecture":      "x86-64",

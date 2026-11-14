@@ -10,7 +10,7 @@
                        {"Name": "LicenceConfirmRequest", "Direction": "Output", "DataType": "AIH-LCF-V1.1", "Technology": "Software", "Protocol": "", "IsRemote": false}],
   "SubAIMs":          [],
   "Topology":         [],
-  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/tree/main/AIMs/AIH/V1.1/ADT", "MASPort": 443, "BinaryName": "Mpai.Aih.Adt", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "1.1", "Source": "AIMStorage"}],
+  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/AIH/V1.1/ADT", "MASPort": 443, "BinaryName": "Mpai.Aih.Adt", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "1.1", "Source": "AIMStorage"}],
   "ResourcePolicies": [{"Name": "Memory", "Minimum": "0.5 GB", "Request": "1 GB", "Maximum": "2 GB"},
                        {"Name": "CPU:Class", "Minimum": "Low", "Request": "Medium", "Maximum": "High"}],
   "DataXMData":       {},

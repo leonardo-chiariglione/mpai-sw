@@ -64,7 +64,7 @@ text = f'''{{ "Identifier":       {{"ImplementerID": "1", "ImplementationID": "X
   "ExternalPorts":    [{ports}],
   "SubAIMs":          [{subs}],
   "Topology":         [{topology}],
-  "Implementations":  [{{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/blob/main/AIMs/AMDs/1XRV-LTP-V1.0-I01.json", "MASPort": 443, "BinaryName": "Mpai.Xrv", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "1.0", "Source": "AIMStorage"}}],
+  "Implementations":  [{{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/AIMs/AMDs/1XRV-LTP-V1.0-I01.json", "MASPort": 443, "BinaryName": "Mpai.Xrv", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "1.0", "Source": "AIMStorage"}}],
   "ResourcePolicies": [{{"Name": "Memory", "Minimum": "1 GB", "Request": "2 GB", "Maximum": "8 GB"}},
                        {{"Name": "CPU:Class", "Minimum": "Low", "Request": "Medium", "Maximum": "High"}}],
   "DataXMData":       {{}},

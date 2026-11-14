@@ -26,7 +26,7 @@
                           {"Output":{"AIMName":"1MMC-TTT-V2.5-I01","DataType":"OSD-BTO-V1.5"},"Input":{"AIMName":"","DataType":"OSD-BTO-V1.5","PortNumber":1}},
                           {"Output":{"AIMName":"1MMC-TTS-V2.5-I01","DataType":"OSD-BSO-V1.5"},"Input":{"AIMName":"","DataType":"OSD-BSO-V1.5","PortNumber":1}}],
 
-  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/blob/main/AIMs/AMDs/1MMC-TST-V2.5-I01.json",
+  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/AIMs/AMDs/1MMC-TST-V2.5-I01.json",
                         "MASPort":           443,
                         "BinaryName":        "Mpai.Mmc.Tst",
                         "Architecture":      "x86-64",

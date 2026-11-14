@@ -9,7 +9,7 @@
                        {"Name": "AudioIrregularityFile", "Direction": "Output", "DataType": "CAE-IRR-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
   "SubAIMs":          [],
   "Topology":         [],
-  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/tree/main/AIMs/CAE1/V2.5/ARP", "MASPort": 443, "BinaryName": "Mpai.Cae.Usc.Arp", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "2.5", "Source": "AIMStorage"}],
+  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/CAE1/V2.5/ARP", "MASPort": 443, "BinaryName": "Mpai.Cae.Usc.Arp", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "2.5", "Source": "AIMStorage"}],
   "ResourcePolicies": [{"Name": "Memory", "Minimum": "0.5 GB", "Request": "2 GB", "Maximum": "8 GB"},
                        {"Name": "CPU:Class", "Minimum": "Low", "Request": "Medium", "Maximum": "High"}],
   "DataXMData":       {},

@@ -584,7 +584,7 @@
   ],
   "Implementations": [
     {
-      "ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/blob/main/AIMs/AMDs/1PGM-AVA-V1.0-I01.json",
+      "ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/AIMs/AMDs/1PGM-AVA-V1.0-I01.json",
       "MASPort": 443,
       "BinaryName": "Mpai.Pgm.Ava",
       "Architecture": "x86-64",

@@ -375,7 +375,7 @@
   ],
   "Implementations": [
     {
-      "ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/tree/main/AIMs/AMDs",
+      "ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/AMDs",
       "MASPort": 443,
       "BinaryName": "Mpai.Mmc.Cps",
       "Architecture": "x86-64",

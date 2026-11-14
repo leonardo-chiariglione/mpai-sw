@@ -10,7 +10,7 @@
                        {"Name": "WatermarkedModel", "Direction": "Output", "DataType": "AIP-MLO-V1.0", "Technology": "Software", "Protocol": "", "IsRemote": false}],
   "SubAIMs":          [],
   "Topology":         [],
-  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/tree/main/AIMs/NNW/V2.0/NoConstraint", "MASPort": 443, "BinaryName": "Mpai.Nnw.NoConstraint", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "2.0", "Source": "AIMStorage"}],
+  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/NNW/V2.0/NoConstraint", "MASPort": 443, "BinaryName": "Mpai.Nnw.NoConstraint", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "2.0", "Source": "AIMStorage"}],
   "ResourcePolicies": [{"Name": "Memory", "Minimum": "0.5 GB", "Request": "1 GB", "Maximum": "2 GB"},
                        {"Name": "CPU:Class", "Minimum": "Low", "Request": "Medium", "Maximum": "High"}],
   "DataXMData":       {},

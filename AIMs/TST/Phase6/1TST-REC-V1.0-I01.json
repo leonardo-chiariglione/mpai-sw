@@ -24,7 +24,7 @@
                        { "Output": { "AIMName": "1TST-TRE-V1.0-I01", "PortName": "B", "PortNumber": 2 }, "Input": { "AIMName": "",                  "PortName": "B"                  } },
                        { "Output": { "AIMName": "1TST-TRE-V1.0-I01", "PortName": "P", "PortNumber": 3 }, "Input": { "AIMName": "",                  "PortName": "P"                  } }],
 
-  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/blob/main/Test/Mpai.Aif.Tests/StorageTests.cs",
+  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/Test/Mpai.Aif.Tests/StorageTests.cs",
                         "MASPort":           443,
                         "BinaryName":        "Mpai.Aif.Tests",
                         "Architecture":      "x86-64",

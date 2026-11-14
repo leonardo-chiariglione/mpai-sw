@@ -113,7 +113,7 @@
                           {"Output": {"AIMName": "", "DataType": "OSD-OPV-V1.5", "PortNumber": 1}, "Input": {"AIMName": "1PAF-RSR-V1.6-I01", "DataType": "OSD-OPV-V1.5"}},
                           {"Output": {"AIMName": "", "DataType": "OSD-BMS-V1.5", "PortNumber": 1}, "Input": {"AIMName": "1PAF-RSR-V1.6-I01", "DataType": "OSD-BMS-V1.5"}}],
 
-  "Implementations":      [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/blob/main/AIMs/AMDs/1CAV-HCI-V2.0-I01.json",
+  "Implementations":      [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/AIMs/AMDs/1CAV-HCI-V2.0-I01.json",
                             "MASPort":           443,
                             "BinaryName":        "Mpai.Mmc.Hci",
                             "Architecture":      "x86-64",

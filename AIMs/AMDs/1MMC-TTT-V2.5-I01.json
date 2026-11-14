@@ -22,7 +22,7 @@
                       {"Name": "ttt-vocab", "Uri": "https://huggingface.co/Xenova/m2m100_418M/resolve/main/vocab.json", "Sha256": "B6E77E474AEEA8F441363ACA7614317C06381F3EACFE10FB9856D5081D1074CC", "Setting": "TttVocab", "AsFile": "vocab.json", "ValidWith": ["2AAF1612C2738DEC7DE0A12D3F5EBB1168A38B735A33DB5BE7719DD669750544"], "Description": "The vocabulary of the translation model.", "Terms": {"Licence": "MIT", "Uri": "https://huggingface.co/facebook/m2m100_418M", "PersonalData": false}},
                       {"Name": "ttt-special-tokens", "Uri": "https://huggingface.co/Xenova/m2m100_418M/resolve/main/special_tokens_map.json", "Sha256": "009EA667E0CA903C10DAC22CF7AE3A3A0B173FF33F8C64154FDDD8C043805622", "Setting": "TttSpecialTokens", "AsFile": "special_tokens_map.json", "ValidWith": ["2AAF1612C2738DEC7DE0A12D3F5EBB1168A38B735A33DB5BE7719DD669750544"], "Description": "The special tokens of the translation model, which give the order of its languages.", "Terms": {"Licence": "MIT", "Uri": "https://huggingface.co/facebook/m2m100_418M", "PersonalData": false}}],
 
-  "Implementations":      [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/tree/main/AIMs/MMC/V2.5/TTT",
+  "Implementations":      [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/MMC/V2.5/TTT",
                             "MASPort":          443,
                             "BinaryName":       "Mpai.Mmc.Ttt",
                             "Architecture":     "x86-64",

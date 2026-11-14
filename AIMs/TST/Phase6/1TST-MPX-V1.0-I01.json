@@ -21,7 +21,7 @@
                        { "Output": { "AIMName": "1TST-SWR-V1.0-I01", "PortName": "Written" }, "Input": { "AIMName": "",                  "PortName": "Written" } },
                        { "Output": { "AIMName": "1TST-SRD-V1.0-I01", "PortName": "Read"    }, "Input": { "AIMName": "",                  "PortName": "Read"    } }],
 
-  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/blob/main/Test/Mpai.Aif.Tests/StorageTests.cs",
+  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/Test/Mpai.Aif.Tests/StorageTests.cs",
                         "MASPort":           443,
                         "BinaryName":        "Mpai.Aif.Tests",
                         "Architecture":      "x86-64",

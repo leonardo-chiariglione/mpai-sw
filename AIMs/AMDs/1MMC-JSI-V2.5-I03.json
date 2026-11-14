@@ -67,7 +67,7 @@
       "Setting": "CommandSchema",
       "Terms": {
         "Licence": "BSD-3-Clause",
-        "Uri": "https://github.com/leonardo-chiariglione/mpai-cav/blob/main/LICENSE",
+        "Uri": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/LICENSE",
         "PersonalData": false
       },
       "Description": "The schema of the User Command of the Secretary: a command is an Instance of it that carries a UserCommandRQ."
@@ -79,19 +79,19 @@
       "Setting": "ResponseSchema",
       "Terms": {
         "Licence": "BSD-3-Clause",
-        "Uri": "https://github.com/leonardo-chiariglione/mpai-cav/blob/main/LICENSE",
+        "Uri": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/LICENSE",
         "PersonalData": false
       },
       "Description": "The same schema: a response is an Instance of it that carries a UserCommandRS."
     },
     {
       "Name": "ApplicationContext",
-      "Uri": "https://raw.githubusercontent.com/leonardo-chiariglione/mpai-cav/main/Access/MMM/SecretaryApplicationContext.json",
+      "Uri": "https://raw.githubusercontent.com/leonardo-chiariglione/mpai-sw/main/Access/MMM/SecretaryApplicationContext.json",
       "Sha256": "761EC6FBA18789450768D86B51750AEA290F16173A433B6F1E51F649849F730D",
       "Setting": "ApplicationContext",
       "Terms": {
         "Licence": "BSD-3-Clause",
-        "Uri": "https://github.com/leonardo-chiariglione/mpai-cav/blob/main/LICENSE",
+        "Uri": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/LICENSE",
         "PersonalData": false
       },
       "Description": "What the schema of the User Command does not say about the Secretary: the languages and forms of a summary, the words for the hand, the microphone, the screen and the end of the meeting, the words of the responses, and examples."
@@ -138,7 +138,7 @@
   ],
   "Implementations": [
     {
-      "ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/tree/main/AIMs/MMC/V2.5/JSI",
+      "ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/MMC/V2.5/JSI",
       "MASPort": 443,
       "BinaryName": "Mpai.Mmc.Jsi",
       "Architecture": "x86-64",

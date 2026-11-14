@@ -52,7 +52,7 @@
                        {"Output": {"AIMName": "1AIH-HDP-V1.1-I01", "DataType": "AIH-AHD-V1.1"}, "Input": {"AIMName": "1AIH-ARA-V1.1-I01", "DataType": "AIH-AHD-V1.1"}},
                        {"Output": {"AIMName": "1AIH-ARA-V1.1-I01", "DataType": "AIH-ARD-V1.1"}, "Input": {"AIMName": "1AIH-HDP-V1.1-I01", "DataType": "AIH-ARD-V1.1"}},
                        {"Output": {"AIMName": "1AIH-ARA-V1.1-I01", "DataType": "AIH-ARD-V1.1"}, "Input": {"AIMName": "", "DataType": "AIH-ARD-V1.1"}}],
-  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/tree/main/AIMs/AIH/V1.1/Provider", "MASPort": 443, "BinaryName": "Mpai.Aih", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "1.1", "Source": "AIMStorage"}],
+  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/AIH/V1.1/Provider", "MASPort": 443, "BinaryName": "Mpai.Aih", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "1.1", "Source": "AIMStorage"}],
   "ResourcePolicies": [{"Name": "Memory", "Minimum": "1 GB", "Request": "2 GB", "Maximum": "4 GB"},
                        {"Name": "CPU:Class", "Minimum": "Low", "Request": "Medium", "Maximum": "High"}],
   "DataXMData":       {},

@@ -7,6 +7,6 @@
                    {"Name": "BodyPersonalStatus", "Direction": "Input",  "DataType": "MMC-BPS-V2.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
                    {"Name": "EntityPersonalStatus",  "Direction": "Output", "DataType": "MMC-EPS-V2.5",                     "Technology": "Software", "Protocol": "", "IsRemote": false}],
   "SubAIMs":[],"Topology":[],
-  "Implementations":[{"ImplementationURI":"https://github.com/leonardo-chiariglione/mpai-cav/tree/main/AIMs/MMC/V2.5/PMX","MASPort":443,"BinaryName":"Mpai.Mmc.Pmx","Architecture":"x86-64","OperatingSystem":"Windows","Version":"2.5","Source":"AIMStorage"}],
+  "Implementations":[{"ImplementationURI":"https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/MMC/V2.5/PMX","MASPort":443,"BinaryName":"Mpai.Mmc.Pmx","Architecture":"x86-64","OperatingSystem":"Windows","Version":"2.5","Source":"AIMStorage"}],
   "ResourcePolicies":[{"Name": "Memory",    "Minimum": "0.25 GB", "Request": "0.5 GB", "Maximum": "1 GB"},{"Name": "CPU:Class", "Minimum": "Low",     "Request": "Low",    "Maximum": "Medium"}],
   "DataXMData":{},"Documentation":[{"Type":"Tutorial","URI":"https://mpai.community/standards/mpai-mmc/v2-5/"}]}

@@ -12,7 +12,7 @@
 
   "Topology":        [ ],
 
-  "Implementations": [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/tree/main/AIMs/PAF/V1.6/PBI", "MASPort": 443, "BinaryName": "Mpai.Paf.Pbi", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "1.6", "Source": "AIMStorage"}],
+  "Implementations": [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/PAF/V1.6/PBI", "MASPort": 443, "BinaryName": "Mpai.Paf.Pbi", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "1.6", "Source": "AIMStorage"}],
 
   "ResourcePolicies":[{"Name": "Memory",    "Minimum": "1 GB", "Request": "1 GB", "Maximum": "2 GB"},
                       {"Name": "CPU:Class", "Minimum": "Medium", "Request": "High", "Maximum": "High"}],

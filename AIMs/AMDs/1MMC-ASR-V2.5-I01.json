@@ -13,7 +13,7 @@
 
   "Topology":         [],
 
-  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-cav/tree/main/AIMs/MMC/V2.5/ASR",
+  "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/MMC/V2.5/ASR",
                         "MASPort":           443,
                         "BinaryName":        "Mpai.Mmc.Asr",
                         "Architecture":      "x86-64",
