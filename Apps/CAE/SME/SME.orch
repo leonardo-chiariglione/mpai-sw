@@ -9,7 +9,8 @@
 #
 #  The same workflow for the stand-alone App and for the MAS App: the person gives
 #  the emotionless speech and the model utterance (each from the microphone, or a WAV
-#  file); the Mode Selector is the App's, written here as an instance of its Data Type
+#  file; the model also one of four ready-made sentences, by their address); the
+#  alternatives of one datum share its label, so whichever comes first is offered. The Mode Selector is the App's, written here as an instance of its Data Type
 #  (AIF V3.0, Workflow Description, 3).
 # =============================================================================
 
@@ -26,25 +27,22 @@ on Start:
         # --- the emotionless speech: from the microphone, or a WAV file ---
         prompt "Say a sentence in a flat voice, without emotion, or choose a WAV file."
         acquire Speech (OSD-BSO-V1.5) via VAD
-             or SpeechFile (OSD-BSO-V1.5) = { "BasicSpeechDataQualifier": { "Formats": { "TransportFormats": { "FileFormat": "WAV" } } } }
+             or Speech (OSD-BSO-V1.5) = { "BasicSpeechDataQualifier": { "Formats": { "TransportFormats": { "FileFormat": "WAV" } } } }
 
-        # --- the model utterance: from the microphone, or a WAV file ---
-        prompt "Now the model: say a sentence with a clear emotion, angry or sad for example, or choose a WAV file."
+        # --- the model utterance: from the microphone, a WAV file, or one of four ready-made sentences (CREMA-D, actor 1074, "It's eleven o'clock",
+        #     High; Test/Data/Speech/CREMA-D/README.md says where they come from and under which licence) ---
+        prompt "Now the model: say a sentence with a clear emotion, choose a WAV file, or pick one of my examples: enraged, sad, happy or fearful."
         acquire Model (OSD-BSO-V1.5) via VAD
-             or ModelFile (OSD-BSO-V1.5) = { "BasicSpeechDataQualifier": { "Formats": { "TransportFormats": { "FileFormat": "WAV" } } } }
+             or Model (OSD-BSO-V1.5) = { "BasicSpeechDataQualifier": { "Formats": { "TransportFormats": { "FileFormat": "WAV" } } } }
+             or Model (OSD-BSO-V1.5) = { "BasicSpeechObjectID": "Enraged", "BasicSpeechObjectData": [ { "DataURI": "https://media.githubusercontent.com/media/CheyneyComputerScience/CREMA-D/master/AudioWAV/1074_IEO_ANG_HI.wav" } ] }
+             or Model (OSD-BSO-V1.5) = { "BasicSpeechObjectID": "Sad", "BasicSpeechObjectData": [ { "DataURI": "https://media.githubusercontent.com/media/CheyneyComputerScience/CREMA-D/master/AudioWAV/1074_IEO_SAD_HI.wav" } ] }
+             or Model (OSD-BSO-V1.5) = { "BasicSpeechObjectID": "Happy", "BasicSpeechObjectData": [ { "DataURI": "https://media.githubusercontent.com/media/CheyneyComputerScience/CREMA-D/master/AudioWAV/1074_IEO_HAP_HI.wav" } ] }
+             or Model (OSD-BSO-V1.5) = { "BasicSpeechObjectID": "Fearful", "BasicSpeechObjectData": [ { "DataURI": "https://media.githubusercontent.com/media/CheyneyComputerScience/CREMA-D/master/AudioWAV/1074_IEO_FEA_HI.wav" } ] }
 
         # --- the Module is given the App's pathway, the model and the speech ---
         offer ModeSelector (OSD-SEL-V1.5:1) = { "Header": "OSD-SEL-V1.5", "SelectorID": "prosodic" }
-        branch on ModelFile {
-            offer ModelFile (OSD-BSO-V1.5:1)
-        } else {
-            offer Model (OSD-BSO-V1.5:1)
-        }
-        branch on SpeechFile {
-            offer SpeechFile (OSD-BSO-V1.5:2)
-        } else {
-            offer Speech (OSD-BSO-V1.5:2)
-        }
+        offer Model (OSD-BSO-V1.5:1)
+        offer Speech (OSD-BSO-V1.5:2)
 
         # --- and gives the speech with the emotion of the model, which is played ---
         ask     Result (OSD-BSO-V1.5)

@@ -62,6 +62,20 @@ public static class SpeechWav
         return pcm;
     }
 
+    // READY-MADE SPEECH A WORKFLOW NAMES BY ITS ADDRESS: the part of a Speech Object it gives an acquisition - BasicSpeechObjectData[0].DataURI, and the
+    // BasicSpeechObjectID as its name (else the name of the file) - or null where the part names no address.
+    public static (string Label, string Uri)? Example(string? wanted)
+    {
+        if (string.IsNullOrEmpty(wanted) || !wanted.Contains("DataURI", StringComparison.Ordinal)) return null;
+        try
+        {
+            var node = JsonNode.Parse(wanted);
+            if (node?["BasicSpeechObjectData"]?[0]?["DataURI"]?.GetValue<string>() is not { Length: > 0 } uri) return null;
+            return (node["BasicSpeechObjectID"]?.GetValue<string>() ?? Path.GetFileNameWithoutExtension(new Uri(uri).AbsolutePath), uri);
+        }
+        catch (Exception ex) when (ex is System.Text.Json.JsonException or InvalidOperationException or UriFormatException) { return null; }
+    }
+
     private sealed record Wav(int Rate, short[] Mono);
 
     private static Wav? Decode(byte[] b)

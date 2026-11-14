@@ -48,6 +48,24 @@ public class MasCaeAppsTests
         Assert.Equal("it", JsonNode.Parse(Encoding.UTF8.GetString(codec.ToWire(old)))!["Language"]!["InputLanguage"]!.GetValue<string>());
     }
 
+    // THE READY-MADE MODEL UTTERANCES OF SME: the workflow offers four, by the address where CREMA-D publishes them, each the file kept in Test/Data/Speech/CREMA-D
+    // (a WAV a client can read), named Enraged, Sad, Happy and Fearful.
+    [Fact]
+    public void SpeakModelWithEmotionOffersFourReadyMadeModelsThatAreTheClipsInTestData()
+    {
+        var workflow = new Mpai.Wdl.WorkflowReader().Read(File.ReadAllText(Path.Combine(Repository.Root, "Apps", "CAE", "SME", "SME.orch")));
+        IEnumerable<Mpai.Wdl.Step> All(IEnumerable<Mpai.Wdl.Step> s) => s.SelectMany(x => new[] { x }.Concat(All(x.Body)).Concat(All(x.Else)).Concat(All(x.Alternatives)));
+        var examples = All(workflow.OnStart).Where(s => s.Kind == Mpai.Wdl.StepKind.Acquire).Select(s => Mpai.Ua.SpeechWav.Example(s.Qualifier)).OfType<(string Label, string Uri)>().ToList();
+        Assert.Equal(["Enraged", "Sad", "Happy", "Fearful"], examples.Select(e => e.Label));
+        foreach (var (label, uri) in examples)
+        {
+            var file = Path.Combine(Repository.Root, "Test", "Data", "Speech", "CREMA-D", Path.GetFileName(new Uri(uri).AbsolutePath));
+            Assert.True(File.Exists(file), $"{label}: {file}");
+            Assert.True(Mpai.Ua.SpeechWav.Pcm16kMono(File.ReadAllBytes(file))!.Length > 16000 * 2, $"{label}: more than a second of speech");
+        }
+        Assert.Null(Mpai.Ua.SpeechWav.Example("""{ "BasicSpeechDataQualifier": { "Formats": { "TransportFormats": { "FileFormat": "WAV" } } } }"""));
+    }
+
     // The Emotion an App gives crosses the Service as the instance of its schema.
     [Fact]
     public void AnEmotionCrossesTheService()

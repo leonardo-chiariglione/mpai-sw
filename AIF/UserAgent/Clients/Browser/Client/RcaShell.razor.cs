@@ -92,6 +92,9 @@ public partial class RcaShell : ComponentBase
     private bool choosingSpeechFile;
     private TaskCompletionSource<(string Name, byte[] Data)?>? speechFile;
 
+    // READY-MADE SPEECH an App offers by its address (a Speech Object whose data is a DataURI): one button each, while the workflow waits; the one pressed is fetched.
+    private readonly List<(string Label, TaskCompletionSource<bool> Pick)> speechExamples = new();
+
     // AN EMOTION AND ITS DEGREE (MMC-EEM-V2.5): the categories of MPAI-MMC, a list and a slider.
     private static readonly (string Category, string Name)[] Emotions =
     [
@@ -312,6 +315,30 @@ public partial class RcaShell : ComponentBase
         // text typed first, ends the capture at once.
         devices.RegisterAcquire("OSD-BSO-V1.5", async (viaVad, wanted, abandon) =>
         {
+            // READY-MADE SPEECH, where the workflow gives its address (BasicSpeechObjectData[].DataURI): a button with its name; pressed, the speech is fetched and given.
+            if (SpeechWav.Example(wanted) is { } example)
+            {
+                var pick = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var entry = (example.Label, pick);
+                lock (speechExamples) speechExamples.Add(entry);
+                Refresh();
+                var stopPick = (_appStopping ?? _stopping)?.Token ?? CancellationToken.None;
+                using var p1 = stopPick.Register(() => pick.TrySetResult(false));
+                using var p2 = abandon.Register(() => pick.TrySetResult(false));
+                var pressed = await pick.Task;
+                lock (speechExamples) speechExamples.Remove(entry);
+                Refresh();
+                if (!pressed) return null;
+                try
+                {
+                    using var web = new HttpClient();
+                    var fetched = await web.GetByteArrayAsync(example.Uri);
+                    if (SpeechWav.Pcm16kMono(fetched) is not { Length: > 0 } examplePcm) { Instruct($"I could not read the example {example.Label}."); return null; }
+                    return MpaiJson.ToJson(SpeechPackaging.FromPcm16k(examplePcm, _sourceLanguage));
+                }
+                catch (HttpRequestException) { Instruct($"I could not fetch the example {example.Label}."); return null; }
+            }
+
             // SPEECH FROM A WAV FILE, where the workflow asks for one (its Speech Qualifier: FileFormat WAV): the person chooses the file; speaking first abandons it.
             if ((wanted ?? "").Contains("\"WAV\"", StringComparison.Ordinal))
             {
@@ -650,6 +677,8 @@ public partial class RcaShell : ComponentBase
         var waiting = speechFile; speechFile = null;
         waiting?.TrySetResult((e.File.Name, memory.ToArray()));
     }
+
+    private void PickExample(TaskCompletionSource<bool> pick) => pick.TrySetResult(true);
 
     private void EmotionChosen()
     {

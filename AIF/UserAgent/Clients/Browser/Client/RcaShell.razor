@@ -91,6 +91,16 @@
     <div class="picture"><label>Or choose a WAV file: <InputFile OnChange="SpeechFileChosen" accept=".wav,audio/wav,audio/x-wav" /></label></div>
   }
 
+  @if (speechExamples.Count > 0)
+  {
+    <div class="languages">Or one of these:
+      @foreach (var e in speechExamples.ToList())
+      {
+        <button @onclick="() => PickExample(e.Pick)">@e.Label</button>
+      }
+    </div>
+  }
+
   @if (choosingEmotion)
   {
     <div class="languages">

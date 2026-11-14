@@ -865,6 +865,25 @@ public partial class MainWindow : Window
         // half of every enrolment failed in silence.
         devices.RegisterAcquire("OSD-BSO-V1.5", async (viaVad, wanted, abandon) =>
         {
+            // READY-MADE SPEECH, where the workflow gives its address: a button with its name in a small window; pressed, the speech is fetched and given.
+            if (SpeechWav.Example(wanted) is { } example)
+            {
+                var stopPick = (_appStopping ?? _stopping)?.Token ?? CancellationToken.None;
+                if (!await PickExampleAsync(example.Label, CancellationTokenSource.CreateLinkedTokenSource(stopPick, abandon).Token)) return null;
+                try
+                {
+                    using var web = new System.Net.Http.HttpClient();
+                    if (SpeechWav.Pcm16kMono(await web.GetByteArrayAsync(example.Uri)) is not { Length: > 0 } examplePcm) { Instruct($"I could not read the example {example.Label}."); return null; }
+                    return MpaiJson.ToJson(BasicSpeechObject.FromData(examplePcm, new SpeechQualifier
+                    {
+                        SpeechQualifierID = Guid.NewGuid().ToString(),
+                        Format = new SpeechFormat { ContentFormats = new SpeechContentFormats { RawData = new Pcm { SamplingFrequency = 16000, Precision = 16 } } },
+                        Attributes = new SpeechAttributes { Source = SpeechSource.Real }
+                    }));
+                }
+                catch (System.Net.Http.HttpRequestException) { Instruct($"I could not fetch the example {example.Label}."); return null; }
+            }
+
             // SPEECH FROM A WAV FILE, where the workflow asks for one (its Speech Qualifier: FileFormat WAV): a small window offers the choice; speaking first closes it.
             if ((wanted ?? "").Contains("\"WAV\"", StringComparison.Ordinal))
             {
@@ -1308,6 +1327,46 @@ public partial class MainWindow : Window
         var file = await chosen.Task;
         await Dispatcher.InvokeAsync(() => { try { window?.Close(); } catch { } });
         return file;
+    }
+
+    // READY-MADE SPEECH TO PICK: one small window holds a button for each example the workflow waits for; it closes when none is waited for.
+    private readonly List<(string Label, TaskCompletionSource<bool> Pick)> _examples = new();
+    private Window? _examplesWindow;
+
+    private async Task<bool> PickExampleAsync(string label, CancellationToken abandon)
+    {
+        var pick = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var entry = (label, pick);
+        await Dispatcher.InvokeAsync(() => { _examples.Add(entry); ShowExamples(); });
+        using var r = abandon.Register(() => pick.TrySetResult(false));
+        var pressed = await pick.Task;
+        await Dispatcher.InvokeAsync(() => { _examples.Remove(entry); ShowExamples(); });
+        return pressed;
+    }
+
+    private void ShowExamples()
+    {
+        if (_examples.Count == 0) { try { _examplesWindow?.Close(); } catch { } _examplesWindow = null; return; }
+        var panel = new System.Windows.Controls.StackPanel { Margin = new Thickness(16) };
+        panel.Children.Add(new System.Windows.Controls.TextBlock { Text = "Or one of these:", Margin = new Thickness(0, 0, 0, 8) });
+        foreach (var (label, pick) in _examples.ToList())
+        {
+            var b = new System.Windows.Controls.Button { Content = label, Width = 160, Height = 28, Margin = new Thickness(0, 0, 0, 6) };
+            b.Click += (_, _) => pick.TrySetResult(true);
+            panel.Children.Add(b);
+        }
+        if (_examplesWindow is null)
+        {
+            _examplesWindow = new Window
+            {
+                Title = "Examples", Owner = this, SizeToContent = SizeToContent.WidthAndHeight, ResizeMode = ResizeMode.NoResize, ShowActivated = false,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+            _examplesWindow.Closed += (_, _) => { _examplesWindow = null; foreach (var (_, p) in _examples.ToList()) p.TrySetResult(false); };
+            _examplesWindow.Content = panel;
+            _examplesWindow.Show();
+        }
+        else _examplesWindow.Content = panel;
     }
 
     // Speech to hear, played to its end.

@@ -28,7 +28,7 @@ on Start:
         # --- the emotionless speech: from the microphone, or a WAV file ---
         prompt "Say a sentence in a flat voice, without emotion, or choose a WAV file."
         acquire Speech (OSD-BSO-V1.5) via VAD
-             or SpeechFile (OSD-BSO-V1.5) = { "BasicSpeechDataQualifier": { "Formats": { "TransportFormats": { "FileFormat": "WAV" } } } }
+             or Speech (OSD-BSO-V1.5) = { "BasicSpeechDataQualifier": { "Formats": { "TransportFormats": { "FileFormat": "WAV" } } } }
 
         # --- the emotion and its degree: a list and a slider ---
         prompt "Now choose the emotion and how strong it should be."
@@ -38,13 +38,8 @@ on Start:
         offer ModeSelector (OSD-SEL-V1.5:1) = { "Header": "OSD-SEL-V1.5", "SelectorID": "neural" }
         offer Language (OSD-SEL-V1.5:2) = { "Header": "OSD-SEL-V1.5", "Language": { "InputLanguage": "en", "OutputLanguage": "en" } }
         offer Emotion (MMC-EEM-V2.5:1)
-        branch on SpeechFile {
-            offer SpeechFile (OSD-BSO-V1.5:1)
-            offer SpeechFile (OSD-BSO-V1.5:2)
-        } else {
-            offer Speech (OSD-BSO-V1.5:1)
-            offer Speech (OSD-BSO-V1.5:2)
-        }
+        offer Speech (OSD-BSO-V1.5:1)
+        offer Speech (OSD-BSO-V1.5:2)
 
         # --- and gives the speech with the emotion, which is played ---
         ask     Result (OSD-BSO-V1.5)
