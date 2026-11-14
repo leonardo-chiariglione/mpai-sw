@@ -14,7 +14,7 @@ Claude never deletes a request. A request that needs a decision from you is mark
 
 ## Requests
 
-ORDER FOR THE NIGHT OF 2026-11-14/15 (author): N-24 first (the whole test run after X7, the Controller API addressing a Module by its MODULE_ID), then N-25 (OSD-TMA on the 5-minute AMI meeting), then any other request from the top as usual.
+ORDER FOR THE NIGHT OF 2026-11-14/15 (author): N-24 first (the whole test run after X7, the Controller API addressing a Module by its MODULE_ID), then N-26 (the XRV two-metaverse demo: the author wants to see the video on the morning of 2026-11-15), then N-25 (OSD-TMA on the 5-minute AMI meeting), then any other request from the top as usual.
 
 ### N-1 Federated learning demo, step 1: training in the End User's Health Front End
 Status: done
@@ -379,3 +379,22 @@ Needs: Ollama and the models, the TPM simulator in WSL (Secure Profile tests).
 Status: todo
 Request: run TmaEndToEndTests.TheAmiMeeting on the whole video: set MPAI_TMA_AMI_SECONDS=300, then `dotnet test Test\Mpai.Aif.Tests --filter FullyQualifiedName~TmaEndToEndTests.TheAmiMeeting`. By day the first 30 s passed (2026-11-14 14:59: 3 min, 11 AIMs ALIVE, no exception, valid MEV with 3 scenes, ASR texts right). Report from Test\Results\2026-11-14\tma-ami.txt (run time, AIM status, exceptions, scenes, faces/voices given, texts, validity), and keep tma-ami-last-mev.json and tma-ami-aim-outputs.txt. Compare the speech turns with the who-speaks-when of the same 5 minutes if it can be rebuilt; say what TMA's MEV does and does not carry (see the OSD-TMA review of 2026-11-14: IDs, positions and texts are expected to be missing from the MEV).
 Needs: the models in Models\ (ECAPA, SCRFD, ArcFace, Whisper), ffmpeg (winget Gyan.FFmpeg).
+
+### N-26 XRV-LTP demo for the presentation of Tuesday 2026-11-17: the longer evening on two metaverses, steps in the deck, and a video (2026-11-14)
+Status: todo
+Request (author, 2026-11-14: "you run the show tonight and you make a video of it so that tomorrow I can see the visual result"; "add the steps of the show in the XRV deck"; "do it tonight"). Decisions of the day:
+- TWO METAVERSES: the Real Environment is an M-Instance "Theatre", the Virtual Environment an M-Instance "Square" (two MMM-TEC servers, D:\AI\MMM, running at the same time, in real time). Each is driven by its own list of TIME-STAMPED PROCESS ACTIONS (MM-Add, MM-Move, MM-Animate, Property Change...), performed live at their times. The actors are AVATARS (Personae): Anna in the Theatre; guests and Bot in the Square. The theatre audience is NOT represented: only its audio (applause as an Audio Object in the Theatre, heard). No heart synchrony (no audience to measure).
+- The XRV-LTP Module (1XRV-LTP-V1.0-I01, through the UA and XRV-LTP.orch) watches both M-Instances (MM-Capture, as Apps\XRV\LTP\VirtualVenue\MmmVirtualVenue does for the Square; a venue device of the same kind for the Theatre) and performs its Actions in both (Property Change: lamps, colour, scrim, effects). The Status Interpretation AIMs must read the poses (MM-Animate: raise arms, sit, face) and the applause: that is the one change to the AIMs (today they see only who is present).
+- THE SHOW, seven Cues, one ending played (group 1). Script in Test\Data\XRV\LongerEvening (with Action Table and venue documents):
+  C0 Real: the operator gives Go -> house lights down; dusk in the Square -> C1.
+  C1 Mixed: Anna walks onto the Theatre stage AND a guest onto the Square stage -> both real lamps full; virtual lamp 30% -> C2.
+  C2 Real: the Theatre applauds (heard; RE Participant Status, Audio Behaviour, Clapping Intensity) -> lamp 2 amber, a spot on Anna; the applause heard in the Square -> C3.
+  C3 Virtual: the guests raise their arms (VE Participant Status, Gesture "Raising arms") -> fireflies on the scrim and around the virtual lamp -> C4.
+  C4 Virtual: Bot walks onto the Square stage -> real lamps off; virtual lamp full -> C5.
+  C5 Real, two groups: 1) Anna raises her arms toward the scrim (Gesture) -> the scrim brightens, Bot turns to the Theatre -> C6a; 2) Anna sits down (StandSit) -> slow fade to black, the lamp fades, Bot walks away -> end (C6b merged into it; in the Script, not played).
+  C6a Real: Anna turns to face Bot on the scrim (Spatial Attitude) -> all lamps full, confetti; fireworks over the Square -> end.
+  What matters (author): actions the viewers clearly associate with Cues.
+- THE VIDEO: one page with the two screens side by side (Theatre left, Square right), drawn from the two M-Instances as they run; under EACH screen: the Cue in progress, the Condition the Module found met (plain words + Data Type, from the Module's output, not from the Script), and the Actions that followed. Applause audible. About 2 minutes. Recorded from the live run (headless Edge + ffmpeg) to C:\Users\Thor\Downloads\XRV-LTP-two-metaverses-demo.mp4.
+- THE DECK: OneDrive My Standards\mpai\XRV\MPAI-XRV-LTP presentation.pptx (edit that file; PowerPoint COM, never Quit a PowerPoint the user has open): slide 24 eight -> seven Cues (C5 Real "Anna chooses: arms up or sits down", C6a Real "Anna turns to face Bot", group 2 "the show fades out, end"; legend corrected: the kind of a Cue says where its Conditions are observed, every Cue can act in both); slide 25 table with the seven Cues above (no voting, no heart synchrony); slide 26 "two Cues to seven" (remove votes and heart rates); a NEW slide after 25: "The demo: two metaverses, step by step" (Cue / what the viewer sees or hears / what follows at once), with the video inserted if made.
+Done looks like: the MP4 in Downloads, the deck updated, a short report in the night report of what is real (Module decisions) and what is scripted (the Process Action lists); tests added for the new venue device and the pose/applause reading. Nothing committed.
+Needs: nothing more. If the AIM change cannot be done safely, say so and stop before the video rather than caption from the Script.
