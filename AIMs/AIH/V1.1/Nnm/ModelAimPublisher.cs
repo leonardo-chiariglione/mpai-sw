@@ -82,7 +82,7 @@ public sealed class ModelAimPublisher
         File.WriteAllText(modelFile, model.ToJsonString());
         var sha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(modelFile)));
         // THE CODE OF THE AIM: the Back End is its Implementer too, and keeps the binary where it implements; the L3 names that file, and the Store approves its fingerprint.
-        // THE PACKAGE (MPAI Store 4): the binary and the libraries it loads - those of the package, not of MPAI-AIF - kept together where the Back End implements, so that
+        // THE PACKAGE (MPAI-GME Operation, 5): the binary and the libraries it loads - those of the package, not of MPAI-AIF - kept together where the Back End implements, so that
         // the fingerprint the Store records is that of what the AIM runs.
         var code = Path.Combine(_implementations, "Mpai.Aih.Nnm.dll");
         var built = typeof(NnmAimProcessor).Assembly.Location;

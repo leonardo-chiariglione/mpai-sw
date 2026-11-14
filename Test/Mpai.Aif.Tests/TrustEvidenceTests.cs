@@ -153,7 +153,7 @@ public class TrustEvidenceTests
         }
         var name = $"1{module}-V1.0-I01";
         // The measured SHA-256 of a binary changes with each build: not recorded.
-        static string Masked(string? why) => Regex.Replace(why ?? "", @"SHA-256 [0-9A-F]{16}\.\.\.", "SHA-256 <as measured>");
+        static string Masked(string? why) => Regex.Replace(why ?? "", @"SHA-256 [0-9A-Fa-f]{16}\.\.\.", "SHA-256 <as measured>");      // lower-case since MPAI-GME Operation, 5 (2026-11-14)
         AifError outcome;
         int id;
         try { outcome = api.StartFlow(name, out id); }

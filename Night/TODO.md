@@ -14,7 +14,7 @@ Claude never deletes a request. A request that needs a decision from you is mark
 
 ## Requests
 
-ORDER FOR THE NIGHT OF 2026-11-14/15 (author): N-24 first (the whole test run after X7, the Controller API addressing a Module by its MODULE_ID), then any other request from the top as usual.
+ORDER FOR THE NIGHT OF 2026-11-14/15 (author): N-24 first (the whole test run after X7, the Controller API addressing a Module by its MODULE_ID), then N-25 (OSD-TMA on the 5-minute AMI meeting), then any other request from the top as usual.
 
 ### N-1 Federated learning demo, step 1: training in the End User's Health Front End
 Status: done
@@ -374,3 +374,8 @@ Questions: none blocking. Is the altered-code scene as wanted (one extra refused
 Status: todo
 Request: X7 of the XRV-LTP vs AIF V3.0 review (author: "Full change", 2026-11-14): every call of the Controller API after Start addresses the Module by the MODULE_ID StartFlow returned (Basic API 2.2, UA-3); Advance no longer starts and stops a Module that is not running; the remote clients, the Secure Controller client and its frames, the workflow interpreter, the User Agents, the MAS and ASM services and all the tests were changed. By day only the Fast group was run. Tonight: the whole suite (Fast, Slow, Models), and for each failure say whether it failed the same way in the full run of the night of 2026-11-13/14 (Night\logs-2026-11-14\full-suite.txt: 44 failures of 1257) or is new; a new one that comes from X7 (a test or an App that still relies on Advance starting the Module, a frame of the Secure Controller, a MODULE_ID not kept) is fixed if the fix is in a test, else written down with the reason.
 Needs: Ollama and the models, the TPM simulator in WSL (Secure Profile tests).
+
+### N-25 OSD-TMA on a real programme: the 5-minute AMI meeting (Test\Data\TMA), 2026-11-14
+Status: todo
+Request: run TmaEndToEndTests.TheAmiMeeting on the whole video: set MPAI_TMA_AMI_SECONDS=300, then `dotnet test Test\Mpai.Aif.Tests --filter FullyQualifiedName~TmaEndToEndTests.TheAmiMeeting`. By day the first 30 s passed (2026-11-14 14:59: 3 min, 11 AIMs ALIVE, no exception, valid MEV with 3 scenes, ASR texts right). Report from Test\Results\2026-11-14\tma-ami.txt (run time, AIM status, exceptions, scenes, faces/voices given, texts, validity), and keep tma-ami-last-mev.json and tma-ami-aim-outputs.txt. Compare the speech turns with the who-speaks-when of the same 5 minutes if it can be rebuilt; say what TMA's MEV does and does not carry (see the OSD-TMA review of 2026-11-14: IDs, positions and texts are expected to be missing from the MEV).
+Needs: the models in Models\ (ECAPA, SCRFD, ArcFace, Whisper), ffmpeg (winget Gyan.FFmpeg).

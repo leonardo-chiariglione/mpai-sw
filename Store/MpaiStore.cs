@@ -98,6 +98,28 @@ public sealed class MpaiStore
     // binary the L3 does not name is not recorded; one it names and is not submitted
     // is reported. Approval does not publish: publishing is Publish's, with its own
     // check of the Metadata.
+    // THE PACKAGE THE L3 STATES (MPAI-GME Operation, 5), measured where it is: a folder, every file in it; a .zip, every file of it; one file, that file. Where the location
+    // is not on this machine (an https address, a source tree), the folder of the binary submitted.
+    private static string OfLocation(JsonElement l3, string binary, string submitted)
+    {
+        var uri = l3.TryGetProperty("Implementations", out var list) && list.ValueKind == JsonValueKind.Array
+            ? list.EnumerateArray().Where(i => i.TryGetProperty("BinaryName", out var b) && b.GetString() == binary)
+                  .Select(i => i.TryGetProperty("ImplementationURI", out var u) ? u.GetString() : null).FirstOrDefault()
+            : null;
+        if (uri is not null && Uri.TryCreate(uri, UriKind.Absolute, out var parsed) && parsed.IsFile)
+        {
+            var local = parsed.LocalPath.TrimEnd(Path.DirectorySeparatorChar);
+            if (Directory.Exists(local)) return ImplementationFingerprints.OfDirectory(local);
+            if (File.Exists(local) && local.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+            {
+                using var zip = File.OpenRead(local);
+                return ImplementationFingerprints.OfPackage(zip, binary) ?? ImplementationFingerprints.OfSingleFile(local);
+            }
+            if (File.Exists(local)) return ImplementationFingerprints.OfSingleFile(local);
+        }
+        return ImplementationFingerprints.OfImplementation(submitted);
+    }
+
     public StoreResult Approve(string aimName, IReadOnlyDictionary<string, string> binaries)
     {
         var identifier = FindByAimName(aimName);
@@ -110,7 +132,7 @@ public sealed class MpaiStore
         var fingerprints = new ImplementationFingerprints(folder);
         var reported = new List<string>();
         foreach (var binary in named)
-            if (binaries.TryGetValue(binary, out var file)) fingerprints.Approve(aimName, binary, ImplementationFingerprints.OfImplementation(file), DateTimeOffset.UtcNow);
+            if (binaries.TryGetValue(binary, out var file)) fingerprints.Approve(aimName, binary, OfLocation(document.RootElement, binary, file), DateTimeOffset.UtcNow);
             else reported.Add($"{binary}: named by the L3, not submitted - no fingerprint recorded");
         if (named.Count == 0) reported.Add("the L3 names no binary");
         return StoreResult.Valid(identifier.ToString(), reported);

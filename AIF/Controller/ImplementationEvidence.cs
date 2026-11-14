@@ -25,7 +25,7 @@ public static class ImplementationEvidence
         return measured.GetOrAdd((info.FullName, info.Length, info.LastWriteTimeUtc), _ => ImplementationFingerprints.Of(file));
     }
 
-    // The fingerprint of an Implementation: of its package - the binary and the assemblies of the package it loads (MPAI Store 4; ImplementationFingerprints).
+    // The fingerprint of an Implementation: of its package - the binary and the assemblies of the package it loads (MPAI-GME Operation, 5; ImplementationFingerprints).
     public static string MeasureImplementation(string binaryFile) => ImplementationFingerprints.OfImplementation(binaryFile);
 
     // The measurements of one AIM: its binary - the package it is in -, where the provider says which it is,

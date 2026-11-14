@@ -115,7 +115,7 @@ public class XrvLtpTests
         public ControllerApi Api { get; }
         public int ModuleId { get; }                                                                       // the MODULE_ID the Controller returned when it started LTP
         // UNDER TRUST (AIF V3.0 Zero Trust and Profiles; review finding X2, 2026-11-14): the Controller is the verifier, and the Store has approved the fingerprint of
-        // the package of each XRV AIM - its binary and the libraries it loads, Mpai.Xrv.Common among them (MPAI Store 4). Each AIM is measured before it runs;
+        // the package of each XRV AIM - its binary and the libraries it loads, Mpai.Xrv.Common among them (MPAI-GME Operation, 5). Each AIM is measured before it runs;
         // one whose package is not what the Store approved refuses the Module. measuredFrom: where the Controller finds the binaries to measure (by default where they run).
         public Show(string? measuredFrom = null)
         {

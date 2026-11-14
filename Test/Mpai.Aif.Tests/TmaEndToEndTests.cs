@@ -296,6 +296,101 @@ public class TmaEndToEndTests : IDisposable
         foreach (var (name, _) in People) { Assert.Contains(name, faces); Assert.Contains(name, voices); }
     }
 
+    // ---- A REAL PROGRAMME: the AMI meeting (2026-11-14) ---------------------------------------------------------------------------------------------
+    //
+    // Test\Data\TMA\AMI-IS1009c-10m00-15m00-side-by-side.mp4: four people at a table, talking among themselves, two cameras side by side, the headset mix as sound
+    // (README.md beside it). The video is split as TV Splitting would (it has no implementation yet): its frames at 5 a second, 960 x 540, as one Basic Visual Object;
+    // its sound, 16 kHz mono, as one Basic Speech Object; no Text. Nobody is enrolled: TMA says "A speaks, B speaks", not who the people are.
+    // What it must do: finish; give Event Descriptors that are valid against their schema and hold scenes. What each AIM gave is written down
+    // (Test\Results\2026-11-14\tma-ami*.txt). How much of the programme: MPAI_TMA_AMI_SECONDS (30 by default; the whole is 300).
+    [SkippableFact]
+    public void TheAmiMeeting()
+    {
+        var video = Data("TMA", "AMI-IS1009c-10m00-15m00-side-by-side.mp4");
+        var ffmpeg = Ffmpeg();
+        Skip.IfNot(File.Exists(Models("ecapa-tdnn.onnx")) && File.Exists(Models("glintr100.onnx")) && File.Exists(Models("Whisper", "bin", "whisper-cli.exe")), "the models are not in Models\\");
+        Skip.IfNot(File.Exists(video) && ffmpeg is not null, "the AMI video (Test\\Data\\TMA) or ffmpeg is not on this machine");
+        var seconds = double.TryParse(Environment.GetEnvironmentVariable("MPAI_TMA_AMI_SECONDS"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var s) ? s : 30;
+        const double fps = 5;
+        var settings = Prepare();
+
+        var frames = Path.Combine(_folder, "frames"); Directory.CreateDirectory(frames);
+        var span = seconds.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        RunTool(ffmpeg!, $"-v error -y -t {span} -i \"{video}\" -an -vf fps={fps},scale=960:540 -q:v 4 \"{Path.Combine(frames, "f%05d.jpg")}\"");
+        var wav = Path.Combine(_folder, "audio.wav");
+        RunTool(ffmpeg!, $"-v error -y -t {span} -i \"{video}\" -vn -ac 1 -ar 16000 -c:a pcm_s16le \"{wav}\"");
+        var jpgs = Directory.GetFiles(frames, "*.jpg").Order(StringComparer.Ordinal).ToList();
+        var bvo = new JsonObject
+        {
+            ["Header"] = "OSD-BVO-V1.5", ["MInstanceID"] = "tma-test", ["BasicVisualObjectID"] = "ami-is1009c-video",
+            ["BasicVisualObjectData"] = new JsonArray(jpgs.Select(f => (JsonNode)new JsonObject { ["Data"] = Convert.ToBase64String(File.ReadAllBytes(f)) }).ToArray()),
+            ["BasicVisualObjectProperties"] = new JsonObject { ["FrameRate"] = fps }
+        };
+        AmiRecord($"--- {DateTime.Now:s}: AMI IS1009c 10:00 +{seconds:F0} s, {jpgs.Count} frames at {fps}/s, {new FileInfo(wav).Length / 32000.0:F1} s of sound");
+
+        var log = new ConcurrentQueue<(string Aim, string Port, string Json)>();
+        using var gallery = new GalleryHolder(new SubjectGallery());
+        using var api = new ControllerApi(_folder, settings, store => new Provider(store, gallery.Value, log));
+        Assert.Equal(AifError.OK, api.StartFlow(Module, out var moduleId));
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        Assert.Equal(AifError.OK, api.InputWrite(moduleId, "OSD-BVO-V1.5", 1, bvo.ToJsonString(), 120_000));
+        Assert.Equal(AifError.OK, api.InputWrite(moduleId, "OSD-BSO-V1.5", 1, SpeechObject(File.ReadAllBytes(wav)).ToJsonString(), 120_000));
+
+        JsonObject? last = null;
+        for (var i = 0; i < 2000; i++)
+        {
+            var read = api.OutputRead(moduleId, "OSD-MEV-V1.5", 1, i == 0 ? 1_800_000 : 180_000);
+            if (read.Json is null) break;
+            last = JsonNode.Parse(read.Json)!.AsObject();
+        }
+        AmiRecord($"run: {clock.Elapsed.TotalSeconds:F1} s");
+        AmiRecord("AIMs: " + string.Join("; ", api.Status(moduleId).Aims.Select(a => $"{a.Aim} {a.Status}{(string.IsNullOrEmpty(a.Reason) ? "" : " " + a.Reason)}")));
+        var failures = log.Where(l => l.Port is "EXCEPTION" or "ERROR").ToList();
+        AmiRecord($"exceptions/errors of AIMs: {failures.Count}" + string.Concat(failures.Take(5).Select(f => $"\n  {f.Aim} {f.Port}: {(f.Json.Length > 300 ? f.Json[..300] : f.Json)}")));
+        var dump = Path.Combine(Repository.Root, "Test", "Results", "2026-11-14");
+        Directory.CreateDirectory(dump);
+        File.WriteAllLines(Path.Combine(dump, "tma-ami-aim-outputs.txt"), log.Select(l => $"{l.Aim} | {l.Port} | {(l.Json.Length > 600 ? l.Json[..600] + "..." : l.Json)}"));
+        Assert.NotNull(last);
+        File.WriteAllText(Path.Combine(dump, "tma-ami-last-mev.json"), last!.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+
+        var scenes = last["MultimodalSceneDescriptors"]!.AsArray();
+        AmiRecord($"Event Descriptors: {scenes.Count} scenes: " +
+                  $"{scenes.Count(x => x!["BasicMultimodalSceneDescriptorsData"]?[0]?["BXSOrBXSID"]?["BasicSpeechSceneDescriptors"] is not null)} of speech, " +
+                  $"{scenes.Count(x => x!["BasicMultimodalSceneDescriptorsData"]?[0]?["BXSOrBXSID"]?["BasicVisualSceneDescriptors"] is not null)} of pictures");
+        var data = log.Where(l => l.Json.Length > 0 && !l.Port.StartsWith("IN ") && l.Port is not ("ERROR" or "EXCEPTION")).ToList();
+        AmiRecord($"faces given by FIR: {data.Count(l => l.Aim.Contains("FIR") && l.Port.Contains("OSD-IID"))}; voices given by SIR: {data.Count(l => l.Aim.Contains("SIR") && l.Port.Contains("OSD-IID"))}");
+        AmiRecord("texts: " + string.Join(" | ", data.Where(l => l.Aim.Contains("ASR")).Select(l => (string?)JsonNode.Parse(l.Json)?["BasicTextData"]?[0]?["Data"])));
+        var verdict = PgmRig.Check(last);
+        AmiRecord("valid against the schema: " + verdict);
+        Assert.Equal("valid", verdict);
+        Assert.True(scenes.Count > 0, "no scenes");
+    }
+
+    // ffmpeg: on the PATH, else where winget puts it (C:\Users\...\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_...\...\bin).
+    private static string? Ffmpeg()
+    {
+        foreach (var dir in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator))
+            if (dir.Length > 0 && File.Exists(Path.Combine(dir, "ffmpeg.exe"))) return Path.Combine(dir, "ffmpeg.exe");
+        var winget = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "WinGet", "Packages");
+        return Directory.Exists(winget) ? Directory.EnumerateFiles(winget, "ffmpeg.exe", SearchOption.AllDirectories).FirstOrDefault() : null;
+    }
+
+    private static void RunTool(string exe, string arguments)
+    {
+        using var p = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(exe, arguments) { RedirectStandardError = true, UseShellExecute = false })!;
+        var err = p.StandardError.ReadToEnd();
+        p.WaitForExit();
+        if (p.ExitCode != 0) throw new InvalidOperationException($"{Path.GetFileName(exe)} failed: {err}");
+    }
+
+    private static string AmiRecord(string line)
+    {
+        var folder = Path.Combine(Repository.Root, "Test", "Results", "2026-11-14");
+        Directory.CreateDirectory(folder);
+        File.AppendAllText(Path.Combine(folder, "tma-ami.txt"), line + "\n");
+        return line;
+    }
+
     private sealed class GalleryHolder(SubjectGallery value) : IDisposable { public SubjectGallery Value { get; } = value; public void Dispose() { } }
 }
 

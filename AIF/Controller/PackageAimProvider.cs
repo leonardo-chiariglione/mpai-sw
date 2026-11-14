@@ -221,7 +221,7 @@ public sealed class PackageAimProvider : IAimProvider
         private readonly AssemblyDependencyResolver resolver;
         public PackageContext(string assemblyPath) : base(isCollectible: false) => resolver = new AssemblyDependencyResolver(assemblyPath);
 
-        // WHAT RUNS IS WHAT WAS MEASURED (MPAI Store 4; Zero Trust and Profiles 5): an assembly the package has is loaded from the package - the fingerprint the Store
+        // WHAT RUNS IS WHAT WAS MEASURED (MPAI-GME Operation, 5; Zero Trust and Profiles 5): an assembly the package has is loaded from the package - the fingerprint the Store
         // approved covers it - except MPAI-AIF itself (AIF.*), which the Controller gives every package, so that the types the Controller and the AIM share are one.
         // Only what the package does not have (the .NET runtime) comes from the program.
         protected override Assembly? Load(AssemblyName name)

@@ -118,8 +118,9 @@ public sealed class PackageCheck
                     }
                     else
                     {
-                        var file = File.Exists(single) ? single : Path.Combine(folder, binary + ".dll");
-                        if (File.Exists(file)) fingerprint = AIF.Store.ImplementationFingerprints.OfImplementation(file);
+                        // MPAI-GME Operation, 5: a location that is one file is a package of one file; a folder is every file in it.
+                        if (File.Exists(single)) fingerprint = AIF.Store.ImplementationFingerprints.OfSingleFile(single);
+                        else if (File.Exists(Path.Combine(folder, binary + ".dll"))) fingerprint = AIF.Store.ImplementationFingerprints.OfDirectory(folder);
                     }
                 }
                 else if (u.Scheme is "http" or "https" && u.AbsolutePath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))

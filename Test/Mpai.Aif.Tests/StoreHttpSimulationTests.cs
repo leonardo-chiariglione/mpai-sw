@@ -40,11 +40,11 @@ public class StoreHttpSimulationTests
         var repository = new AimRepository(controller);
         Assert.True(repository.Obtain(Aim, source));                                                  // the L3 from the Store, the Implementation from where the L3 says
         Assert.True(repository.Holds(Aim));
-        Assert.Equal(File.ReadAllText(dll), File.ReadAllText(Path.Combine(controller, "implementations", Aim, Binary)));
+        Assert.Equal(File.ReadAllText(dll), File.ReadAllText(Path.Combine(controller, "implementations", Aim, Binary + ".dll")));   // the package kept as obtained (MPAI-GME Operation, 5)
         Assert.False(repository.Obtain(Aim, source));                                                  // what it holds it does not obtain again
 
         // It measured and asked: the Store says Same, and a different measurement Different. The Controller has no way to read the fingerprint.
-        var measured = ImplementationFingerprints.OfImplementation(dll);                                // the package: the binary and what it loads beside it
+        var measured = ImplementationFingerprints.OfImplementation(dll);                                // the package: every file of the folder the L3 names (MPAI-GME Operation, 5)
         Assert.Equal(VerifyResult.Same, source.Verify(Aim, Binary, measured));
         Assert.Equal(VerifyResult.Different, source.Verify(Aim, Binary, new string('0', 64)));
         Assert.Equal(VerifyResult.NotRecorded, source.Verify(Aim, "Another", measured));

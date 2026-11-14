@@ -88,9 +88,6 @@ public sealed class AimRepository
     private void SaveStatusCheck(string aim, DateTimeOffset at) =>
         File.WriteAllText(StatusFileOf(aim), new JsonObject { ["Confirmed"] = at.ToString("O") }.ToJsonString());
     private string FilesOf(string aim) => Path.Combine(_folder, "implementations", aim);
-
-    // The libraries of a package obtained with its binary, until they are written beside it.
-    private readonly Dictionary<(string Aim, string Name), byte[]> packageLibraries = new();
     private string L3Of(string aim) => Path.Combine(_folder, aim + ".json");
 
     // Whether the Controller obtained the AIM (and holds it).
@@ -114,11 +111,12 @@ public sealed class AimRepository
     public string FileOf(string aim, string name)
     {
         CheckLicence(aim);
-        var path = Path.Combine(FilesOf(aim), name);
+        // the binary in the package as it was kept: BinaryName.dll, else a file named BinaryName
+        var path = File.Exists(Path.Combine(FilesOf(aim), name + ".dll")) ? Path.Combine(FilesOf(aim), name + ".dll") : Path.Combine(FilesOf(aim), name);
         var record = Holds(aim) ? JsonNode.Parse(File.ReadAllText(RecordOf(aim))) : null;
         var held = (string?)(record?["Held"] ?? record?["Approved"])?[name] ?? throw new InvalidOperationException($"NOT_TRUSTED: the Store confirmed no {name} for {aim}.");
-        // measured as the Store measures it: the package - the binary and the libraries kept beside it (MPAI Store 4)
-        if (!File.Exists(path) || ImplementationFingerprints.OfImplementation(path) != held)
+        // measured as the Store measures it: the package as it was kept, every file of it (MPAI-GME Operation, 5)
+        if (!File.Exists(path) || !string.Equals(ImplementationFingerprints.OfDirectory(FilesOf(aim)), held, StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException($"NOT_TRUSTED: {name} of {aim} is not the one the Store confirmed.");
         return path;
     }
@@ -238,29 +236,22 @@ public sealed class AimRepository
                     var name = item.TryGetProperty("BinaryName", out var b) ? b.GetString() : null;
                     if (name is null || !package.Binaries.Contains(name)) continue;                           // what the Store has no fingerprint of is not obtained
                     var uri = item.TryGetProperty("ImplementationURI", out var u) ? u.GetString() : null;
-                    byte[] bytes;
-                    string binaryUri;
-                    try { binaryUri = FileUri(uri ?? throw new InvalidOperationException("the L3 gives no ImplementationURI"), name); bytes = Fetch(binaryUri); }
-                    catch (Exception e) when (e is IOException or UnauthorizedAccessException or UriFormatException or HttpRequestException or InvalidOperationException)
+                    // THE PACKAGE (MPAI-GME Operation, 5): every file at the location the L3 states - the files of a .zip, the files of a folder, or the one file - obtained whole.
+                    Dictionary<string, byte[]> obtained;
+                    try { obtained = Package(uri ?? throw new InvalidOperationException("the L3 gives no ImplementationURI")); }
+                    catch (Exception e) when (e is IOException or UnauthorizedAccessException or UriFormatException or HttpRequestException or InvalidOperationException or InvalidDataException)
                     { throw new InvalidOperationException($"{name} of {package.AimName} could not be obtained from {uri}: {e.Message}", e); }
-                    // THE FINGERPRINT OF THE PACKAGE (MPAI Store 4): the binary and the libraries it loads, obtained from where the binary is.
-                    var libraries = new Dictionary<string, byte[]>();
-                    var measured = ImplementationFingerprints.OfFiles(ImplementationFingerprints.PackageFiles(name + ".dll", n =>
-                    {
-                        if (n == name + ".dll") return bytes;
-                        var library = TryFetch(Sibling(binaryUri, n));
-                        if (library is not null) libraries[n] = library;
-                        return library;
-                    }));
+                    if (!obtained.Keys.Any(p => p == name + ".dll" || p == name || p.EndsWith("/" + name + ".dll", StringComparison.Ordinal)))
+                        throw new InvalidOperationException($"{name} of {package.AimName} is not in the package at {uri}.");
+                    var measured = ImplementationFingerprints.OfFiles(obtained.Select(f => (f.Key, Convert.ToHexString(SHA256.HashData(f.Value)))));
                     // The Controller measured; the Store says whether that is what it approved. (A host measures and the Controller asks: verify is null there.)
                     if (verify is not null && verify(name, measured) != VerifyResult.Same)
                         throw new InvalidOperationException($"NOT_TRUSTED: {name} of {package.AimName} is not what the Store approved (obtained from {uri}).");
-                    files[name] = bytes;
+                    foreach (var (path, bytes) in obtained) files[path] = bytes;
                     held[name] = measured;
-                    foreach (var (n, library) in libraries) packageLibraries[(package.AimName, n)] = library;     // kept beside the binary: the package, as measured
                 }
-        if (fetch && package.Binaries.Except(files.Keys).Any())
-            throw new InvalidOperationException($"{package.AimName}: the L3 does not say where {string.Join(", ", package.Binaries.Except(files.Keys))} can be obtained.");
+        if (fetch && package.Binaries.Except(held.Keys).Any())
+            throw new InvalidOperationException($"{package.AimName}: the L3 does not say where {string.Join(", ", package.Binaries.Except(held.Keys))} can be obtained.");
 
         // The AIM Licence, when the AIM has an offer: it must come, and be good, for the Controller to keep the AIM (the right to keep it is one it grants).
         using (var l3 = JsonDocument.Parse(package.L3Json))
@@ -274,11 +265,12 @@ public sealed class AimRepository
         var into = FilesOf(package.AimName);
         if (Directory.Exists(into)) Directory.Delete(into, true);
         Directory.CreateDirectory(into);
-        foreach (var (name, bytes) in files) File.WriteAllBytes(Path.Combine(into, name), bytes);
-        foreach (var ((aim, name), bytes) in packageLibraries.Where(p => p.Key.Aim == package.AimName).ToList())
+        // the package as it was obtained and measured: every file at its path
+        foreach (var (path, bytes) in files)
         {
-            File.WriteAllBytes(Path.Combine(into, name), bytes);
-            packageLibraries.Remove((aim, name));
+            var target = Path.Combine(into, path.Replace('/', Path.DirectorySeparatorChar));
+            Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+            File.WriteAllBytes(target, bytes);
         }
         File.WriteAllText(L3Of(package.AimName), package.L3Json);
         if (licence is not null) { File.WriteAllText(LicenceFileOf(package.AimName), licence); SaveStatusCheck(package.AimName, Clock()); }   // issued now: confirmed now
@@ -293,24 +285,36 @@ public sealed class AimRepository
         return held;
     }
 
-    // The ImplementationURI is the Implementation itself (a file), or the folder of the package holding it: BinaryName.dll, else a file named BinaryName.
-    private static string FileUri(string uri, string binaryName)
+    // THE PACKAGE AT A LOCATION (MPAI-GME Operation, 5), every file by its path in the package: a folder (file:), every file in it at any depth; a .zip, every file of the
+    // archive; anything else, the one file, its name as its path.
+    private Dictionary<string, byte[]> Package(string uri)
     {
-        if (!Uri.TryCreate(uri, UriKind.Absolute, out var parsed) || !parsed.IsFile || !Directory.Exists(parsed.LocalPath)) return uri;
-        var dll = Path.Combine(parsed.LocalPath, binaryName + ".dll");
-        return new Uri(File.Exists(dll) ? dll : Path.Combine(parsed.LocalPath, binaryName)).AbsoluteUri;
+        var files = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+        if (Uri.TryCreate(uri, UriKind.Absolute, out var parsed) && parsed.IsFile && Directory.Exists(parsed.LocalPath))
+        {
+            foreach (var f in Directory.EnumerateFiles(parsed.LocalPath, "*", SearchOption.AllDirectories))
+                files[ImplementationFingerprints.PackagePath(Path.GetRelativePath(parsed.LocalPath, f))] = File.ReadAllBytes(f);
+            return files;
+        }
+        var bytes = Fetch(uri);
+        var last = Uri.TryCreate(uri, UriKind.Absolute, out var p) ? Path.GetFileName(p.LocalPath) : Path.GetFileName(uri);
+        if (last.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+        {
+            using var archive = new System.IO.Compression.ZipArchive(new MemoryStream(bytes), System.IO.Compression.ZipArchiveMode.Read);
+            foreach (var entry in archive.Entries.Where(e => !e.FullName.EndsWith('/') && !e.FullName.EndsWith('\\')))
+            {
+                using var s = entry.Open();
+                using var m = new MemoryStream();
+                s.CopyTo(m);
+                files[ImplementationFingerprints.PackagePath(entry.FullName)] = m.ToArray();
+            }
+            return files;
+        }
+        files[last] = bytes;
+        return files;
     }
 
     public static string Fingerprint(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes));
-
-    // A file beside the binary of a package (a library it loads), or null where there is none.
-    private static string Sibling(string binaryUri, string file) => new Uri(new Uri(binaryUri), file).AbsoluteUri;
-
-    private byte[]? TryFetch(string uri)
-    {
-        try { return Fetch(uri); }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException or UriFormatException or HttpRequestException or InvalidOperationException) { return null; }
-    }
 
     // The version an L3 states for its Implementation.
     public static string VersionIn(JsonElement l3) =>

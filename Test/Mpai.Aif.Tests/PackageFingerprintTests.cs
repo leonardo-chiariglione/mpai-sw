@@ -89,36 +89,62 @@ public class PackageFingerprintTests
         Assert.NotNull(unchecked_.ImplementationOf("1MMC-TTS-V2.5-I03"));
     }
 
-    // THE FINGERPRINT OF AN IMPLEMENTATION IS THAT OF ITS PACKAGE (AIF V3.0, MPAI Store 4; Zero Trust and Profiles 5; 2026-11-13): the SHA-256 of the list of the
-    // files the Implementation loads - the binary its BinaryName names and the assemblies of the package it refers to, at any depth - not of the binary alone.
-    // Judged on XRV-LTP's Action Generation (Mpai.Xrv.Acg, most of whose code is in Mpai.Xrv.Common): a library it loads changed changes the fingerprint; the
-    // assemblies of MPAI-AIF, which the Controller gives every package, are not in it; a file nothing loads does not count; as a folder and as a .zip, one fingerprint.
+    // THE METHOD OF MPAI-GME OPERATION 5 (GME V2.1, as defined on 2026-11-14), on the example the page gives: a package of three files - Mpai.Example.deps.json "{}",
+    // Mpai.Example.dll "MPAI", lib/Mpai.Example.Common.dll "AIF" - has the fingerprint 2581d325...48d7, whether it is measured as a folder, as a .zip or as a list.
     [Fact]
-    public void ALibraryTheImplementationLoadsIsPartOfItsFingerprint()
+    public void TheMethodGivesTheFingerprintOfTheExampleOfGmeOperation5()
+    {
+        const string expected = "2581d32593c2c97cc29c63ee52bd2a9d5d0654a601a80749c0a2b735d93f48d7";
+        var package = Path.Combine(Path.GetTempPath(), "mpai-example-" + Guid.NewGuid().ToString("N"));
+        var zipFile = package + ".zip";
+        try
+        {
+            Directory.CreateDirectory(Path.Combine(package, "lib"));
+            File.WriteAllBytes(Path.Combine(package, "Mpai.Example.deps.json"), "{}"u8.ToArray());
+            File.WriteAllBytes(Path.Combine(package, "Mpai.Example.dll"), "MPAI"u8.ToArray());
+            File.WriteAllBytes(Path.Combine(package, "lib", "Mpai.Example.Common.dll"), "AIF"u8.ToArray());
+            Assert.Equal(expected, ImplementationFingerprints.OfDirectory(package));
+            Assert.Equal(expected, ImplementationFingerprints.OfImplementation(Path.Combine(package, "Mpai.Example.dll")));
+            ZipFile.CreateFromDirectory(package, zipFile);
+            using (var zip = File.OpenRead(zipFile)) Assert.Equal(expected, ImplementationFingerprints.OfPackage(zip, "Mpai.Example"));
+            // a list in any order, the hashes in either case, a path written with "\" or "./": the same lines, the same fingerprint
+            Assert.Equal(expected, ImplementationFingerprints.OfFiles([
+                (".\\lib\\Mpai.Example.Common.dll", "5D72537AB10BFC1B430CC338966F21D7AA97C2AAABD1BC560F353A85976B0518"),
+                ("Mpai.Example.dll", "55bbd2606aa262c6b64904e7ff4d71b3ff7ea073f54fe909f51f11a8b850cec2"),
+                ("/Mpai.Example.deps.json", "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a")]));
+        }
+        finally
+        {
+            try { Directory.Delete(package, true); } catch { }
+            File.Delete(zipFile);
+        }
+    }
+
+    // EVERY FILE OF THE PACKAGE IS IN ITS FINGERPRINT (MPAI-GME Operation, 5), whether or not the Implementation loads it - judged on XRV-LTP's Action Generation (Mpai.Xrv.Acg,
+    // most of whose code is in Mpai.Xrv.Common): a library it loads changed changes the fingerprint, and so does a file nothing loads; as a folder and as a .zip, one
+    // fingerprint; not the binary alone, nor the binary as a package of one file.
+    [Fact]
+    public void EveryFileOfThePackageIsPartOfItsFingerprint()
     {
         var package = Path.Combine(Path.GetTempPath(), "mpai-package-" + Guid.NewGuid().ToString("N"));
         var zipFile = package + ".zip";
         try
         {
             Directory.CreateDirectory(package);
-            foreach (var dll in Directory.GetFiles(AppContext.BaseDirectory, "*.dll")) File.Copy(dll, Path.Combine(package, Path.GetFileName(dll)));
+            foreach (var dll in Directory.GetFiles(AppContext.BaseDirectory, "Mpai.Xrv.*.dll")) File.Copy(dll, Path.Combine(package, Path.GetFileName(dll)));
             var binary = Path.Combine(package, "Mpai.Xrv.Acg.dll");
-            var names = ImplementationFingerprints.PackageFiles("Mpai.Xrv.Acg.dll", n => File.Exists(Path.Combine(package, n)) ? File.ReadAllBytes(Path.Combine(package, n)) : null)
-                                                  .Select(f => f.Path).ToList();
-            Assert.Contains("Mpai.Xrv.Acg.dll", names);
-            Assert.Contains("Mpai.Xrv.Common.dll", names);
-            Assert.DoesNotContain(names, n => n.StartsWith(ImplementationFingerprints.FrameworkPrefix, StringComparison.Ordinal));
-            Assert.Equal(names.OrderBy(n => n, StringComparer.Ordinal), names);
-
             var before = ImplementationFingerprints.OfImplementation(binary);
             Assert.NotEqual(ImplementationFingerprints.Of(binary), before);                                     // not the binary alone
+            Assert.NotEqual(ImplementationFingerprints.OfSingleFile(binary), before);                           // nor a package of one file
+
             File.WriteAllText(Path.Combine(package, "notes.txt"), "a file nothing loads");
-            Assert.Equal(before, ImplementationFingerprints.OfImplementation(binary));
+            var withNotes = ImplementationFingerprints.OfImplementation(binary);
+            Assert.NotEqual(before, withNotes);
             ZipFile.CreateFromDirectory(package, zipFile);
-            using (var zip = File.OpenRead(zipFile)) Assert.Equal(before, ImplementationFingerprints.OfPackage(zip, "Mpai.Xrv.Acg"));
+            using (var zip = File.OpenRead(zipFile)) Assert.Equal(withNotes, ImplementationFingerprints.OfPackage(zip, "Mpai.Xrv.Acg"));
 
             File.AppendAllText(Path.Combine(package, "Mpai.Xrv.Common.dll"), " ");                          // the library changed, the binary the same
-            Assert.NotEqual(before, ImplementationFingerprints.OfImplementation(binary));
+            Assert.NotEqual(withNotes, ImplementationFingerprints.OfImplementation(binary));
         }
         finally
         {

@@ -39,49 +39,69 @@ public sealed class ImplementationFingerprints : IImplementationVerifier
         return Convert.ToHexString(SHA256.HashData(stream));
     }
 
-    // THE FINGERPRINT OF AN IMPLEMENTATION IS THAT OF ITS PACKAGE (AIF V3.0, MPAI Store 4; Zero Trust and Profiles 5; 2026-11-13): the SHA-256 of the list of the
-    // files of the package that the Implementation loads - for each, in the order of their paths, its path and its SHA-256 - so that no file it loads is changed
-    // unseen. The files it loads: the binary its BinaryName names and the assemblies it refers to, at any depth, that the package has; not the assemblies of
-    // MPAI-AIF itself (AIF.*), which the Controller gives every package so that none replaces the framework types the Controller relies on. A binary that is not
-    // a .NET assembly is a package of one file.
-    public const string FrameworkPrefix = "AIF.";
+    // THE FINGERPRINT OF AN IMPLEMENTATION IS THAT OF ITS PACKAGE (MPAI-GME V2.1 Operation, 5, as defined on 2026-11-14). The package is every file at the location the
+    // AIM Instance Metadata states - the files of an archive, the files of a folder, or the one file - whether or not the Implementation loads it. For each file:
+    // its path (relative to the root of the package, "/" between folders, no leading "/" or "./", UTF-8) and the SHA-256 of its content (64 lower-case hex digits);
+    // one line "path SP hash LF" per file; the lines in ascending order of the bytes of their paths; the fingerprint is the SHA-256 of the lines joined, lower-case.
+    // Calculated the same way by the Store (from the package as the Implementer keeps it) and by the Controller, or what executes an AIM apart from it (from the
+    // package as it obtained it, before anything of it is loaded).
 
-    public static string OfImplementation(string binaryFile)
+    // The package of an Implementation whose binary is on disk: the folder that holds the binary, every file in it at any depth - an obtained package is unpacked into
+    // a folder of its own; an AIM built into a program has the program's folder as its package.
+    public static string OfImplementation(string binaryFile) => OfDirectory(Path.GetDirectoryName(Path.GetFullPath(binaryFile))!);
+
+    // A package that is a folder: every file in it, at any depth.
+    public static string OfDirectory(string folder)
     {
-        var folder = Path.GetDirectoryName(Path.GetFullPath(binaryFile))!;
-        // The binary is listed as BinaryName.dll, whatever the name of the file that holds it (an AIM repository keeps it under its BinaryName).
-        var file = Path.GetFileName(binaryFile);
-        var listed = Path.HasExtension(file) ? file : file + ".dll";
-        string? Where(string name) => name == listed ? Path.Combine(folder, file) : File.Exists(Path.Combine(folder, name)) ? Path.Combine(folder, name) : null;
-        return OfFiles(PackageFiles(listed, name => Where(name) is { } path ? File.ReadAllBytes(path) : null, Cached(folder, listed, file)));
+        var root = Path.GetFullPath(folder);
+        return OfFiles(Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
+                                .Select(f => (PackagePath(Path.GetRelativePath(root, f)), HashOf(f))));
     }
 
-    // The SHA-256 of a file of a package on disk, kept while the file is unchanged (a package is measured at every Start).
-    private static readonly System.Collections.Concurrent.ConcurrentDictionary<(string Path, long Length, DateTime Written), (string Sha256, string[] References)> known = new();
+    // A package that is one file: its file name is its path.
+    public static string OfSingleFile(string file) => OfFiles([(Path.GetFileName(file), HashOf(file))]);
 
-    private static Func<string, byte[], (string, string[])?> Cached(string folder, string listed, string file) => (name, bytes) =>
-    {
-        var info = new FileInfo(Path.Combine(folder, name == listed ? file : name));
-        return known.GetOrAdd((info.FullName, info.Length, info.LastWriteTimeUtc), _ => (Convert.ToHexString(SHA256.HashData(bytes)), References(bytes).ToArray()));
-    };
-
-    // The fingerprint of the Implementation binaryName inside a package that is a .zip (its files at the top of the package), or null if its binary is not there.
+    // A package that is a .zip: every file of the archive (a directory is not a file); null if the binary binaryName (BinaryName.dll, or BinaryName) is not in it.
     public static string? OfPackage(Stream zip, string binaryName)
     {
         using var archive = new System.IO.Compression.ZipArchive(zip, System.IO.Compression.ZipArchiveMode.Read, leaveOpen: true);
-        byte[]? Read(string name)
+        var files = new List<(string Path, string Sha256)>();
+        foreach (var entry in archive.Entries)
         {
-            if (archive.GetEntry(name) is not { } entry) return null;
+            if (entry.FullName.EndsWith('/') || entry.FullName.EndsWith('\\')) continue;
             using var stream = entry.Open();
-            using var copy = new MemoryStream();
-            stream.CopyTo(copy);
-            return copy.ToArray();
+            files.Add((PackagePath(entry.FullName), Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant()));
         }
-        var files = PackageFiles(binaryName + ".dll", Read);
-        return files.Count == 0 ? null : OfFiles(files);
+        var names = files.Select(f => f.Path).ToHashSet(StringComparer.Ordinal);
+        return names.Contains(binaryName + ".dll") || names.Contains(binaryName) || names.Any(n => n.EndsWith("/" + binaryName + ".dll", StringComparison.Ordinal)) ? OfFiles(files) : null;
     }
 
-    // The files of a package the Implementation loads, with their SHA-256, in the order of their paths (read: the bytes of a file of the package, or null).
+    // The path of a file in a package as the method writes it: "/" between folders, no leading "/" or "./".
+    public static string PackagePath(string path)
+    {
+        var p = path.Replace('\\', '/');
+        while (p.StartsWith("./", StringComparison.Ordinal) || p.StartsWith('/')) p = p.StartsWith("./", StringComparison.Ordinal) ? p[2..] : p[1..];
+        return p;
+    }
+
+    // The SHA-256 of a file on disk, lower-case hex, kept while the file is unchanged (a package is measured at every Start).
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<(string Path, long Length, DateTime Written), string> known = new();
+    private static string HashOf(string file)
+    {
+        var info = new FileInfo(file);
+        return known.GetOrAdd((info.FullName, info.Length, info.LastWriteTimeUtc), _ => { using var s = File.OpenRead(file); return Convert.ToHexString(SHA256.HashData(s)).ToLowerInvariant(); });
+    }
+
+    // The ascending order of the bytes of the paths (UTF-8).
+    private sealed class Utf8ByteOrder : IComparer<string>
+    {
+        public static readonly Utf8ByteOrder Instance = new();
+        public int Compare(string? x, string? y) => System.Text.Encoding.UTF8.GetBytes(x ?? "").AsSpan().SequenceCompareTo(System.Text.Encoding.UTF8.GetBytes(y ?? ""));
+    }
+
+    // FOR BUILDING A PACKAGE, NOT FOR ITS FINGERPRINT: the files of a folder a .NET binary loads - the binary and the assemblies it refers to, at any depth, that the
+    // folder has - without the assemblies of MPAI-AIF itself (AIF.*), which the Controller gives every package. (read: the bytes of a file, or null.)
+    public const string FrameworkPrefix = "AIF.";
     public static IReadOnlyList<(string Path, string Sha256)> PackageFiles(string binary, Func<string, byte[]?> read, Func<string, byte[], (string, string[])?>? known = null)
     {
         var found = new SortedDictionary<string, string>(StringComparer.Ordinal);
@@ -109,8 +129,10 @@ public sealed class ImplementationFingerprints : IImplementationVerifier
         catch (BadImageFormatException) { return []; }                           // not a .NET assembly: a package of one file
     }
 
-    public static string OfFiles(IReadOnlyList<(string Path, string Sha256)> files) =>
-        Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(string.Concat(files.Select(f => f.Path + " " + f.Sha256 + "\n")))));
+    // The fingerprint of a list of files (path, SHA-256): the lines "path SP hash LF" in ascending byte order of the paths, hashed; lower-case hex (MPAI-GME Operation, 5).
+    public static string OfFiles(IEnumerable<(string Path, string Sha256)> files) =>
+        Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(string.Concat(
+            files.Select(f => (Path: PackagePath(f.Path), Sha: f.Sha256.ToLowerInvariant())).OrderBy(f => f.Path, Utf8ByteOrder.Instance).Select(f => f.Path + " " + f.Sha + "\n"))))).ToLowerInvariant();
 
     // Records the fingerprint of the binary that implements an AIM, as approved.
     public void Approve(string aimName, string binaryName, string fingerprint, DateTimeOffset at, string? version = null)
