@@ -7,14 +7,16 @@
   "Header":               "PAF-PMX-V1.6",
 
   "APIProfile":           "Basic",
-  "Description":          "This AIM provides a Portable Avatar from the input components.",
+  "Description":          "This AIM provides a Portable Avatar from the input components. The View Selector (the View element of a Selector: Avatar or Scene) and the Point of View say from where and what the Portable Avatar is to be rendered; the Scene may be given as Basic Multimodal or Basic Visual Scene Descriptors.",
 
   "InternalTypes":        [ ],
 
   "ExternalPorts":        [{"Name": "AvatarID",           "Direction": "Input",  "DataType": ["string", "OSD-IID-V1.5"], "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "AvatarSpaceTime",    "Direction": "Input",  "DataType": "OSD-SPT-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false, "PortNumber": 1},
                            {"Name": "AvatarModel",        "Direction": "Input",  "DataType": "OSD-B3O-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "LanguageSelector",   "Direction": "Input",  "DataType": "OSD-SEL-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "LanguageSelector",   "Direction": "Input",  "DataType": "OSD-SEL-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false, "PortNumber": 1},
+                          {"Name": "ViewSelector",       "Direction": "Input",  "DataType": "OSD-SEL-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false, "PortNumber": 2},
+                          {"Name": "PointOfView",        "Direction": "Input",  "DataType": "OSD-OPV-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "SpeechObject",       "Direction": "Input",  "DataType": "OSD-BSO-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "RecognisedText",      "Direction": "Input",  "DataType": "OSD-BTO-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false, "PortNumber": 1},
                            {"Name": "InputText",           "Direction": "Input",  "DataType": "OSD-BTO-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false, "PortNumber": 2},
@@ -24,6 +26,7 @@
                            {"Name": "PersonalStatus",     "Direction": "Input",  "DataType": "MMC-EPS-V2.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "AVSceneSpaceTime",   "Direction": "Input",  "DataType": "OSD-SPT-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false, "PortNumber": 2},
                            {"Name": "MultimodalSceneDescriptors", "Direction": "Input",  "DataType": "OSD-BMS-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                          {"Name": "VisualSceneDescriptors", "Direction": "Input",  "DataType": "OSD-BVS-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "PortableAvatar",     "Direction": "Output", "DataType": "PAF-PAV-V1.6", "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "InputPortableAvatar", "Direction": "Input",  "DataType": "PAF-PAV-V1.6", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "SpatialAttitudes",    "Direction": "Input",  "DataType": "OSD-OSA-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false}],

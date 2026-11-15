@@ -2,7 +2,7 @@
   "Header":           "MMC-CPS-V2.5",
 
   "APIProfile":       "Basic",
-  "Description":      "Conversation with Personal Status: a conversation with a machine that takes the personal status of the person into account. The Multimodal Frontend Description gives what the microphone and the camera deliver as Speech, Face, Body and other Visual Objects and the Visual Scene Descriptors; Visual Instance Identification gives the Identifiers of the Visual Instances; Automatic Speech Recognition gives the Recognised Text; Natural Language Understanding understands the Text with the Identifiers; Personal Status Extraction gives the Personal Status of the person from the Face, Body, Speech and Text; Entity Dialogue Processing gives the Machine Text and the Machine Personal Status; Portable Avatar Multiplexing gives the Portable Avatar.",
+  "Description":      "Conversation with Personal Status: a conversation with a machine that takes the personal status of the person into account. The Multimodal Frontend Description gives what the microphone and the camera deliver as Speech, Face, Body and other Visual Objects and the Visual Scene Descriptors; Entity Body Description gives the Body Descriptors of the Body Object; Visual Object Identification gives the Instance ID of the Visual Object the person indicates from the Body Descriptors, the Visual Objects and the Visual Scene Descriptors; Automatic Speech Recognition gives the Recognised Text; Natural Language Understanding understands the Input Text and the Recognised Text with the Instance ID and gives the Text Descriptors and the Refined Text; Personal Status Extraction gives the Personal Status of the person from the Face, Body and Speech Objects and the Text Descriptors; Entity Dialogue Processing gives the Machine Text and the Machine Personal Status; Portable Avatar Multiplexing gives the Portable Avatar.",
 
   "InternalTypes":   [ ],
 
@@ -14,7 +14,8 @@
                       {"Name": "PortableAvatar", "Direction": "Output", "DataType": "PAF-PAV-V1.6", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":         [{"Header": "OSD-MFD-V1.5", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": ""}},
-                      {"Header": "CVE-VII-V1.0", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": ""}},
+                      {"Header": "PAF-EBD-V1.6", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": ""}},
+                      {"Header": "CVE-VOI-V1.0", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": ""}},
                       {"Header": "MMC-ASR-V2.5", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": ""}},
                       {"Header": "MMC-NLU-V2.5", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": ""}},
                       {"Header": "MMC-PSE-V2.5", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": ""}},
@@ -27,14 +28,16 @@
                       {"Output": {"AIMName": "OSD-MFD-V1.5", "DataType": "OSD-BSO-V1.5"}, "Input": {"AIMName": "MMC-PSE-V2.5", "DataType": "OSD-BSO-V1.5"}},
                       {"Output": {"AIMName": "OSD-MFD-V1.5", "DataType": "OSD-BVO-V1.5", "PortNumber": 1}, "Input": {"AIMName": "MMC-PSE-V2.5", "DataType": "OSD-BVO-V1.5", "PortNumber": 1}},
                       {"Output": {"AIMName": "OSD-MFD-V1.5", "DataType": "OSD-BVO-V1.5", "PortNumber": 2}, "Input": {"AIMName": "MMC-PSE-V2.5", "DataType": "OSD-BVO-V1.5", "PortNumber": 2}},
-                      {"Output": {"AIMName": "OSD-MFD-V1.5", "DataType": "OSD-BVO-V1.5", "PortNumber": 2}, "Input": {"AIMName": "CVE-VII-V1.0", "DataType": "OSD-BVO-V1.5"}},
-                      {"Output": {"AIMName": "OSD-MFD-V1.5", "DataType": "OSD-BVO-V1.5", "PortNumber": 3}, "Input": {"AIMName": "CVE-VII-V1.0", "DataType": "OSD-BVO-V1.5"}},
-                      {"Output": {"AIMName": "OSD-MFD-V1.5", "DataType": "OSD-BVS-V1.5"}, "Input": {"AIMName": "CVE-VII-V1.0", "DataType": "OSD-BVS-V1.5"}},
+                      {"Output": {"AIMName": "OSD-MFD-V1.5", "DataType": "OSD-BVO-V1.5", "PortNumber": 2}, "Input": {"AIMName": "PAF-EBD-V1.6", "DataType": "OSD-BVO-V1.5"}},
+                      {"Output": {"AIMName": "PAF-EBD-V1.6", "DataType": "PAF-BDO-V1.6"}, "Input": {"AIMName": "CVE-VOI-V1.0", "DataType": "PAF-BDO-V1.6"}},
+                      {"Output": {"AIMName": "OSD-MFD-V1.5", "DataType": "OSD-BVO-V1.5", "PortNumber": 3}, "Input": {"AIMName": "CVE-VOI-V1.0", "DataType": "OSD-BVO-V1.5"}},
+                      {"Output": {"AIMName": "OSD-MFD-V1.5", "DataType": "OSD-BVS-V1.5"}, "Input": {"AIMName": "CVE-VOI-V1.0", "DataType": "OSD-BVS-V1.5"}},
                       {"Output": {"AIMName": "", "DataType": "OSD-BTO-V1.5", "PortNumber": 1}, "Input": {"AIMName": "MMC-NLU-V2.5", "DataType": "OSD-BTO-V1.5", "PortNumber": 1}},
                       {"Output": {"AIMName": "", "DataType": "OSD-BTO-V1.5", "PortNumber": 1}, "Input": {"AIMName": "MMC-EDP-V2.5", "DataType": "OSD-BTO-V1.5", "PortNumber": 1}},
                       {"Output": {"AIMName": "", "DataType": "OSD-SEL-V1.5"}, "Input": {"AIMName": "MMC-NLU-V2.5", "DataType": "OSD-SEL-V1.5"}},
-                      {"Output": {"AIMName": "CVE-VII-V1.0", "DataType": "OSD-IID-V1.5"}, "Input": {"AIMName": "MMC-NLU-V2.5", "DataType": "OSD-IID-V1.5"}},
+                      {"Output": {"AIMName": "CVE-VOI-V1.0", "DataType": "OSD-IID-V1.5"}, "Input": {"AIMName": "MMC-NLU-V2.5", "DataType": "OSD-IID-V1.5"}},
                       {"Output": {"AIMName": "MMC-ASR-V2.5", "DataType": "OSD-BTO-V1.5", "PortNumber": 1}, "Input": {"AIMName": "MMC-NLU-V2.5", "DataType": "OSD-BTO-V1.5", "PortNumber": 2}},
+                      {"Output": {"AIMName": "MMC-NLU-V2.5", "DataType": "MMC-TDO-V2.5"}, "Input": {"AIMName": "MMC-PSE-V2.5", "DataType": "MMC-TDO-V2.5"}},
                       {"Output": {"AIMName": "MMC-NLU-V2.5", "DataType": "MMC-TDO-V2.5"}, "Input": {"AIMName": "MMC-EDP-V2.5", "DataType": "MMC-TDO-V2.5"}},
                       {"Output": {"AIMName": "MMC-NLU-V2.5", "DataType": "OSD-IID-V1.5"}, "Input": {"AIMName": "MMC-EDP-V2.5", "DataType": "OSD-IID-V1.5", "PortNumber": 2}},
                       {"Output": {"AIMName": "MMC-NLU-V2.5", "DataType": "OSD-BTO-V1.5"}, "Input": {"AIMName": "MMC-EDP-V2.5", "DataType": "OSD-BTO-V1.5", "PortNumber": 3}},
@@ -66,4 +69,4 @@
 
   "DataXMData":       { },
 
-  "Documentation":   [{"Type": "Specification", "URI": "https://mpai.community/standards/mpai-mmc/v2-5/"}]}
+  "Documentation":   [{"Type": "Specification", "URI": "https://mpai.community/standards/mpai-mmc/v2-5/ai-modules/conversation-with-personal-status/"}]}

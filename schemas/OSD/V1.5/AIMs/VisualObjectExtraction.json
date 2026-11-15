@@ -7,7 +7,7 @@
   "InternalTypes":   [ ],
 
   "ExternalPorts":   [{"Name": "PointofView",         "Direction": "Input",  "DataType": "OSD-OPV-V1.5",                   "Technology": "", "Protocol": "", "IsRemote": ""},
-                      {"Name": "VisualSceneGeometry", "Direction": "Input",  "DataType": ["OSD-VSG-V1.5", "OSD-BMS-V1.5"], "Technology": "", "Protocol": "", "IsRemote": ""},
+                      {"Name": "VisualSceneGeometry", "Direction": "Input",  "DataType": ["OSD-VSG-V1.5", "OSD-BMS-V1.5", "OSD-BVS-V1.5"], "Technology": "", "Protocol": "", "IsRemote": ""},
                       {"Name": "VisualObjects",       "Direction": "Input",  "DataType": ["OSD-VIO-V1.5", "OSD-BVO-V1.5"], "Technology": "", "Protocol": "", "IsRemote": ""},
                       {"Name": "TargetVisualObject",  "Direction": "Output", "DataType": ["OSD-VIO-V1.5", "OSD-BVO-V1.5"], "Technology": "", "Protocol": "", "IsRemote": ""}],
 

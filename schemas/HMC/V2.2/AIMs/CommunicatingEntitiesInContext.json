@@ -2,7 +2,7 @@
   "Header":           "HMC-CEC-V2.2",
 
   "APIProfile":       "Basic",
-  "Description":      "Communicating Entities in Context: Multimodal Scene Integration and Description gives the Objects and the Scene Descriptors of the Scene of the Input Portable Avatar and Multimodal Frontend Description those of the real world; Entity and Context Understanding understands them with the Input Text; Text-and-Speech Translation translates the Speech and the Text; Entity Dialogue Processing gives the Machine Text, the Machine Personal Status and the Machine Text; Text-to-Text Translation translates the Machine Text; Portable Avatar Multiplexing gives the Portable Avatar.",
+  "Description":      "Communicating Entities in Context: Multimodal Scene Integration and Description gives the Objects and the Scene Descriptors of the Scene of the Input Portable Avatar and Multimodal Frontend Description those of the real world; Entity and Context Understanding understands them with the Input Text; Text and Speech Translation translates the Speech and the Text; Entity Dialogue Processing gives the Machine Text and the Machine Personal Status; Text-to-Text Translation translates the Machine Text; Portable Avatar Multiplexing gives the Portable Avatar.",
 
   "InternalTypes":   [{"Name": "TextInMachineLanguage", "DataType": "OSD-BTO-V1.5", "Output": 1}],
 
