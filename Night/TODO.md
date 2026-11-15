@@ -14,7 +14,7 @@ Claude never deletes a request. A request that needs a decision from you is mark
 
 ## Requests
 
-ORDER FOR THE NIGHT OF 2026-11-15/16 (author): N-27 first (the five SRS networks trained on 1, 5, 15, 30 and 60 minutes of LJ Speech: the author tests them on the morning of 2026-11-16), then any other request from the top as usual.
+ORDER FOR THE NIGHT OF 2026-11-15/16 (author): N-27 first (the five SRS networks trained on 1, 5, 15, 30 and 60 minutes of LJ Speech: the author tests them on the morning of 2026-11-16) - start the training, which runs on the GPU by itself - then, while it runs, N-28 (PGM-AUA figures from the deck), N-29 (PRC, BKN, AUF after M3308), N-30 (AUC), N-31 (the new PGM-AUA software; its Ollama tests after the training), then any other request from the top as usual.
 
 ORDER FOR THE NIGHT OF 2026-11-14/15 (author): N-24 first (the whole test run after X7, the Controller API addressing a Module by its MODULE_ID), then N-26 (the XRV two-metaverse demo: the author wants to see the video on the morning of 2026-11-15), then N-25 (OSD-TMA on the 5-minute AMI meeting), then any other request from the top as usual.
 
@@ -437,3 +437,43 @@ Done looks like: five networks set aside with their records, the comparison tabl
 Needs: the downloads (LJ Speech about 2.6 GB from keithito.com; the pretrained Piper checkpoint and the Piper training code; Python packages for training with CUDA) - to be done by day with the author's permission, before the night. If the training cannot run on the 1050 Ti, say why and stop before the App rather than use a stand-in.
 READY 2026-11-15 (by day, author: "Yes, download"): everything is in WSL Ubuntu under ~/srs (not in the repository). LJ Speech 1.1 extracted in ~/srs/data/LJSpeech-1.1 (13,100 clips). Training code: OHF-Voice/piper1-gpl (GPL-3.0, a tool, not part of mpai-sw) in ~/srs/downloads/piper1-gpl with its .venv (Python 3.11, torch 2.6.0+cu124 sees the GTX 1050 Ti, lightning 2.6.6, espeak bridge and monotonic_align built). BASE: kristin medium (rhasspy/piper-checkpoints, a LibriVox reader, public domain) - NOT lessac (Blizzard 2013 research-only licence) and NOT the ljspeech checkpoints (trained on the test speaker). Cleaned copy ~/srs/downloads/base-kristin/kristin-2000-clean.ckpt (paths stored as text, loads with weights_only=True; ~/srs/tools/clean_ckpt.py).
 HOW TO RUN (found by a 60-step test, ~/srs/smoke): python ~/srs/tools/train_wrapper.py fit ... (it drops the val_mos checkpoint saver, which stops Lightning when the MOS predictor is off); --model.warmstart_ckpt <clean ckpt> (NOT --ckpt_path: the old checkpoint's hyperparameters, e.g. sample_bytes, are refused); --model.mos_metric none; --data.espeak_voice en-us --model.sample_rate 22050; --data.batch_size 8 (peak GPU memory 3,976 of 4,096 MiB - do not go higher). 60 steps took 379 s including the first phonemisation and a validation every epoch: for the small sets validate less often (--trainer.check_val_every_n_epoch) and give the five runs the same number of steps.
+
+### N-28 PGM-AUA web specification: the figures of the deck (2026-11-15)
+Status: todo
+Request (author, 2026-11-15): "update the PGM-AUA web spec with the figures in the deck. some have been updated". The deck is OneDrive My Standards\mpai\Reference Models\PGM Reference Modesl.pptx (latest 2026-11-13); it holds decisions taken long ago that the web figures do not show (e.g. Architecture Figure 1 still has PAF-PDX; slide 19 has none, the Portable Avatar leaves through A-User Control, MCP on DAC/USR/PAL/AUF, BKN-PRS). The DECK is the reference, never the web copy.
+- Export every slide from a COPY of the deck (scratchpad; PowerPoint COM only if POWERPNT is not running, close only my presentation, Quit only if it was not running), 2400 px wide, cropped to the drawing (no slide title), as PNG.
+- Match each slide to its PGM-AUA V1.0 page by the title of the slide (AIM or Composite name, its acronym), and compare with the figure now on the page (download it). Replace only the figures that differ; a slide with no page, or a page with no slide, is listed, not invented.
+- Upload as new media (new file name with the date, never overwrite the old media), put it in the page in place of the old one (same caption, same size rules as the other figures), in the existing pages (WordPress keeps revisions).
+Done looks like: the pages show the deck's figures; a table in the night report: page, slide, changed or not, media id, old -> new file.
+Needs: WordPress (mpai.community) in the built-in browser, tab "seed" on wp-admin: CHECKED 2026-11-15 by day, signed in (REST context=edit answered 200 with the wpApiSettings nonce; the nonce lasts about a day - reload wp-admin to get a fresh one). If the session is gone at night, mark blocked and go on.
+
+### N-29 PGM-AUA web specification: PRC, BKN and AUF after M3308 (2026-11-15)
+Status: todo
+Request (author, 2026-11-15): "Edit the PRC, BKN and AUF spec based on M3308". M3308 (input2000, "PGM-AUA V1.0 - From the Final Response to the movements of the avatar - the BKN-AUF interface") Section 3.5: a specification of Basic Knowledge NEUTRAL to the options; an implementation is one of the possibilities. Apply 3.5:
+- Levels 0, 1, 2. Final Response gains the optional element Communicative Functions (items: FunctionID, Function from a closed MPAI list, Target, Anchor, Intensity 0-1, Requirement, optional Behaviour at Level 2) - M3308 Table 3.
+- BKN page: what BKN shall do (Level up to the one requested, Functions allowed, anchors in its own Text, Targets from the PC Prompt, closed lists; a lower Level may be given and the AUC-BKN Response says so); BKN Metadata declares the highest Level it produces.
+- PRC page: the PC Prompt carries the Functions (and, for Level 2, the behaviours) that the Persona can perform.
+- AUF page: a new Sub-AIM Behaviour Planning (acronym to propose, e.g. PGM-BPL; check it is free in the MPAI acronym list) between Final Response Demultiplexing and Animation Object Generation: chooses and times a behaviour for each function without one, realises the given ones; AUF moves face and body from the Machine Speech and the Personal Status at every Level; AUC-AUF Response reports each FunctionID Realised / Modified / Not Realised with the reason; new AIM page for the Sub-AIM (as a DRAFT page, not published).
+- Data Type pages: Final Response (Communicative Functions), PC Prompt; the closed lists of Functions and of Behaviours: propose them (start from the behaviour classes of BML and McNeill's gesture types, MPAI wording, short definitions) in a DRAFT page.
+- Schemas with the pages, same version (rule: web page and schema correspond): PGM1/V1.0 data FinalResponse.json, PCPrompt, AUCBKN.json, AUCAUF.json, the new lists; AIMs BasicKnowledge.json (Level in its Metadata), AUserFormation.json (+ the new Sub-AIM and its connections), the new Sub-AIM's JSON; schema tests pass. Every schema change goes in the schemas upload list (Downloads\Upload-2026-11-16, FileZilla set) - not uploaded.
+- Open questions of M3308, decided as follows (author 2026-11-15: "yes, use them"): Q1 yes (3.5); Q2 an element of the Final Response; Q3 the closed lists start from BML and McNeill; Q4 word times computed in AUF (no change to MMC-TTS: the author is not ready to give MMC-TTS new inputs); Q5 the Actions of the Final Response stay for the movement of the Persona in the M-Instance (MM-Animate). Write these choices in the night report.
+Done looks like: pages edited (ids and revisions in the report), drafts made, schemas changed and valid, MKG\pending-changes.md notes, the list of standard changes for the author (inform on standard changes). Nothing committed.
+Needs: WordPress session as N-28.
+
+### N-30 PGM-AUA web specification: AUC after M3308, if needed (2026-11-15)
+Status: todo
+Request (author, 2026-11-15): "(probably) update the AUC spec". Check the A-User Control page, the AUC-BKN and AUC-AUF Data Type pages and the Architecture page against N-29: the Actions property of the AUC-BKN Request gains the Level requested and the Functions allowed; AUC never requests a Level higher than BKN declares (it reads BKN's Metadata); AUC reads the per-FunctionID report of the AUC-AUF Response; the Architecture page's text matches the deck's Figure 1 (no PAF-PDX). Change only what N-29 makes necessary; say what was not changed and why.
+Done looks like: as N-29 (pages, schemas, upload list, notes). Nothing committed.
+Needs: WordPress session as N-28.
+
+### N-31 PGM-AUA reference software: the new version (2026-11-15)
+Status: todo
+Request (author, 2026-11-15): "Implement the new version of PGM-AUA". After N-29 and N-30, in D:\AI\AIMs\PGM\V1.0 (assembly Mpai.Pgm) and its tests (Pgm*Tests.cs):
+- Follow the deck's Figure 1 (slide 19): no PAF-PDX in the Module, the Portable Avatar and the Process Actions go to A-User Control and out through it.
+- BKN (Ollama, llama3.2:3b by default, llama3.1 8B as a setting) produces Level 1 (M3308 3.6): the Communicative Functions from the closed list, output held to the JSON schema with Ollama's "format"; the Level it declares in its Metadata is 1; it gives a lower Level when asked.
+- A-User Formation: the new Behaviour Planning Sub-AIM (behaviour per function for this Persona, timed on the words of the Machine Speech - word times by aligning the Text with the Machine Speech inside AUF), Animation Object Generation and EFD/EBD use them; the AUC-AUF Response reports each FunctionID.
+- AUC: requests the Level (never above BKN's declared Level) and the allowed Functions; reads the report.
+- The Process Actions go to the reference M-Instance through the MMM-API (MmmClient), as decided 2026-11-10.
+- Tests: Level 0, 1 and 2 Final Responses (Level 2 written by hand in the test) all realised by AUF; a Required function not realisable is reported Not Realised; a BKN that answers above the Level requested fails conformance; every Data validates against its (new) schema; the end-to-end test with Ollama.
+Done looks like: tests pass (list them with the run times), what is real and what is stand-in, nothing committed.
+Needs: Ollama. THE GPU IS BUSY WITH N-27 (training uses 3.9 of 4 GB): run the Ollama tests after the N-27 training ends, or with Ollama on the processor (slower); say which.
