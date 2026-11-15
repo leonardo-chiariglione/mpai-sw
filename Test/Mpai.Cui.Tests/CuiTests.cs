@@ -149,7 +149,7 @@ public class AimTests
         Assert.Equal((1_200_000 + 400_000) / 10_000_000.0, r["EBITDAMargin"], 4);       // "1.200.000" is read as Italians write it
         Assert.Equal(1_200_000 / 9_500_000.0, r["ROA"], 4);
         Assert.Equal(800_000 / 5_000_000.0, r["ROE"], 4);
-        Assert.Equal((1_200_000 + 400_000) / 150_000.0, r["InterestCoverageRatio"], 3);  // the interest is read in absolute value
+        Assert.Equal(1_200_000 / 150_000.0, r["InterestCoverageRatio"], 3);  // EBIT over interest, as the trained model learnt it (2026-11-15); the interest is read in absolute value
     }
 
     [Fact]

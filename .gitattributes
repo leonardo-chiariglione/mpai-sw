@@ -5,3 +5,6 @@ Models/BLIP/onnx/blip_vision_model.onnx.data filter=lfs diff=lfs merge=lfs -text
 
 # Shell scripts run on Linux (WSL too, from a Windows checkout): LF always.
 *.sh text eol=lf
+
+# Access data whose SHA-256 is pinned in an AIM's Metadata (AccessSources): the bytes must be the same in every checkout and on GitHub, never converted.
+AIMs/CUI/V2.1/Models/*.json -text

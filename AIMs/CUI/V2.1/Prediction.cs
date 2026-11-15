@@ -35,7 +35,9 @@ public static class ReferenceModels
         Put("ROS", Div(ebit, revenues));
         Put("DebtOnSales", Div(debts, revenues));
         Put("LongTermLiabilityRatio", Div(longTerm, assets));
-        Put("InterestCoverageRatio", Div(ebitda, interest));
+        // The operating result over interest and other financial expenses (EBIT / CEC3), as the trained model learnt it (Polish data, X27: profit on operating activities / financial expenses;
+        // aligned 2026-11-15 by the author's decision - it was EBITDA / interest).
+        Put("InterestCoverageRatio", Div(ebit, interest));
         Put("InterestOnSales", Div(interest, revenues));
         return r;
     }
