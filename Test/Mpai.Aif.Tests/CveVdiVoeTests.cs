@@ -40,10 +40,10 @@ public class CveVdiVoeTests
         foreach (var o in objects)
             items.Add(new JsonObject
             {
-                ["ObjectSpaceTime"] = new JsonObject { ["SpatialAttitude1"] = new JsonObject { ["Position"] = new JsonObject { ["CartPosition"] = new JsonArray(o.X, o.Y, o.Z) } } },
-                ["ObjectIDOrGeometry"] = new JsonArray(o.Id)
+                ["VisualObjectSpaceTime"] = new JsonObject { ["SpatialAttitude1"] = new JsonObject { ["Position"] = new JsonObject { ["CartPosition"] = new JsonArray(o.X, o.Y, o.Z) } } },
+                ["VObjectIDOrVObject"] = o.Id
             });
-        return new JsonObject { ["Header"] = "OSD-VSG-V1.5", ["VisualSceneGeometryID"] = "scene", ["ObjectCount"] = objects.Length, ["Objects"] = items }.ToJsonString();
+        return new JsonObject { ["Header"] = "OSD-BVS-V1.5", ["BasicVisualSceneDescriptorsID"] = "scene", ["VisualObjectCount"] = objects.Length, ["BasicVisualSceneDescriptors"] = items }.ToJsonString();
     }
 
     private static string VisualObject(string id) => PortObjects.WriteVisual(new BasicVisualObject { BasicVisualObjectID = id, Data = [1, 2, 3] });
@@ -52,7 +52,7 @@ public class CveVdiVoeTests
     {
         var ports = Ports(VdiName);
         var vdi = new CveVdiAimProcessor(VdiName, ports);
-        return await vdi.ProcessAsync(new Message { MessageId = "m", Ports = new Dictionary<string, string> { [ports.Input("PAF-BDO-V1.6")] = bdo, [ports.Input("OSD-VSG-V1.5")] = geometry } });
+        return await vdi.ProcessAsync(new Message { MessageId = "m", Ports = new Dictionary<string, string> { [ports.Input("PAF-BDO-V1.6")] = bdo, [ports.Input("OSD-BVS-V1.5")] = geometry } });
     }
 
     [Fact]
@@ -107,7 +107,7 @@ public class CveVdiVoeTests
 
     private static async Task<Message> Extract(OsdVoeAimProcessor voe, AimPortReader ports, string? pov, string geometry, string? visualObject)
     {
-        var message = new Message { MessageId = "m", Ports = new Dictionary<string, string> { [ports.Input("OSD-VSG-V1.5")] = geometry } };
+        var message = new Message { MessageId = "m", Ports = new Dictionary<string, string> { [ports.Input("OSD-BVS-V1.5")] = geometry } };
         if (pov is not null) message.Ports[ports.Input("OSD-OPV-V1.5")] = pov;
         if (visualObject is not null) message.Ports[ports.Input("OSD-BVO-V1.5")] = visualObject;
         return await voe.ProcessAsync(message);

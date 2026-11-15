@@ -11,12 +11,12 @@ namespace Mpai.Cve.Vdi;
 // CVE-VDI-V1.0 - Visual Direction Identification.
 //
 // From the Body Descriptors of an Entity (PAF-BDO) finds the Point of View (OSD-OPV) the Entity indicates with the index finger: the line from the wrist
-// through the tip of the index finger of the hand that reaches farther from its shoulder. The Visual Scene Geometry (OSD-VSG) is a required input of the AIM;
+// through the tip of the index finger of the hand that reaches farther from its shoulder. The Basic Visual Scene Descriptors (OSD-BVS; 2026-11-15, was the Visual Scene Geometry) are a required input of the AIM;
 // the Point of View is computed from the body alone, so the geometry is not used (what the geometry would add is not stated).
 //
 // WHAT THE STANDARD DOES NOT SAY, AND WHAT THIS AIM ASSUMES (to be confirmed):
 //  - the Body Descriptors Object carries no reference frame, so its keypoints (the BlazePose landmarks of PAF-EBD: x, y, z, visibility) are taken to be
-//    in the frame of the Visual Scene Geometry: x to the right, y down, z away from the camera;
+//    in the frame of the Visual Scene: x to the right, y down, z away from the camera;
 //  - the Orientation of a Point of View is "three Euler angles": here (azimuth, elevation, 0) in degrees, azimuth = atan2(dx, dz) about the vertical
 //    axis, elevation = angle above the horizontal (y is down, so elevation = asin(-dy)); the Visual Object Extraction reads it the same way;
 //  - the Aperture of the Point of View is the cone in which an object counts as crossed: Aperture degrees (twice the half-angle), 10 here.
@@ -33,7 +33,7 @@ public sealed class CveVdiAimProcessor : IAimProcessor
     {
         _instanceId   = instanceId;
         _bodyPort     = ports.Input("PAF-BDO-V1.6");
-        _geometryPort = ports.Input("OSD-VSG-V1.5");
+        _geometryPort = ports.Input("OSD-BVS-V1.5");
         _outPort      = ports.Output("OSD-OPV-V1.5");
     }
 
@@ -44,7 +44,7 @@ public sealed class CveVdiAimProcessor : IAimProcessor
         if (!message.Ports.TryGetValue(_bodyPort, out var bdo) || string.IsNullOrWhiteSpace(bdo))
             return Task.FromResult(Message.Error(message.MessageId, _instanceId, "no Body Descriptors Object on input port"));
         if (!message.Ports.ContainsKey(_geometryPort))
-            return Task.FromResult(Message.Error(message.MessageId, _instanceId, "no Visual Scene Geometry on input port"));
+            return Task.FromResult(Message.Error(message.MessageId, _instanceId, "no Basic Visual Scene Descriptors on input port"));
 
         float[] k;
         try { k = EbdAimProcessor.Keypoints(bdo); }

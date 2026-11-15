@@ -2,12 +2,12 @@
   "Header":           "OSD-VOE-V1.5",
 
   "APIProfile":       "Basic",
-  "Description":      "Visual Object Extraction: see https://mpai.community/standards/mpai-osd/v1-5/ai-modules/visual-object-extraction/. The Visual Object Extraction (OSD-VOE) AIMs receives a Visual Scene Geometry with its Visual Objects and a Point of View and provides the Visual Object that is crossed by the Point of View:",
+  "Description":      "Visual Object Extraction: see https://mpai.community/standards/mpai-osd/v1-5/ai-modules/visual-object-extraction/. The Visual Object Extraction (OSD-VOE) AIMs receives the Basic Visual Scene Descriptors with their Visual Objects and a Point of View and provides the Visual Object that is crossed by the Point of View:",
 
   "InternalTypes":   [ ],
 
   "ExternalPorts":   [{"Name": "PointofView",         "Direction": "Input",  "DataType": "OSD-OPV-V1.5",                   "Technology": "", "Protocol": "", "IsRemote": ""},
-                      {"Name": "VisualSceneGeometry", "Direction": "Input",  "DataType": ["OSD-VSG-V1.5", "OSD-BMS-V1.5", "OSD-BVS-V1.5"], "Technology": "", "Protocol": "", "IsRemote": ""},
+                      {"Name": "VisualSceneDescriptors", "Direction": "Input",  "DataType": ["OSD-BVS-V1.5", "OSD-BMS-V1.5"], "Technology": "", "Protocol": "", "IsRemote": ""},
                       {"Name": "VisualObjects",       "Direction": "Input",  "DataType": ["OSD-VIO-V1.5", "OSD-BVO-V1.5"], "Technology": "", "Protocol": "", "IsRemote": ""},
                       {"Name": "TargetVisualObject",  "Direction": "Output", "DataType": ["OSD-VIO-V1.5", "OSD-BVO-V1.5"], "Technology": "", "Protocol": "", "IsRemote": ""}],
 

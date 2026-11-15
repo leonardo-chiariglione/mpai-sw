@@ -2,12 +2,12 @@
   "Header":           "CVE-VDI-V1.0",
 
   "APIProfile":       "Basic",
-  "Description":      "Visual Direction Identification: see https://mpai.community/standards/mpai-osd/v1-5/ai-modules/visual-direction-identification/. The Visual Direction Identification (OSD-VDI) AIM identifies the Point of View signaled by the index finger or a human body in a space described by a Visual Scene Geometry:",
+  "Description":      "Visual Direction Identification: see https://mpai.community/standards/mpai-osd/v1-5/ai-modules/visual-direction-identification/. The Visual Direction Identification (OSD-VDI) AIM identifies the Point of View signaled by the index finger or a human body in a space described by the Basic Visual Scene Descriptors:",
 
   "InternalTypes":   [ ],
 
   "ExternalPorts":   [{"Name": "BodyDescriptorsObject", "Direction": "Input",  "DataType": "PAF-BDO-V1.6",                   "Technology": "", "Protocol": "", "IsRemote": ""},
-                      {"Name": "VisualSceneGeometry",   "Direction": "Input",  "DataType": ["OSD-VSG-V1.5", "OSD-BMS-V1.5", "OSD-BVS-V1.5"], "Technology": "", "Protocol": "", "IsRemote": ""},
+                      {"Name": "VisualSceneDescriptors", "Direction": "Input",  "DataType": ["OSD-BVS-V1.5", "OSD-BMS-V1.5"], "Technology": "", "Protocol": "", "IsRemote": ""},
                       {"Name": "PointofView",           "Direction": "Output", "DataType": "OSD-OPV-V1.5",                   "Technology": "", "Protocol": "", "IsRemote": ""}],
 
   "SubAIMs":         [ ],

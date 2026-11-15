@@ -18,9 +18,9 @@
       "IsRemote": false
     },
     {
-      "Name": "VisualSceneGeometry",
+      "Name": "VisualSceneDescriptors",
       "Direction": "Input",
-      "DataType": "OSD-VSG-V1.5",
+      "DataType": ["OSD-BVS-V1.5", "OSD-BMS-V1.5"],
       "Technology": "Software",
       "Protocol": "",
       "IsRemote": false
