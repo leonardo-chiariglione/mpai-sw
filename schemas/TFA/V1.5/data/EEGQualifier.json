@@ -22,5 +22,12 @@
     "Attributes":           { "type": "object", "additionalProperties": true,
                               "description": "Optional attributes such as samplingRate or electrodeLayout." },
 
+    "Findings":       { "type": "array", "description": "What the data show, each finding coded in a vocabulary of this domain: the labels a Neural Network Model learns from and is checked against. How sure the source of a finding is, and who it is, are in the AIH Data that carries the data.", "items": { "type": "object", "additionalProperties": false, "required": [ "FindingID", "Code", "CodingSystem" ], "properties": {
+      "FindingID": { "type": "string" },
+      "Code": { "type": "string", "description": "The finding, as the Coding System writes it." },
+      "CodingSystem": { "type": "string", "enum": [ "HED", "SNOMEDCT", "ICD10", "ICD11", "DatasetLabelSet" ] },
+      "LabelSet": { "type": "string", "description": "The name of the label set, when the Coding System is DatasetLabelSet (a data set's own labels, e.g. NIH ChestX-ray14)." },
+      "Where": { "type": "object", "additionalProperties": false, "description": "When in the recording (seconds from its start) and in which channels.", "properties": { "Start": { "type": "number", "minimum": 0 }, "End": { "type": "number", "minimum": 0 }, "Channels": { "type": "array", "items": { "type": "string" } } } } } } },
+
     "DataXMData":     { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
     "DescrMetadata":  { "type": "string", "maxLength": 2048 } } }

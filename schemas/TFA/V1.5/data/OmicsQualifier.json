@@ -3,7 +3,7 @@
   "title":                    "Omics Qualifier V1.5",
   "description":              "Omics Sub-Type groups, Format groups, and allowed pairings.",
   "type":                     "object",
-  "required":                 [ "SubTypes", "Formats", "GroupMap" ],
+  "required":                 [ "Header", "OmicsQualifierID", "SubTypes", "Formats" ],
   "additionalProperties":     false,
   "properties":               {
 
@@ -13,47 +13,19 @@
     "OmicsQualifierID":       { "type": "string" },
     "OmicsQualifierTime":     { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SimpleTime.json" },
 
-    "SubTypes":               { "type": "object", "additionalProperties": false,
-                                "required": [ "DNA-Based Data", "RNA-Based Data", "Epigenomic Data", "Proteomics Data", "Metabolomics Data" ],
-                                "properties": {
+    "SubTypes":               { "type": "object", "additionalProperties": false, "required": [ "SubType" ], "properties": {
+      "SubTypeGroup":         { "type": "string", "description": "The group the Sub-Type belongs to.", "enum": [ "DNA-Based Data", "RNA-Based Data", "Epigenomic Data", "Proteomics Data", "Metabolomics Data" ] },
+      "SubType":              { "type": "string", "description": "The one Sub-Type of the data.", "enum": [ "Whole-genome variants", "Whole-exome variants", "Targeted panel variants", "Structural variants",
+                                "Copy-number profiles", "Gene-expression matrix (bulk RNA-seq)", "Transcript-level quantification",
+                                "Splicing / junction counts", "Methylation array profiles", "Bisulfite sequencing profiles",
+                                "Protein abundance profiles", "Peptide quantification tables", "Metabolite abundance profiles" ] } } },
 
-      "DNA-Based Data":       { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true,
-                                "default": [ "Whole-genome variants", "Whole-exome variants", "Targeted panel variants",
-                                "Structural variants", "Copy-number profiles" ] },
-
-      "RNA-Based Data":       { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true,
-                                "default": [ "Gene-expression matrix (bulk RNA-seq)", "Transcript-level quantification",
-                                "Splicing / junction counts" ] },
-
-      "Epigenomic Data":      { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true,
-                                "default": [ "Methylation array profiles", "Bisulfite sequencing profiles" ] },
-
-      "Proteomics Data":      { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true,
-                                "default": [ "Protein abundance profiles", "Peptide quantification tables" ] },
-
-      "Metabolomics Data":    { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true,
-                                "default": [ "Metabolite abundance profiles" ] } } },
-
-    "Formats":                { "type": "object", "additionalProperties": false,
-                                "required": [ "DNA-Based Formats", "RNA-Based Formats", "Epigenomic Formats", "Proteomics Formats", "Metabolomics Formats" ],
-                                "properties": {
-
-      "DNA-Based Formats":    { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true,
-                                "default": [ "VCF", "BCF", "FASTQ (raw reads)", "BAM / CRAM (aligned reads)",
-                                "TSV/CSV (variant tables)" ] },
-
-      "RNA-Based Formats":    { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true,
-                                "default": [ "FASTQ (raw reads)", "BAM / CRAM", "TSV/CSV (gene-expression matrices)",
-                                "HDF5 (assay containers)" ] },
-
-      "Epigenomic Formats":   { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true,
-                                "default": [ "IDAT (array raw files)", "TSV/CSV (processed methylation profiles)", "HDF5" ] },
-
-      "Proteomics Formats":   { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true,
-                                "default": [ "TSV/CSV (protein/peptide quantification)", "HDF5" ] },
-
-      "Metabolomics Formats": { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true,
-                                "default": [ "TSV/CSV (metabolite abundance)", "HDF5" ] } } },
+    "Formats":                { "type": "object", "additionalProperties": false, "required": [ "Format" ], "properties": {
+      "FormatGroup":          { "type": "string", "description": "The group the Format belongs to.", "enum": [ "DNA-Based Formats", "RNA-Based Formats", "Epigenomic Formats", "Proteomics Formats", "Metabolomics Formats" ] },
+      "Format":               { "type": "string", "description": "The one Format of the data.", "enum": [ "VCF", "BCF", "FASTQ (raw reads)", "BAM / CRAM (aligned reads)", "TSV/CSV (variant tables)", "BAM / CRAM",
+                                "TSV/CSV (gene-expression matrices)", "HDF5 (assay containers)", "IDAT (array raw files)",
+                                "TSV/CSV (processed methylation profiles)", "HDF5", "TSV/CSV (protein/peptide quantification)",
+                                "TSV/CSV (metabolite abundance)" ] } } },
 
     "GroupMap":               { "type": "array", "minItems": 1, "items": { "type": "object", "additionalProperties": false,
                                 "required": [ "SubTypeGroup", "FormatGroup" ], "properties": {
@@ -65,6 +37,13 @@
                               { "SubTypeGroup": "Epigenomic Data",       "FormatGroup": "Epigenomic Formats" },
                               { "SubTypeGroup": "Proteomics Data",       "FormatGroup": "Proteomics Formats" },
                               { "SubTypeGroup": "Metabolomics Data",     "FormatGroup": "Metabolomics Formats" } ] },
+
+    "Findings":       { "type": "array", "description": "What the data show, each finding coded in a vocabulary of this domain: the labels a Neural Network Model learns from and is checked against. How sure the source of a finding is, and who it is, are in the AIH Data that carries the data.", "items": { "type": "object", "additionalProperties": false, "required": [ "FindingID", "Code", "CodingSystem" ], "properties": {
+      "FindingID": { "type": "string" },
+      "Code": { "type": "string", "description": "The finding, as the Coding System writes it." },
+      "CodingSystem": { "type": "string", "enum": [ "HGVS", "HPO", "ClinVar", "SNOMEDCT", "DatasetLabelSet" ] },
+      "LabelSet": { "type": "string", "description": "The name of the label set, when the Coding System is DatasetLabelSet (a data set's own labels, e.g. NIH ChestX-ray14)." },
+      "Where": { "type": "object", "additionalProperties": false, "description": "Where in the genome or in the assay: the reference assembly, the chromosome and the positions, or the gene, protein or metabolite.", "properties": { "Assembly": { "type": "string" }, "Chromosome": { "type": "string" }, "Start": { "type": "integer", "minimum": 1 }, "End": { "type": "integer", "minimum": 1 }, "Feature": { "type": "string" } } } } } },
 
     "DataXMData":     { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
     "DescrMetadata":  { "type": "string", "maxLength": 2048 } } }

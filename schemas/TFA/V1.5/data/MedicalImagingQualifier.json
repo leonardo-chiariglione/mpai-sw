@@ -5,7 +5,7 @@
   "description":                    "Specifies Sub-Types, Formats, and Attributes of medical imaging data.",
   "type":                           "object",
   "additionalProperties":           false,
-  "required":                       ["SubTypes","Formats","GroupMap"],
+  "required":                       [ "Header", "MedicalImagingQualID", "SubTypes", "Formats" ],
 
   "properties":                     {
 
@@ -15,43 +15,21 @@
     "MedicalImagingQualID":         { "type": "string" },
     "MedicalImagingQualTime":       { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SimpleTime.json" },
 
-    "SubTypes":                     { "type": "object", "additionalProperties": false,
-      "required":                   [ "X-Ray","Computed Tomography","Magnetic Resonance Imaging","Ultrasound","Nuclear Medicine","Optical Imaging"],
-                                      "properties": {
+    "SubTypes":                     { "type": "object", "additionalProperties": false, "required": [ "SubType" ], "properties": {
+      "SubTypeGroup":               { "type": "string", "description": "The group the Sub-Type belongs to.", "enum": [ "X-Ray", "ComputedTomography", "MagneticResonanceImaging", "Ultrasound", "NuclearMedicine", "OpticalImaging" ] },
+      "SubType":                    { "type": "string", "description": "The one Sub-Type of the data.", "enum": [ "Projection Radiography", "Mammography", "Digital Breast Tomosynthesis", "Fluoroscopy - Diagnostic",
+                                      "Fluoroscopy - Interventional", "Dental X-Ray", "Conventional CT", "Low-Dose CT", "CT Angiography",
+                                      "Dual Energy CT", "Photon-Counting CT", "Cone Beam CT", "Structural MRI", "Functional MRI (fMRI)",
+                                      "Diffusion MRI (DWI/DTI)", "Magnetic Resonance Angiography (MRA)", "Magnetic Resonance Spectroscopy (MRS)",
+                                      "B-Mode Ultrasound", "Doppler Ultrasound", "Color Doppler", "Elastography", "3D/4D Ultrasound", "Scintigraphy",
+                                      "Single-Photon Emission Computed Tomography (SPECT)", "Positron Emission Tomography (PET)", "PET/CT", "PET/MR",
+                                      "Endoscopy", "Fundus Photography", "Optical Coherence Tomography (OCT)", "Microscopy" ] } } },
 
-        "X-Ray":                    { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true, "default":
-                                    [ "Projection Radiography","Mammography","Digital Breast Tomosynthesis","Fluoroscopy - Diagnostic",
-                                      "Fluoroscopy - Interventional","Dental X-Ray"] },
-
-        "ComputedTomography":       { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true, "default":
-                                    [ "Conventional CT","Low-Dose CT","CT Angiography","Dual Energy CT","Photon-Counting CT","Cone Beam CT"] },
-
-        "MagneticResonanceImaging": { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true, "default":
-                                    [ "Structural MRI","Functional MRI (fMRI)","Diffusion MRI (DWI/DTI)","Magnetic Resonance Angiography (MRA)",
-                                      "Magnetic Resonance Spectroscopy (MRS)"] },
-
-        "Ultrasound":               { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true, "default":
-                                    ["B-Mode Ultrasound","Doppler Ultrasound","Color Doppler","Elastography","3D/4D Ultrasound"] },
-
-        "NuclearMedicine":          { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true, "default":
-                                    [ "Scintigraphy","Single-Photon Emission Computed Tomography (SPECT)","Positron Emission Tomography (PET)",
-                                      "PET/CT","PET/MR"] },
-
-        "OpticalImaging":           { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true, "default":
-                                    [ "Endoscopy","Fundus Photography","Optical Coherence Tomography (OCT)","Microscopy"] } } },
-
-    "Formats":                      { "type": "object", "additionalProperties": false, "required": [ "DICOM Formats","Research Imaging Formats",
-                                      "Image Exchange Formats"], "properties": {
-
-        "DICOMFormats":             { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true, "default":
-                                    [ "DICOM Image","DICOM Enhanced Multi-Frame","DICOM Structured Report (SR)","DICOM Segmentation",
-                                      "DICOM Radiotherapy Objects"] },
-
-        "ResearchImagingFormats":   { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true, "default": [ "NIfTI",
-                                      "Analyze 7.5","MINC","NRRD","HDF5 Imaging Containers"] },
-
-        "ImageExchangeFormats":     { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true, "default": [ "TIFF",
-                                      "JPEG","JPEG2000","PNG"] } } },
+    "Formats":                      { "type": "object", "additionalProperties": false, "required": [ "Format" ], "properties": {
+      "FormatGroup":                { "type": "string", "description": "The group the Format belongs to.", "enum": [ "DICOMFormats", "ResearchImagingFormats", "ImageExchangeFormats" ] },
+      "Format":                     { "type": "string", "description": "The one Format of the data.", "enum": [ "DICOM Image", "DICOM Enhanced Multi-Frame", "DICOM Structured Report (SR)", "DICOM Segmentation",
+                                      "DICOM Radiotherapy Objects", "NIfTI", "Analyze 7.5", "MINC", "NRRD", "HDF5 Imaging Containers", "TIFF",
+                                      "JPEG", "JPEG2000", "PNG" ] } } },
 
     "GroupMap":                     { "type": "array", "minItems": 1, "items": { "type": "object", "additionalProperties": false,
                                       "required": ["SubTypeGroup","FormatGroup"], "properties": {
@@ -99,6 +77,13 @@
         "Orientation":              { "type": "string" },
         "FrameOfReference":         { "type": "string" },
         "ReconstructionMethod":     { "type": "string" } } },
+
+    "Findings":                     { "type": "array", "description": "What the data show, each finding coded in a vocabulary of this domain: the labels a Neural Network Model learns from and is checked against. How sure the source of a finding is, and who it is, are in the AIH Data that carries the data.", "items": { "type": "object", "additionalProperties": false, "required": [ "FindingID", "Code", "CodingSystem" ], "properties": {
+      "FindingID": { "type": "string" },
+      "Code": { "type": "string", "description": "The finding, as the Coding System writes it." },
+      "CodingSystem": { "type": "string", "enum": [ "RadLex", "SNOMEDCT", "ICD10", "ICD11", "DICOM", "DatasetLabelSet" ] },
+      "LabelSet": { "type": "string", "description": "The name of the label set, when the Coding System is DatasetLabelSet (a data set's own labels, e.g. NIH ChestX-ray14)." },
+      "Where": { "type": "object", "additionalProperties": false, "description": "Where in the image: a region (pixels, from the top-left corner) and, for a volume or a series, the slice or the frame.", "properties": { "X": { "type": "number" }, "Y": { "type": "number" }, "Width": { "type": "number", "minimum": 0 }, "Height": { "type": "number", "minimum": 0 }, "Slice": { "type": "integer", "minimum": 0 }, "Frame": { "type": "integer", "minimum": 0 } } } } } },
 
     "DataXMData":                   { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
     "DescrMetadata":                { "type": "string", "maxLength": 2048 } } }
