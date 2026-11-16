@@ -463,6 +463,7 @@ Done looks like: pages edited (ids and revisions in the report), drafts made, sc
 Needs: WordPress session as N-28.
 
 ### N-30 PGM-AUA web specification: AUC after M3308, if needed (2026-11-15)
+DONE BY DAY 2026-11-16 (author: "do the PGM-AUA web pages now"): N-29 and N-30 web pages - new Behaviour Planning (47691) and Communicative Functions (47692) pages; BKN, AUF, FRD, AOG, PRC, AUC, AUC-BKN, AUC-AUF, Final Response, PC Prompt and both lists updated; links checked publicly. LEFT: the AUF composite figure (deck slide and web) without Behaviour Planning; N-28 (figures from the deck) not done.
 Status: todo
 Request (author, 2026-11-15): "(probably) update the AUC spec". Check the A-User Control page, the AUC-BKN and AUC-AUF Data Type pages and the Architecture page against N-29: the Actions property of the AUC-BKN Request gains the Level requested and the Functions allowed; AUC never requests a Level higher than BKN declares (it reads BKN's Metadata); AUC reads the per-FunctionID report of the AUC-AUF Response; the Architecture page's text matches the deck's Figure 1 (no PAF-PDX). Change only what N-29 makes necessary; say what was not changed and why.
 Done looks like: as N-29 (pages, schemas, upload list, notes). Nothing committed.
