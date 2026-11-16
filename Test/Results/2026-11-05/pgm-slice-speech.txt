@@ -14,3 +14,15 @@
 2026-11-09T01:51:31	2.64 s	ASR heard: "Go and open the doors."	52 data seen	invalid: 0
 2026-11-10T21:39:37	4.65 s	ASR heard: "Go and open the doors."	52 data seen	invalid: 0
 2026-11-12T02:13:30	5.05 s	ASR heard: "Go and open the doors."	52 data seen	invalid: 0
+2026-11-15T00:10:42	25.05 s	ASR heard: "Go and open the doors"	52 data seen	invalid: 0
+2026-11-16T14:15:05	2.40 s	ASR heard: "Go and open the doors."	51 data seen	invalid: 0
+2026-11-16T14:16:05	1.85 s	ASR heard: "Go and open the doors."	51 data seen	invalid: 0
+2026-11-16T14:17:19	1.86 s	ASR heard: "Go and open the doors."	51 data seen	invalid: 0
+2026-11-16T14:17:52	2.33 s	ASR heard: "Go and open the doors."	51 data seen	invalid: 0
+2026-11-16T14:38:56	1.98 s	ASR heard: "Go and open the doors."	51 data seen	invalid: 0
+2026-11-16T14:39:31	2.39 s	ASR heard: "Go and open the doors."	51 data seen	invalid: 0
+2026-11-16T14:40:02	1.96 s	ASR heard: "Go and open the doors."	51 data seen	invalid: 0
+2026-11-16T14:51:18	1.91 s	ASR heard: "Go and open the doors."	51 data seen	invalid: 0
+2026-11-16T14:51:52	1.94 s	ASR heard: "Go and open the doors."	51 data seen	invalid: 0
+2026-11-16T14:58:41	3.23 s	ASR heard: "Go and open the doors."	51 data seen	invalid: 0
+2026-11-16T15:01:48	2.27 s	ASR heard: "Go and open the doors."	51 data seen	invalid: 0

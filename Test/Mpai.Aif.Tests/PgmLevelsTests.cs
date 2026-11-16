@@ -21,6 +21,7 @@ public class PgmLevelsTests
         var settings = new Dictionary<string, string> { [AucAim.LevelSetting] = aucLevel.ToString(), [BknAim.LevelSetting] = bknLevel.ToString() };
         if (personaBehaviours is not null) settings[BplAim.BehavioursSetting] = personaBehaviours;
         var rig = new PgmRig(model, settings: settings);
+        rig.AnswerProcessActions = true;   // the Portable Avatar leaves the Module when its Process Actions are answered
         rig.Write("PGM-HCM-V1.0", PgmRig.HumanCommand());
         rig.Write("OSD-BTO-V1.5", PgmAim.Text(words));
         await rig.RunAsync();
@@ -36,7 +37,8 @@ public class PgmLevelsTests
     internal static JsonObject Final(PgmRig rig) => (JsonObject)JsonNode.Parse(rig.Latest["PGM-FRS-V1.0"])!;
     internal static AucAim Auc(PgmRig rig) => (AucAim)rig.Aims["1PGM-AUC-V1.0-I01"];
     internal static AufAim Auf(PgmRig rig) => (AufAim)rig.Aims["1PGM-AUF-V1.0-I01"];
-    private static string BodyOf(PgmRig rig) => rig.At("PAF-PAV-V1.6").Single()["BodyDescriptorsObject"]?.ToJsonString() ?? "";
+    // The Portable Avatar of the speech: with Process Actions, the motion is formed first and the speech last.
+    private static string BodyOf(PgmRig rig) => rig.At("PAF-PAV-V1.6").Last()["BodyDescriptorsObject"]?.ToJsonString() ?? "";
 
     // Level 0: the Final Response has no functions; A-User Formation moves the avatar from the speech and the Personal Status only; nothing to report per function.
     [Fact]
@@ -82,7 +84,7 @@ public class PgmLevelsTests
         Assert.InRange((double)times["Start"]!, words[5].Start - 0.21, words[5].Start - 0.19);
         Assert.InRange((double)times["End"]!, words[6].End + 0.19, words[6].End + 0.21);
         Assert.Contains("Point RightHand", BodyOf(rig));
-        Assert.Contains("MM-Animate", BodyOf(rig));
+        Assert.Contains("MM-Animate", rig.At("PAF-PAV-V1.6").First()["BodyDescriptorsObject"]?.ToJsonString() ?? "");   // the motion: the Portable Avatar formed first
     }
 
     // Level 2: the functions carry their Behaviour; A-User Formation realises it as given.

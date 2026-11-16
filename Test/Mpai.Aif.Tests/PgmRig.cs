@@ -88,6 +88,7 @@ internal sealed class PgmRig
     // ---- the router -----------------------------------------------------------------------------------------------------------------------------
 
     private readonly Queue<(string Aim, string Key, string Json)> _queue = new();
+    private readonly Queue<JsonObject> _unanswered = new();
     public int Firings { get; private set; }
 
     private static string TypeOf(string key) => key[..key.IndexOf('#')];
@@ -109,11 +110,21 @@ internal sealed class PgmRig
         _queue.Enqueue((aim, key, json));
     }
 
+    // A stand-in of the M-Instance: every Process Action Request that leaves the Module is answered with an Ack (the tests that do not look at the M-Instance).
+    public bool AnswerProcessActions { get; set; }
+
     // Fires the AIMs until nothing is pending.
     public async Task RunAsync(int maxFirings = 200)
     {
-        while (_queue.Count > 0)
+        while (_queue.Count > 0 || (AnswerProcessActions && _unanswered.Count > 0))
         {
+            if (_queue.Count == 0)
+            {
+                var rq = (JsonObject)_unanswered.Dequeue().DeepClone();
+                rq["PAStatus"] = new JsonArray(new JsonObject { ["Ack"] = "Ack" });
+                Write("MMM-PAC-V2.2", rq);
+                continue;
+            }
             if (++Firings > maxFirings) throw new InvalidOperationException("The slice does not settle: " + Firings + " firings.");
             var (aim, key, json) = _queue.Dequeue();
             var result = await Aims[aim].ProcessAsync(new Message { MessageId = Guid.NewGuid().ToString(), Ports = new Dictionary<string, string> { [key] = json } });
@@ -127,7 +138,7 @@ internal sealed class PgmRig
                 if (destinations.Count == 0) { Unconnected.Add((aim, type)); continue; }
                 foreach (var d in destinations)
                 {
-                    if (d.InAim == "") Boundary.Add((type, node));
+                    if (d.InAim == "") { Boundary.Add((type, node)); if (type == "MMM-PAC-V2.2" && node is JsonObject pac) _unanswered.Enqueue(pac); }
                     else Deliver(d.InAim, Readers[d.InAim].Input(type), outJson);
                 }
             }
@@ -160,7 +171,7 @@ internal sealed class ScriptedModel : ILanguageModel
         var answer = new JsonObject
         {
             ["reply"] = opens ? "I am going to open the doors." : "Yes.",
-            ["worldActions"] = opens ? new JsonArray(new JsonObject { ["verb"] = "MU-Actuate", ["target"] = "doors" }) : new JsonArray(),
+            ["worldActions"] = opens ? new JsonArray(new JsonObject { ["verb"] = "Property Change", ["target"] = "doors", ["property"] = "OpenState", ["value"] = "Open" }) : new JsonArray(),
             ["personaMoves"] = opens ? new JsonArray("doors") : new JsonArray()
         };
         if (schema["properties"]?["functions"]?["items"]?["properties"] is JsonObject item)

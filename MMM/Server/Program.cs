@@ -23,6 +23,8 @@ while (repo is not null && !Directory.Exists(Path.Combine(repo, "MMM", "Viewer")
 if (repo is null) { Console.Error.WriteLine("The repository (MMM/Viewer, schemas) is not above this program."); return 1; }
 
 var m = new MInstance(Path.Combine(repo, "schemas"));
+// --door: "open the door when the bell rings" (M3313), its page at <url>/viewer/door.html.
+if (args.Contains("--door")) return await DoorUseCase.RunAsync(m, url, repo, args);
 // --world: the world of the MMM - the Metaverse Square, buildings with doors, the MPAI building with its meeting room - instead of Use Case 2 (MMM/World/world.json).
 // --code 123456 (or MMM_CODE): nobody gets anything from the server without the meeting code. --invite A,B,C: the Users that are invited from the start, the first the convener.
 var worldMode = args.Contains("--world");

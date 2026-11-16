@@ -98,19 +98,21 @@ public class PgmSliceTests
         Assert.Equal("accepted", (string?)answers[0]["ExecutionResult"]);
 
         // The Process Action on another Item is asked of the M-Instance: an Action and a Process Action Request. The gesture is the Persona's own: not asked of anybody.
-        Assert.Equal("MU-Actuate", (string?)rig.At("MMM-ACT-V2.2").Single()["Action"]);
+        Assert.Equal("Property Change", (string?)rig.At("MMM-ACT-V2.2").Single()["Action"]);
         var request = rig.At("MMM-PAC-V2.2").Single();
-        Assert.Equal("doors", (string?)request["RQ-Complements"]![0]!["ToItem"]);
-
-        // The Module gives the Portable Avatar (speech, face, body and model together) to the Controller; the User Agent separates it for its Units.
-        var avatar = rig.At("PAF-PAV-V1.6").Single();
-        Assert.Contains("MM-Animate", avatar.ToJsonString());
+        Assert.Equal("doors", (string?)request["RQ-Complements"]![0]!["NilItem"]);    // Property Change: RQ1, the Item, is the Nil Complement
+        // The Portable Avatar of the same formation waits until the M-Instance has answered the Process Action (M3313 4).
+        Assert.Empty(rig.At("PAF-PAV-V1.6"));
 
         // The test stub of the M-Instance answers the Process Action Request.
         var response = (JsonObject)request.DeepClone();
         response["PAStatus"] = new JsonArray(new JsonObject { ["Ack"] = "Ack" });
         rig.Write("MMM-PAC-V2.2", response);
         await rig.RunAsync();
+
+        // The Module gives the Portable Avatar (speech, face, body and model together) to the Controller; the User Agent separates it for its Units.
+        var avatar = rig.At("PAF-PAV-V1.6").Single();
+        Assert.Contains("MM-Animate", avatar.ToJsonString());
         AssertAllValid(rig);
         Assert.Equal("done", ((AucAim)rig.Aims["1PGM-AUC-V1.0-I01"]).Outcome);
     }
@@ -207,8 +209,8 @@ public class PgmSliceTests
                 said = rig.Latest.TryGetValue("PGM-FRS-V1.0", out var frs) ? $" | said \"{PgmAim.TextOf(JsonNode.Parse(frs)?["Text"] as JsonObject)}\" | actions {string.Join(",", (JsonNode.Parse(frs)?["ProcessActions"]?["ProcessActions"] as JsonObject)?.Select(k => k.Key) ?? [])}" : "";
                 var bad = rig.Seen.Where(s => s.Verdict != "valid").Select(s => s.Verdict).Distinct().ToList();
                 var accepted = rig.At("PGM-HCM-V1.0").Any(x => (string?)x["ExecutionResult"] == "accepted");
-                var acted = rig.At("MMM-ACT-V2.2").Any(x => (string?)x["Action"] == "MU-Actuate");
-                verdict = bad.Count > 0 ? "NOT VALID: " + string.Join("; ", bad) : !accepted ? "not accepted" : !acted ? "no MU-Actuate" : "ok";
+                var acted = rig.At("MMM-ACT-V2.2").Any(x => (string?)x["Action"] == "Property Change");
+                verdict = bad.Count > 0 ? "NOT VALID: " + string.Join("; ", bad) : !accepted ? "not accepted" : !acted ? "no Property Change" : "ok";
             }
             catch (Exception e) { verdict = "EXCEPTION: " + e.Message; }
             if (verdict != "ok") failures++;

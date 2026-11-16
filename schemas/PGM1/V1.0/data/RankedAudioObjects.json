@@ -21,7 +21,7 @@
       "Components":            { "type": "object", "additionalProperties": false, "description": "The dimensions that contributed to the score.", "properties": {
         "Physical":            { "type": "number", "minimum": 0, "maximum": 1, "description": "Motion, proximity, acoustic prominence and clarity." },
         "Semantic":            { "type": "number", "minimum": 0, "maximum": 1, "description": "Audio object type." },
-        "Contextual":          { "type": "number", "minimum": 0, "maximum": 1, "description": "Directive and domain." } } } } } },
+        "Contextual":          { "type": "number", "minimum": 0, "maximum": 1, "description": "AUC-CXT Request and domain." } } } } } },
 
     "DataXMData":              { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
     "DescrMetadata":           { "type": "string", "maxLength": 2048 } } }

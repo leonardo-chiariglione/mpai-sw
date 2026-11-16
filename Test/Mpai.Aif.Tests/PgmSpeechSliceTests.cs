@@ -47,6 +47,6 @@ public class PgmSpeechSliceTests
             $"{DateTime.Now:s}\t{clock.Elapsed.TotalSeconds:F2} s\tASR heard: \"{model.Asked.FirstOrDefault()}\"\t{rig.Seen.Count} data seen\tinvalid: {bad.Count}\n");
         Assert.True(bad.Count == 0, string.Join("\n", bad));
         Assert.Equal("accepted", (string?)rig.At("PGM-HCM-V1.0").Single()["ExecutionResult"]);
-        Assert.Equal("MU-Actuate", (string?)rig.At("MMM-ACT-V2.2").Single()["Action"]);
+        Assert.Equal("Property Change", (string?)rig.At("MMM-ACT-V2.2").Single()["Action"]);
     }
 }

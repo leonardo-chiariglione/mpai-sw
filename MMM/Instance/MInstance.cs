@@ -41,6 +41,10 @@ public sealed class MInstance
         public string? Model { get; set; }           // the 3D Model that renders it (a GLB file)
         public bool Streaming { get; set; }          // a Speech Object whose data is still arriving, as a stream
         public JsonObject? LightSource { get; set; } // the Light Source (CVE-LTS-V1.0) a Property Change gave it: its Type, Colour and Intensity
+        public Dictionary<string, JsonNode?> Properties { get; } = new(StringComparer.Ordinal);   // its Item Properties (MMM-IPR-V3.0, RQ12 of Property Change V3.0): OpenState of a door...
+        public string? Kind { get; set; }            // what the viewer draws it as, when its Data Type does not say (a Door is a 3D Model Object, as a Persona is)
+        public double[]? WalkFrom, WalkTo;           // a walk its Animation Stream makes (MM-Animate At an M-Location): from and to, metres in the M-Environment
+        public long WalkStart, WalkEnd, AnimatedUntil;   // when the walk starts and ends, and when the animation is over (Unix milliseconds)
     }
 
     public sealed class Process
@@ -103,6 +107,21 @@ public sealed class MInstance
             ID = id, DataType = universe ? "MMM-ULC" : "MMM-LOC", Owner = owner, Public = isPublic, Place = [x, y], Size = size,
             Perceptible = perceptible, Location = at
         };
+    }
+
+    // An Item placed at an M-Location when the M-Instance starts (a door of a room), its Process's own, with its Item Properties (MMM-IPR-V3.0).
+    public void AddItem(string id, string dataType, string owner, string at, double x, double y, double yaw = 0, string? kind = null, params (string Name, JsonNode Value)[] properties)
+    {
+        lock (gate)
+        {
+            var it = new Item
+            {
+                ID = id, DataType = dataType, Owner = owner, Location = at, Kind = kind,
+                SpatialAttitude = new JsonObject { ["Position"] = new JsonObject { ["CartPosition"] = new JsonArray(x, y, 0.0) }, ["Orientation"] = new JsonObject { ["Orientation"] = new JsonArray(yaw, 0.0, 0.0) } }
+            };
+            foreach (var (n, v) in properties) it.Properties[n] = v;
+            items[id] = it;
+        }
     }
 
     // A Service Process (a Process of the M-Instance that is not a human's User: a meeting service, a machine that takes part), with a token, and
@@ -403,18 +422,28 @@ public sealed class MInstance
                 ["Things"] = new JsonArray(located.Select(i =>
                 {
                     var w = Where(i);
+                    var clock = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    if (i.WalkFrom is { } wf && i.WalkTo is { } wt && clock < i.WalkEnd)
+                    {
+                        var f = Math.Clamp((clock - i.WalkStart) / (double)Math.Max(1, i.WalkEnd - i.WalkStart), 0, 1);
+                        w = [wf[0] + (wt[0] - wf[0]) * f, wf[1] + (wt[1] - wf[1]) * f];
+                    }
                     var o = new JsonObject
                     {
-                        ["ID"] = i.ID, ["Kind"] = i.DataType == "MMM-LOC" ? "Location" : i.DataType == "OSD-3DO-V1.5" ? "Persona" : i.DataType == "OSD-BSO-V1.5" ? "Speech" : i.DataType == ScreenHeader ? "Screen" : "Item",
+                        ["ID"] = i.ID, ["Kind"] = i.Kind ?? (i.DataType == "MMM-LOC" ? "Location" : i.DataType == "OSD-3DO-V1.5" ? "Persona" : i.DataType == "OSD-BSO-V1.5" ? "Speech" : i.DataType == ScreenHeader ? "Screen" : i.DataType == "OSD-AUO-V1.5" ? "Audio" : "Item"),
                         ["At"] = i.Location, ["X"] = w[0] + (Spot(i) is null ? side.GetValueOrDefault(i.ID) : 0), ["Y"] = w[1], ["Z"] = 0.0,    // east, north, up: metres
                         ["Yaw"] = YawOf(i), ["Depth"] = DepthOf(i),
                         ["Perceptible"] = i.Perceptible, ["Owner"] = i.Owner, ["Public"] = i.Public
                     };
                     if (i.DataType == "MMM-LOC") o["Size"] = i.Size;
                     if (i.Model is not null) o["Model"] = i.Model;
+                    if (i.Properties.Count > 0) o["Properties"] = new JsonObject(i.Properties.Select(p => KeyValuePair.Create(p.Key, p.Value?.DeepClone())));
                     if (i.Animation is not null) o["Animation"] = i.Animation;
+                    if (i.Animation is not null) o["Animating"] = clock < i.AnimatedUntil;   // its Stream is still playing (walking, speaking)
+                    if (i.WalkEnd > 0 && clock < i.WalkEnd) o["Walking"] = true;
                     if (i.LightSource?["Intensity"] is JsonValue intensity) o["Intensity"] = intensity.DeepClone();    // a light: how strong, in Watt
                     if (i.DataType == ScreenHeader) o["Streaming"] = i.Streaming;
+                    if (i.DataType == "OSD-AUO-V1.5") o["Start"] = i.Started;                            // a sound of the place: when it was added (Unix milliseconds)
                     // A Speech Object says when it is heard: its own time (Unix milliseconds). Its data is read as an Item, once, by whoever may hear it.
                     if (i.DataType == "OSD-BSO-V1.5")
                     {
@@ -472,7 +501,7 @@ public sealed class MInstance
             switch (w)
             {
                 case JsonValue v when v.TryGetValue<string>(out var id): refs.Add(id); break;
-                case JsonObject o when o["itemID"] is not null:
+                case JsonObject o when o["itemID"] is not null && o["Header"] is null:   // a Statused Reference; an Item has a Header (an Item Property names its Item with ItemID, and the names are read without case)
                     var rid = o["itemID"]!.GetValue<string>();
                     if (!items.ContainsKey(rid)) return Fail(404, service, "IncID", $"no Item {rid}");
                     refs.Add(rid); break;
@@ -618,6 +647,13 @@ public sealed class MInstance
             items[c.Nil!] = new Item { ID = c.Nil!, DataType = "OSD-3DO-V1.5", Body = model, Owner = source };
             created = true;
         }
+        // An Audio Object the Request carries (OSD-AUO-V1.5) is made where it is added, its Process's own: a sound of the place (the applause of a theatre, N-26). It is heard by whoever
+        // may read the M-Location it is in: public where the M-Location is public.
+        if (!items.ContainsKey(c.Nil!) && with.FirstOrDefault(i => Header(i) == "OSD-AUO-V1.5" && (string?)i["AudioObjectID"] == c.Nil) is { } sound)
+        {
+            items[c.Nil!] = new Item { ID = c.Nil!, DataType = "OSD-AUO-V1.5", Body = sound, Owner = source, Public = items.TryGetValue(c.At!, out var place) && place.Public, Started = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
+            created = true;
+        }
         if (!items.TryGetValue(c.Nil!, out var it)) return Fail(404, service, "IncID", $"no Item {c.Nil}");
         if (!items.ContainsKey(c.At!)) return Fail(404, service, "IncID", $"no M-Location {c.At}");
         if (it.Owner != source && !Allowed(source, "MM-Add", c.Nil, c.At)) return Fail(403, service, "InsRights", $"{c.Nil} is not {source}'s");
@@ -689,11 +725,61 @@ public sealed class MInstance
     {
         if (Need(service, c.Nil, "Nil") is { } f1) return f1;
         if (!items.TryGetValue(c.Nil!, out var it)) return Fail(404, service, "IncID", $"no Item {c.Nil}");
-        var stream = refs.FirstOrDefault(r => items.TryGetValue(r, out var s) && s.DataType == "PAF-AMO-V1.6");
-        if (stream is null) return Fail(422, service, "FaultyPA", "MM-Animate takes an Animation Stream");
+        // The Stream: an Animation Stream the Process owns, or a Portable Avatar (PAF-PAV) the Request carries, which becomes an Item of the Process.
+        var avatar = with.FirstOrDefault(i => Header(i) == "PAF-PAV-V1.6" && i["PortableAvatarID"] is not null);
+        if (avatar is not null)
+        {
+            var id = (string)avatar["PortableAvatarID"]!;
+            if (items.TryGetValue(id, out var old) && old.Owner != source) return Fail(409, service, "Clash", $"{id} is another Process's");
+            items[id] = new Item { ID = id, DataType = "PAF-PAV-V1.6", Body = avatar, Owner = source };
+        }
+        var stream = avatar is not null ? (string)avatar["PortableAvatarID"]! : refs.FirstOrDefault(r => items.TryGetValue(r, out var s) && s.DataType is "PAF-AMO-V1.6" or "PAF-PAV-V1.6");
+        if (stream is null) return Fail(422, service, "FaultyPA", "MM-Animate takes an Animation Stream or a Portable Avatar");
         if (it.Owner != source || items[stream].Owner != source) return Fail(403, service, "InsRights", $"{c.Nil} or {stream} is not {source}'s");
+        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         it.Animation = stream;
-        return Ok(200, service, new Complements { With = GrantAll(with, source) });
+        it.AnimatedUntil = now;
+        // At an M-Location: the Stream takes the Item there, walking (WalkSpeed); the Item is at that M-Location from the start of the walk, and is seen moving along it.
+        if (c.At is not null)
+        {
+            if (!items.TryGetValue(c.At, out var place) || place.DataType != "MMM-LOC") return Fail(404, service, "IncID", $"no M-Location {c.At}");
+            if (!MayEnter(source, "MM-Animate", c.Nil!, c.At)) return Fail(403, service, "InsRights", $"{source} may not take {c.Nil} to {c.At}");
+            var from = PlaceOf(it); var to = PlaceOf(place);
+            var dx = to[0] - from[0]; var dy = to[1] - from[1];
+            var seconds = Math.Sqrt(dx * dx + dy * dy) / WalkSpeed;
+            it.WalkFrom = from; it.WalkTo = to; it.WalkStart = now; it.WalkEnd = now + (long)(seconds * 1000);
+            it.Location = c.At;
+            var yaw = Math.Abs(dx) + Math.Abs(dy) > 1e-6 ? Math.Atan2(-dx, dy) * 180 / Math.PI : YawOf(it) ?? 0;   // facing the way it walked (zero north, positive west)
+            it.SpatialAttitude = new JsonObject
+            {
+                ["Position"] = new JsonObject { ["CartPosition"] = new JsonArray(0.0, 0.0, 0.0) },
+                ["Orientation"] = new JsonObject { ["Orientation"] = new JsonArray(yaw, 0.0, 0.0) }
+            };
+            it.AnimatedUntil = it.WalkEnd;
+        }
+        // A Portable Avatar that speaks: the Item is animated while the speech lasts (its PCM, 16 kHz, 16 bit, mono, or a WAV file).
+        if (avatar?["SPOOrSPOID"]?[0] is JsonObject speech && SpeechSeconds(speech) is { } said)
+            it.AnimatedUntil = Math.Max(it.AnimatedUntil, now + (long)(said * 1000));
+        return Ok(200, service, new Complements { With = GrantAll(with.Where(i => i != avatar).ToList(), source) });
+    }
+
+    // The speed of a walk an Animation Stream makes, metres a second.
+    public const double WalkSpeed = 1.0;
+
+    // Where an Item is now, in metres in the M-Environment (the centre of an M-Location).
+    private double[] PlaceOf(Item it)
+    {
+        var things = Snapshot()["Things"]!.AsArray().OfType<JsonObject>();
+        var t = things.FirstOrDefault(x => (string?)x["ID"] == it.ID);
+        return t is null ? [0, 0] : [(double)t["X"]!, (double)t["Y"]!];
+    }
+
+    private static double? SpeechSeconds(JsonObject speech)
+    {
+        var b64 = (string?)speech["Data"] ?? (string?)speech["BasicSpeechObjectData"]?[0]?["Data"];
+        if (b64 is null) return null;
+        var n = b64.Length * 3 / 4;
+        return Math.Max(0, n - 44) / 32000.0;
     }
 
     // LCSrvc. Property Change makes an Item its Process owns perceptible and, when the Request carries a Light Source (CVE-LTS-V1.0, RQ7 of MMM-PCP-V2.2), gives
@@ -706,6 +792,12 @@ public sealed class MInstance
         var light = with.FirstOrDefault(i => Header(i) == "CVE-LTS-V1.0");
         if (light is not null && (string?)light["LightSourceID"] != c.Nil) return Fail(422, service, "FaultyPA", $"the Light Source is {(string?)light["LightSourceID"]}'s, not {c.Nil}'s");
         if (light is not null) it.LightSource = light;
+        // RQ12 (MMM-PCP-V3.0): the Item Properties of the Item, an Item Property (MMM-IPR-V3.0) whose schema holds each Name to the vocabulary and its Value to the values of the Name.
+        var props = with.Where(i => Header(i) == "MMM-IPR-V3.0").ToList();
+        if (props.FirstOrDefault(p => (string?)p["ItemID"] != c.Nil) is { } other) return Fail(422, service, "FaultyPA", $"the Item Property is {(string?)other["ItemID"]}'s, not {c.Nil}'s");
+        if (props.Count > 0 && !schemas.Knows("MMM-IPR-V3.0")) return Fail(422, service, "FaultyPA", "this M-Instance does not know the Item Property vocabulary (MMM-IPR-V3.0)");
+        foreach (var p in props.SelectMany(p => p["Properties"]?.AsArray() ?? []).OfType<JsonObject>())
+            it.Properties[(string)p["Name"]!] = p["Value"]?.DeepClone();
         it.Perceptible = true;
         return Ok(200, service, new Complements { With = GrantAll(with, source) });
     }

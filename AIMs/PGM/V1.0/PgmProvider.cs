@@ -39,9 +39,9 @@ public sealed class PgmProvider : IAimProvider
         var behaviours = List(BplAim.BehavioursSetting);
         return aimName switch
         {
-            "1PGM-AUC-V1.0-I01" => new AucAim(aimName, Ports(aimName)) { FunctionLevel = Number(AucAim.LevelSetting) ?? 1 },
+            "1PGM-AUC-V1.0-I01" => new AucAim(aimName, Ports(aimName)) { FunctionLevel = Number(AucAim.LevelSetting) ?? 1, Persona = persona },
             "1PGM-CXT-V1.0-I01" => new CxtAim(aimName, Ports(aimName), _recogniser),
-            "1PGM-PRC-V1.0-I01" => new PrcAim(aimName, Ports(aimName)) { Items = List(PrcAim.ItemsSetting) ?? ["doors", "window", "table", "lamp"], PersonaBehaviours = behaviours ?? Communicative.Behaviours },
+            "1PGM-PRC-V1.0-I01" => new PrcAim(aimName, Ports(aimName)) { Items = List(PrcAim.ItemsSetting) ?? ["doors", "window", "table", "lamp"], MLocations = List(PrcAim.MLocationsSetting) ?? [], PersonaBehaviours = behaviours ?? Communicative.Behaviours },
             "1PGM-BKN-V1.0-I01" => new BknAim(aimName, Ports(aimName), _model ?? OllamaModel.From(settings), persona) { LevelDeclared = Number(BknAim.LevelSetting) ?? 1 },
             "1PGM-DAC-V1.0-I01" => new DacAim(aimName, Ports(aimName)),
             "1PGM-USR-V1.0-I01" => new UsrAim(aimName, Ports(aimName)),

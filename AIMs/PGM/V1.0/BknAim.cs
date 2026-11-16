@@ -22,6 +22,11 @@ public sealed class BknAim : PgmAim
     private readonly string _persona;
 
     private JsonObject? _pendingRequest, _pendingPrompt;
+    private JsonObject? _lastPrompt;      // the PC Prompt of the last deliberation: a continuation Request (a Condition that now holds) is concluded on it
+    private JsonObject? _wordsToCome;     // what the A-User says once the Process Actions of a Condition that held are done: the Text and its Communicative Functions
+
+    // The Constraint of a continuation Request that reports the Process Actions of the last Final Response done (M3313 4: the greeting when the door is open).
+    public const string ActionsDone = "Process Actions done: ";
     private bool _consulting;
     private string _dialog = "";
     private readonly Dictionary<string, JsonObject> _answers = new();
@@ -42,6 +47,40 @@ public sealed class BknAim : PgmAim
 
         var outputs = new List<(string, JsonNode?)>();
 
+        // A CONDITION THAT NOW HOLDS. A-User Control kept a goal pending (its Condition is in the Constraints of the Goal BKN understood); when Context Description reports the
+        // event, it sends a continuation Request, the Condition held in the Constraints of the Goal. BKN concludes it on the PC Prompt of the command, without a new consultation.
+        // The Process Actions of a Condition that held are done: the words that come after them, in a Final Response of their own (no model is asked).
+        if (_pendingRequest is { } done && (string?)done["Exchange"]?["Phase"] == "continuation"
+            && ((done["Goal"]?["Constraints"] as JsonArray)?.Select(x => (string?)x) ?? []).Any(c => c is not null && c.StartsWith(ActionsDone, StringComparison.Ordinal)))
+        {
+            _pendingRequest = null;
+            var session = Session.Of(done);
+            var rs = Auc.Make(Auc.Bkn, Auc.Response, session, Auc.IdOf(done));
+            rs["Outcome"] = "achieved";
+            rs["DeliberationState"] = "concluded";
+            rs["ActionsOutcome"] = new JsonObject { ["Outcome"] = "not_requested", ["StepCount"] = 0 };
+            if (_wordsToCome is { } words)
+            {
+                _wordsToCome = null;
+                var fr2 = new JsonObject { ["Header"] = "PGM-FRS-V1.0" };
+                session.Stamp(fr2);
+                fr2["FinalResponseID"] = NewId("frs");
+                fr2["FinalResponseTime"] = Time();
+                fr2["AUCBKNRequestID"] = Auc.IdOf(done);
+                fr2["DialogID"] = _dialog;
+                foreach (var (k, v) in words) fr2[k] = v?.DeepClone();
+                rs["Conclusion"] = new JsonObject { ["Headline"] = TextOf(words["Text"] as JsonObject) ?? "", ["FinalResponseID"] = (string)fr2["FinalResponseID"]! };
+                outputs.Add((_final, fr2));
+            }
+            outputs.Add((_response, rs));
+            return Give(message, outputs);
+        }
+        if (!_consulting && _pendingPrompt is null && _pendingRequest is { } cont && (string?)cont["Exchange"]?["Phase"] == "continuation" && _lastPrompt is not null)
+        {
+            _pendingRequest = null;
+            outputs.AddRange(await Conclude(cont, _lastPrompt));
+            return Give(message, outputs);
+        }
         // Turn 1: the request and the prompt are here - ask the four partners.
         if (!_consulting && _pendingRequest is not null && _pendingPrompt is not null)
         {
@@ -61,6 +100,7 @@ public sealed class BknAim : PgmAim
         {
             var request = _pendingRequest; var prompt = _pendingPrompt;
             _pendingRequest = null; _pendingPrompt = null; _consulting = false; _answers.Clear();
+            _lastPrompt = prompt;
             outputs.AddRange(await Conclude(request, prompt));
         }
         return Give(message, outputs);
@@ -77,7 +117,7 @@ public sealed class BknAim : PgmAim
     {
         var session = Session.Of(request);
         var allowed = (request["Actions"]?["Allowed"] as JsonArray)?.Select(x => (string?)x).Where(x => x is not null).Select(x => x!).ToArray();
-        if (allowed is not { Length: > 0 }) allowed = ["MU-Actuate", "MM-Animate"];
+        if (allowed is not { Length: > 0 }) allowed = ["Property Change", "MM-Animate"];
         var said = (string?)prompt["Prompt"] ?? "";
 
         // The Level: what A-User Control requested, no higher than this AIM declares; the Functions: those A-User Control allows that the Persona can perform (PC Prompt).
@@ -94,8 +134,11 @@ public sealed class BknAim : PgmAim
         var items = Strings(context?["Items"]).Concat(referents).Distinct().ToArray();
         var places = Strings(context?["MLocations"]);
         if (functions.Length == 0) level = 0;
+        // The Condition: held (a continuation Request says so in the Constraints of its Goal), or to be found in the command.
+        var held = Strings(request["Goal"]?["Constraints"]).FirstOrDefault(c => c.StartsWith(ConditionHeld, StringComparison.Ordinal));
+        string? conditionEvent = null, conditionSound = null;
 
-        string reply; var worldActions = new List<(string Verb, string Target)>(); var moves = new List<string>();
+        string reply; var worldActions = new List<(string Verb, string Target, string Property, string Value)>(); var moves = new List<string>();
         var produced = new JsonArray();
         var failure = "";
         try
@@ -103,8 +146,21 @@ public sealed class BknAim : PgmAim
             var system =
                 "You are the A-User, an autonomous assistant of a responsible human in a metaverse building. " +
                 "'reply' is what you say aloud to the human: one or two short natural sentences, never a command name. " +
-                "If the human asks you to do something to an item of the building (for instance to open doors), add one entry to worldActions: verb 'MU-Actuate', target the item (for instance 'doors'). " +
-                "If you need to go somewhere in the building yourself, put the place in personaMoves (for instance 'doors'). Otherwise leave the lists empty. ";
+                "If the human asks you to change an item of the building (for instance to open the doors or to switch on the lamp), add one entry to worldActions: verb 'Property Change', target the item, " +
+                "property and value from this list: " + string.Join("; ", ItemProperties.Vocabulary.Select(v => $"{v.Key} ({string.Join(", ", v.Value)})")) + ". " +
+                "If you need to go somewhere in the building yourself, put the place in personaMoves (for instance 'doors'). Otherwise leave the lists empty. " +
+                (places.Length > 0 ? "The places you can go to are: " + string.Join(", ", places) + "; to act on an item, first go to the place next to it. " : "") +
+                (held is null
+                    ? "If the command is to be done only when something happens ('if', 'when', 'as soon as'), set condition.conditional to true, condition.event to what must happen, " +
+                      "in the human's words, and condition.sound to the sound it is (Bell for a bell or a doorbell, Knock for a knock, else None); then do nothing now: worldActions and " +
+                      "personaMoves stay empty, and 'reply' tells the human, in one sentence, what you will do and when. Otherwise condition.conditional is false. "
+                    : "The human gave you this command earlier, to be done when something happened, and it has happened now (" + held[ConditionHeld.Length..].Trim() + "). " +
+                      "Do now everything the command asks, in order. " +
+                      (places.Length > 0 ? "You are not next to the items: whenever you change an item, personaMoves must name the place next to it. " : "") +
+                      "Opening or closing is OpenState (Open, Closed); LockState is only for locking or unlocking. " +
+                      "Example: the command was 'when somebody knocks, open the window and say hi', and somebody knocked: worldActions [{\"verb\":\"Property Change\",\"target\":\"window\"," +
+                      "\"property\":\"OpenState\",\"value\":\"Open\"}], personaMoves [the place next to the window], reply \"Hi!\". " +
+                      "'reply' is only what you say now to whoever is there (for instance a short greeting), not to the human. ");
             if (level >= 1)
                 system +=
                     "While you speak, your body can express communicative functions. In 'functions' list the ones that suit your reply (usually one to three): " +
@@ -115,18 +171,26 @@ public sealed class BknAim : PgmAim
                     (level >= 2 ? "'behaviour' is the movement that realises the function, chosen among those allowed for it: " +
                         string.Join("; ", functions.Select(f => $"{f}: {string.Join(", ", Communicative.BehavioursOf[f].Where(b => personaBehaviours.Length == 0 || personaBehaviours.Contains(b)))}")) + ". " : "");
             system +=
-                "Example. Human: 'please close the window'. You: {\"reply\":\"Closing the window now.\",\"worldActions\":[{\"verb\":\"MU-Actuate\",\"target\":\"window\"}],\"personaMoves\":[]" +
+                "Example. Human: 'please close the window'. You: {\"reply\":\"Closing the window now.\",\"worldActions\":[{\"verb\":\"Property Change\",\"target\":\"window\",\"property\":\"OpenState\",\"value\":\"Closed\"}],\"personaMoves\":[]" +
                 (level >= 1 ? ",\"functions\":[{\"function\":\"Deictic\",\"words\":\"the window\",\"target\":\"window\",\"intensity\":0.6,\"required\":true" + (level >= 2 ? ",\"behaviour\":\"Point\"" : "") + "}]" : "") + "}. " +
                 "Example. Human: 'how are you'. You: {\"reply\":\"I am fine, thank you.\",\"worldActions\":[],\"personaMoves\":[]" +
                 (level >= 1 ? ",\"functions\":[{\"function\":\"Affirmation\",\"words\":\"fine\",\"target\":\"User\",\"intensity\":0.4,\"required\":false" + (level >= 2 ? ",\"behaviour\":\"Smile\"" : "") + "}]" : "") + "}.";
-            var raw = await _model.AnswerAsync(system, said, Schema(allowed, level, functions, items.Concat(places).ToArray(), personaBehaviours));
+            var raw = await _model.AnswerAsync(system, said, Schema(allowed, level, functions, items.Concat(places).ToArray(), personaBehaviours, held is null, items, places));
             var json = JsonNode.Parse(raw) as JsonObject ?? throw new InvalidOperationException("the model did not give a JSON object");
             reply = (string?)json["reply"] ?? "";
             foreach (var a in json["worldActions"] as JsonArray ?? [])
-                if (a is JsonObject o && (string?)o["verb"] is { } v && allowed.Contains(v) && (string?)o["target"] is { Length: > 0 } t) worldActions.Add((v, t));
+                if (a is JsonObject o && (string?)o["verb"] is { } v && allowed.Contains(v) && Known((string?)o["target"], items) is { Length: > 0 } t
+                    && (string?)o["property"] is { } pn && ItemProperties.Vocabulary.TryGetValue(pn, out var values) && (string?)o["value"] is { } pv && values.Contains(pv))
+                    worldActions.Add((v, t, pn, pv));
             foreach (var g in json["personaMoves"] as JsonArray ?? [])
-                if ((string?)g is { Length: > 0 } name) moves.Add(name);
+                if (Known((string?)g, places) is { Length: > 0 } name) moves.Add(name);
             if (level >= 1) produced = Functions(json["functions"] as JsonArray, reply, level, functions, items, places);
+            if (held is null && json["condition"] is JsonObject cond && (bool?)cond["conditional"] == true)
+            {
+                conditionEvent = (string?)cond["event"] is { Length: > 0 } ev ? ev : "the event";
+                conditionSound = (string?)cond["sound"] ?? "None";
+                worldActions.Clear(); moves.Clear();
+            }
         }
         catch (Exception e)
         {
@@ -153,13 +217,39 @@ public sealed class BknAim : PgmAim
 
         var pas = new JsonObject();
         var n = 0;
-        foreach (var (verb, target) in worldActions)
-            if (verb == "MU-Actuate" && !pas.ContainsKey(verb))
-                pas[verb] = new JsonObject
+        // Going to a place: the Persona walks there, animated by a Stream - MM-Animate (MMM-TEC V2.2), RQ1 the Persona, RQ3 At the M-Location it goes to, RQ4 With the
+        // Stream, which is the Portable Avatar that A-User Formation forms (A-User Control names it). A Persona is not moved with MM-Move: a walk would be a very long list of
+        // MM-Moves. It comes before the change of an Item, which A-User Control sends when the Persona has reached the place.
+        foreach (var place in moves.Where(places.Contains).Take(1))
+            pas["MM-Animate"] = new JsonObject
+            {
+                ["Header"] = "MMM-2AP-V2.2", ["MMAnimatePAID"] = NewId("pa" + ++n), ["Time"] = Time(),
+                ["MMAnimatePARQ"] = new JsonObject
                 {
-                    ["Header"] = "MMM-3CP-V2.2", ["MUActuatePAID"] = NewId("pa" + ++n), ["Time"] = Time(),
-                    ["MUActuatePARQ"] = new JsonObject { ["RQ1"] = new JsonObject { ["Complement"] = "Nil", ["ItemID"] = target } }
-                };
+                    ["RQ1"] = new JsonObject { ["Complement"] = "Nil", ["ItemID"] = _persona },
+                    ["RQ3"] = new JsonObject { ["Complement"] = "At", ["MLocationID"] = place },
+                    ["RQ4"] = new JsonObject { ["Complement"] = "With", ["Stream"] = "" }
+                }
+            };
+        // A change of an Item of the M-Instance is an MM action: Property Change (MMM-TEC V2.2), RQ1 the Item. RQ12, the Properties (Item Property, MMM-IPR), is in
+        // MMM-TEC V3.0 (draft); PGM-AUA V1.0 still refers to MMM-TEC V2.2, whose schema of the Process Action does not forbid it.
+        // One Property Change for the first Item changed, with every Property the model changes on it (the last value of a Property given twice).
+        var changes = worldActions.Where(w => w.Verb == "Property Change").ToList();
+        if (changes.Count > 0)
+        {
+            var target = changes[0].Target;
+            var properties = new JsonArray(changes.Where(c => c.Target == target).GroupBy(c => c.Property)
+                                                  .Select(g => (JsonNode)new JsonObject { ["Name"] = g.Key, ["Value"] = g.Last().Value }).ToArray());
+            pas["Property Change"] = new JsonObject
+            {
+                ["Header"] = "MMM-PCP-V2.2", ["PropertyChangePAID"] = NewId("pa" + ++n), ["Time"] = Time(),
+                ["PropertyChangePARQ"] = new JsonObject
+                {
+                    ["RQ1"] = new JsonObject { ["Complement"] = "Nil", ["ItemID"] = target },
+                    ["RQ12"] = new JsonObject { ["Complement"] = "With", ["Properties"] = properties }
+                }
+            };
+        }
         // The Actions of the Final Response move the Persona in the M-Instance (M3308 Q5): MM-Animate. What the body expresses while speaking is in the Communicative Functions.
         if (moves.Count > 0)
             fr["Actions"] = new JsonArray(new JsonObject { ["Header"] = "MMM-ACT-V2.2", ["Action"] = "MM-Animate" });
@@ -172,9 +262,25 @@ public sealed class BknAim : PgmAim
             fr["FunctionLevel"] = levelProduced;
             fr["CommunicativeFunctions"] = produced;
         }
+        // A CONDITION THAT HELD, AND PROCESS ACTIONS: the words are said to whoever is there when the Process Actions are done (the greeting when the door is open). This Final
+        // Response carries the Actions and the Process Actions; the Text and its Communicative Functions wait for the continuation Request that reports them done.
+        _wordsToCome = null;
+        if (held is not null && pas.Count > 0 && reply.Length > 0)
+        {
+            _wordsToCome = new JsonObject { ["Text"] = fr["Text"]!.DeepClone() };
+            if (levelProduced > 0) { _wordsToCome["FunctionLevel"] = levelProduced; _wordsToCome["CommunicativeFunctions"] = produced.DeepClone(); }
+            fr.Remove("Text"); fr.Remove("FunctionLevel"); fr.Remove("CommunicativeFunctions");
+        }
 
         response["Outcome"] = "achieved";
-        response["DeliberationState"] = "concluded";
+        response["DeliberationState"] = conditionEvent is null ? "concluded" : "deliberating";
+        // A conditional command: the goal is understood with its Condition, and nothing is done until A-User Control reports that it holds.
+        if (conditionEvent is not null)
+            response["GoalUnderstood"] = new JsonObject
+            {
+                ["Objective"] = said,
+                ["Constraints"] = new JsonArray((JsonNode)(ConditionPrefix + conditionEvent), (JsonNode)(AudioEventPrefix + conditionSound), (JsonNode)"Persistence: Once")
+            };
         response["Conclusion"] = new JsonObject { ["Headline"] = reply, ["FinalResponseID"] = (string)fr["FinalResponseID"]! };
         response["ActionsOutcome"] = new JsonObject { ["Outcome"] = pas.Count + moves.Count > 0 ? "produced" : "not_requested", ["StepCount"] = pas.Count + moves.Count };
         var outcome = new JsonObject { ["LevelRequested"] = levelRequested, ["LevelProduced"] = levelProduced, ["LevelDeclared"] = LevelDeclared, ["FunctionCount"] = produced.Count };
@@ -225,7 +331,15 @@ public sealed class BknAim : PgmAim
     }
 
     // What the model must give: constrained by a schema, so that a small model cannot invent fields or names outside the closed lists.
-    private static JsonObject Schema(string[] allowed, int level, string[] functions, string[] targets, string[] personaBehaviours)
+    // The Constraints of a Goal that carry a Condition (M3313: Event, Persistence; the Goal of PGM-UCK V1.0 has no Condition element, so they are Constraints).
+    public const string ConditionPrefix = "Condition: ", AudioEventPrefix = "Audio Event: ", ConditionHeld = "Condition held: ";
+
+    // A name the model gave, as the PC Prompt writes it (the model may write "door" for "Door"); when the PC Prompt gives no list, the name as it is.
+    private static string? Known(string? name, string[] names) =>
+        name is null || names.Length == 0 ? name : names.FirstOrDefault(n => string.Equals(n, name.Trim(), StringComparison.OrdinalIgnoreCase));
+
+    private static JsonObject Schema(string[] allowed, int level, string[] functions, string[] targets, string[] personaBehaviours, bool askCondition = false,
+                                     string[]? items = null, string[]? places = null)
     {
         var properties = new JsonObject
         {
@@ -236,17 +350,38 @@ public sealed class BknAim : PgmAim
                 ["items"] = new JsonObject
                 {
                     ["type"] = "object",
-                    ["required"] = new JsonArray("verb", "target"),
+                    ["required"] = new JsonArray("verb", "target", "property", "value"),
                     ["properties"] = new JsonObject
                     {
-                        ["verb"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray(allowed.Select(a => (JsonNode)a).ToArray()) },
-                        ["target"] = new JsonObject { ["type"] = "string" }
+                        ["verb"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray(allowed.Where(a => a is not "MM-Animate" and not "MM-Move").Select(a => (JsonNode)a).ToArray()) },
+                        // the target: one of the Items of the PC Prompt when it gives them
+                        ["target"] = items is { Length: > 0 } ? new JsonObject { ["type"] = "string", ["enum"] = new JsonArray(items.Select(i => (JsonNode)i).ToArray()) } : new JsonObject { ["type"] = "string" },
+                        ["property"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray(ItemProperties.Vocabulary.Keys.Select(k => (JsonNode)k).ToArray()) },
+                        ["value"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray(ItemProperties.Vocabulary.Values.SelectMany(v => v).Distinct().Select(v => (JsonNode)v).ToArray()) }
                     }
                 }
             },
-            ["personaMoves"] = new JsonObject { ["type"] = "array", ["items"] = new JsonObject { ["type"] = "string" } }
+            ["personaMoves"] = new JsonObject
+            {
+                ["type"] = "array",
+                // a place: one of the M-Locations of the PC Prompt when it gives them
+                ["items"] = places is { Length: > 0 } ? new JsonObject { ["type"] = "string", ["enum"] = new JsonArray(places.Select(p => (JsonNode)p).ToArray()) } : new JsonObject { ["type"] = "string" }
+            }
         };
         var required = new JsonArray("reply", "worldActions", "personaMoves");
+        if (askCondition)
+        {
+            properties["condition"] = new JsonObject
+            {
+                ["type"] = "object", ["required"] = new JsonArray("conditional", "event", "sound"),
+                ["properties"] = new JsonObject
+                {
+                    ["conditional"] = new JsonObject { ["type"] = "boolean" }, ["event"] = new JsonObject { ["type"] = "string" },
+                    ["sound"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray("Bell", "Knock", "None") }
+                }
+            };
+            required.Add("condition");
+        }
         if (level >= 1)
         {
             var item = new JsonObject
@@ -273,4 +408,15 @@ public sealed class BknAim : PgmAim
         }
         return new JsonObject { ["type"] = "object", ["additionalProperties"] = false, ["required"] = required, ["properties"] = properties };
     }
+}
+
+// THE PROPERTIES OF ITEMS that a Property Change sets: the starting vocabulary proposed in the M-doc on Property Change (name -> allowed values). A PROPOSAL, not yet MMM-TEC.
+public static class ItemProperties
+{
+    public static readonly IReadOnlyDictionary<string, string[]> Vocabulary = new Dictionary<string, string[]>
+    {
+        ["OpenState"] = ["Open", "Closed"],
+        ["LockState"] = ["Locked", "Unlocked"],
+        ["PowerState"] = ["On", "Off"]
+    };
 }

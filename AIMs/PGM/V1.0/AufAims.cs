@@ -84,6 +84,9 @@ public sealed class AogAim : PgmAim
 {
     private readonly string _request, _functions, _action, _face, _body, _response;
 
+    // Where the Persona walks to, when the Action is a walk (the M-Location of the MM-Animate Process Action of the Final Response): A-User Formation gives it.
+    public string? WalkTarget { get; set; }
+
     public AogAim(string instanceId, AimPortReader ports) : base(instanceId, ports)
     {
         _request = In(Auc.Auf); _functions = In(Communicative.Header); _action = In("MMM-ACT-V2.2");
@@ -114,7 +117,7 @@ public sealed class AogAim : PgmAim
             (Communicative.IsFace(b) ? face : body).Add(item);
         }
         var keyword = (string?)action?["Action"] ?? "";
-        if (keyword == "MM-Animate") body.Add("MM-Animate: the Persona moves in the M-Instance");
+        if (keyword == "MM-Animate") body.Add(WalkTarget is { Length: > 0 } place ? $"Walk Body to {place}" : "MM-Animate: the Persona moves in the M-Instance");
         if (face.Count > 0) outputs.Add((_face, Animation("fan", face)));
         if (body.Count > 0) outputs.Add((_body, Animation("ban", body)));
         if (Read(message, _request) is { } rq && Auc.IsRequest(rq))
@@ -205,12 +208,16 @@ public sealed class AufAim : PgmAim
     private readonly ISpeechSynthesiser _voice;
     private readonly string _avatarId;
     private JsonObject? _pendingRequest, _pendingFinal, _avatarModel, _aUserState, _speechModelObject;
+    // Each formation forms one Final Response (its Port is required): what it carries - the Text, the Communicative Functions, the Actions - and, if A-User Control asks for no
+    // speech (FormationControl Speech not_requested), without the Text.
+    private string _actionsFormedFor = "", _processActionsGivenFor = "";
 
     // What the last formation planned and animated (for a report): the Communicative Functions with their Behaviours and times, the Face and Body Animation Objects.
     public JsonObject? LastPlan { get; private set; }
     public JsonObject? LastFaceAnimation { get; private set; }
     public JsonObject? LastBodyAnimation { get; private set; }
     public double? LastSpeechSeconds { get; private set; }
+    public List<string> Trace { get; } = new();   // what A-User Formation formed, in order (for a report)
 
     public AufAim(string instanceId, AimPortReader ports, PsdAim psd, FrdAim frd, BplAim bpl, AogAim aog, EfdAim efd, EbdAim ebd, ISpeechSynthesiser voice, string avatarId = "a-user-avatar") : base(instanceId, ports)
     {
@@ -229,6 +236,11 @@ public sealed class AufAim : PgmAim
         if (_pendingRequest is null || _pendingFinal is null) return Give(message, []);
         var request = _pendingRequest; var final = _pendingFinal;
         _pendingRequest = null; _pendingFinal = null;
+        var finalId = (string?)final["FinalResponseID"] ?? "";
+        var speechWanted = (string?)request["FormationControl"]?["Speech"] != "not_requested";
+        var formActions = _actionsFormedFor != finalId;
+        if (formActions) _actionsFormedFor = finalId;
+        _aog.WalkTarget = (string?)final["ProcessActions"]?["ProcessActions"]?["MM-Animate"]?["MMAnimatePARQ"]?["RQ3"]?["MLocationID"];
 
         Dictionary<string, string> With(PgmAim a, params (string Key, JsonNode? Value)[] ports) =>
             ports.Where(p => p.Value is not null).ToDictionary(p => p.Key, p => p.Value!.ToJsonString());
@@ -241,14 +253,16 @@ public sealed class AufAim : PgmAim
         });
         // 2. Final Response Demultiplexing
         var frd = await _frd.ProcessAsync(new Message { Ports = With(_frd, (_frd.InputKey(Auc.Auf), request), (_frd.InputKey("PGM-FRS-V1.0"), final)) });
-        var others = Take(frd, _frd, "MMM-PAT-V2.2");
+        var others = _processActionsGivenFor == finalId ? null : Take(frd, _frd, "MMM-PAT-V2.2");
+        if (others is not null) _processActionsGivenFor = finalId;
         // 3. Text-To-Speech
-        var textObject = Take(frd, _frd, "OSD-BTO-V1.5") ?? final["Text"] as JsonObject;
+        var textObject = speechWanted ? Take(frd, _frd, "OSD-BTO-V1.5") ?? final["Text"] as JsonObject : null;
         var words = TextOf(textObject) ?? "";
         var speech = words.Length > 0 ? await _voice.SynthesiseAsync(words) : null;
+        Trace.Add($"formed {finalId}: speech {(speechWanted ? "\"" + words + "\"" : "not requested")}, actions {(formActions ? "formed" : "not formed")}");
         LastSpeechSeconds = Communicative.SecondsOf(speech);
         // 4. Behaviour Planning: a Behaviour and its times on the Machine Speech for every Communicative Function (none at Level 0)
-        var functions = Take(frd, _frd, Communicative.Header);
+        var functions = speechWanted ? Take(frd, _frd, Communicative.Header) : null;
         Message? bpl = null;
         if (functions is not null)
             bpl = await _bpl.ProcessAsync(new Message
@@ -261,7 +275,7 @@ public sealed class AufAim : PgmAim
         // 5. Animation Object Generation
         var aog = await _aog.ProcessAsync(new Message
         {
-            Ports = With(_aog, (_aog.InputKey(Auc.Auf), request), (_aog.InputKey("MMM-ACT-V2.2"), Take(frd, _frd, "MMM-ACT-V2.2")), (_aog.InputKey(Communicative.Header), plan))
+            Ports = With(_aog, (_aog.InputKey(Auc.Auf), request), (_aog.InputKey("MMM-ACT-V2.2"), formActions ? Take(frd, _frd, "MMM-ACT-V2.2") : null), (_aog.InputKey(Communicative.Header), plan))
         });
         var faceMotion = Take(aog, _aog, "PAF-AMO-V1.6", 1); var bodyMotion = Take(aog, _aog, "PAF-AMO-V1.6", 2);
         LastFaceAnimation = faceMotion; LastBodyAnimation = bodyMotion;

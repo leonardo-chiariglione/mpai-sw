@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Open the door when the bell rings</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #1d2126; color: #e8e8e8; font: 14px/1.4 Segoe UI, Arial, sans-serif; overflow: hidden; }
+  #stage { position: absolute; inset: 0 380px 0 0; }
+  #side { position: absolute; top: 0; right: 0; bottom: 0; width: 380px; box-sizing: border-box; padding: 14px; background: #262b31; display: flex; flex-direction: column; gap: 10px; }
+  h1 { font-size: 16px; margin: 0; } .muted { color: #9aa3ad; font-size: 12px; }
+  textarea { width: 100%; box-sizing: border-box; height: 64px; background: #1d2126; color: #fff; border: 1px solid #48515c; border-radius: 6px; padding: 6px; font: inherit; resize: none; }
+  button { background: #3a6ea5; color: #fff; border: 0; border-radius: 6px; padding: 7px 10px; font: inherit; cursor: pointer; } button:disabled { opacity: .45; cursor: default; }
+  button.alt { background: #4a525c; } button.rec { background: #b33; }
+  .row { display: flex; gap: 6px; flex-wrap: wrap; }
+  #state { font-size: 13px; } #state b { color: #ffd479; }
+  #log { flex: 1; overflow: auto; background: #1d2126; border-radius: 6px; padding: 6px; font: 12px/1.45 Consolas, monospace; white-space: pre-wrap; }
+  #log .Human { color: #8fd18f; } #log .Host { color: #ffd479; } #log .Visitor { color: #9cc7ff; } #log .ctx { color: #c9a0ff; } #log .mi { color: #9aa3ad; }
+  #start { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.65); z-index: 5; }
+  #start button { font-size: 18px; padding: 14px 22px; }
+  #bubble { position: absolute; padding: 6px 10px; background: #fff; color: #222; border-radius: 10px; font-size: 16px; pointer-events: none; transform: translate(-50%, -100%); display: none; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "./lib/three/three.module.js",
+  "three/addons/": "./lib/three/addons/"
+}}
+</script>
+</head>
+<body>
+<div id="stage"></div><div id="bubble"></div>
+<div id="side">
+  <h1>Open the door when the bell rings</h1>
+  <div class="muted">You are the human of the Host User. What you see and hear is the Room, rendered to you by MU-Actuate. Everything else happens in the M-Instance (MM Process Actions).</div>
+  <div id="state">Door: <b id="doorState">?</b> &nbsp; Pending: <span id="pending">nothing</span></div>
+  <label class="muted" for="cmd">Your command to your User (write it, or speak it)</label>
+  <textarea id="cmd">Open the door if a bell rings and greet whoever is at the door.</textarea>
+  <div class="row"><button id="send">Send command</button><button id="mic" class="alt" title="Click to speak, click again to stop">Speak</button></div>
+  <div class="muted">The other User (the Visitor), outside, in the street:</div>
+  <div class="row"><button id="ring" class="alt">Visitor comes and rings the bell</button><button id="knock" class="alt">Visitor comes and knocks</button></div>
+  <div id="log"></div>
+</div>
+<div id="start"><button id="go">Enter the room (sound on)</button></div>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
+
+const $ = id => document.getElementById(id);
+let walkSpeed = 1.0;
+
+// ---------------------------------------------------------------- the stage
+const stage = $('stage');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.shadowMap.enabled = true; renderer.outputColorSpace = THREE.SRGBColorSpace;
+stage.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfd6ea);
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+camera.position.set(-1.2, 7.2, -6.2);
+const controls = new OrbitControls(camera, renderer.domElement); controls.target.set(0, 0.6, 1.6); controls.update();
+const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(-4, 9, -3); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -10, right: 10, top: 10, bottom: -10 }); scene.add(sun, new THREE.HemisphereLight(0xffffff, 0x445566, 0.6));
+function resize() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+addEventListener('resize', resize); resize();
+
+// MMM axes: x east, y north (metres); three.js: x east, z south.
+const P = (x, y, h = 0) => new THREE.Vector3(x, h, -y);
+const mat = c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.85 });
+function box(w, h, d, c, x, y, z) { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(c)); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; scene.add(m); return m; }
+
+const S = 6, H = 2.5, T = 0.15, DW = 1.0, DH = 2.1;          // the room: 6 m by 6 m; walls 2.5 m high; the door 1 m wide, 2.1 m high, in the south wall at x = 0
+const street = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), mat(0x8f969c)); street.rotation.x = -Math.PI / 2; street.receiveShadow = true; scene.add(street);
+const floor = box(S, 0.04, S, 0xb98a5a, 0, 0.02, 0);
+box(S + T, H, T, 0xe9e2d6, 0, H / 2, -S / 2);                                      // north wall (z = -3)
+box(T, H, S, 0xe9e2d6, -S / 2, H / 2, 0); box(T, H, S, 0xe9e2d6, S / 2, H / 2, 0);    // west, east
+const side = (S - DW) / 2;
+box(side, H, T, 0xe9e2d6, -(DW / 2 + side / 2), H / 2, S / 2); box(side, H, T, 0xe9e2d6, DW / 2 + side / 2, H / 2, S / 2);   // south wall, each side of the door
+box(DW, H - DH, T, 0xe9e2d6, 0, DH + (H - DH) / 2, S / 2);                        // above the door
+box(0.9, 0.75, 0.5, 0x6b4f37, 2.1, 0.375, -2.2); box(0.5, 0.45, 0.5, 0x6b4f37, 1.2, 0.225, -2.2);   // a table and a stool, north-east
+const doorstep = box(1.4, 0.03, 1.0, 0x777777, 0, 0.015, S / 2 + 0.6);
+// the door leaf, hinged on its west side, opening into the room
+const hinge = new THREE.Group(); hinge.position.set(-DW / 2, 0, S / 2); scene.add(hinge);
+const leaf = new THREE.Mesh(new THREE.BoxGeometry(DW - 0.04, DH - 0.02, 0.06), mat(0x7a4b2a)); leaf.position.set(DW / 2, DH / 2, 0); leaf.castShadow = true; hinge.add(leaf);
+const knob = new THREE.Mesh(new THREE.SphereGeometry(0.04), new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.8, roughness: 0.3 })); knob.position.set(DW - 0.15, DH / 2 - 0.05, -0.06); hinge.add(knob);
+const bellButton = box(0.08, 0.12, 0.03, 0xd4af37, DW / 2 + 0.2, 1.3, S / 2 + T / 2 + 0.02);
+let doorOpen = false, doorAngle = 0;
+
+// ---------------------------------------------------------------- Personae (Rocketbox, MMM/Viewer/personae): arms down, walk, wave, mouth
+const loader = new GLTFLoader(); const models = new Map();
+const boneOf = (root, re) => { let b = null; root.traverse(o => { if (o.isBone && re.test(o.name)) b = o; }); return b; };
+const placeOf = (frame, bone) => frame.worldToLocal(bone.getWorldPosition(new THREE.Vector3()));
+const axisOf = (frame, x, y, z) => new THREE.Vector3(x, y, z).transformDirection(frame.matrixWorld);
+function swing(bone, worldAxis, degrees) {
+  const parent = new THREE.Quaternion(); bone.parent.getWorldQuaternion(parent);
+  bone.quaternion.premultiply(new THREE.Quaternion().setFromAxisAngle(worldAxis.clone().applyQuaternion(parent.invert()), THREE.MathUtils.degToRad(degrees)));
+}
+// The arm as it hangs (down) or as it is raised (up), found by search: nothing is assumed about how the model was made.
+function armAngle(frame, u, f, wantUp) {
+  const rest = u.userData.armRest ??= u.quaternion.clone();
+  u.quaternion.copy(rest); u.updateMatrixWorld(true);
+  const out = Math.sign(placeOf(frame, f).x - placeOf(frame, u).x) || 1, z = axisOf(frame, 0, 0, 1);
+  let best = { cost: 1e9, a: 0 };
+  for (let a = -180; a <= 180; a += 3) {
+    u.quaternion.copy(rest); swing(u, z, a); u.updateMatrixWorld(true);
+    const s = placeOf(frame, u), e = placeOf(frame, f), len = e.distanceTo(s) || 1;
+    const cost = wantUp ? Math.abs((e.x - s.x) * out / len - 0.45) + ((e.y - s.y) / len < 0.6 ? 5 : 0)
+                        : Math.abs((e.x - s.x) * out / len - 0.04) + ((s.y - e.y) / len < 0.8 ? 5 : 0);
+    if (cost < best.cost) best = { cost, a };
+  }
+  u.quaternion.copy(rest); swing(u, z, best.a); u.updateMatrixWorld(true);
+  return u.quaternion.clone();
+}
+async function persona(file) {
+  if (!models.has(file)) models.set(file, loader.loadAsync('personae/' + file));
+  const root = cloneSkinned((await models.get(file)).scene);
+  root.traverse(o => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; for (const m of [].concat(o.material)) if (/opacity/i.test(m.name)) { m.transparent = true; m.alphaTest = 0.35; m.side = THREE.DoubleSide; } } });
+  root.updateMatrixWorld(true);
+  const box3 = new THREE.Box3().setFromObject(root, true); root.scale.setScalar(1.7 / (box3.max.y - box3.min.y)); root.updateMatrixWorld(true);
+  box3.setFromObject(root, true); root.position.y -= box3.min.y;
+  const g = new THREE.Group(); g.add(root); scene.add(g); g.updateMatrixWorld(true);
+  const A = { lu: boneOf(root, /L.?UpperArm$/i), lf: boneOf(root, /L.?Forearm$/i), ru: boneOf(root, /R.?UpperArm$/i), rf: boneOf(root, /R.?Forearm$/i),
+              lt: boneOf(root, /L.?Thigh$/i), rt: boneOf(root, /R.?Thigh$/i), lc: boneOf(root, /L.?Calf$/i), rc: boneOf(root, /R.?Calf$/i) };
+  try {
+    if (A.lu && A.lf) A.lu.userData.down = armAngle(g, A.lu, A.lf, false);
+    if (A.ru && A.rf) { A.ru.userData.up = armAngle(g, A.ru, A.rf, true); A.ru.userData.down = armAngle(g, A.ru, A.rf, false); }
+  } catch (e) { console.warn('arms', e); }
+  for (const b of [A.lt, A.rt, A.lc, A.rc, A.rf]) if (b) b.userData.rest = b.quaternion.clone();
+  const vis = []; root.traverse(o => { if (o.isMesh && o.morphTargetDictionary) for (const [n, i] of Object.entries(o.morphTargetDictionary)) if (/AA_VI_0[1-3]/.test(n)) vis.push([o, i]); });
+  return { g, A, vis, phase: 0, wave: 0, mouth: 0 };
+}
+const people = new Map();   // ID -> { g, A, at: Vector3, target: Vector3, yaw, ... }
+const yawToRot = yaw => Math.PI + THREE.MathUtils.degToRad(yaw ?? 0);   // yaw 0 looks north (-z); the model looks +z
+
+function pose(p, dt) {
+  const { g, A } = p;
+  const d = p.target.clone().sub(p.at); d.y = 0; const dist = d.length();
+  const walking = dist > 0.02;
+  if (walking) {
+    const step = Math.min(dist, walkSpeed * dt); p.at.add(d.normalize().multiplyScalar(step));
+    g.rotation.y = Math.atan2(d.x, d.z); p.phase += dt * walkSpeed * 4.2;
+  } else {                                                                   // standing: turn to the yaw the M-Instance gives
+    const diff = THREE.MathUtils.euclideanModulo(yawToRot(p.yaw) - g.rotation.y + Math.PI, Math.PI * 2) - Math.PI;
+    g.rotation.y += Math.sign(diff) * Math.min(Math.abs(diff), dt * 3); p.phase = 0;
+  }
+  g.position.copy(p.at);
+  g.updateMatrixWorld(true);
+  const x = axisOf(g, 1, 0, 0), s = walking ? Math.sin(p.phase) : 0;
+  for (const [b, k] of [[A.lt, 1], [A.rt, -1]]) if (b) { b.quaternion.copy(b.userData.rest); swing(b, x, 24 * s * k); }
+  for (const [b, k] of [[A.lc, 1], [A.rc, -1]]) if (b) { b.quaternion.copy(b.userData.rest); swing(b, x, -Math.max(0, 30 * Math.sin(p.phase + (k > 0 ? 0 : Math.PI) + 1.2))); }
+  if (A.lu?.userData.down) A.lu.quaternion.copy(A.lu.userData.down);
+  if (A.ru?.userData.down) {
+    p.wave = Math.max(0, Math.min(1, p.wave + (p.waving ? dt * 3 : -dt * 3)));
+    A.ru.quaternion.copy(A.ru.userData.down).slerp(A.ru.userData.up, p.wave);
+    if (A.rf) { A.rf.quaternion.copy(A.rf.userData.rest); if (p.wave > 0.5) { g.updateMatrixWorld(true); swing(A.rf, axisOf(g, 0, 0, 1), 25 * Math.sin(performance.now() / 160)); } }
+  }
+  for (const [mesh, i] of p.vis) mesh.morphTargetInfluences[i] = p.mouth;
+}
+
+// ---------------------------------------------------------------- sound: what is heard in the room
+let ctx = null; const played = new Set();
+async function play(id, x, y, speaker) {
+  if (played.has(id) || !ctx) return; played.add(id);
+  const r = await fetch('/door/sound/' + encodeURIComponent(id)); if (!r.ok) return;
+  const buf = await ctx.decodeAudioData(await r.arrayBuffer());
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const pan = ctx.createStereoPanner(); pan.pan.value = Math.max(-1, Math.min(1, (x ?? 0) / 4));
+  const an = ctx.createAnalyser(); an.fftSize = 512; src.connect(an); an.connect(pan); pan.connect(ctx.destination); src.start();
+  if (speaker) {
+    speaker.waving = true; const data = new Float32Array(an.fftSize);
+    const tick = () => { an.getFloatTimeDomainData(data); let e = 0; for (const v of data) e += v * v; speaker.mouth = Math.min(1, Math.sqrt(e / data.length) * 9); if (!src.ended) requestAnimationFrame(tick); };
+    src.onended = () => { src.ended = true; speaker.mouth = 0; setTimeout(() => speaker.waving = false, 600); bubble.style.display = 'none'; };
+    tick();
+  }
+}
+
+// ---------------------------------------------------------------- the M-Instance, as it is rendered
+const bubble = $('bubble'); let bubbleFor = null;
+async function poll() {
+  try {
+    const st = await (await fetch('state')).json();
+    for (const t of st.Things) {
+      if (t.Kind === 'Door') { doorOpen = t.Properties?.OpenState === 'Open'; $('doorState').textContent = `${t.Properties?.OpenState ?? '?'}, ${t.Properties?.LockState ?? ''}`; }
+      if (t.Kind === 'Persona') {
+        let p = people.get(t.ID);
+        if (!p) { p = { loading: true }; people.set(t.ID, p); const q = await persona(t.Model ?? 'Persona1.glb'); Object.assign(p, q, { loading: false, at: P(t.X, t.Y), target: P(t.X, t.Y), yaw: t.Yaw }); p.g.rotation.y = yawToRot(t.Yaw); }
+        if (!p.loading) { p.target = P(t.X, t.Y); p.yaw = t.Yaw; }
+        // MM-Animate: the Persona's Stream (a Portable Avatar); what it says is played from the Persona, with the wave of the greeting
+        if (!p.loading && t.Animation && t.Animating && !played.has(t.Animation)) play(t.Animation, t.X, t.Y, p);
+      }
+      if (t.Kind === 'Audio') play(t.ID, t.X, t.Y, null);
+      if (t.Kind === 'Speech' && !played.has(t.ID)) {
+        const who = [...people.entries()].filter(([, p]) => !p.loading).sort((a, b) => a[1].at.distanceTo(P(t.X, t.Y)) - b[1].at.distanceTo(P(t.X, t.Y)))[0];
+        play(t.ID, t.X, t.Y, who?.[1]);
+        fetch('/door/log').then(r => r.json()).then(l => { const said = [...l.log].reverse().find(x => x.includes(' says "')); if (said && who) { bubble.textContent = said.split('"')[1]; bubbleFor = who[1]; bubble.style.display = 'block'; } });
+      }
+    }
+    const l = await (await fetch('/door/log')).json();
+    walkSpeed = l.walkSpeed; $('pending').textContent = l.pending ?? 'nothing'; $('mic').disabled = !l.asr; if (!l.asr) $('mic').title = 'No speech recognition (Whisper) on this machine';
+    const html = l.log.map(x => { const who = x.slice(9).split(':')[0]; const cls = who === 'Human' ? 'Human' : who === 'Visitor' ? 'Visitor' : who === 'Context Description' ? 'ctx' : who === 'M-Instance' ? 'mi' : 'Host'; return `<div class="${cls}">${x.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</div>`; }).join('');
+    if ($('log').dataset.n !== String(l.log.length)) { $('log').innerHTML = html; $('log').dataset.n = l.log.length; $('log').scrollTop = 1e9; }
+  } catch (e) { console.warn(e); }
+  setTimeout(poll, 300);
+}
+
+let last = performance.now();
+renderer.setAnimationLoop(() => {
+  const now = performance.now(), dt = Math.min(1, (now - last) / 1000); last = now;   // up to 1 s: a page the browser throttles (hidden) keeps time with the M-Instance
+  const want = doorOpen ? -1.75 : 0; doorAngle += Math.sign(want - doorAngle) * Math.min(Math.abs(want - doorAngle), dt * 1.6); hinge.rotation.y = doorAngle;
+  for (const p of people.values()) if (!p.loading && p.g) pose(p, dt);
+  if (bubbleFor && bubble.style.display === 'block') { const v = bubbleFor.at.clone(); v.y = 2.05; v.project(camera); bubble.style.left = (v.x + 1) / 2 * stage.clientWidth + 'px'; bubble.style.top = (1 - v.y) / 2 * stage.clientHeight + 'px'; }
+  controls.update(); renderer.render(scene, camera);
+});
+
+// ---------------------------------------------------------------- the human's controls
+$('go').onclick = () => { ctx = new AudioContext(); $('start').remove(); };
+$('send').onclick = () => fetch('/door/command', { method: 'POST', body: $('cmd').value });
+$('ring').onclick = () => fetch('/door/visitor?sound=bell', { method: 'POST' });
+$('knock').onclick = () => fetch('/door/visitor?sound=knock', { method: 'POST' });
+let rec = null;
+$('mic').onclick = async () => {
+  if (rec) { const r = rec; rec = null; $('mic').textContent = 'Speak'; $('mic').className = 'alt'; r.stop(); return; }
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const c = new AudioContext({ sampleRate: 16000 }); const srcN = c.createMediaStreamSource(stream); const proc = c.createScriptProcessor(4096, 1, 1); const chunks = [];
+  proc.onaudioprocess = e => chunks.push(new Float32Array(e.inputBuffer.getChannelData(0))); srcN.connect(proc); proc.connect(c.destination);
+  rec = { stop: async () => {
+    proc.disconnect(); stream.getTracks().forEach(t => t.stop()); await c.close();
+    const n = chunks.reduce((a, b) => a + b.length, 0), pcm = new Int16Array(n); let o = 0; for (const ch of chunks) for (const v of ch) pcm[o++] = Math.max(-1, Math.min(1, v)) * 32767;
+    const text = await (await fetch('/door/speak', { method: 'POST', body: pcm.buffer })).text(); if (text) $('cmd').value = text;
+  } };
+  $('mic').textContent = 'Stop'; $('mic').className = 'rec';
+};
+poll();
+</script>
+</body>
+</html>

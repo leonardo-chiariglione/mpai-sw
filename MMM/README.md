@@ -8,6 +8,20 @@ stripped-down Use Case 2.
 |---|---|
 | `Api` | `MMM-API.json`, the MMM-TEC V2.2 API as OpenAPI 3.1, built from the schemas by `build_openapi.py`, with its report `MMM-API-report.txt` |
 
+## Demonstration: "Open the door when the bell rings" (M3313)
+
+`MMM\Run-Door.cmd` starts the M-Instance of a room with one door and opens `/viewer/door.html`. The Host User is an
+A-User App: its User Agent (`Server/DoorUseCase.cs`) and the A-User Module of PGM-AUA (`1PGM-ATU-V1.0-I01`, the AIMs of
+`AIMs/PGM/V1.0`) that the AIF Controller runs, reached through the Controller API only. The human writes (or speaks:
+Whisper) "Open the door if a bell rings and greet whoever is at the door". Basic Knowledge (Ollama, `llama3.2:3b`) finds
+the Condition; A-User Control keeps the goal pending and asks Context Description to report the Audio Event; the User
+Agent gives the Module every sound its Persona hears (MM-Capture of the room); Context Description recognises the bell
+(a knock is not a bell); Basic Knowledge is asked again, the Condition held; A-User Control requests MM-Animate of
+the Persona At the Doorway With the Portable Avatar of the walk (a Persona walks with MM-Animate, never MM-Move), then -
+when the M-Instance says the walk is over - Property Change of the Door (Item Property OpenState Open, MMM-IPR-V3.0),
+then asks Basic Knowledge for the words that follow and requests MM-Animate With the Portable Avatar that says "Welcome". The room and its sound are rendered to the human
+(MU-Actuate). Test: `Test/Mpai.Aif.Tests/PgmConditionTests.cs`.
+
 ## Demonstration: Use Case 2, "Friends meet in the metaverse"
 
 `MMM\Run-Demo.cmd` (it runs `Run-Demo.ps1` without needing PowerShell's script policy

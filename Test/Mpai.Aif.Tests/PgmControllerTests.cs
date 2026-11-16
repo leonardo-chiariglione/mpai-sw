@@ -30,7 +30,7 @@ public class PgmControllerTests : IDisposable
     private string Prepare()
     {
         Directory.CreateDirectory(_folder);
-        foreach (var aim in PgmRig.SliceAims.Append(PgmRig.Module).Concat(["1PGM-PSD-V1.0-I01", "1PGM-FRD-V1.0-I01", "1PGM-AOG-V1.0-I01", "1PGM-EFD-V1.0-I01", "1PGM-EBD-V1.0-I01"]))
+        foreach (var aim in PgmRig.SliceAims.Append(PgmRig.Module).Concat(["1PGM-PSD-V1.0-I01", "1PGM-FRD-V1.0-I01", "1PGM-BPL-V1.0-I01", "1PGM-AOG-V1.0-I01", "1PGM-EFD-V1.0-I01", "1PGM-EBD-V1.0-I01"]))
             File.Copy(Path.Combine(Repository.Amds, aim + ".json"), Path.Combine(_folder, aim + ".json"), overwrite: true);
         var settings = Path.Combine(_folder, "settings.json");
         File.WriteAllText(settings, "{}");
@@ -66,7 +66,7 @@ public class PgmControllerTests : IDisposable
         var clock = System.Diagnostics.Stopwatch.StartNew();
         var result = Record($"L3s as they are: {Run(api, 20)} ({clock.Elapsed.TotalSeconds:F1} s)");
         Assert.Contains("accepted", result);
-        Assert.Contains("MU-Actuate", result);
+        Assert.Contains("Property Change", result);
     }
 
     // The same, with a real language model (Ollama; PGM_LLM_MODEL, default llama3.2:3b), three runs, timed.
@@ -83,7 +83,7 @@ public class PgmControllerTests : IDisposable
             using var api = new ControllerApi(_folder, settings, store => new Provider(store, model));
             var clock = System.Diagnostics.Stopwatch.StartNew();
             var result = Record($"{model.Model}, Controller, run {i}: {Run(api, 60)} ({clock.Elapsed.TotalSeconds:F1} s)");
-            if (!result.Contains("accepted") || !result.Contains("MU-Actuate")) failures++;
+            if (!result.Contains("accepted") || !result.Contains("Property Change")) failures++;
         }
         Assert.Equal(0, failures);
     }

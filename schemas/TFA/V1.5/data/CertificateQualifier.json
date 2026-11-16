@@ -13,7 +13,7 @@
     "CertificateQualifierTime": { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SimpleTime.json" },
 
     "SubTypes":                  { "type": "object", "additionalProperties": false, "properties": {
-      "Categories":             { "type": "array", "items": { "type": "string", "enum": [ "Real", "Virtual" ] },
+      "Categories":             { "type": "array", "items": { "type": "string", "enum": [ "Blockchain", "NonBlockchain" ] },
                                   "minItems": 1, "uniqueItems": true } } },
 
     "Formats":                   { "type": "object", "additionalProperties": false, "properties": {

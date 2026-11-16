@@ -1,0 +1,35 @@
+{ "$schema":                "https://json-schema.org/draft/2020-12/schema",
+  "$id":                    "https://schemas.mpai.community/MMM4/V3.0/data/ItemProperty.json",
+  "title":                  "Item Property V3.0",
+  "description":            "The Properties of an Item of an M-Instance that a Process may change with Property Change (RQ12): each Property has a Name from the MPAI vocabulary and a Value of the type that the vocabulary gives it. The vocabulary takes its names and values, where they exist, from the W3C Web of Things Thing Description, from the Matter device types and clusters and from the IFC property sets of building elements.",
+  "type":                   "object",
+  "additionalProperties":   false,
+  "required":               [ "Header", "ItemID", "Properties" ],
+  "properties":             {
+
+    "Header":               { "type": "string", "const": "MMM-IPR-V3.0" },
+    "MInstanceID":          { "type": "string", "description": "Identifier of the M-Instance." },
+    "ItemID":               { "type": "string", "description": "Identifier of the Item whose Properties are given." },
+    "ItemPropertyTime":     { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SimpleTime.json" },
+    "Properties":           { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/Property" } },
+    "DataXMData":           { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
+    "DescrMetadata":        { "type": "string", "maxLength": 2048 } },
+
+  "$defs":                  {
+
+    "PropertyName":         { "type": "string", "enum": [ "OpenState", "LockState", "PowerState", "Level", "Colour", "Temperature", "Occupancy", "Playback" ],
+                              "description": "OpenState: whether a Door, Window, Gate, Drawer or Container is open. LockState: whether a Door, Gate or Container is locked. PowerState: whether a Lamp, Screen or Device is on. Level: the level of a Lamp (brightness), of a Speaker (volume) or of a Blind (position), from 0 to 1. Colour: the colour of a Lamp or of a surface, as sRGB. Temperature: the temperature of a Room or the set point of a Thermostat, in degrees Celsius. Occupancy: whether a Seat or a Room is occupied. Playback: the state of a Screen, a Speaker or an Audio or Visual Object that plays." },
+
+    "Property":             { "type": "object", "additionalProperties": false, "required": [ "Name", "Value" ], "properties": {
+      "Name":               { "$ref": "#/$defs/PropertyName" },
+      "Value":              { "type": [ "string", "number" ], "description": "The value of the Property, of the type and among the values that the vocabulary gives the Name." } },
+
+      "allOf":              [
+        { "if": { "properties": { "Name": { "const": "OpenState" } } },   "then": { "properties": { "Value": { "enum": [ "Open", "Closed" ] } } } },
+        { "if": { "properties": { "Name": { "const": "LockState" } } },   "then": { "properties": { "Value": { "enum": [ "Locked", "Unlocked" ] } } } },
+        { "if": { "properties": { "Name": { "const": "PowerState" } } },  "then": { "properties": { "Value": { "enum": [ "On", "Off" ] } } } },
+        { "if": { "properties": { "Name": { "const": "Level" } } },       "then": { "properties": { "Value": { "type": "number", "minimum": 0, "maximum": 1 } } } },
+        { "if": { "properties": { "Name": { "const": "Colour" } } },      "then": { "properties": { "Value": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" } } } },
+        { "if": { "properties": { "Name": { "const": "Temperature" } } }, "then": { "properties": { "Value": { "type": "number" } } } },
+        { "if": { "properties": { "Name": { "const": "Occupancy" } } },   "then": { "properties": { "Value": { "enum": [ "Free", "Occupied" ] } } } },
+        { "if": { "properties": { "Name": { "const": "Playback" } } },    "then": { "properties": { "Value": { "enum": [ "Playing", "Paused", "Stopped" ] } } } } ] } } }

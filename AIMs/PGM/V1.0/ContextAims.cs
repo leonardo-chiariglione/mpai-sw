@@ -19,6 +19,10 @@ public sealed class CxtAim : PgmAim
     private readonly ISpeechRecogniser? _recogniser;
     private JsonObject? _pendingRequest;
     private string? _words;
+    private JsonObject? _watch;           // a Request of A-User Control to report an Audio Event (the Condition of a pending goal): answered when the event is heard
+
+    // What it heard last (for a report): the Audio Event, the Basic Audio Object, why.
+    public (string Class, string AudioID, string Why)? LastAudioEvent { get; private set; }
 
     public CxtAim(string instanceId, AimPortReader ports, ISpeechRecogniser? recogniser = null) : base(instanceId, ports)
     {
@@ -30,7 +34,33 @@ public sealed class CxtAim : PgmAim
 
     public override async Task<Message> ProcessAsync(Message message)
     {
-        if (Read(message, _request) is { } rq && Auc.IsRequest(rq)) _pendingRequest = rq;
+        if (Read(message, _request) is { } rq && Auc.IsRequest(rq))
+        {
+            // A Request whose Goal names an Audio Event (in its Constraints) asks to be told when it is heard; any other is a turn of the dialogue.
+            if (WatchedEvent(rq) is not null) _watch = rq; else _pendingRequest = rq;
+        }
+        if (Read(message, _audio) is { } audio && AudioEvents.PcmOf(audio) is { } pcm)
+        {
+            var (cls, why) = AudioEvents.Classify(pcm);
+            var id = (string?)audio["BasicAudioObjectID"] ?? NewId("bao");
+            LastAudioEvent = (cls, id, why);
+            if (_watch is { } watch && WatchedEvent(watch) == cls)
+            {
+                _watch = null;
+                var wsession = Session.Of(watch);
+                var wcxd = Descriptors(wsession, new JsonObject { ["EntityID"] = cls.ToLowerInvariant() + "-" + id, ["ASDItemID"] = id, ["AudioObject"] = audio.DeepClone() });
+                var wresponse = Auc.Make(Auc.Cxt, Auc.Response, wsession, Auc.IdOf(watch));
+                wresponse["Outcome"] = "achieved";
+                wresponse["GoalUnderstood"] = new JsonObject
+                {
+                    ["Objective"] = (string?)watch["Goal"]?["Objective"] ?? "",
+                    ["Constraints"] = new JsonArray((JsonNode)(BknAim.AudioEventPrefix + cls), (JsonNode)("Heard: " + id + " (" + why + ")"))
+                };
+                wresponse["AudioOutcome"] = new JsonObject { ["Outcome"] = "produced", ["ChannelState"] = "active" };
+                wresponse["ContextDescriptorsID"] = (string)wcxd["ContextDescriptorsID"]!;
+                return Give(message, [(_descriptors, wcxd), (_response, wresponse)]);
+            }
+        }
         if (Read(message, _text) is { } text) _words = TextOf(text);
         else if (Read(message, _speech) is { } speech)
             _words = _recogniser is not null ? await _recogniser.RecogniseAsync(speech) : "";
@@ -49,6 +79,18 @@ public sealed class CxtAim : PgmAim
         }
         response["Outcome"] = "achieved";
 
+        var cxd = Descriptors(session, new JsonObject { ["EntityID"] = "human", ["ASDItemID"] = "human-speech" });
+        cxd["RecognisedText"] = Text(words);
+        return Give(message, [(_descriptors, cxd), (_response, response)]);
+    }
+
+    // The Audio Event a Request of A-User Control asks to be told of (the Constraint "Audio Event: Bell" of its Goal), or null.
+    private static string? WatchedEvent(JsonObject rq) =>
+        (rq["Goal"]?["Constraints"] as JsonArray)?.Select(c => (string?)c).FirstOrDefault(c => c?.StartsWith(BknAim.AudioEventPrefix, StringComparison.Ordinal) == true)?[BknAim.AudioEventPrefix.Length..].Trim();
+
+    // The Context Descriptors with one Entity of the audio scene; the visual scene and the User State minimal (stubs).
+    private static JsonObject Descriptors(Session session, JsonObject audioEntity)
+    {
         var cxd = new JsonObject { ["Header"] = "PGM-CXD-V1.0" };
         session.Stamp(cxd);
         cxd["ContextDescriptorsID"] = NewId("cxd");
@@ -56,15 +98,14 @@ public sealed class CxtAim : PgmAim
         cxd["EnhancedAudioSceneDescriptors"] = new JsonObject
         {
             ["Header"] = "OSD-EAD-V1.5", ["EnhancedAudioSceneDescriptorsID"] = NewId("ead"), ["BaseASDID"] = NewId("asd"),
-            ["Entities"] = new JsonArray(new JsonObject { ["EntityID"] = "human", ["ASDItemID"] = "human-speech" })
+            ["Entities"] = new JsonArray(audioEntity)
         };
         cxd["EnhancedVisualSceneDescriptors"] = new JsonObject
         {
             ["Header"] = "OSD-EVD-V1.5", ["EnhancedVisualSceneDescriptorsID"] = NewId("evd"), ["BaseVSDID"] = NewId("vsd"), ["Entities"] = new JsonArray()
         };
         cxd["UserState"] = new JsonObject { ["Header"] = "MMC-EST-V2.5", ["EntityStateID"] = NewId("est"), ["Engagement"] = new JsonObject { ["Level"] = "medium", ["Mode"] = "interactive" } };
-        cxd["RecognisedText"] = Text(words);
-        return Give(message, [(_descriptors, cxd), (_response, response)]);
+        return cxd;
     }
 
     // The words the CXD carries, for the AIM that reads them.
@@ -81,6 +122,9 @@ public sealed class PrcAim : PgmAim
     public const string ItemsSetting = "Space.Items";
     public string[] Items { get; init; } = ["doors", "window", "table", "lamp"];
     public string[] PersonaBehaviours { get; init; } = Communicative.Behaviours;
+    // The M-Locations of the Space the Persona may go to (setting Space.MLocations): configuration of the implementation.
+    public const string MLocationsSetting = "Space.MLocations";
+    public string[] MLocations { get; init; } = [];
 
     public PrcAim(string instanceId, AimPortReader ports) : base(instanceId, ports)
     {
@@ -100,7 +144,7 @@ public sealed class PrcAim : PgmAim
             answer["Kind"] = (string?)q["Kind"] ?? "action_context";
             answer["Representation"] = new JsonObject
             {
-                ["ActionContext"] = new JsonObject { ["Repertoire"] = new JsonArray("MU-Actuate", "MM-Animate"), ["MaxSteps"] = 3 }
+                ["ActionContext"] = new JsonObject { ["Repertoire"] = new JsonArray("Property Change", "MM-Animate"), ["MaxSteps"] = 3 }
             };
             outputs.Add((_queryOut, answer));
         }
@@ -121,8 +165,9 @@ public sealed class PrcAim : PgmAim
             // of its repertoire).
             prompt["ActionContext"] = new JsonObject
             {
-                ["Repertoire"] = new JsonArray("MU-Actuate", "MM-Animate"), ["MaxSteps"] = 3,
+                ["Repertoire"] = new JsonArray("Property Change", "MM-Animate"), ["MaxSteps"] = 3,
                 ["Items"] = new JsonArray(Items.Select(i => (JsonNode)i).ToArray()),
+                ["MLocations"] = new JsonArray(MLocations.Select(l => (JsonNode)l).ToArray()),
                 ["Functions"] = new JsonArray(Communicative.Functions.Select(f => (JsonNode)f).ToArray()),
                 ["Behaviours"] = new JsonArray(PersonaBehaviours.Select(b => (JsonNode)b).ToArray())
             };

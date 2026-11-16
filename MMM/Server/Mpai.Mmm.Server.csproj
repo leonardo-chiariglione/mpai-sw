@@ -28,6 +28,11 @@
     <ProjectReference Include="..\..\AIMs\MMC\V2.5\TTS\Mpai.Mmc.Tts.csproj" />
     <!-- What the Secretary understands: the JSON Interface of the Voice Command Interface -->
     <ProjectReference Include="..\..\AIMs\MMC\V2.5\JSI\Mpai.Mmc.Jsi.csproj" />
+    <!-- "Open the door when the bell rings" (the door mode): the A-User Module of PGM-AUA on the AIF Controller, through the Controller API -->
+    <ProjectReference Include="..\..\AIF\Controller\AIF.Controller.csproj" />
+    <ProjectReference Include="..\..\AIF\ControllerApi\Mpai.Aif.Api.csproj" />
+    <ProjectReference Include="..\..\AIMs\PGM\V1.0\Mpai.Pgm.csproj" />
+    <ProjectReference Include="..\..\AIMs\PAF\V1.6\PDX\Mpai.Paf.Pdx.csproj" />
   </ItemGroup>
 
 </Project>

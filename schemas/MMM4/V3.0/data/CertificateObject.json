@@ -1,0 +1,23 @@
+{ "$schema":                "https://json-schema.org/draft/2020-12/schema",
+  "$id":                    "https://schemas.mpai.community/MMM4/V3.0/data/CertificateObject.json",
+  "title":                  "Certificate Object V3.0",
+  "description":            "A Certificate (the Certificate Data) and its Certificate Qualifier (MPAI-TFA), which says the Sub-Type and the Format of the Certificate: an MPAI Simple Certificate or one of the formats of TFA Certificate Formats (for instance a W3C Verifiable Credential or an Entity Attestation Token).",
+  "type":                   "object",
+  "required":               [ "Header", "CertificateID", "CertificateData", "CertificateQualifier" ],
+  "properties":             {
+
+    "Header":               { "type": "string", "const": "MMM-CRO-V3.0" },
+    "MInstanceID":          { "type": "string", "description": "Identifier of the M-Instance." },
+    "CertificateID":        { "type": "string", "description": "Identifier of the Certificate Object." },
+    "UEnvironment":         { "type": "string", "description": "Identifier of the U-Environment." },
+    "CertificateTime":      { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SimpleTime.json", "description": "Time of the Certificate Object." },
+
+    "CertificateData":      { "type": "array", "description": "The Certificate, inline (Data), by reference (DataLength and DataURI) or by identifier (ID).", "items": { "anyOf": [
+                            { "type": "object", "properties": { "DataLength": { "type": "integer" }, "DataURI": { "type": "string", "format": "uri" } } },
+                            { "type": "object", "properties": { "Data": { "type": "string" } } },
+                            { "type": "object", "properties": { "ID": { "type": "string" } } } ] } },
+
+    "CertificateQualifier": { "$ref": "https://schemas.mpai.community/TFA/V1.5/data/CertificateQualifier.json" },
+
+    "DataXMData":           { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
+    "DescrMetadata":        { "type": "string", "maxLength": 2048 } } }

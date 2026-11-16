@@ -1,6 +1,6 @@
 { "$schema":                "https://json-schema.org/draft/2020-12/schema",
   "$id":                    "https://schemas.mpai.community/MMM4/V2.2/data/Item.json",
-  "title":                  "Process V2.2",
+  "title":                  "Item V2.2",
   "type":                   "object",
   "additionalProperties":   false,
   "required":               [ "ItemID" ],

@@ -118,3 +118,67 @@ llama3.2:3b	run 3	300.05 s	not accepted
 llama3.2:3b	run 1	1.92 s	ok | said "The doors are now open." | actions MU-Actuate
 llama3.2:3b	run 2	1.35 s	ok | said "The doors are now open." | actions MU-Actuate
 llama3.2:3b	run 3	1.37 s	ok | said "The doors are now open." | actions MU-Actuate
+--- 2026-11-14T09:12:43
+llama3.2:3b	run 1	2.01 s	ok | said "The doors are now open." | actions MU-Actuate
+llama3.2:3b	run 2	1.72 s	ok | said "The doors are now open." | actions MU-Actuate
+llama3.2:3b	run 3	1.73 s	ok | said "The doors are now open." | actions MU-Actuate
+--- 2026-11-14T10:32:12
+llama3.2:3b	run 1	1.84 s	ok | said "The doors are now open." | actions MU-Actuate
+llama3.2:3b	run 2	1.62 s	ok | said "The doors are now open." | actions MU-Actuate
+llama3.2:3b	run 3	2.01 s	ok | said "The doors are now open." | actions MU-Actuate
+--- 2026-11-14T12:51:38
+llama3.2:3b	run 1	1.91 s	ok | said "The doors are now open." | actions MU-Actuate
+llama3.2:3b	run 2	1.34 s	ok | said "The doors are now open." | actions MU-Actuate
+llama3.2:3b	run 3	1.33 s	ok | said "The doors are now open." | actions MU-Actuate
+--- 2026-11-14T13:22:00
+llama3.2:3b	run 1	1.61 s	ok | said "The doors are now open." | actions MU-Actuate
+llama3.2:3b	run 2	1.53 s	ok | said "The doors are now open." | actions MU-Actuate
+llama3.2:3b	run 3	1.75 s	ok | said "The doors are now open." | actions MU-Actuate
+--- 2026-11-14T13:30:59
+llama3.2:3b	run 1	1.89 s	ok | said "The doors are now open." | actions MU-Actuate
+llama3.2:3b	run 2	1.89 s	ok | said "The doors are now open." | actions MU-Actuate
+llama3.2:3b	run 3	2.60 s	ok | said "The doors are now open." | actions MU-Actuate
+--- 2026-11-14T13:41:34
+llama3.2:3b	run 1	1.48 s	ok | said "The doors are now open." | actions MU-Actuate
+llama3.2:3b	run 2	1.54 s	ok | said "The doors are now open." | actions MU-Actuate
+llama3.2:3b	run 3	1.67 s	ok | said "The doors are now open." | actions MU-Actuate
+--- 2026-11-15T00:09:10
+llama3.2:3b	run 1	22.30 s	ok | said "The doors are now open." | actions MU-Actuate
+llama3.2:3b	run 2	1.51 s	ok | said "The doors are now open." | actions MU-Actuate
+llama3.2:3b	run 3	1.35 s	ok | said "The doors are now open." | actions MU-Actuate
+--- 2026-11-16T09:29:54
+llama3.2:3b	run 1	4.57 s	ok | said "The doors are already open." | actions MU-Actuate
+llama3.2:3b	run 2	2.50 s	ok | said "The doors are already open." | actions MU-Actuate
+llama3.2:3b	run 3	2.48 s	ok | said "The doors are already open." | actions MU-Actuate
+--- 2026-11-16T09:30:14
+llama3.2:3b	run 1	2.62 s	ok | said "The doors are already open." | actions MU-Actuate
+llama3.2:3b	run 2	3.49 s	ok | said "The doors are already open." | actions MU-Actuate
+llama3.2:3b	run 3	2.48 s	ok | said "The doors are already open." | actions MU-Actuate
+--- 2026-11-16T09:31:55
+llama3.2:3b	run 1	2.57 s	ok | said "The doors are already open." | actions MU-Actuate
+llama3.2:3b	run 2	2.49 s	ok | said "The doors are already open." | actions MU-Actuate
+llama3.2:3b	run 3	2.50 s	ok | said "The doors are already open." | actions MU-Actuate
+--- 2026-11-16T09:32:15
+llama3.2:3b	run 1	2.64 s	ok | said "The doors are already open." | actions MU-Actuate
+llama3.2:3b	run 2	2.48 s	ok | said "The doors are already open." | actions MU-Actuate
+llama3.2:3b	run 3	2.47 s	ok | said "The doors are already open." | actions MU-Actuate
+--- 2026-11-16T12:10:15
+llama3.2:3b	run 1	4.22 s	ok | said "The doors are now open." | actions Property Change
+llama3.2:3b	run 2	2.86 s	ok | said "The doors are now open." | actions Property Change
+llama3.2:3b	run 3	2.81 s	ok | said "The doors are now open." | actions Property Change
+--- 2026-11-16T12:10:56
+llama3.2:3b	run 1	2.93 s	ok | said "The doors are now open." | actions Property Change
+llama3.2:3b	run 2	2.83 s	ok | said "The doors are now open." | actions Property Change
+llama3.2:3b	run 3	2.87 s	ok | said "The doors are now open." | actions Property Change
+--- 2026-11-16T12:11:15
+llama3.2:3b	run 1	3.86 s	ok | said "The doors are now open." | actions Property Change
+llama3.2:3b	run 2	2.86 s	ok | said "The doors are now open." | actions Property Change
+llama3.2:3b	run 3	2.80 s	ok | said "The doors are now open." | actions Property Change
+--- 2026-11-16T12:28:40
+llama3.2:3b	run 1	2.83 s	ok | said "The doors are now open." | actions Property Change
+llama3.2:3b	run 2	2.73 s	ok | said "The doors are now open." | actions Property Change
+llama3.2:3b	run 3	2.70 s	ok | said "The doors are now open." | actions Property Change
+--- 2026-11-16T15:02:28
+llama3.2:3b	run 1	15.66 s	ok | said "I am going to open the doors now." | actions Property Change
+llama3.2:3b	run 2	14.50 s	ok | said "I am going to open the doors now." | actions Property Change
+llama3.2:3b	run 3	8.99 s	ok | said "I am going to open the doors now." | actions Property Change
