@@ -1,0 +1,7546 @@
+{
+ "duration": 20.0,
+ "frames": [
+  {
+   "t": 0.0,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": -5.5,
+      "Y": 0.0,
+      "Yaw": -90,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 0.0,
+       "RightArmElevation": 0.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 0.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 0.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.7
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -1.5,
+      "Y": -6.0,
+      "Yaw": 0,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 0.3,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C0 · Real",
+     "condition": "The show is about to start: the house is full",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "House lights to full",
+      "Scrim dim"
+     ],
+     "note": "Theatre waits for Anna"
+    },
+    "square": {
+     "cue": "C0 · Virtual",
+     "condition": "Guests have gathered in the square",
+     "dataType": "XRV-VTS-V1.0",
+     "actions": [
+      "Sky towards dusk",
+      "Lamp post low"
+     ]
+    }
+   },
+   "clock": "00:00"
+  },
+  {
+   "t": 0.5,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": -4.8125,
+      "Y": 0.0,
+      "Yaw": -90,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 0.0,
+       "RightArmElevation": 0.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 0.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 0.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.6833333333333333
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -1.5,
+      "Y": -6.0,
+      "Yaw": 0,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 0.3,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C0 · Real",
+     "condition": "The show is about to start: the house is full",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "House lights to full",
+      "Scrim dim"
+     ],
+     "note": "Theatre waits for Anna"
+    },
+    "square": {
+     "cue": "C0 · Virtual",
+     "condition": "Guests have gathered in the square",
+     "dataType": "XRV-VTS-V1.0",
+     "actions": [
+      "Sky towards dusk",
+      "Lamp post low"
+     ]
+    }
+   },
+   "clock": "00:00"
+  },
+  {
+   "t": 1.0,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": -4.125,
+      "Y": 0.0,
+      "Yaw": -90,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 0.0,
+       "RightArmElevation": 0.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 0.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 0.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.6666666666666666
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -1.5,
+      "Y": -6.0,
+      "Yaw": 0,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 0.3,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C0 · Real",
+     "condition": "The show is about to start: the house is full",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "House lights to full",
+      "Scrim dim"
+     ],
+     "note": "Theatre waits for Anna"
+    },
+    "square": {
+     "cue": "C0 · Virtual",
+     "condition": "Guests have gathered in the square",
+     "dataType": "XRV-VTS-V1.0",
+     "actions": [
+      "Sky towards dusk",
+      "Lamp post low"
+     ]
+    }
+   },
+   "clock": "00:01"
+  },
+  {
+   "t": 1.5,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": -3.4375,
+      "Y": 0.0,
+      "Yaw": -90,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 0.0,
+       "RightArmElevation": 0.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 0.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 0.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.6499999999999999
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -1.5,
+      "Y": -5.375,
+      "Yaw": 0,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 0.3,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C0 · Real",
+     "condition": "The show is about to start: the house is full",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "House lights to full",
+      "Scrim dim"
+     ],
+     "note": "Theatre waits for Anna"
+    },
+    "square": {
+     "cue": "C0 · Virtual",
+     "condition": "Guests have gathered in the square",
+     "dataType": "XRV-VTS-V1.0",
+     "actions": [
+      "Sky towards dusk",
+      "Lamp post low"
+     ]
+    }
+   },
+   "clock": "00:01"
+  },
+  {
+   "t": 2.0,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": -2.75,
+      "Y": 0.0,
+      "Yaw": -90,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 0.0,
+       "RightArmElevation": 0.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 0.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 0.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.6333333333333333
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -1.5,
+      "Y": -4.75,
+      "Yaw": 0,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 0.3,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C0 · Real",
+     "condition": "The show is about to start: the house is full",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "House lights to full",
+      "Scrim dim"
+     ],
+     "note": "Theatre waits for Anna"
+    },
+    "square": {
+     "cue": "C0 · Virtual",
+     "condition": "Guests have gathered in the square",
+     "dataType": "XRV-VTS-V1.0",
+     "actions": [
+      "Sky towards dusk",
+      "Lamp post low"
+     ]
+    }
+   },
+   "clock": "00:02"
+  },
+  {
+   "t": 2.5,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": -2.0625,
+      "Y": 0.0,
+      "Yaw": -90,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 0.0,
+       "RightArmElevation": 0.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 0.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 0.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.6166666666666667
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -1.5,
+      "Y": -4.125,
+      "Yaw": 0,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 0.3,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C0 · Real",
+     "condition": "The show is about to start: the house is full",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "House lights to full",
+      "Scrim dim"
+     ],
+     "note": "Theatre waits for Anna"
+    },
+    "square": {
+     "cue": "C0 · Virtual",
+     "condition": "Guests have gathered in the square",
+     "dataType": "XRV-VTS-V1.0",
+     "actions": [
+      "Sky towards dusk",
+      "Lamp post low"
+     ]
+    }
+   },
+   "clock": "00:02"
+  },
+  {
+   "t": 3.0,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": -1.375,
+      "Y": 0.0,
+      "Yaw": -90,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 0.0,
+       "RightArmElevation": 0.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 0.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 0.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.6
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -3.5,
+      "Yaw": 0,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 0.3,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C0 · Real",
+     "condition": "The show is about to start: the house is full",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "House lights to full",
+      "Scrim dim"
+     ],
+     "note": "Theatre waits for Anna"
+    },
+    "square": {
+     "cue": "C0 · Virtual",
+     "condition": "Guests have gathered in the square",
+     "dataType": "XRV-VTS-V1.0",
+     "actions": [
+      "Sky towards dusk",
+      "Lamp post low"
+     ]
+    }
+   },
+   "clock": "00:03"
+  },
+  {
+   "t": 3.5,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": -0.6875,
+      "Y": 0.0,
+      "Yaw": -90,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 0.0,
+       "RightArmElevation": 0.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 0.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 0.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.75
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.5833333333333333
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -2.875,
+      "Yaw": 0,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 0.3,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C0 · Real",
+     "condition": "The show is about to start: the house is full",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "House lights to full",
+      "Scrim dim"
+     ],
+     "note": "Theatre waits for Anna"
+    },
+    "square": {
+     "cue": "C0 · Virtual",
+     "condition": "Guests have gathered in the square",
+     "dataType": "XRV-VTS-V1.0",
+     "actions": [
+      "Sky towards dusk",
+      "Lamp post low"
+     ]
+    }
+   },
+   "clock": "00:03"
+  },
+  {
+   "t": 4.0,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": -90.0,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 0.0,
+       "RightArmElevation": 0.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 0.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 0.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.5
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.5666666666666667
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -2.25,
+      "Yaw": 0,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 0.3,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C0 · Real",
+     "condition": "The show is about to start: the house is full",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "House lights to full",
+      "Scrim dim"
+     ],
+     "note": "Theatre waits for Anna"
+    },
+    "square": {
+     "cue": "C0 · Virtual",
+     "condition": "Guests have gathered in the square",
+     "dataType": "XRV-VTS-V1.0",
+     "actions": [
+      "Sky towards dusk",
+      "Lamp post low"
+     ]
+    }
+   },
+   "clock": "00:04"
+  },
+  {
+   "t": 4.5,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": -135.0,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 0.0,
+       "RightArmElevation": 0.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 0.3333333333333333,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 0.3333333333333333,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.25
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.55
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.625,
+      "Yaw": 0,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 0.3,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C0 · Real",
+     "condition": "The show is about to start: the house is full",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "House lights to full",
+      "Scrim dim"
+     ],
+     "note": "Theatre waits for Anna"
+    },
+    "square": {
+     "cue": "C0 · Virtual",
+     "condition": "Guests have gathered in the square",
+     "dataType": "XRV-VTS-V1.0",
+     "actions": [
+      "Sky towards dusk",
+      "Lamp post low"
+     ]
+    }
+   },
+   "clock": "00:04"
+  },
+  {
+   "t": 5.0,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 0.0,
+       "RightArmElevation": 0.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 0.6666666666666666,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 0.6666666666666666,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.5333333333333333
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 0.3,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C1 · Real",
+     "condition": "Anna has reached the centre of the stage",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "FX1 and FX2 to full",
+      "House lights out",
+      "Follow spot on Anna"
+     ]
+    },
+    "square": {
+     "cue": "C1 · Virtual",
+     "condition": "Guest1 is on the stage",
+     "dataType": "XRV-VTS-V1.0",
+     "actions": [
+      "Lamp post to full",
+      "Fireflies on at 8 s"
+     ]
+    }
+   },
+   "clock": "00:05"
+  },
+  {
+   "t": 5.5,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 0.0,
+       "RightArmElevation": 0.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.5166666666666666
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 0.6499999999999999,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C1 · Real",
+     "condition": "Anna has reached the centre of the stage",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "FX1 and FX2 to full",
+      "House lights out",
+      "Follow spot on Anna"
+     ]
+    },
+    "square": {
+     "cue": "C1 · Virtual",
+     "condition": "Guest1 is on the stage",
+     "dataType": "XRV-VTS-V1.0",
+     "actions": [
+      "Lamp post to full",
+      "Fireflies on at 8 s"
+     ]
+    }
+   },
+   "clock": "00:05"
+  },
+  {
+   "t": 6.0,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 0.0,
+       "RightArmElevation": 0.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.5
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C1 · Real",
+     "condition": "Anna has reached the centre of the stage",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "FX1 and FX2 to full",
+      "House lights out",
+      "Follow spot on Anna"
+     ]
+    },
+    "square": {
+     "cue": "C1 · Virtual",
+     "condition": "Guest1 is on the stage",
+     "dataType": "XRV-VTS-V1.0",
+     "actions": [
+      "Lamp post to full",
+      "Fireflies on at 8 s"
+     ]
+    }
+   },
+   "clock": "00:06"
+  },
+  {
+   "t": 6.5,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 0.0,
+       "RightArmElevation": 0.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.4833333333333333
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C1 · Real",
+     "condition": "Anna has reached the centre of the stage",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "FX1 and FX2 to full",
+      "House lights out",
+      "Follow spot on Anna"
+     ]
+    },
+    "square": {
+     "cue": "C1 · Virtual",
+     "condition": "Guest1 is on the stage",
+     "dataType": "XRV-VTS-V1.0",
+     "actions": [
+      "Lamp post to full",
+      "Fireflies on at 8 s"
+     ]
+    }
+   },
+   "clock": "00:06"
+  },
+  {
+   "t": 7.0,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 0.0,
+       "RightArmElevation": 0.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.4666666666666667
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C1 · Real",
+     "condition": "Anna has reached the centre of the stage",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "FX1 and FX2 to full",
+      "House lights out",
+      "Follow spot on Anna"
+     ]
+    },
+    "square": {
+     "cue": "C1 · Virtual",
+     "condition": "Guest1 is on the stage",
+     "dataType": "XRV-VTS-V1.0",
+     "actions": [
+      "Lamp post to full",
+      "Fireflies on at 8 s"
+     ]
+    }
+   },
+   "clock": "00:07"
+  },
+  {
+   "t": 7.5,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 0.0,
+       "RightArmElevation": 0.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.44999999999999996
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C1 · Real",
+     "condition": "Anna has reached the centre of the stage",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "FX1 and FX2 to full",
+      "House lights out",
+      "Follow spot on Anna"
+     ]
+    },
+    "square": {
+     "cue": "C1 · Virtual",
+     "condition": "Guest1 is on the stage",
+     "dataType": "XRV-VTS-V1.0",
+     "actions": [
+      "Lamp post to full",
+      "Fireflies on at 8 s"
+     ]
+    }
+   },
+   "clock": "00:07"
+  },
+  {
+   "t": 8.0,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 0.0,
+       "RightArmElevation": 0.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.43333333333333335
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C1 · Real",
+     "condition": "Anna has reached the centre of the stage",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "FX1 and FX2 to full",
+      "House lights out",
+      "Follow spot on Anna"
+     ]
+    },
+    "square": {
+     "cue": "C1 · Virtual",
+     "condition": "Guest1 is on the stage",
+     "dataType": "XRV-VTS-V1.0",
+     "actions": [
+      "Lamp post to full",
+      "Fireflies on at 8 s"
+     ]
+    }
+   },
+   "clock": "00:08"
+  },
+  {
+   "t": 8.5,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 0.0,
+       "RightArmElevation": 0.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.4166666666666667
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C1 · Real",
+     "condition": "Anna has reached the centre of the stage",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "FX1 and FX2 to full",
+      "House lights out",
+      "Follow spot on Anna"
+     ]
+    },
+    "square": {
+     "cue": "C1 · Virtual",
+     "condition": "Guest1 is on the stage",
+     "dataType": "XRV-VTS-V1.0",
+     "actions": [
+      "Lamp post to full",
+      "Fireflies on at 8 s"
+     ]
+    }
+   },
+   "clock": "00:08"
+  },
+  {
+   "t": 9.0,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 0.0,
+       "RightArmElevation": 0.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.4
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C1 · Real",
+     "condition": "Anna has reached the centre of the stage",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "FX1 and FX2 to full",
+      "House lights out",
+      "Follow spot on Anna"
+     ]
+    },
+    "square": {
+     "cue": "C1 · Virtual",
+     "condition": "Guest1 is on the stage",
+     "dataType": "XRV-VTS-V1.0",
+     "actions": [
+      "Lamp post to full",
+      "Fireflies on at 8 s"
+     ]
+    }
+   },
+   "clock": "00:09"
+  },
+  {
+   "t": 9.5,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 0.0,
+       "RightArmElevation": 0.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.38333333333333336
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C1 · Real",
+     "condition": "Anna has reached the centre of the stage",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "FX1 and FX2 to full",
+      "House lights out",
+      "Follow spot on Anna"
+     ]
+    },
+    "square": {
+     "cue": "C1 · Virtual",
+     "condition": "Guest1 is on the stage",
+     "dataType": "XRV-VTS-V1.0",
+     "actions": [
+      "Lamp post to full",
+      "Fireflies on at 8 s"
+     ]
+    }
+   },
+   "clock": "00:09"
+  },
+  {
+   "t": 10.0,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 0.0,
+       "RightArmElevation": 0.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFB347"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.3666666666666667
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C2 · Real",
+     "condition": "Anna raises both arms",
+     "dataType": "XRV-PAD-V1.0",
+     "actions": [
+      "FX2 to amber",
+      "Scrim to full brightness"
+     ],
+     "note": "Portable Avatar of Anna sent to the Square"
+    },
+    "square": {
+     "cue": "C2 · Virtual",
+     "condition": "The Bot (Anna's double) appears at 12 s",
+     "dataType": "XRV-PAF-V1.0",
+     "actions": [
+      "Bot on stage",
+      "Portal to full"
+     ]
+    }
+   },
+   "clock": "00:10"
+  },
+  {
+   "t": 10.5,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 85.0,
+       "RightArmElevation": 85.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFB347"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.35000000000000003
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C2 · Real",
+     "condition": "Anna raises both arms",
+     "dataType": "XRV-PAD-V1.0",
+     "actions": [
+      "FX2 to amber",
+      "Scrim to full brightness"
+     ],
+     "note": "Portable Avatar of Anna sent to the Square"
+    },
+    "square": {
+     "cue": "C2 · Virtual",
+     "condition": "The Bot (Anna's double) appears at 12 s",
+     "dataType": "XRV-PAF-V1.0",
+     "actions": [
+      "Bot on stage",
+      "Portal to full"
+     ]
+    }
+   },
+   "clock": "00:10"
+  },
+  {
+   "t": 11.0,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 170.0,
+       "RightArmElevation": 170.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFB347"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.33333333333333337
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C2 · Real",
+     "condition": "Anna raises both arms",
+     "dataType": "XRV-PAD-V1.0",
+     "actions": [
+      "FX2 to amber",
+      "Scrim to full brightness"
+     ],
+     "note": "Portable Avatar of Anna sent to the Square"
+    },
+    "square": {
+     "cue": "C2 · Virtual",
+     "condition": "The Bot (Anna's double) appears at 12 s",
+     "dataType": "XRV-PAF-V1.0",
+     "actions": [
+      "Bot on stage",
+      "Portal to full"
+     ]
+    }
+   },
+   "clock": "00:11"
+  },
+  {
+   "t": 11.5,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 170.0,
+       "RightArmElevation": 170.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFB347"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.31666666666666665
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C2 · Real",
+     "condition": "Anna raises both arms",
+     "dataType": "XRV-PAD-V1.0",
+     "actions": [
+      "FX2 to amber",
+      "Scrim to full brightness"
+     ],
+     "note": "Portable Avatar of Anna sent to the Square"
+    },
+    "square": {
+     "cue": "C2 · Virtual",
+     "condition": "The Bot (Anna's double) appears at 12 s",
+     "dataType": "XRV-PAF-V1.0",
+     "actions": [
+      "Bot on stage",
+      "Portal to full"
+     ]
+    }
+   },
+   "clock": "00:11"
+  },
+  {
+   "t": 12.0,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 170.0,
+       "RightArmElevation": 170.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFB347"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.3
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Bot",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": 0.5,
+      "Y": 0.3,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_03.glb",
+      "Pose": {
+       "LeftArmElevation": 170,
+       "RightArmElevation": 170
+      }
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C2 · Real",
+     "condition": "Anna raises both arms",
+     "dataType": "XRV-PAD-V1.0",
+     "actions": [
+      "FX2 to amber",
+      "Scrim to full brightness"
+     ],
+     "note": "Portable Avatar of Anna sent to the Square"
+    },
+    "square": {
+     "cue": "C2 · Virtual",
+     "condition": "The Bot (Anna's double) appears at 12 s",
+     "dataType": "XRV-PAF-V1.0",
+     "actions": [
+      "Bot on stage",
+      "Portal to full"
+     ]
+    }
+   },
+   "clock": "00:12"
+  },
+  {
+   "t": 12.5,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 170.0,
+       "RightArmElevation": 170.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFB347"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.2833333333333333
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Bot",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": 0.5,
+      "Y": 0.3,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_03.glb",
+      "Pose": {
+       "LeftArmElevation": 170,
+       "RightArmElevation": 170
+      }
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C2 · Real",
+     "condition": "Anna raises both arms",
+     "dataType": "XRV-PAD-V1.0",
+     "actions": [
+      "FX2 to amber",
+      "Scrim to full brightness"
+     ],
+     "note": "Portable Avatar of Anna sent to the Square"
+    },
+    "square": {
+     "cue": "C2 · Virtual",
+     "condition": "The Bot (Anna's double) appears at 12 s",
+     "dataType": "XRV-PAF-V1.0",
+     "actions": [
+      "Bot on stage",
+      "Portal to full"
+     ]
+    }
+   },
+   "clock": "00:12"
+  },
+  {
+   "t": 13.0,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 170.0,
+       "RightArmElevation": 170.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFB347"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.26666666666666666
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Bot",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": 0.5,
+      "Y": 0.3,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_03.glb",
+      "Pose": {
+       "LeftArmElevation": 170,
+       "RightArmElevation": 170
+      }
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C2 · Real",
+     "condition": "Anna raises both arms",
+     "dataType": "XRV-PAD-V1.0",
+     "actions": [
+      "FX2 to amber",
+      "Scrim to full brightness"
+     ],
+     "note": "Portable Avatar of Anna sent to the Square"
+    },
+    "square": {
+     "cue": "C2 · Virtual",
+     "condition": "The Bot (Anna's double) appears at 12 s",
+     "dataType": "XRV-PAF-V1.0",
+     "actions": [
+      "Bot on stage",
+      "Portal to full"
+     ]
+    }
+   },
+   "clock": "00:13"
+  },
+  {
+   "t": 13.5,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 170.0,
+       "RightArmElevation": 170.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFB347"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.25
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Bot",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": 0.5,
+      "Y": 0.3,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_03.glb",
+      "Pose": {
+       "LeftArmElevation": 170,
+       "RightArmElevation": 170
+      }
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C2 · Real",
+     "condition": "Anna raises both arms",
+     "dataType": "XRV-PAD-V1.0",
+     "actions": [
+      "FX2 to amber",
+      "Scrim to full brightness"
+     ],
+     "note": "Portable Avatar of Anna sent to the Square"
+    },
+    "square": {
+     "cue": "C2 · Virtual",
+     "condition": "The Bot (Anna's double) appears at 12 s",
+     "dataType": "XRV-PAF-V1.0",
+     "actions": [
+      "Bot on stage",
+      "Portal to full"
+     ]
+    }
+   },
+   "clock": "00:13"
+  },
+  {
+   "t": 14.0,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 180.0,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 170.0,
+       "RightArmElevation": 170.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFB347"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.23333333333333334
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Bot",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": 0.5,
+      "Y": 0.3,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_03.glb",
+      "Pose": {
+       "LeftArmElevation": 170,
+       "RightArmElevation": 170
+      }
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C2 · Real",
+     "condition": "Anna raises both arms",
+     "dataType": "XRV-PAD-V1.0",
+     "actions": [
+      "FX2 to amber",
+      "Scrim to full brightness"
+     ],
+     "note": "Portable Avatar of Anna sent to the Square"
+    },
+    "square": {
+     "cue": "C2 · Virtual",
+     "condition": "The Bot (Anna's double) appears at 12 s",
+     "dataType": "XRV-PAF-V1.0",
+     "actions": [
+      "Bot on stage",
+      "Portal to full"
+     ]
+    }
+   },
+   "clock": "00:14"
+  },
+  {
+   "t": 14.5,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 90.0,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 170.0,
+       "RightArmElevation": 170.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFF2D8"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFB347"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.21666666666666667
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Bot",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": 0.5,
+      "Y": 0.3,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_03.glb",
+      "Pose": {
+       "LeftArmElevation": 170,
+       "RightArmElevation": 170
+      }
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C2 · Real",
+     "condition": "Anna raises both arms",
+     "dataType": "XRV-PAD-V1.0",
+     "actions": [
+      "FX2 to amber",
+      "Scrim to full brightness"
+     ],
+     "note": "Portable Avatar of Anna sent to the Square"
+    },
+    "square": {
+     "cue": "C2 · Virtual",
+     "condition": "The Bot (Anna's double) appears at 12 s",
+     "dataType": "XRV-PAF-V1.0",
+     "actions": [
+      "Bot on stage",
+      "Portal to full"
+     ]
+    }
+   },
+   "clock": "00:14"
+  },
+  {
+   "t": 15.0,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 0,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 170.0,
+       "RightArmElevation": 170.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "6FA8FF"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFB347"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Bot",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": 0.5,
+      "Y": 0.3,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_03.glb",
+      "Pose": {
+       "LeftArmElevation": 170,
+       "RightArmElevation": 170
+      }
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C3 · Real",
+     "condition": "Anna turns to face the scrim; the audience applauds",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "Confetti at 16 s",
+      "FX1 to blue",
+      "Spot off"
+     ]
+    },
+    "square": {
+     "cue": "C3 · Virtual",
+     "condition": "Applause heard from the Theatre",
+     "dataType": "XRV-AUD-V1.0",
+     "actions": [
+      "Fireworks",
+      "Applause arcs",
+      "Sky to dusk",
+      "Guests applaud"
+     ]
+    }
+   },
+   "clock": "00:15"
+  },
+  {
+   "t": 15.5,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 0,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 170.0,
+       "RightArmElevation": 170.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "6FA8FF"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFB347"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 0,
+       "RightArmElevation": 0
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Bot",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": 0.5,
+      "Y": 0.3,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_03.glb",
+      "Pose": {
+       "LeftArmElevation": 170,
+       "RightArmElevation": 170
+      }
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C3 · Real",
+     "condition": "Anna turns to face the scrim; the audience applauds",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "Confetti at 16 s",
+      "FX1 to blue",
+      "Spot off"
+     ]
+    },
+    "square": {
+     "cue": "C3 · Virtual",
+     "condition": "Applause heard from the Theatre",
+     "dataType": "XRV-AUD-V1.0",
+     "actions": [
+      "Fireworks",
+      "Applause arcs",
+      "Sky to dusk",
+      "Guests applaud"
+     ]
+    }
+   },
+   "clock": "00:15"
+  },
+  {
+   "t": 16.0,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 0,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 170.0,
+       "RightArmElevation": 170.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "6FA8FF"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFB347"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 150,
+       "RightArmElevation": 150
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Bot",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": 0.5,
+      "Y": 0.3,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_03.glb",
+      "Pose": {
+       "LeftArmElevation": 170,
+       "RightArmElevation": 170
+      }
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C3 · Real",
+     "condition": "Anna turns to face the scrim; the audience applauds",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "Confetti at 16 s",
+      "FX1 to blue",
+      "Spot off"
+     ]
+    },
+    "square": {
+     "cue": "C3 · Virtual",
+     "condition": "Applause heard from the Theatre",
+     "dataType": "XRV-AUD-V1.0",
+     "actions": [
+      "Fireworks",
+      "Applause arcs",
+      "Sky to dusk",
+      "Guests applaud"
+     ]
+    }
+   },
+   "clock": "00:16"
+  },
+  {
+   "t": 16.5,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 0,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 170.0,
+       "RightArmElevation": 170.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "6FA8FF"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFB347"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 150,
+       "RightArmElevation": 150
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Bot",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": 0.5,
+      "Y": 0.3,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_03.glb",
+      "Pose": {
+       "LeftArmElevation": 170,
+       "RightArmElevation": 170
+      }
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C3 · Real",
+     "condition": "Anna turns to face the scrim; the audience applauds",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "Confetti at 16 s",
+      "FX1 to blue",
+      "Spot off"
+     ]
+    },
+    "square": {
+     "cue": "C3 · Virtual",
+     "condition": "Applause heard from the Theatre",
+     "dataType": "XRV-AUD-V1.0",
+     "actions": [
+      "Fireworks",
+      "Applause arcs",
+      "Sky to dusk",
+      "Guests applaud"
+     ]
+    }
+   },
+   "clock": "00:16"
+  },
+  {
+   "t": 17.0,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 0,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 170.0,
+       "RightArmElevation": 170.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "6FA8FF"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFB347"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 150,
+       "RightArmElevation": 150
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Bot",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": 0.5,
+      "Y": 0.3,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_03.glb",
+      "Pose": {
+       "LeftArmElevation": 170,
+       "RightArmElevation": 170
+      }
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C3 · Real",
+     "condition": "Anna turns to face the scrim; the audience applauds",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "Confetti at 16 s",
+      "FX1 to blue",
+      "Spot off"
+     ]
+    },
+    "square": {
+     "cue": "C3 · Virtual",
+     "condition": "Applause heard from the Theatre",
+     "dataType": "XRV-AUD-V1.0",
+     "actions": [
+      "Fireworks",
+      "Applause arcs",
+      "Sky to dusk",
+      "Guests applaud"
+     ]
+    }
+   },
+   "clock": "00:17"
+  },
+  {
+   "t": 17.5,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 0,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 170.0,
+       "RightArmElevation": 170.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "6FA8FF"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFB347"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 150,
+       "RightArmElevation": 150
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Bot",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": 0.5,
+      "Y": 0.3,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_03.glb",
+      "Pose": {
+       "LeftArmElevation": 170,
+       "RightArmElevation": 170
+      }
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C3 · Real",
+     "condition": "Anna turns to face the scrim; the audience applauds",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "Confetti at 16 s",
+      "FX1 to blue",
+      "Spot off"
+     ]
+    },
+    "square": {
+     "cue": "C3 · Virtual",
+     "condition": "Applause heard from the Theatre",
+     "dataType": "XRV-AUD-V1.0",
+     "actions": [
+      "Fireworks",
+      "Applause arcs",
+      "Sky to dusk",
+      "Guests applaud"
+     ]
+    }
+   },
+   "clock": "00:17"
+  },
+  {
+   "t": 18.0,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 0,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 170.0,
+       "RightArmElevation": 170.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "6FA8FF"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFB347"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 150,
+       "RightArmElevation": 150
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Bot",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": 0.5,
+      "Y": 0.3,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_03.glb",
+      "Pose": {
+       "LeftArmElevation": 170,
+       "RightArmElevation": 170
+      }
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C3 · Real",
+     "condition": "Anna turns to face the scrim; the audience applauds",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "Confetti at 16 s",
+      "FX1 to blue",
+      "Spot off"
+     ]
+    },
+    "square": {
+     "cue": "C3 · Virtual",
+     "condition": "Applause heard from the Theatre",
+     "dataType": "XRV-AUD-V1.0",
+     "actions": [
+      "Fireworks",
+      "Applause arcs",
+      "Sky to dusk",
+      "Guests applaud"
+     ]
+    }
+   },
+   "clock": "00:18"
+  },
+  {
+   "t": 18.5,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 0,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 170.0,
+       "RightArmElevation": 170.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "6FA8FF"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFB347"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 150,
+       "RightArmElevation": 150
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Bot",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": 0.5,
+      "Y": 0.3,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_03.glb",
+      "Pose": {
+       "LeftArmElevation": 170,
+       "RightArmElevation": 170
+      }
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C3 · Real",
+     "condition": "Anna turns to face the scrim; the audience applauds",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "Confetti at 16 s",
+      "FX1 to blue",
+      "Spot off"
+     ]
+    },
+    "square": {
+     "cue": "C3 · Virtual",
+     "condition": "Applause heard from the Theatre",
+     "dataType": "XRV-AUD-V1.0",
+     "actions": [
+      "Fireworks",
+      "Applause arcs",
+      "Sky to dusk",
+      "Guests applaud"
+     ]
+    }
+   },
+   "clock": "00:18"
+  },
+  {
+   "t": 19.0,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 0,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 170.0,
+       "RightArmElevation": 170.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "6FA8FF"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFB347"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 150,
+       "RightArmElevation": 150
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Bot",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": 0.5,
+      "Y": 0.3,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_03.glb",
+      "Pose": {
+       "LeftArmElevation": 170,
+       "RightArmElevation": 170
+      }
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C3 · Real",
+     "condition": "Anna turns to face the scrim; the audience applauds",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "Confetti at 16 s",
+      "FX1 to blue",
+      "Spot off"
+     ]
+    },
+    "square": {
+     "cue": "C3 · Virtual",
+     "condition": "Applause heard from the Theatre",
+     "dataType": "XRV-AUD-V1.0",
+     "actions": [
+      "Fireworks",
+      "Applause arcs",
+      "Sky to dusk",
+      "Guests applaud"
+     ]
+    }
+   },
+   "clock": "00:19"
+  },
+  {
+   "t": 19.5,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 0,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 170.0,
+       "RightArmElevation": 170.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "6FA8FF"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFB347"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 150,
+       "RightArmElevation": 150
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Bot",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": 0.5,
+      "Y": 0.3,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_03.glb",
+      "Pose": {
+       "LeftArmElevation": 170,
+       "RightArmElevation": 170
+      }
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C3 · Real",
+     "condition": "Anna turns to face the scrim; the audience applauds",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "Confetti at 16 s",
+      "FX1 to blue",
+      "Spot off"
+     ]
+    },
+    "square": {
+     "cue": "C3 · Virtual",
+     "condition": "Applause heard from the Theatre",
+     "dataType": "XRV-AUD-V1.0",
+     "actions": [
+      "Fireworks",
+      "Applause arcs",
+      "Sky to dusk",
+      "Guests applaud"
+     ]
+    }
+   },
+   "clock": "00:19"
+  },
+  {
+   "t": 20.0,
+   "theatre": {
+    "Things": [
+     {
+      "ID": "Anna",
+      "Kind": "Persona",
+      "At": "TheatreStage",
+      "X": 0.0,
+      "Y": 0.0,
+      "Yaw": 0,
+      "Model": "catalogue/Female_Adult_01.glb",
+      "Pose": {
+       "LeftArmElevation": 170.0,
+       "RightArmElevation": 170.0,
+       "HipFlexion": 0,
+       "KneeFlexion": 0
+      }
+     },
+     {
+      "ID": "FX1",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": -3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "6FA8FF"
+     },
+     {
+      "ID": "FX2",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "X": 3,
+      "Y": 1,
+      "Intensity": 1.0,
+      "Colour": "FFB347"
+     },
+     {
+      "ID": "Spot",
+      "Kind": "Item",
+      "At": "TheatreStage",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "House",
+      "Kind": "Item",
+      "Intensity": 0.0
+     },
+     {
+      "ID": "Scrim",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.4,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Confetti",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "TheatreStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Console",
+      "Kind": "Item",
+      "X": 0,
+      "Y": -8
+     }
+    ]
+   },
+   "square": {
+    "Things": [
+     {
+      "ID": "SquareStage",
+      "Kind": "Location",
+      "X": 0,
+      "Y": 0
+     },
+     {
+      "ID": "Sky",
+      "Kind": "Location",
+      "Intensity": 0.2
+     },
+     {
+      "ID": "Guest1",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": -1.5,
+      "Y": -1.0,
+      "Yaw": 180,
+      "Model": "catalogue/Male_Adult_01.glb"
+     },
+     {
+      "ID": "Guest2",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": -3.5,
+      "Y": -6.0,
+      "Yaw": 20,
+      "Model": "catalogue/Female_Adult_05.glb",
+      "Pose": {
+       "LeftArmElevation": 150,
+       "RightArmElevation": 150
+      }
+     },
+     {
+      "ID": "Guest3",
+      "Kind": "Persona",
+      "At": "Plaza",
+      "X": 3.5,
+      "Y": -5.5,
+      "Yaw": -15,
+      "Model": "catalogue/Male_Adult_05.glb",
+      "Pose": {
+       "HipFlexion": 90,
+       "KneeFlexion": 90
+      }
+     },
+     {
+      "ID": "VLamp1",
+      "Kind": "Item",
+      "At": "SquareStage",
+      "X": 2,
+      "Y": 0.5,
+      "Intensity": 1.0,
+      "Colour": "FFE0A0"
+     },
+     {
+      "ID": "Portal",
+      "Kind": "Item",
+      "X": 0,
+      "Y": 2.2,
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireflies",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Fireworks",
+      "Kind": "Item",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "ApplauseSpeaker",
+      "Kind": "Audio",
+      "Intensity": 1.0
+     },
+     {
+      "ID": "Bot",
+      "Kind": "Persona",
+      "At": "SquareStage",
+      "X": 0.5,
+      "Y": 0.3,
+      "Yaw": 180,
+      "Model": "catalogue/Female_Adult_03.glb",
+      "Pose": {
+       "LeftArmElevation": 170,
+       "RightArmElevation": 170
+      }
+     }
+    ]
+   },
+   "captions": {
+    "theatre": {
+     "cue": "C3 · Real",
+     "condition": "Anna turns to face the scrim; the audience applauds",
+     "dataType": "XRV-RTS-V1.0",
+     "actions": [
+      "Confetti at 16 s",
+      "FX1 to blue",
+      "Spot off"
+     ]
+    },
+    "square": {
+     "cue": "C3 · Virtual",
+     "condition": "Applause heard from the Theatre",
+     "dataType": "XRV-AUD-V1.0",
+     "actions": [
+      "Fireworks",
+      "Applause arcs",
+      "Sky to dusk",
+      "Guests applaud"
+     ]
+    }
+   },
+   "clock": "00:20"
+  }
+ ]
+}

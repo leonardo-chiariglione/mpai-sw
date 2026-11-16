@@ -75,17 +75,19 @@ public sealed class RegAimProcessor : IAimProcessor, IAimRunner
     {
         if (startGate is not null) await startGate;
         ActionTable? table = null; REVenueSpecification? venue = null;
-        var waiting = new Queue<string>();
+        var waiting = new Queue<(string Id, string? Descr)>();
         long count = 0;
 
-        async Task Give(string actionId)
+        async Task Give((string Id, string? Descr) action)
         {
+            var actionId = action.Id;
             var why = new List<string>();
             var id = $"reg-{++count}";
             var output = Generate(actionId, table!, venue, id, ports.Now.ToUnixTimeMilliseconds(), table!.EnvironmentId, why);
             foreach (var w in why) context.Report(w);
             if (output is not null)
             {
+                if (action.Descr is { } descr) output["DescrMetadata"] = descr;            // N-26: what met the Conditions of the Cue, as the Action ID said it
                 var violations = XrvSchemas.Violations("XRV1/V1.0/data/REDataOut.json", output);
                 if (violations.Count > 0) { context.Report($"the RE Data Out of {actionId} is not valid: {string.Join("; ", violations)}"); return; }
                 await ports.WriteAsync(RDO, 1, output.ToJsonString(), -1);
@@ -101,7 +103,7 @@ public sealed class RegAimProcessor : IAimProcessor, IAimRunner
             {
                 if (port.DataType == Types.ActionTable) table = ActionTable.Read(message.Json);
                 else if (port.DataType == Types.REVenueSpecification) venue = REVenueSpecification.Read(message.Json);
-                else if (port.DataType == Types.BasicTextObject) waiting.Enqueue(TextId.Read(message.Json).Text);
+                else if (port.DataType == Types.BasicTextObject) { var t = TextId.Read(message.Json); waiting.Enqueue((t.Text, t.Json["DescrMetadata"]?.GetValue<string>())); }
                 // The Show Descriptors, the Participant Data, the Script and the Script-Venue Associations: received, not used.
                 if (table is not null && venue is not null)
                     while (waiting.Count > 0) await Give(waiting.Dequeue());

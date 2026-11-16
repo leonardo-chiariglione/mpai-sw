@@ -47,6 +47,7 @@ public sealed class AcgAimProcessor : IAimProcessor, IAimRunner
             {
                 var port = e.Kind switch { EventKind.REAction => 1, EventKind.VEAction => 2, _ => 3 };
                 var text = TextId.Make($"{(e.Kind == EventKind.CuePoint ? "cue" : "action")}-{++count}", e.Id, script.EnvironmentId);
+                if (e.Why is { } why) text.Json["DescrMetadata"] = why.Length <= 2048 ? why : why[..2045] + "...";   // N-26: what met the Conditions, in plain words (the Basic Text Object's DescrMetadata)
                 await ports.WriteAsync(Types.BasicTextObject, port, text.ToJson(), -1);
             }
         }

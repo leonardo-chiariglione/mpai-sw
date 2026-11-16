@@ -1,0 +1,59 @@
+{
+  "Header": "XRV-RVS-V1.0",
+  "MInstanceID": "Theatre",
+  "UEnvironmentID": "UE-Theatre",
+  "REVenueSpecificationID": "Theatre-Venue",
+  "REVenueSpecificationTime": {
+    "Header": "OSD-STM-V1.5",
+    "SimpleTimeID": "rvs-t",
+    "SimpleTimeData": [
+      {
+        "FlagsByte": 3,
+        "StartTime": 0,
+        "EndTime": 0,
+        "AccuracyMode": "single",
+        "AccuracyPlusMinus": 0,
+        "TimeType": true,
+        "TimeUnit": "01"
+      }
+    ]
+  },
+  "DMXUniverses": [
+    {
+      "UniverseID": 1,
+      "Protocol": "DMX",
+      "Channels": [
+        {
+          "ChannelNumber": 1,
+          "ChannelDefinition": "Dimmer",
+          "FixtureID": "House"
+        },
+        {
+          "ChannelNumber": 2,
+          "ChannelDefinition": "Dimmer",
+          "FixtureID": "FX1"
+        },
+        {
+          "ChannelNumber": 3,
+          "ChannelDefinition": "Dimmer",
+          "FixtureID": "FX2"
+        },
+        {
+          "ChannelNumber": 4,
+          "ChannelDefinition": "Dimmer",
+          "FixtureID": "Spot"
+        },
+        {
+          "ChannelNumber": 5,
+          "ChannelDefinition": "Dimmer",
+          "FixtureID": "Scrim"
+        },
+        {
+          "ChannelNumber": 6,
+          "ChannelDefinition": "Effect",
+          "FixtureID": "Confetti"
+        }
+      ]
+    }
+  ]
+}

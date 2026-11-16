@@ -9,8 +9,8 @@ using AIF.Controller;
 namespace Mpai.Xrv;
 
 // FROM DESCRIPTORS TO A STATUS, in the simplest reading: the Status takes from the Descriptors the elements that both name (the schema of the Status says which: the properties of the
-// individual, collective and object elements it allows). Nothing is computed from the Descriptors here - what a Status Interpretation AIM would infer from audio, video or MoCap is
-// the work of a later stage.
+// individual, collective and object elements it allows). Since N-26 (2026-11-15) three things are also read in the Descriptors of each individual (Behaviour.cs): the body (a Visual
+// Behaviour: raising arms, standing or sitting), the voice of a crowd (an Audio Behaviour: Clapping Intensity) and where it faces (the Spatial Attitude to the nearest mark).
 public static class Interpretation
 {
     private static readonly string[] CommandWords = ["Go", "Hold", "Skip", "Back"];
@@ -55,8 +55,15 @@ public static class Interpretation
             var data = new JsonObject();
             var individuals = new JsonArray();
             var individualKeys = AllowedKeys(info, info.StatusDataKey, "IndividualStatuses", "items");
+            var where = descriptors.Json["UEnvironmentID"]?.GetValue<string>();
+            var n = 0;
             foreach (var item in (descriptors.Data as JsonArray) ?? [])
-                individuals.Add(Copy((JsonObject)item!, individualKeys));
+            {
+                var source = (JsonObject)item!;
+                var copy = Copy(source, individualKeys);
+                Interpret(source, copy, individualKeys, descriptors, $"{statusId}-{++n}", nowMs, where);
+                individuals.Add(copy);
+            }
             data["IndividualStatuses"] = individuals;
 
             var objectsKey = info.IsRE ? "REObjectDescriptors" : "VEObjectDescriptors";
@@ -68,6 +75,25 @@ public static class Interpretation
             status[info.StatusDataKey] = data;
         }
         return new StatusObject(status, info.Kind);
+    }
+
+    // WHAT THE DESCRIPTORS OF ONE INDIVIDUAL MEAN (N-26; the readings are in Behaviour.cs): the body gives a Visual Behaviour, the Audio Object of the same ID in the Multimodal Scene
+    // Descriptors gives an Audio Behaviour, and the Spatial Attitude is read to the nearest mark. Each only where the Status allows that element.
+    private static void Interpret(JsonObject source, JsonObject status, HashSet<string> allowed, DescriptorsObject descriptors, string id, double nowMs, string? environment)
+    {
+        var body = source["BodyDescriptorsObject"]
+                   ?? (source["AvatarOrAvatarID"] as JsonArray)?.OfType<JsonObject>().Select(a => a["BodyDescriptorsObject"]).FirstOrDefault(b => b is not null);
+        if (allowed.Contains("VisualBehaviour") && Behaviour.JointsOf(body) is { } joints)
+            status["VisualBehaviour"] = Behaviour.Visual(id + "-vb", joints, nowMs, environment);
+
+        var who = source.FirstOrDefault(p => p.Key.EndsWith("ID", StringComparison.Ordinal) && p.Key != "SeatID").Value?.GetValue<string>();
+        if (allowed.Contains("AudioBehaviour") && who is not null
+            && (descriptors.Json["MultimodalSceneDescriptors"]?["AudioObjects"] as JsonArray)?.OfType<JsonObject>().Select(a => a["AudioObject"]).OfType<JsonObject>()
+                   .FirstOrDefault(a => a["AudioObjectID"]?.GetValue<string>() == who) is { } audio
+            && Behaviour.Audio(id + "-ab", audio, nowMs, environment) is { } heard)
+            status["AudioBehaviour"] = heard;
+
+        if (status["SpatialAttitude"] is JsonObject attitude && Behaviour.Marked(attitude) is { } marked) status["SpatialAttitude"] = marked;
     }
 
     private static JsonObject Copy(JsonObject source, HashSet<string> allowed)

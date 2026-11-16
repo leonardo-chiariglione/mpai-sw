@@ -1,0 +1,367 @@
+{
+  "Header": "XRV-ATB-V1.0",
+  "UEnvironmentID": "UE-Evening",
+  "ActionTableID": "LongerEvening-Actions",
+  "ActionTableTime": {
+    "Header": "OSD-STM-V1.5",
+    "SimpleTimeID": "atb-t",
+    "SimpleTimeData": [
+      {
+        "FlagsByte": 3,
+        "StartTime": 0,
+        "EndTime": 0,
+        "AccuracyMode": "single",
+        "AccuracyPlusMinus": 0,
+        "TimeType": true,
+        "TimeUnit": "01"
+      }
+    ]
+  },
+  "ActionTableData": [
+    {
+      "ActionID": "RE-HOUSE-DOWN",
+      "ActionName": "House lights down",
+      "Action": [
+        {
+          "ActionCommand": {
+            "Protocol": "DMX",
+            "Universe": 1,
+            "Channel": 1,
+            "Value": 0
+          },
+          "ActionData": {}
+        }
+      ]
+    },
+    {
+      "ActionID": "RE-LAMPS-FULL",
+      "ActionName": "Both stage lamps full",
+      "Action": [
+        {
+          "ActionCommand": {
+            "Protocol": "DMX",
+            "Universe": 1,
+            "Channel": 2,
+            "Value": 255
+          },
+          "ActionData": {}
+        },
+        {
+          "ActionCommand": {
+            "Protocol": "DMX",
+            "Universe": 1,
+            "Channel": 3,
+            "Value": 255
+          },
+          "ActionData": {}
+        }
+      ]
+    },
+    {
+      "ActionID": "RE-AMBER-SPOT",
+      "ActionName": "Lamp 2 amber, the follow spot on Anna",
+      "Action": [
+        {
+          "ActionCommand": {
+            "Object": "FX2",
+            "Property": "Colour",
+            "Value": "FFB000"
+          },
+          "ActionData": {}
+        },
+        {
+          "ActionCommand": {
+            "Protocol": "DMX",
+            "Universe": 1,
+            "Channel": 4,
+            "Value": 255
+          },
+          "ActionData": {}
+        }
+      ]
+    },
+    {
+      "ActionID": "RE-SCRIM-HALF",
+      "ActionName": "The scrim to half",
+      "Action": [
+        {
+          "ActionCommand": {
+            "Protocol": "DMX",
+            "Universe": 1,
+            "Channel": 5,
+            "Value": 150
+          },
+          "ActionData": {}
+        }
+      ]
+    },
+    {
+      "ActionID": "RE-LAMPS-OFF",
+      "ActionName": "Stage lamps and spot off",
+      "Action": [
+        {
+          "ActionCommand": {
+            "Protocol": "DMX",
+            "Universe": 1,
+            "Channel": 2,
+            "Value": 0
+          },
+          "ActionData": {}
+        },
+        {
+          "ActionCommand": {
+            "Protocol": "DMX",
+            "Universe": 1,
+            "Channel": 3,
+            "Value": 0
+          },
+          "ActionData": {}
+        },
+        {
+          "ActionCommand": {
+            "Protocol": "DMX",
+            "Universe": 1,
+            "Channel": 4,
+            "Value": 0
+          },
+          "ActionData": {}
+        }
+      ]
+    },
+    {
+      "ActionID": "RE-SCRIM-FULL",
+      "ActionName": "The scrim full",
+      "Action": [
+        {
+          "ActionCommand": {
+            "Protocol": "DMX",
+            "Universe": 1,
+            "Channel": 5,
+            "Value": 255
+          },
+          "ActionData": {}
+        }
+      ]
+    },
+    {
+      "ActionID": "RE-FADE-BLACK",
+      "ActionName": "Fade to black",
+      "Action": [
+        {
+          "ActionCommand": {
+            "Protocol": "DMX",
+            "Universe": 1,
+            "Channel": 2,
+            "Value": 0
+          },
+          "ActionData": {}
+        },
+        {
+          "ActionCommand": {
+            "Protocol": "DMX",
+            "Universe": 1,
+            "Channel": 3,
+            "Value": 0
+          },
+          "ActionData": {}
+        },
+        {
+          "ActionCommand": {
+            "Protocol": "DMX",
+            "Universe": 1,
+            "Channel": 4,
+            "Value": 0
+          },
+          "ActionData": {}
+        },
+        {
+          "ActionCommand": {
+            "Protocol": "DMX",
+            "Universe": 1,
+            "Channel": 5,
+            "Value": 0
+          },
+          "ActionData": {}
+        }
+      ]
+    },
+    {
+      "ActionID": "RE-FINALE",
+      "ActionName": "All lamps full, confetti",
+      "Action": [
+        {
+          "ActionCommand": {
+            "Object": "FX2",
+            "Property": "Colour",
+            "Value": "FFFFFF"
+          },
+          "ActionData": {}
+        },
+        {
+          "ActionCommand": {
+            "Protocol": "DMX",
+            "Universe": 1,
+            "Channel": 2,
+            "Value": 255
+          },
+          "ActionData": {}
+        },
+        {
+          "ActionCommand": {
+            "Protocol": "DMX",
+            "Universe": 1,
+            "Channel": 3,
+            "Value": 255
+          },
+          "ActionData": {}
+        },
+        {
+          "ActionCommand": {
+            "Protocol": "DMX",
+            "Universe": 1,
+            "Channel": 4,
+            "Value": 255
+          },
+          "ActionData": {}
+        },
+        {
+          "ActionCommand": {
+            "Protocol": "DMX",
+            "Universe": 1,
+            "Channel": 6,
+            "Value": 255
+          },
+          "ActionData": {}
+        }
+      ]
+    },
+    {
+      "ActionID": "VE-DUSK",
+      "ActionName": "Dusk in the Square",
+      "Action": [
+        {
+          "ActionCommand": {
+            "Object": "Sky",
+            "Property": "Intensity",
+            "Value": 0.2
+          },
+          "ActionData": {}
+        }
+      ]
+    },
+    {
+      "ActionID": "VE-LAMP-30",
+      "ActionName": "Virtual lamp to 30%",
+      "Action": [
+        {
+          "ActionCommand": {
+            "Object": "VLamp1",
+            "Property": "Intensity",
+            "Value": 0.3
+          },
+          "ActionData": {}
+        }
+      ]
+    },
+    {
+      "ActionID": "VE-APPLAUSE",
+      "ActionName": "The applause of the Theatre heard in the Square",
+      "Action": [
+        {
+          "ActionCommand": {
+            "Object": "ApplauseSpeaker",
+            "Property": "Intensity",
+            "Value": 1.0
+          },
+          "ActionData": {}
+        }
+      ]
+    },
+    {
+      "ActionID": "VE-FIREFLIES",
+      "ActionName": "Fireflies around the lamp",
+      "Action": [
+        {
+          "ActionCommand": {
+            "Object": "ApplauseSpeaker",
+            "Property": "Intensity",
+            "Value": 0.0
+          },
+          "ActionData": {}
+        },
+        {
+          "ActionCommand": {
+            "Object": "Fireflies",
+            "Property": "Intensity",
+            "Value": 1.0
+          },
+          "ActionData": {}
+        }
+      ]
+    },
+    {
+      "ActionID": "VE-LAMP-FULL",
+      "ActionName": "Virtual lamp full",
+      "Action": [
+        {
+          "ActionCommand": {
+            "Object": "VLamp1",
+            "Property": "Intensity",
+            "Value": 1.0
+          },
+          "ActionData": {}
+        }
+      ]
+    },
+    {
+      "ActionID": "VE-PORTAL-FULL",
+      "ActionName": "The portal to the Theatre full",
+      "Action": [
+        {
+          "ActionCommand": {
+            "Object": "Portal",
+            "Property": "Intensity",
+            "Value": 1.0
+          },
+          "ActionData": {}
+        }
+      ]
+    },
+    {
+      "ActionID": "VE-LAMP-FADE",
+      "ActionName": "The virtual lamp and the portal fade",
+      "Action": [
+        {
+          "ActionCommand": {
+            "Object": "VLamp1",
+            "Property": "Intensity",
+            "Value": 0.0
+          },
+          "ActionData": {}
+        },
+        {
+          "ActionCommand": {
+            "Object": "Portal",
+            "Property": "Intensity",
+            "Value": 0.2
+          },
+          "ActionData": {}
+        }
+      ]
+    },
+    {
+      "ActionID": "VE-FIREWORKS",
+      "ActionName": "Fireworks over the Square",
+      "Action": [
+        {
+          "ActionCommand": {
+            "Object": "Fireworks",
+            "Property": "Intensity",
+            "Value": 1.0
+          },
+          "ActionData": {}
+        }
+      ]
+    }
+  ]
+}

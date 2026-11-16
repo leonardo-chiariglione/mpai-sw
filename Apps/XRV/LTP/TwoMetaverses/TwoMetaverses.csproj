@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- N-26: THE XRV-LTP DEMO ON TWO METAVERSES. Two M-Instances of MMM-TEC V2.2 (Theatre = the Real Environment, Square = the Virtual Environment), each driven by its own list of
+       time-stamped Process Actions; the Module 1XRV-LTP-V1.0-I01 through the workflow XRV-LTP.orch and the Controller API; the run is recorded and drawn into a video. -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Mpai.Xrv.TwoMetaverses</RootNamespace>
+    <AssemblyName>XrvTwoMetaverses</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VirtualVenue\Mpai.Xrv.VirtualVenue.csproj" />
+    <ProjectReference Include="..\..\..\..\AIF\ControllerApi\Mpai.Aif.Api.csproj" />
+    <ProjectReference Include="..\..\..\..\AIF\UserAgent\Ua\Mpai.Ua.csproj" />
+    <ProjectReference Include="..\..\..\..\AIF\UserAgent\Wdl\Mpai.Wdl.csproj" />
+    <ProjectReference Include="..\..\..\..\MMM\Server\Mpai.Mmm.Server.csproj" />
+    <ProjectReference Include="..\..\..\..\AIMs\XRV1\V1.0\Provider\Mpai.Xrv.csproj" />
+  </ItemGroup>
+
+</Project>

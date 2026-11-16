@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>XRV-LTP Stage</title>
+<!--
+  XRV-LTP - one show, two metaverses. Draws, from a recorded log (?log=<url>) or from a live state (?live=<url>),
+  what the M-Instance Theatre (Real Environment) and the M-Instance Square (Virtual Environment) contain, with a
+  caption panel under each. Replay API: window.showDuration, window.stageReady, window.setShowTime(t) -> Promise.
+  Everything drawn in replay is a function of t only (no wall clock, no Math.random).
+-->
+<style>
+  html, body { margin: 0; padding: 0; width: 1920px; height: 1080px; overflow: hidden; background: #0e1116; color: #e6e9ef;
+               font-family: 'Segoe UI', system-ui, Arial, sans-serif; }
+  #gl { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; display: block; }
+  #top { position: absolute; left: 0; top: 0; width: 1920px; height: 70px; box-sizing: border-box; padding: 0 30px;
+         display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #232b37;
+         background: linear-gradient(#151a23, #0e1116); }
+  #title { font-size: 32px; font-weight: 700; letter-spacing: .3px; }
+  #title .mpai { color: #8fb7ff; }
+  #clock { font: 600 40px Consolas, 'Cascadia Mono', monospace; color: #ffd27a; letter-spacing: 1px; }
+  .lab { position: absolute; top: 72px; height: 34px; font-size: 21px; font-weight: 600; color: #c9d1dd;
+         display: flex; align-items: center; gap: 10px; }
+  .lab .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .lab b { color: #fff; }
+  .frame { position: absolute; top: 106px; width: 940px; height: 600px; box-sizing: border-box; border-radius: 14px;
+           box-shadow: inset 0 0 0 1px rgba(255,255,255,.16); pointer-events: none; }
+  #cueLine { position: absolute; left: 13px; top: 716px; width: 1894px; height: 112px; box-sizing: border-box; border-radius: 14px; padding: 12px 26px;
+             background: #171c24; border: 1px solid #2a3442; }
+  #cueLine .l1 { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; }
+  #cueLine .cue { font-size: 36px; font-weight: 800; color: #fff; white-space: nowrap; }
+  #cueLine .from { font-size: 26px; font-weight: 600; color: #c9d2de; margin-left: 14px; }
+  #cueLine .tag { font: 600 19px Consolas, 'Cascadia Mono', monospace; color: #bfe3ff; background: #1f2d3d; border: 1px solid #36506b; border-radius: 8px; padding: 4px 10px; white-space: nowrap; }
+  #cueLine .cond { font-size: 26px; color: #eef2f7; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #cueLine .cond b { font-size: 15px; letter-spacing: 1.6px; text-transform: uppercase; color: #8a96a8; margin-right: 12px; }
+  .cap { position: absolute; top: 838px; width: 940px; height: 230px; box-sizing: border-box; border-radius: 14px;
+         padding: 16px 26px 14px 26px; background: #171c24; border: 1px solid #27303d; overflow: hidden; }
+  .cap .bar { position: absolute; left: 0; top: 0; bottom: 0; width: 7px; }
+  .cap .in { position: relative; height: 100%; display: flex; flex-direction: column; }
+  .cap .head { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 58px; }
+  .cap .cue { font-size: 44px; font-weight: 800; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cap .tag { font: 600 19px Consolas, 'Cascadia Mono', monospace; color: #bfe3ff; background: #1f2d3d; border: 1px solid #36506b;
+              border-radius: 8px; padding: 4px 12px; white-space: nowrap; }
+  .cap .k { font-size: 15px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: #8a96a8; margin-top: 8px; }
+  .cap .cond { font-size: 25px; line-height: 1.28; color: #eef2f7; max-height: 66px; overflow: hidden; }
+  .cap ul { margin: 2px 0 0 0; padding: 0; list-style: none; font-size: 24px; line-height: 1.32; color: #f3f5f8; }
+  .cap ul.two { column-count: 2; column-gap: 30px; }
+  .cap li { padding-left: 30px; position: relative; break-inside: avoid; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cap li::before { content: '\2192'; position: absolute; left: 0; color: #ffc040; font-weight: 700; }
+  .cap .note { margin-top: auto; font-size: 18px; color: #8691a1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #err { position: absolute; left: 40px; top: 300px; right: 40px; font: 20px Consolas, monospace; color: #ff8080; white-space: pre-wrap; }
+</style>
+<script type="importmap">
+{ "imports": { "three": "/lib/three/three.module.js", "three/addons/": "/lib/three/addons/" } }
+</script>
+</head>
+<body>
+<canvas id="gl" width="1920" height="1080"></canvas>
+<div id="top"><div id="title"><span class="mpai">XRV-LTP</span> · Real-Virtual Environments</div><div id="clock">--:--</div></div>
+<div class="lab" style="left:15px"><span class="dot" style="background:#ffb347"></span>Real Environment · <b>the Theatre</b></div>
+<div class="lab" style="left:969px"><span class="dot" style="background:#5fd7ff"></span>Virtual Environment · <b>the Square, a metaverse</b></div>
+<div class="frame" style="left:13px"></div>
+<div class="frame" style="left:967px"></div>
+<div id="cueLine"></div>
+<div class="cap" id="capTheatre" style="left:13px"><div class="bar" style="background:#ffb347"></div><div class="in"></div></div>
+<div class="cap" id="capSquare" style="left:967px"><div class="bar" style="background:#5fd7ff"></div><div class="in"></div></div>
+<div id="err"></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
+
+const D2R = Math.PI / 180;
+const SW = 940, SH = 600, LEFT = { x: 13, y: 106 }, RIGHT = { x: 967, y: 106 };
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const mod = (a, m) => ((a % m) + m) % m;
+// deterministic 0..1 from integers (no Math.random anywhere)
+function hash(i, k = 0) {
+  let x = Math.imul((i | 0) ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul((k | 0) + 0x632be5ab, 0xc2b2ae35);
+  x ^= x >>> 16; x = Math.imul(x, 0x7feb352d); x ^= x >>> 15; x = Math.imul(x, 0x846ca68b); x ^= x >>> 16;
+  return (x >>> 0) / 4294967296;
+}
+const P = (X, Y, h) => new THREE.Vector3(X, h, -Y);   // metres east, metres north, height -> three.js
+const hexColour = (s, dflt) => new THREE.Color('#' + (/^[0-9a-f]{6}$/i.test(s || '') ? s : dflt));
+const errBox = document.getElementById('err');
+const fail = e => { console.error(e); errBox.textContent += String(e && e.stack || e) + '\n'; window.stageError = String(e); };
+
+// ------------------------------------------------------------------ renderer and layout
+const canvas = document.getElementById('gl');
+const rr = (x, y, w, h, r) => `M${x + r},${y} H${x + w - r} A${r},${r} 0 0 1 ${x + w},${y + r} V${y + h - r} A${r},${r} 0 0 1 ${x + w - r},${y + h} H${x + r} A${r},${r} 0 0 1 ${x},${y + h - r} V${y + r} A${r},${r} 0 0 1 ${x + r},${y} Z`;
+canvas.style.clipPath = `path('${rr(LEFT.x, LEFT.y, SW, SH, 14)} ${rr(RIGHT.x, RIGHT.y, SW, SH, 14)}')`;
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(1920, 1080, false);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const rtSquare = new THREE.WebGLRenderTarget(512, 256, { samples: 4 });    // the Square, shown on the Theatre's scrim
+const rtTheatre = new THREE.WebGLRenderTarget(512, 288, { samples: 4 });   // the Theatre, shown in the Square's portal
+rtSquare.texture.colorSpace = THREE.SRGBColorSpace; rtTheatre.texture.colorSpace = THREE.SRGBColorSpace;
+const darkTex = new THREE.DataTexture(new Uint8Array([10, 14, 24, 255]), 1, 1); darkTex.needsUpdate = true;
+
+// ------------------------------------------------------------------ small textures
+function canvasTex(w, h, draw, srgb = true) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c); if (srgb) t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+const glowTex = canvasTex(64, 64, (g, w) => {
+  const r = g.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2);
+  r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.25, 'rgba(255,255,255,.75)'); r.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = r; g.fillRect(0, 0, w, w);
+});
+function labelSprite(text) {
+  const font = '600 46px "Segoe UI", Arial, sans-serif';
+  const m = document.createElement('canvas').getContext('2d'); m.font = font;
+  const w = Math.ceil(m.measureText(text).width) + 28, h = 64;
+  const tex = canvasTex(w, h, g => {
+    g.font = font; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+    g.lineWidth = 9; g.strokeStyle = 'rgba(0,0,0,.9)'; g.strokeText(text, w / 2, h / 2 + 2);
+    g.fillStyle = '#ffffff'; g.fillText(text, w / 2, h / 2 + 2);
+  });
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, depthWrite: false, transparent: true, toneMapped: false }));
+  const hh = 0.3; s.scale.set(hh * w / h, hh, 1); s.center.set(0.5, 0); s.renderOrder = 20; return s;
+}
+// a soft light beam (a cone whose apex is the lamp), additive, its opacity the lamp's level
+function beamMaterial() {
+  return new THREE.ShaderMaterial({
+    uniforms: { color: { value: new THREE.Color(1, 1, 1) }, opacity: { value: 0 } },
+    vertexShader: `varying float vH; varying vec3 vN; varying vec3 vV;
+      void main(){ vH = uv.y; vec4 mv = modelViewMatrix * vec4(position, 1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }`,
+    fragmentShader: `uniform vec3 color; uniform float opacity; varying float vH; varying vec3 vN; varying vec3 vV;
+      void main(){ float edge = pow(abs(dot(normalize(vN), normalize(vV))), 1.4); float a = opacity * mix(0.3, 1.0, vH) * smoothstep(0.0, 0.25, vH) * edge; gl_FragColor = vec4(color, a); }`,
+    transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
+  });
+}
+const unitBeamGeo = new THREE.CylinderGeometry(0.03, 1, 1, 40, 1, true);   // apex up (uv.y = 1 there); scaled (radius, length, radius)
+function aimBeam(mesh, from, to, radius) {
+  const d = new THREE.Vector3().subVectors(from, to), L = d.length();
+  mesh.position.copy(from).add(to).multiplyScalar(0.5);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize());
+  mesh.scale.set(radius, L, radius);
+}
+
+// ------------------------------------------------------------------ Personae (Rocketbox, T-pose; posing adapted from MMM/Viewer)
+const loader = new GLTFLoader(); const gltfs = new Map();
+const loadModel = file => { if (!gltfs.has(file)) gltfs.set(file, loader.loadAsync('/personae/' + file)); return gltfs.get(file); };
+const boneOf = (root, re) => { let b = null; root.traverse(o => { if (o.isBone && re.test(o.name)) b = o; }); return b; };
+const placeOf = (frame, bone) => frame.worldToLocal(bone.getWorldPosition(new THREE.Vector3()));
+// For each upper arm: the axis (in the frame of its parent) about which it swings sideways, and the angles that put it straight
+// down (elevation 0) and straight up (elevation 180); the T-pose it comes in is elevation 90 (angle 0).
+function prepareArms(frame) {
+  frame.updateMatrixWorld(true);
+  const arms = {};
+  for (const side of ['L', 'R']) {
+    const u = boneOf(frame, new RegExp(side + '.?UpperArm$', 'i')), f = boneOf(frame, new RegExp(side + '.?Forearm$', 'i'));
+    if (!u || !f) continue;
+    const rest = u.quaternion.clone(), pq = new THREE.Quaternion(); u.parent.getWorldQuaternion(pq);
+    const zw = new THREE.Vector3(0, 0, 1).transformDirection(frame.matrixWorld);
+    const axis = zw.applyQuaternion(pq.invert()).normalize(), q = new THREE.Quaternion();
+    const set = a => { u.quaternion.copy(rest).premultiply(q.setFromAxisAngle(axis, a * D2R)); u.updateMatrixWorld(true); };
+    const out = Math.sign(placeOf(frame, f).x - placeOf(frame, u).x) || 1;
+    const search = (want) => {
+      let best = { cost: 1e9, a: 0 };
+      for (let a = -180; a <= 180; a += 2) {
+        set(a); const s = placeOf(frame, u), e = placeOf(frame, f), len = e.distanceTo(s) || 1;
+        const cost = want === 'down' ? Math.abs((e.x - s.x) * out / len - 0.05) + ((s.y - e.y) / len < 0.8 ? 5 : 0)
+                                     : Math.abs((e.x - s.x) * out / len - 0.12) + ((e.y - s.y) / len < 0.8 ? 5 : 0);
+        if (cost < best.cost) best = { cost, a };
+      }
+      return best.a;
+    };
+    const down = search('down'); let up = search('up');
+    if (Math.sign(up) === Math.sign(down) && up !== 0) up -= 360 * Math.sign(up);   // through the T-pose, never through the body
+    arms[side] = { u, rest, axis, down, up, q: new THREE.Quaternion(), el: -1 };
+    u.quaternion.copy(rest);
+  }
+  frame.updateMatrixWorld(true);
+  return arms;
+}
+function setArm(arm, el) {
+  if (!arm) return; el = clamp(el, 0, 180); if (Math.abs(el - arm.el) < 0.01) return; arm.el = el;
+  const a = el <= 90 ? arm.down * (1 - el / 90) : arm.up * (el - 90) / 90;
+  arm.u.quaternion.copy(arm.rest).premultiply(arm.q.setFromAxisAngle(arm.axis, a * D2R));
+}
+const chairMat = new THREE.MeshStandardMaterial({ color: 0x7a5232, roughness: 0.7 });
+function makeChair() {
+  const c = new THREE.Group();
+  const box = (w, h, d, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), chairMat); m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true; c.add(m); };
+  box(0.48, 0.05, 0.46, 0, 0.415, 0.06);           // seat (the Persona faces +z; the back of the chair is at -z)
+  box(0.48, 0.5, 0.05, 0, 0.69, -0.18);            // back
+  for (const [x, z] of [[-0.21, -0.15], [0.21, -0.15], [-0.21, 0.27], [0.21, 0.27]]) box(0.04, 0.4, 0.04, x, 0.2, z);
+  c.visible = false; return c;
+}
+async function makePersona(id, file, isBot) {
+  const gltf = await loadModel(file);
+  const root = cloneSkinned(gltf.scene);
+  root.traverse(o => {
+    if (!o.isMesh) return;
+    o.castShadow = true; o.frustumCulled = false;
+    const mats = [].concat(o.material).map(m0 => {
+      const m = m0.clone();
+      if (/opacity/i.test(m.name)) { m.transparent = true; m.alphaTest = 0.35; m.side = THREE.DoubleSide; }
+      if (isBot && m.emissive) { m.emissive = new THREE.Color(0x30e8ff); m.emissiveIntensity = 0.55; }
+      return m;
+    });
+    o.material = Array.isArray(o.material) ? mats : mats[0];
+  });
+  root.updateMatrixWorld(true);
+  const arms = prepareArms(root);
+  for (const s of ['L', 'R']) setArm(arms[s], 0);
+  root.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(root, true); const h = box.max.y - box.min.y;
+  root.scale.setScalar(1.7 / h); root.updateMatrixWorld(true);
+  box.setFromObject(root, true); root.position.y -= box.min.y; const baseY = root.position.y;
+  const g = new THREE.Group(); g.add(root); g.updateMatrixWorld(true);
+  // the legs: standing and seated quaternions (thighs forward, shins down), computed once
+  const L = { lt: boneOf(root, /L.?Thigh$/i), rt: boneOf(root, /R.?Thigh$/i), lc: boneOf(root, /L.?Calf$/i), rc: boneOf(root, /R.?Calf$/i), lf: boneOf(root, /L.?Foot$/i), rf: boneOf(root, /R.?Foot$/i) };
+  const legs = [];
+  for (const k of ['lt', 'rt', 'lc', 'rc']) if (L[k]) legs.push({ b: L[k], stand: L[k].quaternion.clone(), sit: null });
+  const here = bone => g.worldToLocal(bone.getWorldPosition(new THREE.Vector3()));
+  for (const [t, c, f] of [[L.lt, L.lc, L.lf], [L.rt, L.rc, L.rf]]) {
+    if (!t || !c) continue;
+    t.rotateZ(-Math.PI / 2); g.updateMatrixWorld(true);
+    if (here(c).z - here(t).z < 0.1) { t.rotateZ(Math.PI); g.updateMatrixWorld(true); }
+    c.rotateZ(Math.PI / 2); g.updateMatrixWorld(true);
+    if (f && here(f).y > here(c).y - 0.15) { c.rotateZ(-Math.PI); g.updateMatrixWorld(true); }
+  }
+  const pelvis = boneOf(root, /Pelvis$/i) || L.lt; let drop = 0.45;
+  if (pelvis) { const py = here(pelvis).y; drop = clamp(py - 0.5, 0.3, 0.6); }
+  for (const l of legs) { l.sit = l.b.quaternion.clone(); l.b.quaternion.copy(l.stand); }
+  g.updateMatrixWorld(true);
+  const label = labelSprite(id); label.position.set(0, 1.98, 0); g.add(label);
+  const chair = makeChair(); g.add(chair);
+  let halo = null;
+  if (isBot) {
+    halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0x40f0ff, transparent: true, opacity: 0.45, blending: THREE.AdditiveBlending, depthWrite: false }));
+    halo.scale.set(1.5, 2.3, 1); halo.position.set(0, 0.95, -0.15); g.add(halo);
+  }
+  g.visible = false;
+  return { id, file, g, root, arms, legs, baseY, drop, label, chair, halo, sitting: false, lastYaw: 180 };
+}
+function setSit(p, on) {
+  if (p.sitting === on) return; p.sitting = on;
+  for (const l of p.legs) l.b.quaternion.copy(on ? l.sit : l.stand);
+  p.root.position.y = p.baseY - (on ? p.drop : 0);
+  p.chair.visible = on; p.label.position.y = on ? 1.55 : 1.98;
+}
+function updatePersona(p, th, floorY) {
+  p.g.visible = true;
+  p.g.position.set(+th.X || 0, floorY, -(+th.Y || 0));
+  const yaw = (th.Yaw ?? p.lastYaw); p.lastYaw = yaw;
+  p.g.rotation.y = Math.PI + yaw * D2R;               // the model faces +z: Yaw 0 looks north (-z), Yaw 180 looks south (to the audience)
+  const pose = th.Pose || {};
+  setSit(p, (+pose.HipFlexion || 0) > 45 || (+pose.KneeFlexion || 0) > 45);
+  setArm(p.arms.L, +pose.LeftArmElevation || 0); setArm(p.arms.R, +pose.RightArmElevation || 0);
+}
+
+// ------------------------------------------------------------------ THEATRE (Real Environment)
+function buildTheatre() {
+  const S = new THREE.Scene(); S.background = new THREE.Color(0x030305);
+  const T = { scene: S, personae: new Map(), items: new Map(), onStage: 'TheatreStage', stageTop: 1.0 };
+  T.hemi = new THREE.HemisphereLight(0x8a90a8, 0x201012, 0.05); S.add(T.hemi);
+  const std = (color, rough = 0.8, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: rough, ...extra });
+  const add = (geo, mat, x, y, z, shadow = true) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); if (shadow) { m.receiveShadow = true; m.castShadow = true; } S.add(m); return m; };
+  // stage: 14 x 6 x 1 m, warm wood boards; a lighter lip at the front
+  const boards = canvasTex(512, 256, (g, w, h) => { for (let i = 0; i < 16; i++) { const v = 0.85 + 0.3 * hash(i, 3); g.fillStyle = `rgb(${Math.round(150 * v)},${Math.round(98 * v)},${Math.round(58 * v)})`; g.fillRect(0, i * h / 16, w, h / 16 - 1.5); } });
+  boards.wrapS = boards.wrapT = THREE.RepeatWrapping; boards.repeat.set(2, 1.5);
+  const wood = std(0xffffff, 0.62, { map: boards });
+  add(new THREE.BoxGeometry(14, 1, 6), wood, 0, 0.5, 0);
+  add(new THREE.BoxGeometry(14.05, 0.08, 0.12), std(0xb07a44, 0.55), 0, 0.97, 3.0);
+  add(new THREE.BoxGeometry(14.1, 0.9, 0.05), std(0x2a1a12, 0.9), 0, 0.45, 3.03);
+  // hall: floor, walls, ceiling
+  add(new THREE.BoxGeometry(24, 0.1, 12), std(0x2b1518, 0.95), 0, -0.05, 9.0);
+  add(new THREE.BoxGeometry(24, 0.1, 7), std(0x140c0c, 0.95), 0, -0.06, 0);
+  const wallM = std(0x2a1d20, 0.9);
+  add(new THREE.BoxGeometry(24, 11, 0.2), std(0x0b0a0c, 0.95), 0, 5.5, -4.3);
+  add(new THREE.BoxGeometry(0.2, 11, 19), wallM, -11.9, 5.5, 5.2);
+  add(new THREE.BoxGeometry(0.2, 11, 19), wallM, 11.9, 5.5, 5.2);
+  add(new THREE.BoxGeometry(24, 0.2, 19), std(0x120c0e, 0.95), 0, 11, 5.2);
+  // the back curtain: deep red velvet in folds, across the whole stage
+  const folds = canvasTex(1024, 64, (g, w, h) => { for (let x = 0; x < w; x++) { const v = 0.55 + 0.45 * Math.pow(Math.abs(Math.sin(x / w * Math.PI * 26)), 0.6); g.fillStyle = `rgb(${Math.round(150 * v)},${Math.round(18 * v)},${Math.round(30 * v)})`; g.fillRect(x, 0, 1, h); } });
+  add(new THREE.PlaneGeometry(15, 8.5), std(0xffffff, 0.95, { map: folds, emissive: new THREE.Color(0x2a0408), emissiveIntensity: 0.6 }), 0, 5.0, -4.15, false);
+  // proscenium: columns, beam, valance, gold trim; side legs (drapes) on the stage
+  const red = std(0x5e0f18, 0.85), gold = std(0xc9a04a, 0.35, { metalness: 0.6, emissive: new THREE.Color(0x6a4a10), emissiveIntensity: 0.6 }), velvet = std(0x8e1424, 0.95, { map: folds, emissive: new THREE.Color(0x3a0610), emissiveIntensity: 0.5 });
+  add(new THREE.BoxGeometry(1.6, 10, 0.9), red, -7.9, 5, 3.25); add(new THREE.BoxGeometry(1.6, 10, 0.9), red, 7.9, 5, 3.25);
+  add(new THREE.BoxGeometry(17.4, 2.2, 0.9), red, 0, 9.0, 3.25);
+  add(new THREE.BoxGeometry(14.2, 0.08, 0.1), gold, 0, 7.9, 3.75);
+  add(new THREE.BoxGeometry(0.08, 6.9, 0.1), gold, -7.07, 4.45, 3.75); add(new THREE.BoxGeometry(0.08, 6.9, 0.1), gold, 7.07, 4.45, 3.75);
+  add(new THREE.BoxGeometry(14.2, 0.9, 0.25), velvet, 0, 7.45, 2.85);
+  for (const X of [-6.6, 6.6]) add(new THREE.BoxGeometry(1.1, 7.0, 0.25), velvet, X, 4.5, 1.2);
+  // seats: raked rows, centre aisle (the audience is heard, not drawn)
+  const seats = []; for (let r = 0; r < 8; r++) for (let c = 0; c < 35; c++) { const X = -10.54 + c * 0.62; if (Math.abs(X) < 0.75) continue; seats.push([X, -4.5 - r * 0.95, r * 0.16]); }
+  const seatM = std(0x701624, 0.85), cush = new THREE.InstancedMesh(new THREE.BoxGeometry(0.5, 0.14, 0.46), seatM, seats.length), back = new THREE.InstancedMesh(new THREE.BoxGeometry(0.5, 0.62, 0.09), seatM, seats.length);
+  const mtx = new THREE.Matrix4();
+  seats.forEach(([X, Y, h], i) => { cush.setMatrixAt(i, mtx.makeTranslation(X, h + 0.45, -Y)); back.setMatrixAt(i, mtx.makeTranslation(X, h + 0.78, -Y + 0.24)); });
+  cush.receiveShadow = back.receiveShadow = true; S.add(cush); S.add(back);
+  for (let r = 1; r < 8; r++) add(new THREE.BoxGeometry(23.6, r * 0.16, 0.95), std(0x24120f, 0.95), 0, r * 0.08, 4.5 + r * 0.95);
+  // scrim: 7 x 3.5 m in front of the back curtain, showing the performers of the Square (render to texture)
+  T.scrimMat = new THREE.MeshBasicMaterial({ map: rtSquare.texture, transparent: true, opacity: 0.93, toneMapped: false });
+  T.scrim = add(new THREE.PlaneGeometry(7, 3.5), T.scrimMat, 0, 4.1, -3.7, false);
+  add(new THREE.BoxGeometry(7.3, 0.12, 0.12), std(0x111111), 0, 5.9, -3.7, false);
+  T.scrimLight = new THREE.PointLight(0x9fc4ff, 0, 0, 1); T.scrimLight.position.set(0, 3, -1.2); S.add(T.scrimLight);
+  // lamps FX1, FX2: fixtures 6 m above the stage, spot lights aimed at the stage centre, visible beams
+  T.fx = {};
+  for (const [id, X, Y] of [['FX1', -3, 1], ['FX2', 3, 1]]) {
+    const from = P(X, Y, 7), to = new THREE.Vector3(0, 1, 0);
+    const body = add(new THREE.CylinderGeometry(0.22, 0.28, 0.6, 16), std(0x151515, 0.5), from.x, from.y + 0.1, from.z, false);
+    body.lookAt(to); body.rotateX(Math.PI / 2);
+    const lensM = new THREE.MeshBasicMaterial({ color: 0x222222 }); const lens = new THREE.Mesh(new THREE.CircleGeometry(0.22, 20), lensM);
+    lens.position.copy(from).addScaledVector(new THREE.Vector3().subVectors(to, from).normalize(), 0.42); lens.lookAt(to); S.add(lens);
+    const light = new THREE.SpotLight(0xffffff, 0, 0, 0.42, 0.55, 1); light.position.copy(from); light.target.position.copy(to);
+    light.castShadow = true; light.shadow.mapSize.set(1024, 1024); light.shadow.bias = -0.0004; S.add(light); S.add(light.target);
+    const beam = new THREE.Mesh(unitBeamGeo, beamMaterial()); const end = from.clone().lerp(to, 0.93); aimBeam(beam, from, end, from.distanceTo(end) * Math.tan(0.42)); beam.renderOrder = 5; S.add(beam);
+    T.fx[id] = { light, beam, lensM };
+  }
+  // follow spot from the hall ceiling, aimed at Anna
+  T.spot = new THREE.SpotLight(0xfff6e8, 0, 0, 0.075, 0.35, 1); T.spot.position.copy(P(7.6, -6.5, 8.4)); T.spot.castShadow = true; T.spot.shadow.mapSize.set(512, 512);
+  S.add(T.spot); S.add(T.spot.target);
+  T.spotBeam = new THREE.Mesh(unitBeamGeo, beamMaterial()); T.spotBeam.renderOrder = 5; S.add(T.spotBeam);
+  add(new THREE.BoxGeometry(0.5, 0.35, 0.7), std(0x111111), 7.9, 8.55, 6.8, false);
+  // house lights: wall sconces and ceiling lights over the seats
+  T.house = []; T.sconces = [];
+  for (const [X, Y] of [[-5, -5], [5, -5], [-5, -9], [5, -9]]) { const l = new THREE.PointLight(0xffd9a8, 0, 0, 1); l.position.copy(P(X, Y, 8)); S.add(l); T.house.push(l); }
+  const sconceM = new THREE.MeshBasicMaterial({ color: 0x2a2018 });
+  for (const X of [-9.25, 9.25]) for (const Y of [-4, -7, -10]) { const m = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 8), sconceM); m.position.copy(P(X, Y, 3.6)); S.add(m); }
+  T.sconceM = sconceM;
+  // confetti: instanced quads, deterministic
+  T.confN = 700;
+  T.confetti = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.11, 0.07), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, toneMapped: false }), T.confN);
+  const pal = [0xff3b5c, 0xffd23f, 0x3bd16f, 0x3fa9ff, 0xff7ae0, 0xffffff, 0xff8c1a];
+  for (let i = 0; i < T.confN; i++) T.confetti.setColorAt(i, new THREE.Color(pal[Math.floor(hash(i, 7) * pal.length)]));
+  T.confetti.count = 0; T.confetti.frustumCulled = false; S.add(T.confetti);
+  // cameras: the screen (from the middle of the hall) and the one whose picture goes to the Square's portal
+  T.cam = new THREE.PerspectiveCamera(40, SW / SH, 0.1, 200); T.cam.position.copy(P(0, -11, 2.6)); T.cam.lookAt(0, 2.7, -1);   // the stage fills the picture, from edge to edge
+  T.rtCam = new THREE.PerspectiveCamera(28, 512 / 288, 0.1, 200); T.rtCam.position.copy(P(-0.8, -8, 2.0)); T.rtCam.lookAt(-0.8, 1.9, -1);
+  return T;
+}
+
+// ------------------------------------------------------------------ SQUARE (Virtual Environment)
+function buildSquare() {
+  const S = new THREE.Scene();
+  const Q = { scene: S, personae: new Map(), items: new Map(), onStage: 'SquareStage', stageTop: 0.4 };
+  const std = (color, rough = 0.8, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: rough, ...extra });
+  const add = (geo, mat, x, y, z, shadow = true, parent = S) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); if (shadow) { m.receiveShadow = true; m.castShadow = true; } parent.add(m); return m; };
+  // sky dome with a day/dusk gradient, stars
+  Q.skyU = { top: { value: new THREE.Color() }, mid: { value: new THREE.Color() }, bottom: { value: new THREE.Color(0x2a2a30) } };
+  S.add(new THREE.Mesh(new THREE.SphereGeometry(220, 32, 16), new THREE.ShaderMaterial({
+    uniforms: Q.skyU, side: THREE.BackSide, depthWrite: false,
+    vertexShader: `varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: `uniform vec3 top; uniform vec3 mid; uniform vec3 bottom; varying vec3 vP;
+      void main(){ float h = normalize(vP).y; vec3 c = h > 0.0 ? mix(mid, top, pow(clamp(h * 1.6, 0.0, 1.0), 0.55)) : bottom; gl_FragColor = vec4(c, 1.0); }`,
+  })));
+  const starPos = []; for (let i = 0; i < 500; i++) { const a = hash(i, 1) * Math.PI * 2, e = 0.12 + hash(i, 2) * 1.3; starPos.push(200 * Math.cos(e) * Math.cos(a), 200 * Math.sin(e), 200 * Math.cos(e) * Math.sin(a)); }
+  const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
+  Q.starM = new THREE.PointsMaterial({ color: 0xffffff, size: 2.4, sizeAttenuation: false, transparent: true, opacity: 0, depthWrite: false, toneMapped: false });
+  S.add(new THREE.Points(sg, Q.starM));
+  Q.hemi = new THREE.HemisphereLight(0xbfd8ff, 0x6a5a48, 1); S.add(Q.hemi);
+  Q.sun = new THREE.DirectionalLight(0xffe2b8, 2); Q.sun.position.set(-18, 22, 8); Q.sun.castShadow = true;
+  Q.sun.shadow.mapSize.set(1024, 1024); Object.assign(Q.sun.shadow.camera, { left: -14, right: 14, top: 14, bottom: -14, near: 1, far: 70 }); Q.sun.shadow.bias = -0.0005; S.add(Q.sun);
+  // paving
+  const pav = canvasTex(256, 256, (g, w) => {
+    g.fillStyle = '#a79a86'; g.fillRect(0, 0, w, w);
+    for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) { const v = 150 + Math.floor(hash(x + y * 8, 3) * 30); g.fillStyle = `rgb(${v + 12},${v + 4},${v - 10})`; g.fillRect(x * 32 + 2 + (y % 2) * 16, y * 32 + 2, 28, 28); }
+  });
+  pav.wrapS = pav.wrapT = THREE.RepeatWrapping; pav.repeat.set(24, 24);
+  const ground = add(new THREE.PlaneGeometry(90, 90), std(0xffffff, 0.9, { map: pav }), 0, 0, 0); ground.rotation.x = -Math.PI / 2; ground.castShadow = false;
+  // the round stage, light stone
+  add(new THREE.CylinderGeometry(4, 4, 0.4, 64), std(0xe2dacb, 0.6), 0, 0.2, 0);
+  add(new THREE.CylinderGeometry(4.35, 4.35, 0.18, 64), std(0xc9bfae, 0.7), 0, 0.09, 0);
+  // building facades around the plaza; windows light up at dusk
+  const wall = canvasTex(256, 256, (g) => { g.fillStyle = '#e8e2d8'; g.fillRect(0, 0, 256, 256); g.fillStyle = '#4a5260'; for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++) g.fillRect(18 + x * 62, 20 + y * 60, 34, 40); });
+  const wins = canvasTex(256, 256, (g) => { g.fillStyle = '#000'; g.fillRect(0, 0, 256, 256); for (let y = 0; y < 4; y++) for (let x = 0; x < 4; x++) if (hash(x + 4 * y, 11) > 0.35) { g.fillStyle = hash(x + 4 * y, 12) > 0.5 ? '#ffd28a' : '#ffbe6a'; g.fillRect(18 + x * 62, 20 + y * 60, 34, 40); } });
+  wall.wrapS = wall.wrapT = wins.wrapS = wins.wrapT = THREE.RepeatWrapping;
+  Q.windowMats = [];
+  for (const [X, Y, w, d, h, c] of [[-12, 14, 8, 6, 8, 0xd09060], [-3.5, 16, 8, 6, 9, 0xddc9a0], [5, 15, 8, 6, 8, 0xc07050], [13, 13, 7, 6, 7, 0xe2d2b2],
+                                     [-17, 4, 6, 10, 9, 0xaab89f], [-18, -9, 6, 10, 11, 0xd8a87a], [17, 4, 6, 10, 10, 0xc9b49a], [18, -9, 6, 10, 8, 0xa0aabb]]) {
+    const mw = wall.clone(), mm = wins.clone(); mw.repeat.set(w / 4, h / 4); mm.repeat.set(w / 4, h / 4); mw.needsUpdate = mm.needsUpdate = true;
+    const m = std(c, 0.85, { map: mw, emissiveMap: mm, emissive: new THREE.Color(0xffd9a0), emissiveIntensity: 0 }); Q.windowMats.push(m);
+    add(new THREE.BoxGeometry(w, h, d), m, X, h / 2, -Y);
+    add(new THREE.BoxGeometry(w + 0.4, 0.5, d + 0.4), std(0x6a4a3a), X, h + 0.25, -Y);
+  }
+  // trees
+  for (const [X, Y, s] of [[-7, -3.5, 1], [7.2, -3.5, 1.05], [-10, -8, 1.2], [10, -8, 1.15], [-6.5, 5, 1.3], [6.5, 5.5, 1.25]]) {
+    add(new THREE.CylinderGeometry(0.12 * s, 0.18 * s, 2.2 * s, 10), std(0x5a3d26), X, 1.1 * s, -Y);
+    add(new THREE.SphereGeometry(1.3 * s, 16, 12), std(0x3f7a3a, 0.9), X, 2.9 * s, -Y);
+    add(new THREE.SphereGeometry(0.9 * s, 14, 10), std(0x4b8a40, 0.9), X + 0.5 * s, 3.5 * s, -Y + 0.3);
+  }
+  // string lights across the plaza
+  const bulbs = []; const wire = [];
+  const strand = (a, b, sag) => { const n = Math.ceil(a.distanceTo(b) / 0.55); for (let i = 0; i <= n; i++) { const u = i / n; const p = a.clone().lerp(b, u); p.y -= sag * 4 * u * (1 - u); bulbs.push(p); wire.push(p); } wire.push(null); };
+  for (const [X, Y] of [[-9, -1.5], [9, -1.5], [-6, -6.5], [6, -6.5]]) add(new THREE.CylinderGeometry(0.06, 0.08, 5.4, 8), std(0x222222), X, 2.7, -Y);
+  strand(P(-9, -1.5, 5.3), P(9, -1.5, 5.3), 1.0); strand(P(-9, -1.5, 5.3), P(-6, -6.5, 5.3), 0.6); strand(P(9, -1.5, 5.3), P(6, -6.5, 5.3), 0.6); strand(P(-6, -6.5, 5.3), P(6, -6.5, 5.3), 0.7);
+  Q.bulbM = new THREE.MeshBasicMaterial({ color: 0xffd890, toneMapped: false });
+  const bm = new THREE.InstancedMesh(new THREE.SphereGeometry(0.055, 8, 6), Q.bulbM, bulbs.length);
+  bulbs.forEach((p, i) => bm.setMatrixAt(i, new THREE.Matrix4().makeTranslation(p.x, p.y, p.z))); S.add(bm);
+  { const pts = []; for (let i = 0; i + 1 < wire.length; i++) if (wire[i] && wire[i + 1]) pts.push(wire[i], wire[i + 1]); S.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0x222222 }))); }
+  // VLamp1: an ornate lamp post on the stage
+  Q.lamp = new THREE.Group(); S.add(Q.lamp);
+  const iron = std(0x1d2a24, 0.45, { metalness: 0.5 });
+  add(new THREE.CylinderGeometry(0.22, 0.28, 0.3, 12), iron, 0, 0.15, 0, true, Q.lamp);
+  add(new THREE.CylinderGeometry(0.06, 0.09, 3.2, 10), iron, 0, 1.7, 0, true, Q.lamp);
+  add(new THREE.TorusGeometry(0.16, 0.03, 8, 20), iron, 0, 3.3, 0, false, Q.lamp).rotation.x = Math.PI / 2;
+  add(new THREE.ConeGeometry(0.26, 0.22, 12), iron, 0, 3.86, 0, false, Q.lamp);
+  Q.globeM = new THREE.MeshBasicMaterial({ color: 0x333333, toneMapped: false });
+  add(new THREE.SphereGeometry(0.24, 20, 14), Q.globeM, 0, 3.55, 0, false, Q.lamp);
+  Q.lampHalo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xffe0a0, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+  Q.lampHalo.position.set(0, 3.55, 0); Q.lampHalo.scale.set(2.4, 2.4, 1); Q.lamp.add(Q.lampHalo);
+  Q.lampLight = new THREE.PointLight(0xffe0a0, 0, 0, 1); Q.lampLight.position.set(0, 3.5, 0); Q.lamp.add(Q.lampLight);
+  // Portal: an ornate frame at the back of the stage that shows the Theatre (render to texture)
+  Q.portal = new THREE.Group(); Q.portal.position.copy(P(0, 2.2, 0.4)); S.add(Q.portal);
+  const pg = std(0xd0a84c, 0.32, { metalness: 0.7, emissive: new THREE.Color(0x3a2a08), emissiveIntensity: 0.4 });
+  add(new THREE.BoxGeometry(0.35, 3.5, 0.3), pg, -2.83, 1.75, 0, true, Q.portal); add(new THREE.BoxGeometry(0.35, 3.5, 0.3), pg, 2.83, 1.75, 0, true, Q.portal);
+  add(new THREE.BoxGeometry(6.0, 0.32, 0.3), pg, 0, 0.16, 0, true, Q.portal); add(new THREE.BoxGeometry(6.0, 0.32, 0.3), pg, 0, 3.34, 0, true, Q.portal);
+  add(new THREE.TorusGeometry(1.3, 0.11, 10, 32, Math.PI), pg, 0, 3.5, 0, true, Q.portal);
+  add(new THREE.TorusGeometry(0.7, 0.07, 8, 24, Math.PI), pg, 0, 3.5, 0.02, false, Q.portal);
+  for (const x of [-2.83, 2.83]) { add(new THREE.SphereGeometry(0.22, 14, 10), pg, x, 3.72, 0, false, Q.portal); add(new THREE.ConeGeometry(0.1, 0.4, 10), pg, x, 4.1, 0, false, Q.portal); }
+  add(new THREE.SphereGeometry(0.2, 14, 10), pg, 0, 4.92, 0, false, Q.portal);
+  Q.portalMat = new THREE.MeshBasicMaterial({ map: rtTheatre.texture, toneMapped: false });
+  add(new THREE.PlaneGeometry(5.32, 2.86), Q.portalMat, 0, 1.75, 0.02, false, Q.portal);
+  Q.portalLight = new THREE.PointLight(0xffd0a0, 0, 0, 1); Q.portalLight.position.set(0, 1.8, 1.5); Q.portal.add(Q.portalLight);
+  // fireflies
+  Q.ffN = 150; Q.ffGeo = new THREE.BufferGeometry();
+  Q.ffGeo.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(Q.ffN * 3), 3));
+  Q.ffGeo.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(Q.ffN * 3), 3));
+  const ff = new THREE.Points(Q.ffGeo, new THREE.PointsMaterial({ size: 0.22, map: glowTex, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
+  ff.frustumCulled = false; S.add(ff);
+  // fireworks
+  Q.fwSlots = 6; Q.fwPer = 150; const fwN = Q.fwSlots * Q.fwPer; Q.fwGeo = new THREE.BufferGeometry();
+  Q.fwGeo.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(fwN * 3), 3));
+  Q.fwGeo.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(fwN * 3), 3));
+  const fw = new THREE.Points(Q.fwGeo, new THREE.PointsMaterial({ size: 1.1, map: glowTex, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
+  fw.frustumCulled = false; S.add(fw);
+  // applause heard in the square: sound-wave arcs and a small speaker
+  Q.applause = new THREE.Group(); S.add(Q.applause); Q.arcs = [];
+  add(new THREE.BoxGeometry(0.35, 0.5, 0.3), std(0x202226, 0.5), 0, 0.25, 0, true, Q.applause);
+  const arcGeo = new THREE.TorusGeometry(1, 0.045, 6, 40, Math.PI * 0.55); arcGeo.rotateZ(-Math.PI * 0.275);
+  for (let side = 0; side < 2; side++) for (let k = 0; k < 4; k++) {
+    const m = new THREE.Mesh(arcGeo, new THREE.MeshBasicMaterial({ color: 0xffe08a, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
+    m.position.set(0, 0.45, 0); m.rotation.z = side ? Math.PI : 0; Q.applause.add(m); Q.arcs.push({ m, k });
+  }
+  Q.applauseLabel = labelSprite('applause from the Theatre'); Q.applauseLabel.position.set(0, 1.9, 0); Q.applauseLabel.scale.multiplyScalar(0.8); Q.applause.add(Q.applauseLabel);
+  Q.applause.visible = false;
+  // cameras: the screen (from the plaza) and the one whose picture goes to the Theatre's scrim
+  Q.cam = new THREE.PerspectiveCamera(50, SW / SH, 0.1, 400); Q.cam.position.copy(P(0, -13, 2.8)); Q.cam.lookAt(0, 3.3, 0);
+  Q.rtCam = new THREE.PerspectiveCamera(22, 2, 5.0, 400); Q.rtCam.position.copy(P(0, -9, 1.6)); Q.rtCam.lookAt(0, 1.4, 0);   // near 5 m: the guests in the Plaza are not in the picture
+  return Q;
+}
+
+const TH = buildTheatre(), SQ = buildSquare();
+window.__stage = { TH, SQ };   // for inspection only
+const glowItem = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.6 });
+
+// ------------------------------------------------------------------ applying one moment
+// th: Map id -> Thing (already interpolated); time: seconds (show time in replay, wall clock in live); onset: Map id -> time an effect went on
+function floorOf(W, at) { return at === W.onStage ? W.stageTop : 0; }
+function syncPersonae(W, things) {
+  const seen = new Set();
+  for (const th of things.values()) {
+    if (th.Kind !== 'Persona') continue;
+    const file = th.Model || 'catalogue/Female_Adult_01.glb', key = th.ID + '|' + file;
+    let p = W.personae.get(key);
+    if (!p) { ensurePersona(W, th.ID, file); continue; }
+    if (p === 'loading') continue;
+    seen.add(key); updatePersona(p, th, floorOf(W, th.At));
+  }
+  for (const [key, p] of W.personae) if (p !== 'loading' && !seen.has(key)) p.g.visible = false;
+}
+function ensurePersona(W, id, file) {
+  const key = id + '|' + file; if (W.personae.has(key)) return Promise.resolve(W.personae.get(key));
+  W.personae.set(key, 'loading');
+  return makePersona(id, file, /^bot/i.test(id)).then(p => { W.personae.set(key, p); W.scene.add(p.g); return p; }).catch(e => { fail('model ' + file + ': ' + e); });
+}
+function syncItems(W, things, known) {
+  const seen = new Set();
+  for (const th of things.values()) {
+    if (th.Kind === 'Persona' || th.Kind === 'Location' || th.Kind === 'Audio' || known.has(th.ID) || th.ID === 'Console') continue;
+    let m = W.items.get(th.ID);
+    if (!m) { m = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), glowItem); m.castShadow = true; W.scene.add(m); W.items.set(th.ID, m); }
+    m.visible = true; m.position.set(+th.X || 0, floorOf(W, th.At) + 0.2, -(+th.Y || 0)); seen.add(th.ID);
+  }
+  for (const [id, m] of W.items) if (!seen.has(id)) m.visible = false;
+}
+const level = (th, dflt) => th ? (typeof th.Intensity === 'number' ? clamp(th.Intensity) : dflt) : 0;
+const KNOWN_TH = new Set(['FX1', 'FX2', 'Spot', 'House', 'Scrim', 'Confetti', 'TheatreStage']);
+const KNOWN_SQ = new Set(['Sky', 'VLamp1', 'Portal', 'Fireflies', 'Fireworks', 'ApplauseSpeaker', 'SquareStage']);
+
+function applyTheatre(things, time, onset) {
+  const T = TH;
+  syncPersonae(T, things); syncItems(T, things, KNOWN_TH);
+  for (const id of ['FX1', 'FX2']) {
+    const th = things.get(id), I = level(th, 1), col = hexColour(th && th.Colour, 'FFF2D8'), f = T.fx[id];
+    f.light.color.copy(col); f.light.intensity = 70 * I;
+    f.beam.material.uniforms.color.value.copy(col); f.beam.material.uniforms.opacity.value = 0.33 * I;
+    f.lensM.color.copy(col).multiplyScalar(0.12 + 0.88 * I);
+  }
+  { // follow spot on Anna
+    const th = things.get('Spot'), I = level(th, 1), col = hexColour(th && th.Colour, 'FFF6E8');
+    let target = new THREE.Vector3(0, 2, 0);
+    const anna = [...T.personae.values()].find(p => p !== 'loading' && p.id === 'Anna' && p.g.visible);
+    if (anna) target = anna.g.position.clone().add(new THREE.Vector3(0, anna.sitting ? 0.8 : 1.1, 0));
+    T.spot.target.position.copy(target); T.spot.color.copy(col); T.spot.intensity = 260 * I;
+    const from = T.spot.position.clone(); aimBeam(T.spotBeam, from, target.clone().add(new THREE.Vector3(0, -0.9, 0)), 0.9);
+    T.spotBeam.material.uniforms.color.value.copy(col); T.spotBeam.material.uniforms.opacity.value = 0.28 * I; T.spotBeam.visible = I > 0.001;
+  }
+  { const I = level(things.get('House'), 1); for (const l of T.house) l.intensity = 9 * I; T.hemi.intensity = 0.16 + 0.4 * I; T.sconceM.color.setRGB(0.16 + 1.0 * I, 0.12 + 0.82 * I, 0.08 + 0.5 * I); }
+  { const th = things.get('Scrim'), I = th ? level(th, 1) : 0, b = 0.12 + 0.88 * I; T.scrimMat.color.setRGB(b, b, b); T.scrimMat.opacity = 0.55 + 0.4 * I; T.scrimLight.intensity = 2.5 * b; }
+  { // confetti
+    const I = level(things.get('Confetti'), 0), on = onset.get('Confetti');
+    if (I <= 0.001 || on == null) T.confetti.count = 0;
+    else {
+      const age = Math.max(0, time - on), n = Math.round(T.confN * clamp(I)), m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), s = new THREE.Vector3(1, 1, 1), p = new THREE.Vector3();
+      for (let i = 0; i < n; i++) {
+        const X = -8 + 16 * hash(i, 1), Y = 2.5 - 12 * hash(i, 2), v = 0.8 + 0.7 * hash(i, 3), y0 = 4.5 + 9 * hash(i, 4), ph = hash(i, 5) * 6.283;
+        const floor = (Math.abs(X) < 5 && Y > -2.5) ? 1 : 0;
+        const y = floor + mod(y0 - v * age - floor, 13.5 - floor);
+        p.set(X + 0.35 * Math.sin(age * 1.7 + ph), y, -Y + 0.25 * Math.cos(age * 1.3 + ph));
+        e.set(age * (2 + 3 * hash(i, 6)) + ph, age * 1.9 + ph * 2, age * 0.7); q.setFromEuler(e);
+        T.confetti.setMatrixAt(i, m.compose(p, q, s));
+      }
+      T.confetti.count = n; T.confetti.instanceMatrix.needsUpdate = true;
+    }
+  }
+}
+
+function applySquare(things, time, onset) {
+  const Q = SQ;
+  syncPersonae(Q, things); syncItems(Q, things, KNOWN_SQ);
+  { // sky: 1 = late-afternoon blue, 0.2 = dusk
+    const L = things.has('Sky') ? level(things.get('Sky'), 1) : 1, m = clamp((L - 0.2) / 0.8);
+    const lerpC = (a, b) => new THREE.Color(a).lerp(new THREE.Color(b), m);
+    Q.skyU.top.value.copy(lerpC(0x0b1440, 0x2f6fc8)); Q.skyU.mid.value.copy(lerpC(0xf0884a, 0xbfe0f6)); Q.skyU.bottom.value.copy(lerpC(0x1a1420, 0x8a9aa8));
+    Q.starM.opacity = clamp((0.55 - L) / 0.3);
+    Q.hemi.color.copy(lerpC(0x5a5a9a, 0xcfe2ff)); Q.hemi.intensity = 0.25 + 1.0 * L; Q.sun.intensity = 2.4 * L; Q.sun.color.copy(lerpC(0xff9a5a, 0xfff0d8));
+    for (const wm of Q.windowMats) wm.emissiveIntensity = 1.3 * clamp((0.7 - L) / 0.5);
+    const b = 0.35 + 0.9 * clamp((0.8 - L) / 0.6); Q.bulbM.color.setRGB(1.0 * b, 0.85 * b, 0.55 * b);
+    renderer.toneMappingExposure = 1.15;   // (kept constant; the sky colours carry the dusk)
+  }
+  { const th = things.get('VLamp1'), I = level(th, 1), col = hexColour(th && th.Colour, 'FFE0A0');
+    if (th && typeof th.X === 'number') Q.lamp.position.copy(P(th.X, th.Y || 0, floorOf(Q, th.At || 'SquareStage'))); else Q.lamp.position.copy(P(2, 0.5, 0.4));
+    Q.lamp.visible = !!th;
+    Q.globeM.color.copy(col).multiplyScalar(0.18 + 1.1 * I); Q.lampHalo.material.color.copy(col); Q.lampHalo.material.opacity = 0.9 * I; Q.lampLight.color.copy(col); Q.lampLight.intensity = 14 * I; }
+  { const th = things.get('Portal'), I = th ? level(th, 1) : 0, b = 0.25 + 0.75 * I; Q.portalMat.color.setRGB(b, b, b); Q.portalLight.intensity = 4 * b; }
+  { // fireflies around the lamp and in front of the portal
+    const I = level(things.get('Fireflies'), 0), pos = Q.ffGeo.attributes.position, col = Q.ffGeo.attributes.color, lp = Q.lamp.position;
+    for (let i = 0; i < Q.ffN; i++) {
+      let cx, cy, cz, rx, ry, rz;
+      if (i % 2 === 0) { cx = lp.x; cy = 2.6; cz = lp.z + 0.3; rx = 1.6; ry = 1.2; rz = 1.2; } else { cx = 0; cy = 1.9; cz = -1.0; rx = 3.4; ry = 1.4; rz = 1.0; }
+      const a = hash(i, 21) * 6.283, b2 = hash(i, 22) * 6.283, w1 = 0.25 + 0.35 * hash(i, 23), w2 = 0.2 + 0.3 * hash(i, 24);
+      pos.setXYZ(i, cx + rx * (0.6 * Math.sin(time * w1 + a) + 0.4 * Math.sin(time * 1.7 * w2 + b2)),
+                    cy + ry * (0.6 * Math.sin(time * w2 + b2) + 0.4 * Math.cos(time * 1.3 * w1 + a)),
+                    cz + rz * Math.cos(time * w1 * 0.8 + b2));
+      const fl = I * (0.45 + 0.55 * Math.max(0, Math.sin(time * (2 + 3 * hash(i, 25)) + a)));
+      col.setXYZ(i, 0.85 * fl, 1.0 * fl, 0.35 * fl);
+    }
+    pos.needsUpdate = col.needsUpdate = true;
+  }
+  { // fireworks: a seeded burst every 0.7 s from the moment they went on, each lives 2.4 s
+    const I = level(things.get('Fireworks'), 0), on = onset.get('Fireworks'), pos = Q.fwGeo.attributes.position, col = Q.fwGeo.attributes.color;
+    col.array.fill(0);
+    if (I > 0.001 && on != null) {
+      const age0 = time - on, LIFE = 2.4, EVERY = 0.7;
+      const pal = [[1, 0.15, 0.2], [1, 0.8, 0.1], [0.2, 1, 0.35], [0.25, 0.55, 1], [1, 0.3, 1], [1, 1, 1], [1, 0.5, 0.05]];
+      for (let k = Math.max(0, Math.floor((age0 - LIFE) / EVERY) + 1); k <= Math.floor(age0 / EVERY); k++) {
+        const age = age0 - k * EVERY; if (age < 0 || age >= LIFE) continue;
+        const slot = k % Q.fwSlots, c = P(-16 + 32 * hash(k, 31), 20 + 8 * hash(k, 32), 12.5 + 5 * hash(k, 33)), pc = pal[Math.floor(hash(k, 34) * pal.length)];
+        const fade = Math.pow(1 - age / LIFE, 1.6) * I * (age < 0.08 ? 2 : 1), r = (1 - Math.exp(-age * 1.8)) / 1.8;
+        for (let j = 0; j < Q.fwPer; j++) {
+          const n = slot * Q.fwPer + j, z = 2 * hash(k * 997 + j, 35) - 1, phi = hash(k * 997 + j, 36) * 6.283, sr = Math.sqrt(1 - z * z), sp = 7 + 3 * hash(k * 997 + j, 37);
+          pos.setXYZ(n, c.x + sr * Math.cos(phi) * sp * r, c.y + z * sp * r - 1.1 * age * age, c.z + sr * Math.sin(phi) * sp * r);
+          const tw = 0.7 + 0.3 * Math.sin(age * 25 + j);
+          col.setXYZ(n, pc[0] * fade * tw, pc[1] * fade * tw, pc[2] * fade * tw);
+        }
+      }
+    }
+    pos.needsUpdate = col.needsUpdate = true;
+  }
+  { // applause from the Theatre
+    const th = things.get('ApplauseSpeaker'), I = level(th, 0);
+    Q.applause.visible = I > 0.001;
+    if (Q.applause.visible) {
+      Q.applause.position.copy(th && typeof th.X === 'number' ? P(th.X, th.Y || 0, floorOf(Q, th.At)) : P(-3.2, -1.2, 0.4));
+      for (const { m, k } of Q.arcs) { const ph = mod(time * 0.9 + k / 4, 1); m.scale.setScalar(0.3 + 1.3 * ph); m.material.opacity = I * (1 - ph) * 0.95; }
+      Q.applauseLabel.material.opacity = I;
+    }
+  }
+}
+
+// ------------------------------------------------------------------ drawing both screens
+function performersOnly(W, cam, rt, ground, extra) {
+  const keep = new Set(extra); for (const p of W.personae.values()) if (p && p.g) keep.add(p.g);
+  const hidden = []; for (const c of W.scene.children) if (!c.isLight && !keep.has(c) && c.visible) { c.visible = false; hidden.push(c); }
+  const bg = W.scene.background; W.scene.background = new THREE.Color(ground);
+  renderer.setRenderTarget(rt); renderer.render(W.scene, cam);
+  W.scene.background = bg; for (const c of hidden) c.visible = true;
+}
+function renderAll() {
+  renderer.setScissorTest(false); renderer.setRenderTarget(null); renderer.setClearColor(0x0e1116, 1); renderer.clear();
+  // 1. the performers of the Square, alone on a dark ground, into the scrim's texture; 2. the performer of the Theatre into the portal's texture:
+  //    each Venue keeps its own scene and shows only the other's performers
+  performersOnly(SQ, SQ.rtCam, rtSquare, 0x081226, []);
+  performersOnly(TH, TH.rtCam, rtTheatre, 0x150906, [TH.confetti]);
+  // 3. the two screens
+  renderer.setRenderTarget(null); renderer.setScissorTest(true);
+  for (const [W, R] of [[TH, LEFT], [SQ, RIGHT]]) {
+    const y = 1080 - R.y - SH;
+    renderer.setViewport(R.x, y, SW, SH); renderer.setScissor(R.x, y, SW, SH); renderer.render(W.scene, W.cam);
+  }
+  renderer.setScissorTest(false);
+}
+
+// ------------------------------------------------------------------ captions
+const capEls = { theatre: document.getElementById('capTheatre'), square: document.getElementById('capSquare') };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const dash = v => (v == null || v === '' || (Array.isArray(v) && !v.length)) ? '—' : v;
+function fillCaption(el, c) {
+  c = c || {};
+  const acts = Array.isArray(c.actions) ? c.actions.filter(a => a != null && a !== '') : (c.actions ? [c.actions] : []);
+  el.querySelector('.in').innerHTML =
+    `<div class="k" style="margin-top:0">${el.id === 'capTheatre' ? 'In the Theatre' : 'In the Square'}: the Actions</div>` + (acts.length ? `<ul class="${acts.length > 3 ? 'two' : ''}">${acts.map(a => `<li>${esc(a)}</li>`).join('')}</ul>` : `<div class="cond">—</div>`) +
+    (c.note ? `<div class="note">${esc(c.note)}</div>` : '');
+}
+// one line across both screens: the Cue of the Script, where its Condition comes from, the Condition met
+const CUES = ['C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6a'];
+const FROM = { Real: 'its Condition comes from the Theatre', Virtual: 'its Condition comes from the Square', Mixed: 'its Condition comes from the Theatre and the Square' };
+const cueEl = document.getElementById('cueLine');
+function showCue(cap, age) {
+  const c = cap || {}, key = JSON.stringify([c.cue, c.condition, c.dataType]);
+  if (cueEl._key !== key) {
+    cueEl._key = key;
+    const [id, kind] = String(c.cue || '').split(' · '), n = CUES.indexOf(id);
+    const head = id ? `Cue ${esc(id)}${n >= 0 ? ` <span class="from">(${n + 1} of ${CUES.length})</span>` : ''}` : 'Waiting for the show';
+    const from = !c.dataType && id === 'C0' ? "no Condition: it runs at the operator's Go" : (FROM[kind] || '');
+    cueEl.innerHTML = `<div class="l1"><div><span class="cue">${head}</span>${kind ? `<span class="from">· ${esc(kind)}: ${esc(from)}</span>` : ''}</div>` +
+      (c.dataType ? `<div class="tag">${esc(c.dataType)}</div>` : '') + `</div>` +
+      `<div class="cond"><b>Condition met</b>${esc(dash(c.condition))}</div>`;
+  }
+  const k = clamp(1 - age / 1.8);
+  cueEl.style.boxShadow = k > 0.001 ? `0 0 0 ${(3 * k).toFixed(2)}px rgba(255,255,255,${(0.8 * k).toFixed(3)}), 0 0 ${Math.round(46 * k)}px rgba(200,220,255,${(0.45 * k).toFixed(3)})` : 'none';
+}
+function showCaption(side, cap, age) {
+  if (side === 'theatre') showCue(cap, age);
+  const el = capEls[side], key = JSON.stringify(cap || {});
+  if (el._key !== key) { el._key = key; fillCaption(el, cap); }
+  const k = clamp(1 - age / 1.8), warm = side === 'theatre' ? [255, 179, 71] : [95, 215, 255];
+  el.style.boxShadow = k > 0.001 ? `0 0 0 ${(3 * k).toFixed(2)}px rgba(${warm},${(0.95 * k).toFixed(3)}), 0 0 ${Math.round(46 * k)}px rgba(${warm},${(0.5 * k).toFixed(3)})` : 'none';
+  el.style.background = `rgb(${Math.round(23 + 22 * k)},${Math.round(28 + 18 * k)},${Math.round(36 + 10 * k)})`;
+  el.querySelector('.in').style.opacity = clamp(0.1 + age / 0.45).toFixed(3);
+}
+const clockEl = document.getElementById('clock');
+
+// ------------------------------------------------------------------ modes
+const params = new URLSearchParams(location.search);
+const EFFECTS = { theatre: ['Confetti'], square: ['Fireflies', 'Fireworks', 'ApplauseSpeaker'] };
+const thingMap = side => (side && Array.isArray(side.Things)) ? new Map(side.Things.filter(t => t && t.ID != null).map(t => [String(t.ID), t])) : new Map();
+const hexLerp = (a, b, u) => { const c = hexColour(a, 'FFFFFF').lerp(hexColour(b, 'FFFFFF'), u); return c.getHexString().toUpperCase(); };
+function lerpThing(a, b, u) {
+  if (!b || u <= 0) return a;
+  const o = Object.assign({}, a);
+  for (const k of ['X', 'Y', 'Intensity']) if (typeof a[k] === 'number' && typeof b[k] === 'number') o[k] = a[k] + (b[k] - a[k]) * u;
+  if (typeof a.Yaw === 'number' && typeof b.Yaw === 'number') { const d = mod(b.Yaw - a.Yaw + 180, 360) - 180; o.Yaw = a.Yaw + d * u; }
+  if (a.Colour && b.Colour && a.Colour !== b.Colour) o.Colour = hexLerp(a.Colour, b.Colour, u);
+  if (a.Pose || b.Pose) { const pa = a.Pose || {}, pb = b.Pose || {}; o.Pose = {}; for (const k of ['LeftArmElevation', 'RightArmElevation', 'HipFlexion', 'KneeFlexion']) o.Pose[k] = (+pa[k] || 0) + ((+pb[k] || 0) - (+pa[k] || 0)) * u; }
+  return o;
+}
+
+async function startReplay(url) {
+  const log = await (await fetch(new URL(url, location.href), { cache: 'no-store' })).json();
+  const F = (log.frames || []).slice().sort((a, b) => a.t - b.t);
+  if (!F.length) throw new Error('the log has no frames');
+  for (const f of F) { f._m = { theatre: thingMap(f.theatre), square: thingMap(f.square) }; }
+  // effect onsets and caption changes, from the log (so that every t is drawn the same way)
+  const active = (i, side, id) => { const a = F[i]._m[side].get(id), b = F[i + 1] && F[i + 1]._m[side].get(id); return (a && typeof a.Intensity === 'number' && a.Intensity > 0) || (a && b && typeof b.Intensity === 'number' && b.Intensity > 0); };
+  const prevOn = { theatre: new Map(), square: new Map() }, prevCap = {};
+  F.forEach((f, i) => {
+    f._on = { theatre: new Map(), square: new Map() };
+    for (const side of ['theatre', 'square']) for (const id of EFFECTS[side]) {
+      if (active(i, side, id)) { const s = prevOn[side].has(id) ? prevOn[side].get(id) : f.t; prevOn[side].set(id, s); f._on[side].set(id, s); } else prevOn[side].delete(id);
+    }
+    f._capAt = {};
+    for (const side of ['theatre', 'square']) { const k = JSON.stringify((f.captions || {})[side] || {}); if (!prevCap[side] || prevCap[side].k !== k) prevCap[side] = { k, t: f.t }; f._capAt[side] = prevCap[side].t; }
+  });
+  // every Persona of the show, loaded before the show starts
+  const loads = [];
+  for (const f of F) for (const [side, W] of [['theatre', TH], ['square', SQ]]) for (const th of f._m[side].values()) if (th.Kind === 'Persona') loads.push(ensurePersona(W, String(th.ID), th.Model || 'catalogue/Female_Adult_01.glb'));
+  await Promise.all(loads);
+  const duration = typeof log.duration === 'number' ? log.duration : F[F.length - 1].t;
+  function drawAt(t) {
+    let lo = 0, hi = F.length - 1; if (t >= F[hi].t) lo = hi; else while (hi - lo > 1) { const m = (lo + hi) >> 1; if (F[m].t <= t) lo = m; else hi = m; }
+    const a = F[lo], b = F[lo + 1], u = b ? clamp((t - a.t) / Math.max(1e-6, b.t - a.t)) : 0;
+    const things = side => { const m = new Map(); for (const [id, th] of a._m[side]) m.set(id, lerpThing(th, b && b._m[side].get(id), u)); return m; };
+    applyTheatre(things('theatre'), t, a._on.theatre);
+    applySquare(things('square'), t, a._on.square);
+    renderAll();
+    for (const side of ['theatre', 'square']) showCaption(side, (a.captions || {})[side], t - a._capAt[side]);
+    clockEl.textContent = a.clock || '--:--';
+  }
+  const shown = () => new Promise(r => { let done = false; const f = () => { if (!done) { done = true; r(); } }; requestAnimationFrame(() => requestAnimationFrame(f)); setTimeout(f, 60); });
+  window.setShowTime = async t => { drawAt(+t || 0); await shown(); };
+  drawAt(0); await shown();   // shaders compiled, first frame drawn
+  window.showDuration = duration; window.stageReady = true;
+}
+
+function startLive(url) {
+  // on the screen: the 1920x1080 stage scaled to the window
+  const fit = () => { const k = Math.min(innerWidth / 1920, innerHeight / 1080); document.body.style.transformOrigin = '0 0';
+                      document.body.style.transform = `translate(${(innerWidth - 1920 * k) / 2}px, ${(innerHeight - 1080 * k) / 2}px) scale(${k})`; };
+  document.documentElement.style.background = '#0e1116'; addEventListener('resize', fit); fit();
+  // the sounds the show says are heard now, one player per side and sound
+  const players = new Map();
+  let soundBtn = null;
+  function askForSound() {   // the browser plays sound only after a click: one button, then every sound plays
+    if (soundBtn) return;
+    soundBtn = document.createElement('button'); soundBtn.textContent = '🔊  Click for sound';
+    soundBtn.style.cssText = 'position:absolute;left:810px;top:500px;width:300px;height:80px;font-size:28px;z-index:99;border-radius:12px;border:2px solid #8fb7ff;background:#151a23;color:#e6e9ef;cursor:pointer';
+    soundBtn.onclick = () => { for (const a of players.values()) a.play().catch(() => {}); soundBtn.remove(); soundBtn = null; };
+    document.body.appendChild(soundBtn);
+  }
+  function sound(list) {
+    const want = new Map((list || []).map(s => [s.side + '/' + s.sound, s]));
+    for (const [k, s] of want) {
+      let a = players.get(k);
+      if (!a) { a = new Audio(new URL('sounds/' + s.sound, location.href)); a.loop = !!s.loop; players.set(k, a); a.play().catch(() => askForSound()); }
+      a.volume = Math.max(0, Math.min(1, s.gain));
+    }
+    for (const [k, a] of players) if (!want.has(k)) { a.pause(); players.delete(k); }
+  }
+  // the presenter's buttons: Start (the operator's Go: it also lets the browser play sound) and Close
+  const btn = (text, css, onclick) => { const b = document.createElement('button'); b.textContent = text; b.onclick = onclick;
+    b.style.cssText = 'position:absolute;z-index:99;border-radius:12px;border:2px solid #8fb7ff;background:#151a23;color:#e6e9ef;cursor:pointer;font-weight:700;' + css; document.body.appendChild(b); return b; };
+  const startBtn = btn('▶  Start the show', 'left:760px;top:470px;width:400px;height:110px;font-size:38px;display:none', () => {
+    fetch(new URL('go', location.href)).catch(() => {}); startBtn.remove();
+    const t = new Audio(new URL('sounds/applause.wav', location.href)); t.volume = 0; t.play().then(() => t.pause()).catch(() => {});   // sound allowed from now on
+  });
+  btn('✕  Close', 'right:250px;top:14px;width:150px;height:44px;font-size:20px', () => { fetch(new URL('quit', location.href)).catch(() => {}); setTimeout(() => window.close(), 300); });
+  let frame = null; const onset = { theatre: new Map(), square: new Map() }, capAt = {}, capKey = {};
+  const now = () => performance.now() / 1000;
+  async function poll() {
+    try {
+      const r = await fetch(new URL(url, location.href), { cache: 'no-store' });
+      if (r.ok) {
+        const f = await r.json(); const m = { theatre: thingMap(f.theatre), square: thingMap(f.square) };
+        for (const side of ['theatre', 'square']) {
+          for (const id of EFFECTS[side]) { const th = m[side].get(id), on = th && typeof th.Intensity === 'number' && th.Intensity > 0; if (on && !onset[side].has(id)) onset[side].set(id, now()); if (!on) onset[side].delete(id); }
+          const k = JSON.stringify((f.captions || {})[side] || {}); if (capKey[side] !== k) { capKey[side] = k; capAt[side] = now(); }
+        }
+        frame = { f, m }; sound(f.sounds); if (startBtn.isConnected) startBtn.style.display = f.waiting ? 'block' : 'none';
+      }
+    } catch (e) { /* the server may not be up yet */ }
+    setTimeout(poll, 150);
+  }
+  poll();
+  window.stageReady = true; window.showDuration = 0;
+  (function loop() {
+    const t = now();
+    if (frame) {
+      applyTheatre(frame.m.theatre, t, onset.theatre); applySquare(frame.m.square, t, onset.square);
+      for (const side of ['theatre', 'square']) showCaption(side, (frame.f.captions || {})[side], t - (capAt[side] ?? t));
+      clockEl.textContent = frame.f.clock || '--:--';
+    } else { applyTheatre(new Map(), t, onset.theatre); applySquare(new Map([['Sky', { ID: 'Sky', Intensity: 1 }]]), t, onset.square); }
+    renderAll();
+    let next = false; const go = () => { if (!next) { next = true; loop(); } };
+    requestAnimationFrame(go); setTimeout(go, 50);   // rAF, or a timer when the page is hidden (rAF does not run then)
+  })();
+}
+
+window.stageReady = false;
+try {
+  if (params.get('live')) startLive(params.get('live'));
+  else if (params.get('log')) startReplay(params.get('log')).catch(fail);
+  else { showCaption('theatre', { cue: 'no log', condition: 'open with ?log=<url> or ?live=<url>' }, 9); showCaption('square', null, 9); applyTheatre(new Map(), 0, new Map()); applySquare(new Map(), 0, new Map()); renderAll(); }
+} catch (e) { fail(e); }
+</script>
+</body>
+</html>

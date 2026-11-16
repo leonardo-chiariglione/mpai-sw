@@ -1,0 +1,291 @@
+{
+  "Header": "XRV-SVA-V1.0",
+  "UEnvironmentID": "UE-Evening",
+  "ScriptVenueAssociationsID": "LongerEvening-Associations",
+  "ScriptVenueAssociationsTime": {
+    "Header": "OSD-STM-V1.5",
+    "SimpleTimeID": "sva-t",
+    "SimpleTimeData": [
+      {
+        "FlagsByte": 3,
+        "StartTime": 0,
+        "EndTime": 0,
+        "AccuracyMode": "single",
+        "AccuracyPlusMinus": 0,
+        "TimeType": true,
+        "TimeUnit": "01"
+      }
+    ]
+  },
+  "REAssociations": {
+    "PerformanceDesignations": {
+      "Characters": [
+        {
+          "Name": "Anna",
+          "VenueElementID": "Anna",
+          "DataSourceQualifier": "performer"
+        },
+        {
+          "Name": "Anna",
+          "VenueElementID": "AnnaVoice1",
+          "DataSourceQualifier": "performer microphone"
+        },
+        {
+          "Name": "Anna",
+          "VenueElementID": "AnnaVoice2",
+          "DataSourceQualifier": "performer microphone"
+        },
+        {
+          "Name": "Anna",
+          "VenueElementID": "AnnaVoice3",
+          "DataSourceQualifier": "performer microphone"
+        },
+        {
+          "Name": "Anna",
+          "VenueElementID": "AnnaVoice4",
+          "DataSourceQualifier": "performer microphone"
+        },
+        {
+          "Name": "Anna",
+          "VenueElementID": "AnnaVoice5",
+          "DataSourceQualifier": "performer microphone"
+        },
+        {
+          "Name": "Anna",
+          "VenueElementID": "AnnaVoice6",
+          "DataSourceQualifier": "performer microphone"
+        },
+        {
+          "Name": "Anna",
+          "VenueElementID": "AnnaVoice7",
+          "DataSourceQualifier": "performer microphone"
+        },
+        {
+          "Name": "Anna",
+          "VenueElementID": "AnnaVoice8",
+          "DataSourceQualifier": "performer microphone"
+        },
+        {
+          "Name": "Anna",
+          "VenueElementID": "AnnaVoice9",
+          "DataSourceQualifier": "performer microphone"
+        },
+        {
+          "Name": "Anna",
+          "VenueElementID": "AnnaVoice10",
+          "DataSourceQualifier": "performer microphone"
+        },
+        {
+          "Name": "Anna",
+          "VenueElementID": "AnnaVoice11",
+          "DataSourceQualifier": "performer microphone"
+        },
+        {
+          "Name": "Anna",
+          "VenueElementID": "AnnaVoice12",
+          "DataSourceQualifier": "performer microphone"
+        }
+      ],
+      "TheatricalSetList": [
+        {
+          "Objects": [
+            {
+              "Name": "Lamp 1",
+              "VenueElementID": "FX1",
+              "DataSinkQualifier": "DMX:1:2"
+            },
+            {
+              "Name": "Lamp 2",
+              "VenueElementID": "FX2",
+              "DataSinkQualifier": "DMX:1:3"
+            },
+            {
+              "Name": "Scrim",
+              "VenueElementID": "Scrim",
+              "DataSinkQualifier": "DMX:1:5"
+            }
+          ]
+        }
+      ]
+    },
+    "ParticipantDesignations": {
+      "Participants": [
+        {
+          "MetaName": "Audience",
+          "VenueElementID": "Audience",
+          "DataSourceQualifier": "hall microphone"
+        }
+      ]
+    },
+    "OperatorDesignations": {
+      "Consoles": [
+        {
+          "Name": "Show console",
+          "VenueElementID": "Console",
+          "DataSourceQualifier": "console"
+        }
+      ]
+    },
+    "ActionElements": [
+      {
+        "ActionID": "RE-HOUSE-DOWN",
+        "DataSinkQualifier": "DMX:1"
+      },
+      {
+        "ActionID": "RE-LAMPS-FULL",
+        "DataSinkQualifier": "DMX:1"
+      },
+      {
+        "ActionID": "RE-AMBER-SPOT",
+        "DataSinkQualifier": "DMX:1"
+      },
+      {
+        "ActionID": "RE-SCRIM-HALF",
+        "DataSinkQualifier": "DMX:1"
+      },
+      {
+        "ActionID": "RE-LAMPS-OFF",
+        "DataSinkQualifier": "DMX:1"
+      },
+      {
+        "ActionID": "RE-SCRIM-FULL",
+        "DataSinkQualifier": "DMX:1"
+      },
+      {
+        "ActionID": "RE-FADE-BLACK",
+        "DataSinkQualifier": "DMX:1"
+      },
+      {
+        "ActionID": "RE-FINALE",
+        "DataSinkQualifier": "DMX:1"
+      }
+    ]
+  },
+  "VEAssociations": {
+    "PerformanceDesignations": {
+      "Characters": [
+        {
+          "Name": "Anna",
+          "VenueElementID": "Bot",
+          "DataSourceQualifier": "performer"
+        },
+        {
+          "Name": "Anna",
+          "VenueElementID": "BotVoice1",
+          "DataSourceQualifier": "performer microphone"
+        },
+        {
+          "Name": "Anna",
+          "VenueElementID": "BotVoice2",
+          "DataSourceQualifier": "performer microphone"
+        },
+        {
+          "Name": "Anna",
+          "VenueElementID": "BotVoice3",
+          "DataSourceQualifier": "performer microphone"
+        },
+        {
+          "Name": "Anna",
+          "VenueElementID": "BotVoice4",
+          "DataSourceQualifier": "performer microphone"
+        },
+        {
+          "Name": "Anna",
+          "VenueElementID": "BotVoice5",
+          "DataSourceQualifier": "performer microphone"
+        },
+        {
+          "Name": "Anna",
+          "VenueElementID": "BotVoice6",
+          "DataSourceQualifier": "performer microphone"
+        }
+      ],
+      "TheatricalSetList": [
+        {
+          "Objects": [
+            {
+              "Name": "Lamp 1",
+              "VenueElementID": "VLamp1",
+              "DataSinkQualifier": "VLamp1"
+            },
+            {
+              "Name": "Scrim",
+              "VenueElementID": "Portal",
+              "DataSinkQualifier": "Portal"
+            }
+          ]
+        }
+      ]
+    },
+    "ParticipantDesignations": {
+      "Participants": [
+        {
+          "MetaName": "Guest",
+          "VenueElementID": "Guest1"
+        },
+        {
+          "MetaName": "Guest",
+          "VenueElementID": "Guest2"
+        },
+        {
+          "MetaName": "Guest",
+          "VenueElementID": "Guest3"
+        },
+        {
+          "MetaName": "Guest",
+          "VenueElementID": "Guest1Voice1",
+          "DataSourceQualifier": "guest microphone"
+        },
+        {
+          "MetaName": "Guest",
+          "VenueElementID": "Guest3Voice1",
+          "DataSourceQualifier": "guest microphone"
+        },
+        {
+          "MetaName": "Guest",
+          "VenueElementID": "Guest2Voice1",
+          "DataSourceQualifier": "guest microphone"
+        },
+        {
+          "MetaName": "Guest",
+          "VenueElementID": "Guest1Voice2",
+          "DataSourceQualifier": "guest microphone"
+        }
+      ]
+    },
+    "ActionElements": [
+      {
+        "ActionID": "VE-DUSK",
+        "DataSinkQualifier": "MMM Property Change"
+      },
+      {
+        "ActionID": "VE-LAMP-30",
+        "DataSinkQualifier": "MMM Property Change"
+      },
+      {
+        "ActionID": "VE-APPLAUSE",
+        "DataSinkQualifier": "MMM Property Change"
+      },
+      {
+        "ActionID": "VE-FIREFLIES",
+        "DataSinkQualifier": "MMM Property Change"
+      },
+      {
+        "ActionID": "VE-LAMP-FULL",
+        "DataSinkQualifier": "MMM Property Change"
+      },
+      {
+        "ActionID": "VE-PORTAL-FULL",
+        "DataSinkQualifier": "MMM Property Change"
+      },
+      {
+        "ActionID": "VE-LAMP-FADE",
+        "DataSinkQualifier": "MMM Property Change"
+      },
+      {
+        "ActionID": "VE-FIREWORKS",
+        "DataSinkQualifier": "MMM Property Change"
+      }
+    ]
+  }
+}

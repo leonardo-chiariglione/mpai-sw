@@ -1,0 +1,673 @@
+{
+  "Header": "XRV-SCR-V1.0",
+  "UEnvironmentID": "UE-Evening",
+  "ScriptID": "LongerEvening-Script",
+  "ScriptTime": {
+    "Header": "OSD-STM-V1.5",
+    "SimpleTimeID": "script-t",
+    "SimpleTimeData": [
+      {
+        "FlagsByte": 3,
+        "StartTime": 0,
+        "EndTime": 0,
+        "AccuracyMode": "single",
+        "AccuracyPlusMinus": 0,
+        "TimeType": true,
+        "TimeUnit": "01"
+      }
+    ]
+  },
+  "ShowHeader": "The longer evening",
+  "TitleOfProduction": "The longer evening (two metaverses)",
+  "ShowDescription": "Seven Cues on two metaverses: the Theatre (Real Environment) and the Square (Virtual Environment). Anna performs in the Theatre, Bot - her virtual double - and the guests in the Square. C5 is Anna's choice: arms up (played) or sitting down (the show fades out).",
+  "Characters": [
+    {
+      "Name": "Anna",
+      "Nickname": "A",
+      "CharacterID": {
+        "Real": "Anna",
+        "Virtual": "Bot"
+      },
+      "Mnemonic": "ANN"
+    }
+  ],
+  "TheatricalSetList": [
+    {
+      "TheatricalSet": [
+        {
+          "Name": "Stage",
+          "SetID": {
+            "Real": "TheatreStage",
+            "Virtual": "SquareStage"
+          },
+          "Mnemonic": "STG"
+        }
+      ],
+      "Objects": [
+        {
+          "Name": "Lamp 1",
+          "ObjectID": {
+            "Real": "FX1",
+            "Virtual": "VLamp1"
+          },
+          "ObjectType": "Static",
+          "Mnemonic": "L1"
+        },
+        {
+          "Name": "Lamp 2",
+          "ObjectID": {
+            "Real": "FX2"
+          },
+          "ObjectType": "Static",
+          "Mnemonic": "L2"
+        },
+        {
+          "Name": "Scrim",
+          "ObjectID": {
+            "Real": "Scrim",
+            "Virtual": "Portal"
+          },
+          "ObjectType": "Static",
+          "Mnemonic": "SCR"
+        }
+      ]
+    }
+  ],
+  "Participants": [
+    {
+      "MetaName": "Audience",
+      "Nickname": "Hall",
+      "Mnemonic": "AUD"
+    },
+    {
+      "MetaName": "Guest",
+      "Nickname": "G",
+      "Mnemonic": "GST"
+    }
+  ],
+  "Operators": [
+    {
+      "Consoles": [
+        {
+          "Name": "Show console",
+          "Mnemonic": "CON"
+        }
+      ]
+    }
+  ],
+  "CueList": [
+    {
+      "Cue": [
+        {
+          "RealCue": {
+            "RECueID": "C0",
+            "REGroups": [
+              {
+                "REActions": [
+                  "RE-HOUSE-DOWN"
+                ],
+                "VEActions": [
+                  "VE-DUSK"
+                ],
+                "NextCue": "C1"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "Cue": [
+        {
+          "MixedCue": {
+            "MECueID": "C1",
+            "MEGroups": [
+              {
+                "RECueConditions": {
+                  "REPerformanceStatus": {
+                    "Header": "XRV-RFS-V1.0",
+                    "REPerformanceStatusID": "C1-re",
+                    "UEnvironmentID": "UE-Evening",
+                    "REPerformanceStatusTime": {
+                      "Header": "OSD-STM-V1.5",
+                      "SimpleTimeID": "C1-re-t",
+                      "SimpleTimeData": [
+                        {
+                          "FlagsByte": 3,
+                          "StartTime": 0,
+                          "EndTime": 0,
+                          "AccuracyMode": "single",
+                          "AccuracyPlusMinus": 0,
+                          "TimeType": true,
+                          "TimeUnit": "01"
+                        }
+                      ]
+                    },
+                    "REPerformanceStatusData": {
+                      "IndividualStatuses": [
+                        {
+                          "REPerformerID": "Anna"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "VECueConditions": {
+                  "VEParticipantStatus": {
+                    "Header": "XRV-VTS-V1.0",
+                    "VEParticipantStatusID": "C1-ve",
+                    "UEnvironmentID": "UE-Evening",
+                    "VEParticipantStatusTime": {
+                      "Header": "OSD-STM-V1.5",
+                      "SimpleTimeID": "C1-ve-t",
+                      "SimpleTimeData": [
+                        {
+                          "FlagsByte": 3,
+                          "StartTime": 0,
+                          "EndTime": 0,
+                          "AccuracyMode": "single",
+                          "AccuracyPlusMinus": 0,
+                          "TimeType": true,
+                          "TimeUnit": "01"
+                        }
+                      ]
+                    },
+                    "VEParticipantStatusData": {
+                      "IndividualStatuses": [
+                        {
+                          "VEParticipantID": "Guest1"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "REActions": [
+                  "RE-LAMPS-FULL"
+                ],
+                "VEActions": [
+                  "VE-LAMP-30"
+                ],
+                "NextCue": "C2"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "Cue": [
+        {
+          "RealCue": {
+            "RECueID": "C2",
+            "REGroups": [
+              {
+                "RECueConditions": {
+                  "REParticipantStatus": {
+                    "Header": "XRV-RTS-V1.0",
+                    "REParticipantStatusID": "C2-re",
+                    "UEnvironmentID": "UE-Evening",
+                    "REParticipantStatusTime": {
+                      "Header": "OSD-STM-V1.5",
+                      "SimpleTimeID": "C2-re-t",
+                      "SimpleTimeData": [
+                        {
+                          "FlagsByte": 3,
+                          "StartTime": 0,
+                          "EndTime": 0,
+                          "AccuracyMode": "single",
+                          "AccuracyPlusMinus": 0,
+                          "TimeType": true,
+                          "TimeUnit": "01"
+                        }
+                      ]
+                    },
+                    "REParticipantStatusData": {
+                      "IndividualStatuses": [
+                        {
+                          "REParticipantID": "Audience",
+                          "AudioBehaviour": {
+                            "Header": "XRV-ABH-V1.0",
+                            "AudioBehaviourID": "C2-ab",
+                            "UEnvironmentID": "UE-Evening",
+                            "AudioBehaviourTime": {
+                              "Header": "OSD-STM-V1.5",
+                              "SimpleTimeID": "C2-ab-t",
+                              "SimpleTimeData": [
+                                {
+                                  "FlagsByte": 3,
+                                  "StartTime": 0,
+                                  "EndTime": 0,
+                                  "AccuracyMode": "single",
+                                  "AccuracyPlusMinus": 0,
+                                  "TimeType": true,
+                                  "TimeUnit": "01"
+                                }
+                              ]
+                            },
+                            "BehaviourData": {
+                              "ClappingIntensity": 60
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "REActions": [
+                  "RE-AMBER-SPOT"
+                ],
+                "VEActions": [
+                  "VE-APPLAUSE"
+                ],
+                "NextCue": "C3"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "Cue": [
+        {
+          "VirtualCue": {
+            "VECueID": "C3",
+            "VEGroups": [
+              {
+                "VECueConditions": {
+                  "VEParticipantStatus": {
+                    "Header": "XRV-VTS-V1.0",
+                    "VEParticipantStatusID": "C3-ve",
+                    "UEnvironmentID": "UE-Evening",
+                    "VEParticipantStatusTime": {
+                      "Header": "OSD-STM-V1.5",
+                      "SimpleTimeID": "C3-ve-t",
+                      "SimpleTimeData": [
+                        {
+                          "FlagsByte": 3,
+                          "StartTime": 0,
+                          "EndTime": 0,
+                          "AccuracyMode": "single",
+                          "AccuracyPlusMinus": 0,
+                          "TimeType": true,
+                          "TimeUnit": "01"
+                        }
+                      ]
+                    },
+                    "VEParticipantStatusData": {
+                      "IndividualStatuses": [
+                        {
+                          "VEParticipantID": "Guest1",
+                          "VisualBehaviour": {
+                            "Header": "XRV-VBH-V1.0",
+                            "VisualBehaviourID": "C3-Guest1",
+                            "UEnvironmentID": "UE-Evening",
+                            "VisualBehaviourTime": {
+                              "Header": "OSD-STM-V1.5",
+                              "SimpleTimeID": "C3-Guest1-t",
+                              "SimpleTimeData": [
+                                {
+                                  "FlagsByte": 3,
+                                  "StartTime": 0,
+                                  "EndTime": 0,
+                                  "AccuracyMode": "single",
+                                  "AccuracyPlusMinus": 0,
+                                  "TimeType": true,
+                                  "TimeUnit": "01"
+                                }
+                              ]
+                            },
+                            "Behaviour": {
+                              "Gestures": [
+                                {
+                                  "Gesture": "Raising arms"
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "VEParticipantID": "Guest2",
+                          "VisualBehaviour": {
+                            "Header": "XRV-VBH-V1.0",
+                            "VisualBehaviourID": "C3-Guest2",
+                            "UEnvironmentID": "UE-Evening",
+                            "VisualBehaviourTime": {
+                              "Header": "OSD-STM-V1.5",
+                              "SimpleTimeID": "C3-Guest2-t",
+                              "SimpleTimeData": [
+                                {
+                                  "FlagsByte": 3,
+                                  "StartTime": 0,
+                                  "EndTime": 0,
+                                  "AccuracyMode": "single",
+                                  "AccuracyPlusMinus": 0,
+                                  "TimeType": true,
+                                  "TimeUnit": "01"
+                                }
+                              ]
+                            },
+                            "Behaviour": {
+                              "Gestures": [
+                                {
+                                  "Gesture": "Raising arms"
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        {
+                          "VEParticipantID": "Guest3",
+                          "VisualBehaviour": {
+                            "Header": "XRV-VBH-V1.0",
+                            "VisualBehaviourID": "C3-Guest3",
+                            "UEnvironmentID": "UE-Evening",
+                            "VisualBehaviourTime": {
+                              "Header": "OSD-STM-V1.5",
+                              "SimpleTimeID": "C3-Guest3-t",
+                              "SimpleTimeData": [
+                                {
+                                  "FlagsByte": 3,
+                                  "StartTime": 0,
+                                  "EndTime": 0,
+                                  "AccuracyMode": "single",
+                                  "AccuracyPlusMinus": 0,
+                                  "TimeType": true,
+                                  "TimeUnit": "01"
+                                }
+                              ]
+                            },
+                            "Behaviour": {
+                              "Gestures": [
+                                {
+                                  "Gesture": "Raising arms"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "REActions": [
+                  "RE-SCRIM-HALF"
+                ],
+                "VEActions": [
+                  "VE-FIREFLIES"
+                ],
+                "NextCue": "C4"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "Cue": [
+        {
+          "VirtualCue": {
+            "VECueID": "C4",
+            "VEGroups": [
+              {
+                "VECueConditions": {
+                  "VEPerformanceStatus": {
+                    "Header": "XRV-VFS-V1.0",
+                    "VEPerformanceStatusID": "C4-ve",
+                    "UEnvironmentID": "UE-Evening",
+                    "VEPerformanceStatusTime": {
+                      "Header": "OSD-STM-V1.5",
+                      "SimpleTimeID": "C4-ve-t",
+                      "SimpleTimeData": [
+                        {
+                          "FlagsByte": 3,
+                          "StartTime": 0,
+                          "EndTime": 0,
+                          "AccuracyMode": "single",
+                          "AccuracyPlusMinus": 0,
+                          "TimeType": true,
+                          "TimeUnit": "01"
+                        }
+                      ]
+                    },
+                    "VEPerformanceStatusData": {
+                      "IndividualStatuses": [
+                        {
+                          "VEPerformerID": "Bot"
+                        }
+                      ]
+                    }
+                  }
+                },
+                "REActions": [
+                  "RE-LAMPS-OFF"
+                ],
+                "VEActions": [
+                  "VE-LAMP-FULL"
+                ],
+                "NextCue": "C5"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "Cue": [
+        {
+          "RealCue": {
+            "RECueID": "C5",
+            "REGroups": [
+              {
+                "RECueConditions": {
+                  "REPerformanceStatus": {
+                    "Header": "XRV-RFS-V1.0",
+                    "REPerformanceStatusID": "C5a-re",
+                    "UEnvironmentID": "UE-Evening",
+                    "REPerformanceStatusTime": {
+                      "Header": "OSD-STM-V1.5",
+                      "SimpleTimeID": "C5a-re-t",
+                      "SimpleTimeData": [
+                        {
+                          "FlagsByte": 3,
+                          "StartTime": 0,
+                          "EndTime": 0,
+                          "AccuracyMode": "single",
+                          "AccuracyPlusMinus": 0,
+                          "TimeType": true,
+                          "TimeUnit": "01"
+                        }
+                      ]
+                    },
+                    "REPerformanceStatusData": {
+                      "IndividualStatuses": [
+                        {
+                          "REPerformerID": "Anna",
+                          "VisualBehaviour": {
+                            "Header": "XRV-VBH-V1.0",
+                            "VisualBehaviourID": "C5a-vb",
+                            "UEnvironmentID": "UE-Evening",
+                            "VisualBehaviourTime": {
+                              "Header": "OSD-STM-V1.5",
+                              "SimpleTimeID": "C5a-vb-t",
+                              "SimpleTimeData": [
+                                {
+                                  "FlagsByte": 3,
+                                  "StartTime": 0,
+                                  "EndTime": 0,
+                                  "AccuracyMode": "single",
+                                  "AccuracyPlusMinus": 0,
+                                  "TimeType": true,
+                                  "TimeUnit": "01"
+                                }
+                              ]
+                            },
+                            "Behaviour": {
+                              "Gestures": [
+                                {
+                                  "Gesture": "Raising arms"
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "REActions": [
+                  "RE-SCRIM-FULL"
+                ],
+                "VEActions": [
+                  "VE-PORTAL-FULL"
+                ],
+                "NextCue": "C6a"
+              },
+              {
+                "RECueConditions": {
+                  "REPerformanceStatus": {
+                    "Header": "XRV-RFS-V1.0",
+                    "REPerformanceStatusID": "C5b-re",
+                    "UEnvironmentID": "UE-Evening",
+                    "REPerformanceStatusTime": {
+                      "Header": "OSD-STM-V1.5",
+                      "SimpleTimeID": "C5b-re-t",
+                      "SimpleTimeData": [
+                        {
+                          "FlagsByte": 3,
+                          "StartTime": 0,
+                          "EndTime": 0,
+                          "AccuracyMode": "single",
+                          "AccuracyPlusMinus": 0,
+                          "TimeType": true,
+                          "TimeUnit": "01"
+                        }
+                      ]
+                    },
+                    "REPerformanceStatusData": {
+                      "IndividualStatuses": [
+                        {
+                          "REPerformerID": "Anna",
+                          "VisualBehaviour": {
+                            "Header": "XRV-VBH-V1.0",
+                            "VisualBehaviourID": "C5b-vb",
+                            "UEnvironmentID": "UE-Evening",
+                            "VisualBehaviourTime": {
+                              "Header": "OSD-STM-V1.5",
+                              "SimpleTimeID": "C5b-vb-t",
+                              "SimpleTimeData": [
+                                {
+                                  "FlagsByte": 3,
+                                  "StartTime": 0,
+                                  "EndTime": 0,
+                                  "AccuracyMode": "single",
+                                  "AccuracyPlusMinus": 0,
+                                  "TimeType": true,
+                                  "TimeUnit": "01"
+                                }
+                              ]
+                            },
+                            "Behaviour": {
+                              "StandSit": false
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "REActions": [
+                  "RE-FADE-BLACK"
+                ],
+                "VEActions": [
+                  "VE-LAMP-FADE"
+                ],
+                "NextCue": "END"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "Cue": [
+        {
+          "RealCue": {
+            "RECueID": "C6a",
+            "REGroups": [
+              {
+                "RECueConditions": {
+                  "REPerformanceStatus": {
+                    "Header": "XRV-RFS-V1.0",
+                    "REPerformanceStatusID": "C6a-re",
+                    "UEnvironmentID": "UE-Evening",
+                    "REPerformanceStatusTime": {
+                      "Header": "OSD-STM-V1.5",
+                      "SimpleTimeID": "C6a-re-t",
+                      "SimpleTimeData": [
+                        {
+                          "FlagsByte": 3,
+                          "StartTime": 0,
+                          "EndTime": 0,
+                          "AccuracyMode": "single",
+                          "AccuracyPlusMinus": 0,
+                          "TimeType": true,
+                          "TimeUnit": "01"
+                        }
+                      ]
+                    },
+                    "REPerformanceStatusData": {
+                      "IndividualStatuses": [
+                        {
+                          "REPerformerID": "Anna",
+                          "SpatialAttitude": {
+                            "Header": "OSD-OSA-V1.5",
+                            "ObjectSpatialAttitudeID": "C6a-sa",
+                            "Position": {
+                              "Header": "OSD-OPS-V1.5",
+                              "PositionID": "C6a-sa-p",
+                              "CartPosition": [
+                                0,
+                                1,
+                                0
+                              ]
+                            },
+                            "Orientation": {
+                              "Header": "OSD-OOR-V1.5",
+                              "OrientationID": "C6a-sa-o",
+                              "Orientation": [
+                                0,
+                                0,
+                                0
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                },
+                "REActions": [
+                  "RE-FINALE"
+                ],
+                "VEActions": [
+                  "VE-FIREWORKS"
+                ],
+                "NextCue": "END"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "Cue": [
+        {
+          "RealCue": {
+            "RECueID": "END",
+            "REGroups": []
+          }
+        }
+      ]
+    }
+  ]
+}

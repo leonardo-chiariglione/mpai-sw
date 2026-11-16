@@ -1,0 +1,31 @@
+{
+  "Header": "XRV-PTD-V1.0",
+  "UEnvironmentID": "UE-Evening",
+  "ParticipantDataID": "LongerEvening-PD-1",
+  "ParticipantDataTime": {
+    "Header": "OSD-STM-V1.5",
+    "SimpleTimeID": "ptd-t",
+    "SimpleTimeData": [
+      {
+        "FlagsByte": 3,
+        "StartTime": 0,
+        "EndTime": 0,
+        "AccuracyMode": "single",
+        "AccuracyPlusMinus": 0,
+        "TimeType": true,
+        "TimeUnit": "01"
+      }
+    ]
+  },
+  "ParticipantID": "Guest1",
+  "ParticipantAttendanceHistory": [
+    {
+      "VisitNumber": 1,
+      "DateOfVisit": [
+        "2026-11-17"
+      ],
+      "TicketClass": "Virtual",
+      "ParticipantCategory": "Adult"
+    }
+  ]
+}

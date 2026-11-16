@@ -1,0 +1,143 @@
+{
+  "Header": "XRV-VVS-V1.0",
+  "MInstanceID": "Square",
+  "UEnvironmentID": "UE-Square",
+  "VEVenueSpecificationID": "Square-Venue",
+  "VEVenueSpecificationTime": {
+    "Header": "OSD-STM-V1.5",
+    "SimpleTimeID": "vvs-t",
+    "SimpleTimeData": [
+      {
+        "FlagsByte": 3,
+        "StartTime": 0,
+        "EndTime": 0,
+        "AccuracyMode": "single",
+        "AccuracyPlusMinus": 0,
+        "TimeType": true,
+        "TimeUnit": "01"
+      }
+    ]
+  },
+  "VirtualObjects": [
+    {
+      "Header": "OSD-3DO-V1.5",
+      "MInstanceID": "Square",
+      "3DModelObjectID": "Sky",
+      "3DModelObjectSpaceTime": {
+        "Header": "OSD-STM-V1.5",
+        "SimpleTimeID": "Sky-st",
+        "SimpleTimeData": [
+          {
+            "FlagsByte": 3,
+            "StartTime": 0,
+            "EndTime": 0,
+            "AccuracyMode": "single",
+            "AccuracyPlusMinus": 0,
+            "TimeType": true,
+            "TimeUnit": "01"
+          }
+        ]
+      }
+    },
+    {
+      "Header": "OSD-3DO-V1.5",
+      "MInstanceID": "Square",
+      "3DModelObjectID": "VLamp1",
+      "3DModelObjectSpaceTime": {
+        "Header": "OSD-STM-V1.5",
+        "SimpleTimeID": "VLamp1-st",
+        "SimpleTimeData": [
+          {
+            "FlagsByte": 3,
+            "StartTime": 0,
+            "EndTime": 0,
+            "AccuracyMode": "single",
+            "AccuracyPlusMinus": 0,
+            "TimeType": true,
+            "TimeUnit": "01"
+          }
+        ]
+      }
+    },
+    {
+      "Header": "OSD-3DO-V1.5",
+      "MInstanceID": "Square",
+      "3DModelObjectID": "Portal",
+      "3DModelObjectSpaceTime": {
+        "Header": "OSD-STM-V1.5",
+        "SimpleTimeID": "Portal-st",
+        "SimpleTimeData": [
+          {
+            "FlagsByte": 3,
+            "StartTime": 0,
+            "EndTime": 0,
+            "AccuracyMode": "single",
+            "AccuracyPlusMinus": 0,
+            "TimeType": true,
+            "TimeUnit": "01"
+          }
+        ]
+      }
+    },
+    {
+      "Header": "OSD-3DO-V1.5",
+      "MInstanceID": "Square",
+      "3DModelObjectID": "Fireflies",
+      "3DModelObjectSpaceTime": {
+        "Header": "OSD-STM-V1.5",
+        "SimpleTimeID": "Fireflies-st",
+        "SimpleTimeData": [
+          {
+            "FlagsByte": 3,
+            "StartTime": 0,
+            "EndTime": 0,
+            "AccuracyMode": "single",
+            "AccuracyPlusMinus": 0,
+            "TimeType": true,
+            "TimeUnit": "01"
+          }
+        ]
+      }
+    },
+    {
+      "Header": "OSD-3DO-V1.5",
+      "MInstanceID": "Square",
+      "3DModelObjectID": "Fireworks",
+      "3DModelObjectSpaceTime": {
+        "Header": "OSD-STM-V1.5",
+        "SimpleTimeID": "Fireworks-st",
+        "SimpleTimeData": [
+          {
+            "FlagsByte": 3,
+            "StartTime": 0,
+            "EndTime": 0,
+            "AccuracyMode": "single",
+            "AccuracyPlusMinus": 0,
+            "TimeType": true,
+            "TimeUnit": "01"
+          }
+        ]
+      }
+    },
+    {
+      "Header": "OSD-3DO-V1.5",
+      "MInstanceID": "Square",
+      "3DModelObjectID": "ApplauseSpeaker",
+      "3DModelObjectSpaceTime": {
+        "Header": "OSD-STM-V1.5",
+        "SimpleTimeID": "ApplauseSpeaker-st",
+        "SimpleTimeData": [
+          {
+            "FlagsByte": 3,
+            "StartTime": 0,
+            "EndTime": 0,
+            "AccuracyMode": "single",
+            "AccuracyPlusMinus": 0,
+            "TimeType": true,
+            "TimeUnit": "01"
+          }
+        ]
+      }
+    }
+  ]
+}

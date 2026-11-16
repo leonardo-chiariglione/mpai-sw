@@ -9,7 +9,8 @@ public enum ShowState { NotStarted, Running, Held, Ended }
 
 // What the engine asks the AIM to write: the Cue Point ID (Port Number 3), an RE Action ID (1) or a VE Action ID (2).
 public enum EventKind { CuePoint, REAction, VEAction }
-public sealed record EngineEvent(EventKind Kind, string Id);
+// Why: for an Action, the Cue and, in plain words with the Data Type, what met its Conditions (N-26: the Action ID carries it in its DescrMetadata, and so does the Data Out made from it).
+public sealed record EngineEvent(EventKind Kind, string Id, string? Why = null);
 
 // THE CUE ENGINE OF ACTION GENERATION (XRV-ACG). The show goes by the Cue List of the Script, one Cue at a time: the Cue Point is the current Cue, and the Cue Point ID is told to the
 // Status Interpretation AIMs. The Statuses they send are kept (the latest of each kind) and the groups of the current Cue are taken in the order of the Cue List: the first group whose
@@ -80,7 +81,7 @@ public sealed class CueEngine
                 // THE OPERATOR MOVES ON (the author, 2026-11-10): Go in a running show fires the current Cue as if its Conditions were met - its Actions are executed and the show goes to its
                 // next Cue. The group fired is the first one met, or else the first group of the Cue. A show with no operator has no one to move on: there Go changes nothing.
                 else if (State == ShowState.Running && script.HasOperator && current is not null && (current.Groups.FirstOrDefault(Met) ?? current.Groups.FirstOrDefault()) is { } forced)
-                    Fire(forced, events);
+                    Fire(forced, events, "the operator's Go (OperatorStatus, ShowControl Go)");
                 break;
             case "Hold":
                 if (State == ShowState.Running) State = ShowState.Held;
@@ -104,6 +105,9 @@ public sealed class CueEngine
 
     private void MoveTo(Cue cue, List<EngineEvent> events)
     {
+        // A Cue with no group can never fire (N-26, 2026-11-15): reaching it, the show has ended. The simplest way a Script can end the show from a group that is not the last of the
+        // Cue List (the schema has no 'end' for a NextCue).
+        if (cue.Groups.Count == 0) { history.Push(cue); End(); return; }
         current = cue;
         latest.Clear();                                         // a new Cue Point ID resets what the one before asked for
         cueSent = false;
@@ -140,11 +144,12 @@ public sealed class CueEngine
     }
 
     // A group of the current Cue fires: its RE Actions, then its VE Actions, then the show goes to its NextCue or to the next Cue of the list.
-    private void Fire(CueGroup group, List<EngineEvent> events)
+    private void Fire(CueGroup group, List<EngineEvent> events, string? forcedBy = null)
     {
         if (current is null) return;
-        foreach (var id in group.REActions) Action(EventKind.REAction, id, events);
-        foreach (var id in group.VEActions) Action(EventKind.VEAction, id, events);
+        var why = $"Cue {current.Id} ({current.Kind}): {forcedBy ?? MetBy(group)}";
+        foreach (var id in group.REActions) Action(EventKind.REAction, id, events, why);
+        foreach (var id in group.VEActions) Action(EventKind.VEAction, id, events, why);
         var next = group.NextCue is { } named ? script.Find(named) : NextInList(current);
         if (group.NextCue is not null && next is null) report($"the NextCue '{group.NextCue}' of Cue '{current.Id}' is not a Cue of the Script: the show ends");
         history.Push(current);
@@ -152,9 +157,31 @@ public sealed class CueEngine
     }
 
     // An Action ID identifies an Action of the Action Table; one it does not have is not executed. (A Mixed ID names the same entry as a plain one.)
-    private void Action(EventKind kind, string id, List<EngineEvent> events)
+    private void Action(EventKind kind, string id, List<EngineEvent> events, string? why = null)
     {
         if (table is not null && !table.Has(id)) { report($"the Action ID '{id}' is not an Action of the Action Table: not executed"); return; }
-        events.Add(new(kind, id));
+        events.Add(new(kind, id, why));
+    }
+
+    // In plain words, what met the Conditions of a group: for each Status target, the Status kind with its Data Type and what the latest Status says of each individual the target names.
+    private string MetBy(CueGroup group)
+    {
+        if (group.Targets.Count == 0) return script.HasOperator ? "no Condition: the Cue runs when the operator's Go starts the show" : "no Condition";
+        var parts = new List<string>();
+        foreach (var t in group.Targets)
+        {
+            var info = KindInfo.Of(t.Kind);
+            var have = latest.GetValueOrDefault(t.Kind);
+            var words = new List<string>();
+            foreach (var wanted in (t.Data?["IndividualStatuses"] as JsonArray)?.OfType<JsonObject>() ?? [])
+            {
+                var idKey = wanted.Select(p => p.Key).FirstOrDefault(k => k.EndsWith("ID", StringComparison.Ordinal) && k != "SeatID");
+                var match = (have?["IndividualStatuses"] as JsonArray)?.OfType<JsonObject>().FirstOrDefault(s => idKey is not null && JsonNode.DeepEquals(s[idKey], wanted[idKey]));
+                words.Add(Mpai.Xrv.Behaviour.Words(match ?? wanted, wanted));
+            }
+            if (words.Count == 0 && have?["ShowControl"] is JsonValue control) words.Add($"ShowControl {control}");
+            parts.Add($"{info.StatusKey} ({info.StatusHeader}): {(words.Count == 0 ? "met" : string.Join("; ", words))}");
+        }
+        return string.Join(" + ", parts);
     }
 }

@@ -71,15 +71,33 @@ public sealed class EndAimProcessor : IAimProcessor, IAimRunner
         var s = re ? "RE" : "VE";
         var content = dataIn[re ? "REDataIn" : "VEDataIn"] as JsonObject ?? new JsonObject();
         var performers = new List<JsonObject>(); var objects = new List<JsonObject>(); var participants = new List<JsonObject>(); var consoles = new List<JsonObject>();
+        var sounds = new Dictionary<Role, List<JsonObject>>();          // the Audio Objects of performers and participants: the Multimodal Scene Descriptors of their Family
 
-        void Place(string? name, JsonObject? control)
+        // N-26: what an element says of the person it describes - the body (a Body Descriptors Object), where it is and faces (a Spatial Attitude), its sound (an Audio Object).
+        void Add(JsonObject person, JsonObject? body, JsonObject? attitude)
+        {
+            if (attitude is not null) person["SpatialAttitude"] = attitude.DeepClone();
+            if (body is null) return;
+            if (re) person["BodyDescriptorsObject"] = body.DeepClone();
+            else
+            {
+                var id = person.First().Value!.GetValue<string>();
+                person["AvatarOrAvatarID"] = new JsonArray(new JsonObject { ["Header"] = "PAF-PAV-V1.6", ["PortableAvatarID"] = id, ["BodyDescriptorsObject"] = body.DeepClone() });
+            }
+        }
+
+        void Place(string? name, JsonObject? control, JsonObject? body = null, JsonObject? attitude = null, JsonObject? sound = null)
         {
             if (name is null) return;
             if (!sources.TryGetValue(name, out var source)) { unknown?.Invoke(name); return; }
+            if (sound is not null && source.Role is Role.Performer or Role.Participant)
+                (sounds.TryGetValue(source.Role, out var l) ? l : sounds[source.Role] = []).Add(sound);
             switch (source.Role)
             {
                 case Role.Performer:
-                    if (performers.All(p => p[$"{s}PerformerID"]!.GetValue<string>() != name)) performers.Add(new JsonObject { [$"{s}PerformerID"] = name });
+                    var performer = performers.FirstOrDefault(p => p[$"{s}PerformerID"]!.GetValue<string>() == name);
+                    if (performer is null) performers.Add(performer = new JsonObject { [$"{s}PerformerID"] = name });
+                    Add(performer, body, attitude);
                     break;
                 case Role.Object:
                     var o = new JsonObject { [$"{s}ObjectID"] = name };
@@ -89,6 +107,7 @@ public sealed class EndAimProcessor : IAimProcessor, IAimRunner
                 case Role.Participant:
                     var p = participants.FirstOrDefault(x => x[$"{s}ParticipantID"]!.GetValue<string>() == name);
                     if (p is null) participants.Add(p = new JsonObject { [$"{s}ParticipantID"] = name });
+                    Add(p, body, attitude);
                     if (control is not null)
                     {
                         if (re && source.SourceQualifier == "seat" && control["ControlData"]?.GetValue<string>() is { Length: > 0 } seat) p["SeatID"] = seat;
@@ -103,7 +122,11 @@ public sealed class EndAimProcessor : IAimProcessor, IAimRunner
 
         foreach (var (array, item, idKey) in MediaElements)
             foreach (var element in (content[array] as JsonArray) ?? [])
-                Place(element?[item]?[idKey]?.GetValue<string>(), null);
+            {
+                var o = element?[item] as JsonObject;
+                var (body, attitude) = Carried(o);
+                Place(o?[idKey]?.GetValue<string>(), null, body, attitude, array == "AudioObjects" ? o : null);
+            }
         foreach (var element in (content["ControlObjects"] as JsonArray) ?? [])
             if (element?["ControlObject"] is JsonObject control) Place(control["ControllerID"]?.GetValue<string>(), control);
 
@@ -116,10 +139,23 @@ public sealed class EndAimProcessor : IAimProcessor, IAimRunner
             return d;
         }
 
+        // The Audio Objects of a Family, as the Multimodal Scene Descriptors (OSD-MSD-V1.5) of its Descriptors: what the Status Interpretation hears.
+        void Scene(JsonObject d, Role role, Family family)
+        {
+            if (!sounds.TryGetValue(role, out var list) || list.Count == 0) return;
+            d["MultimodalSceneDescriptors"] = new JsonObject
+            {
+                ["Header"] = "OSD-MSD-V1.5", ["MultimodalSceneDescriptorsID"] = $"{id}-{family}-msd", ["MultimodalSceneDescriptorsSpaceTime"] = new JsonObject { ["Header"] = "OSD-SPT-V1.5", ["SpaceTimeID"] = $"{id}-{family}-msd-st" },
+                ["AudioObjectCount"] = list.Count,
+                ["AudioObjects"] = new JsonArray(list.Select(a => (JsonNode)new JsonObject { ["AudioObject"] = a.DeepClone() }).ToArray())
+            };
+        }
+
         var made = new List<(Family, JsonObject)>();
         if (performers.Count > 0 || objects.Count > 0)
         {
             var d = Head(Family.Performance);
+            Scene(d, Role.Performer, Family.Performance);
             d[$"{s}PerformanceDescriptorsData"] = new JsonArray(performers.Select(x => (JsonNode)x).ToArray());
             if (objects.Count > 0) d[$"{s}ObjectDescriptors"] = new JsonArray(objects.Select(x => (JsonNode)x).ToArray());
             made.Add((Family.Performance, d));
@@ -127,6 +163,7 @@ public sealed class EndAimProcessor : IAimProcessor, IAimRunner
         if (participants.Count > 0)
         {
             var d = Head(Family.Participant);
+            Scene(d, Role.Participant, Family.Participant);
             d[$"{s}ParticipantDescriptorsData"] = new JsonArray(participants.Select(x => (JsonNode)x).ToArray());
             made.Add((Family.Participant, d));
         }
@@ -144,6 +181,27 @@ public sealed class EndAimProcessor : IAimProcessor, IAimRunner
             made.Add((Family.Operator, d));
         }
         return made;
+    }
+
+    // WHAT AN ELEMENT OF A DATA IN CARRIES ABOUT A PERSON (N-26): a Body Descriptors Object (PAF-BDO-V1.6, the body) and a Spatial Attitude (OSD-OSA-V1.5, where it is and faces), each
+    // as the text of one Data item of a MoCap Object (its MoCap Data) or of a Metaverse Object (its Metaverse Object Data). The simplest places the schemas give (the Space-Time of a
+    // 3D Model Object is a Simple Time, with no Spatial Attitude); nothing is computed here.
+    public static (JsonObject? Body, JsonObject? Attitude) Carried(JsonObject? element)
+    {
+        JsonObject? body = null, attitude = null;
+        if (element is null) return (null, null);
+        foreach (var d in ((element["MoCapData"] ?? element["MetaverseObjectData"]) as JsonArray) ?? [])
+        {
+            if (d?["Data"] is not JsonValue v || !v.TryGetValue<string>(out var text) || !text.StartsWith('{')) continue;
+            JsonObject? o;
+            try { o = JsonNode.Parse(text) as JsonObject; } catch (System.Text.Json.JsonException) { continue; }
+            switch (o?["Header"]?.GetValue<string>())
+            {
+                case "PAF-BDO-V1.6": body = o; break;
+                case "OSD-OSA-V1.5": attitude = o; break;
+            }
+        }
+        return (body, attitude);
     }
 
     // The Show Descriptors: all the latest Descriptors of both sides, each under its own name.
