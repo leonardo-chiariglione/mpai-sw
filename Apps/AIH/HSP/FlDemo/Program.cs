@@ -184,6 +184,7 @@ internal static class Program
             current["MLModelObjectID"] = "model-0";
         }
         Say($"   watermark: {NoConstraint.MethodName(Bits, ValuesPerBit)}; {Bits * ValuesPerBit} weights of the network set by the mark and kept while the network was trained; the key stays with the Back End");
+        Say("   NOTICE: " + NoConstraint.Notice);
         if (Secure) Say("   the watermark key is a persistent key of the Back End's Security API (sealed to its code); its value goes only into memory, to the Key at the Input Port of WEX");
         Say($"   accuracy on the fixed check set of 200 cases: {Acc(current)}");
 

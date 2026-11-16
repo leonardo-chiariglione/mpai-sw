@@ -1,3 +1,6 @@
+// NOTICE. The NoConstraint watermarking method and its code is made available here by Institut Mines-Telecom for demonstration purposes.
+// Any other use, notably any commercial or industrial use of the software, shall be subject to specific and written agreement with Institut Mines Telecom.
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,7 +12,7 @@ using Mpai.Onnx;
 namespace Mpai.Nnw.NoConstraint;
 
 // THE NoConstraint WATERMARKING METHOD (IMT: patent application "Procédé pour protéger par traçage un réseau artificiel de neurones", filed 13 May 2025; C. De Sousa Trias,
-// "Robust Watermarking for Neural Networks in Multimedia Tasks", Chapter VII; analysed in M3304). The use of the method in this software awaits the licensing declaration of IMT.
+// "Robust Watermarking for Neural Networks in Multimedia Tasks", Chapter VII; analysed in M3304). Its use is subject to the notice of IMT at the top of this file (and NOTICE.txt).
 //
 //   Insertion: a subset of the weights is selected BY POSITION, and their values are REPLACED by the watermark W_X, values in [-0.2, 0.2]. The positions are secret.
 //              Nothing else is done: the training (if any) goes on as the task requires, with no term added to its loss.
@@ -33,6 +36,10 @@ namespace Mpai.Nnw.NoConstraint;
 //     where at least three are left. A Locator may name the tensors instead (Targets).
 public static class NoConstraint
 {
+    // The notice of Institut Mines-Telecom (NOTICE.txt): a program that uses the method shows it.
+    public const string Notice = "The NoConstraint watermarking method and its code is made available here by Institut Mines-Telecom for demonstration purposes. " +
+                                 "Any other use, notably any commercial or industrial use of the software, shall be subject to specific and written agreement with Institut Mines Telecom.";
+
     public const int ValuesPerBit = 64;
     public const double Smallest = 0.5, Largest = 2.0;            // the magnitudes of W_X, in standard deviations of the weights that carry it
     public const double Confidence95 = 1.6449;

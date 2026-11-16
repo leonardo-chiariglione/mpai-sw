@@ -1,3 +1,6 @@
+// NOTICE. The NoConstraint watermarking method and its code is made available here by Institut Mines-Telecom for demonstration purposes.
+// Any other use, notably any commercial or industrial use of the software, shall be subject to specific and written agreement with Institut Mines Telecom.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
