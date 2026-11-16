@@ -568,10 +568,15 @@ Done looks like: the demo works at 09:00 (Run-Door.cmd, then the page), with poi
 Needs: nothing.
 
 ### N-38 The XRV-LTP live demo rendered as a video (2026-11-16)
-Status: todo
+Status: done
 Request (author, 2026-11-16 evening, after the live demo): "this is good. you should make the rendering of this as a video as the first task for tonight's work starting at 23:30". The show as it runs live now: the larger Theatre stage with its red curtain, the scrim showing only the Square's performers, the portal showing only Anna, Anna and Bot in dialogue (no narrator), the guests in the gaps, the applause, all seven Cues. Render with Apps\XRV\LTP\TwoMetaverses (dotnet run -c Release --no-build, without --live), sound included.
 Done looks like: the mp4 in C:\Users\Thor\Downloads as "XRV-LTP Real-Virtual Environments demo.mp4" (the old XRV-LTP-two-metaverses-demo.mp4 of 2026-11-15 is left as it is); 14 Action IDs fired, 0 problems; checked on a few frames (Theatre stage large, scrim with the Square's performers only) and by the sound track (the voices are there).
 Needs: nothing.
+NOTE 2026-11-16 (23:30-23:45): DONE. File: C:\Users\Thor\Downloads\XRV-LTP Real-Virtual Environments demo.mp4 (1920x1080, H.264 + AAC stereo, 112.05 s = 1:52, 16,826,622 bytes); the older XRV-LTP-two-metaverses-demo.mp4 (2026-11-15) left as it is. Output folder D:\AI\Test\Results\2026-11-16\xrv-two-metaverses.
+Run: dotnet build -c Release (0 errors), then dotnet run -c Release --no-build (no --live). The show ran in full: "fired: 14 Action IDs; frames: 1038; problems: 0"; all seven AIMs Alive. Cues: C0 5.1 s, C1 12.6 s, C2 26.1 s, C3 43.5 s, C4 57.1 s, C5 78.2 s, C6a 95.9 s.
+Problem found and how I went round it (no change to the show, the stage page or the code): the frames were drawn (2240), then the sound mix stopped with FileNotFoundException D:\AI\Test\Results\2026-11-16\xrv-two-metaverses\AnnaVoice1.wav. Program.cs (Video.Mix, line 511) reads every voice from the output folder, but Show.RunAsync copies only applause.wav there (line 337); the 22 voice files are in Test\Data\XRV\LongerEvening. I copied the 22 *Voice*.wav files from there into the output folder (data only) and ran dotnet run -c Release --no-build -- --render-only, which draws the same recording (its log.json and sounds.json) again and mixes the sound: exit 0. To fix in the code later (author's choice): copy the voices to the output folder as applause.wav is, or let Mix read them from the show folder.
+Frames (20 s, 62 s, 99 s): the Theatre's stage fills the left picture with the red curtain behind it; the scrim shows only the Square's performers (Guest1 at 20 s; Guest1 and Bot at 62 s and 99 s) on dark blue, no buildings; inside the Square's portal only Anna appears (Guest1 and Bot stand on the Square's stage in front of it). 62 s: Theatre dark (C4), Square lamp full, fireflies; 99 s: confetti in the Theatre, fireworks over the Square (C6a).
+Sound (ffmpeg volumedetect, 2 s slices): 17 s (Anna) mean -22.3 dB, max -0.7 dB; 27 s (applause) mean -21.5 dB, max -2.0 dB; 59 s (Bot) mean -20.9 dB, max -0.7 dB; 5 s (before any voice) -91 dB, silent as expected.
 
 ### N-39 AIH-HSP: the Back End learning from one trained AIM at a time, with 300 End Users (2026-11-16)
 Status: todo
