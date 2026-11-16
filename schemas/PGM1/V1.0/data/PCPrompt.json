@@ -45,7 +45,10 @@
       "RightsRefs":             { "type": "array", "items": { "type": "string" }, "description": "Identifiers of the Rights that the A-User holds." },
       "WalletLimit":            { "type": "number", "minimum": 0 },
       "Rules":                  { "type": "array", "items": { "type": "string" }, "description": "Rules of the M-Instance that apply." },
-      "Affordances":            { "type": "array", "items": { "type": "string" }, "description": "Affordances of the Space, obtained from Domain Access." } } },
+      "Affordances":            { "type": "array", "items": { "type": "string" }, "description": "Affordances of the Space, obtained from Domain Access." },
+      "Items":                  { "type": "array", "items": { "type": "string" }, "description": "Identifiers of the Items of the Space that may be the Target of a Communicative Function." },
+      "Functions":              { "type": "array", "items": { "$ref": "https://schemas.mpai.community/PGM1/V1.0/data/CommunicativeFunctions.json#/$defs/FunctionName" }, "description": "The Communicative Functions that the Persona of the A-User can perform." },
+      "Behaviours":             { "type": "array", "items": { "$ref": "https://schemas.mpai.community/PGM1/V1.0/data/CommunicativeFunctions.json#/$defs/BehaviourName" }, "description": "The Behaviours that the Persona of the A-User can perform (needed for a Level 2 Final Response)." } } },
 
     "DataXMData":               { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
     "DescrMetadata":            { "type": "string", "maxLength": 2048 } } }

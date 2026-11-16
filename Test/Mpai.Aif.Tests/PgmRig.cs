@@ -145,21 +145,45 @@ internal sealed class PgmRig
     };
 }
 
-// A language model of the test's: it answers as a good one should, so that the rest of the slice is judged on its own.
+// A language model of the test's: it answers as a good one should, so that the rest of the slice is judged on its own. When the schema asks for Communicative Functions (Level 1 or 2)
+// it points at the doors on "the doors" and nods on "going"; at Level 2 it names, for each, the first Behaviour of its Function that the schema allows.
 internal sealed class ScriptedModel : ILanguageModel
 {
     public List<string> Asked { get; } = new();
+    public List<JsonObject> Schemas { get; } = new();
 
     public Task<string> AnswerAsync(string system, string user, JsonObject schema)
     {
         Asked.Add(user);
+        Schemas.Add(schema);
         var opens = user.Contains("open", StringComparison.OrdinalIgnoreCase);
         var answer = new JsonObject
         {
             ["reply"] = opens ? "I am going to open the doors." : "Yes.",
             ["worldActions"] = opens ? new JsonArray(new JsonObject { ["verb"] = "MU-Actuate", ["target"] = "doors" }) : new JsonArray(),
-            ["personaGestures"] = opens ? new JsonArray("nod", "walk-to-doors") : new JsonArray()
+            ["personaMoves"] = opens ? new JsonArray("doors") : new JsonArray()
         };
+        if (schema["properties"]?["functions"]?["items"]?["properties"] is JsonObject item)
+        {
+            string[] Enum(string name) => (item[name]?["enum"] as JsonArray)?.Select(x => (string)x!).ToArray() ?? [];
+            var functions = Enum("function"); var behaviours = Enum("behaviour");
+            var list = new JsonArray();
+            void Add(string function, string words, string target, double intensity, bool required)
+            {
+                if (!functions.Contains(function)) return;
+                var f = new JsonObject { ["function"] = function, ["words"] = words, ["target"] = target, ["intensity"] = intensity, ["required"] = required };
+                if (item.ContainsKey("behaviour"))
+                {
+                    var b = Communicative.BehavioursOf[function].FirstOrDefault(behaviours.Contains);
+                    if (b is null) return;
+                    f["behaviour"] = b;
+                }
+                list.Add(f);
+            }
+            if (opens) { Add("Deictic", "the doors", "doors", 0.8, true); Add("Affirmation", "going", "User", 0.4, false); }
+            else Add("Affirmation", "Yes", "User", 0.6, true);
+            answer["functions"] = list;
+        }
         return Task.FromResult(answer.ToJsonString());
     }
 }

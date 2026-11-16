@@ -1,0 +1,1506 @@
+{
+  "Model": "llama3.2:3b",
+  "Made": "2026-11-16 09:35",
+  "Runs": [
+    {
+      "Sentence": "go and open the doors",
+      "LevelRequested": 0,
+      "RunSeconds": 2.8,
+      "Invalid": [],
+      "Reply": "The doors are now open.",
+      "Words": [
+        {
+          "Word": "The",
+          "Start": 0,
+          "End": 0.245
+        },
+        {
+          "Word": "doors",
+          "Start": 0.245,
+          "End": 0.613
+        },
+        {
+          "Word": "are",
+          "Start": 0.613,
+          "End": 0.859
+        },
+        {
+          "Word": "now",
+          "Start": 0.859,
+          "End": 1.104
+        },
+        {
+          "Word": "open.",
+          "Start": 1.104,
+          "End": 1.533
+        }
+      ],
+      "SpeechSeconds": 1.53,
+      "FunctionsOutcome": {
+        "LevelRequested": 0,
+        "LevelProduced": 0,
+        "LevelDeclared": 2,
+        "FunctionCount": 0
+      },
+      "Functions": [],
+      "Plan": [],
+      "FunctionStatus": [],
+      "ProcessActions": [
+        "MU-Actuate doors"
+      ],
+      "Actions": [
+        {
+          "Header": "MMM-ACT-V2.2",
+          "Action": "MM-Animate"
+        }
+      ],
+      "Conformance": [],
+      "FaceAnimation": null,
+      "BodyAnimation": [
+        {
+          "Data": "MM-Animate: the Persona moves in the M-Instance"
+        }
+      ]
+    },
+    {
+      "Sentence": "go and open the doors",
+      "LevelRequested": 1,
+      "RunSeconds": 3.4,
+      "Invalid": [],
+      "Reply": "The doors are already open.",
+      "Words": [
+        {
+          "Word": "The",
+          "Start": 0,
+          "End": 0.248
+        },
+        {
+          "Word": "doors",
+          "Start": 0.248,
+          "End": 0.621
+        },
+        {
+          "Word": "are",
+          "Start": 0.621,
+          "End": 0.869
+        },
+        {
+          "Word": "already",
+          "Start": 0.869,
+          "End": 1.366
+        },
+        {
+          "Word": "open.",
+          "Start": 1.366,
+          "End": 1.8
+        }
+      ],
+      "SpeechSeconds": 1.8,
+      "FunctionsOutcome": {
+        "LevelRequested": 1,
+        "LevelProduced": 1,
+        "LevelDeclared": 2,
+        "FunctionCount": 1
+      },
+      "Functions": [
+        {
+          "FunctionID": "f1",
+          "Function": "Deictic",
+          "Target": {
+            "Kind": "Item",
+            "ID": "doors"
+          },
+          "Anchor": {
+            "Position": "During",
+            "FirstWord": 0,
+            "LastWord": 1
+          },
+          "Intensity": 0.6,
+          "Requirement": "Required"
+        }
+      ],
+      "Plan": [
+        {
+          "FunctionID": "f1",
+          "Function": "Deictic",
+          "Target": {
+            "Kind": "Item",
+            "ID": "doors"
+          },
+          "Anchor": {
+            "Position": "During",
+            "FirstWord": 0,
+            "LastWord": 1
+          },
+          "Intensity": 0.6,
+          "Requirement": "Required",
+          "Behaviour": {
+            "Name": "Point",
+            "BodyPart": "RightHand",
+            "TowardsTarget": true,
+            "Amplitude": 0.72
+          },
+          "Times": {
+            "Start": 0,
+            "Peak": 0.124,
+            "End": 0.821
+          }
+        }
+      ],
+      "FunctionStatus": [
+        {
+          "FunctionID": "f1",
+          "Status": "Realised",
+          "Behaviour": "Point"
+        }
+      ],
+      "ProcessActions": [
+        "MU-Actuate doors"
+      ],
+      "Actions": [
+        {
+          "Header": "MMM-ACT-V2.2",
+          "Action": "MM-Animate"
+        }
+      ],
+      "Conformance": [],
+      "FaceAnimation": null,
+      "BodyAnimation": [
+        {
+          "Data": "Point RightHand 0.00-0.82 peak 0.12 amplitude 0.72 towards doors (Deictic f1)"
+        },
+        {
+          "Data": "MM-Animate: the Persona moves in the M-Instance"
+        }
+      ]
+    },
+    {
+      "Sentence": "go and open the doors",
+      "LevelRequested": 2,
+      "RunSeconds": 3.4,
+      "Invalid": [],
+      "Reply": "The doors are now open.",
+      "Words": [
+        {
+          "Word": "The",
+          "Start": 0,
+          "End": 0.245
+        },
+        {
+          "Word": "doors",
+          "Start": 0.245,
+          "End": 0.613
+        },
+        {
+          "Word": "are",
+          "Start": 0.613,
+          "End": 0.859
+        },
+        {
+          "Word": "now",
+          "Start": 0.859,
+          "End": 1.104
+        },
+        {
+          "Word": "open.",
+          "Start": 1.104,
+          "End": 1.533
+        }
+      ],
+      "SpeechSeconds": 1.53,
+      "FunctionsOutcome": {
+        "LevelRequested": 2,
+        "LevelProduced": 2,
+        "LevelDeclared": 2,
+        "FunctionCount": 1
+      },
+      "Functions": [
+        {
+          "FunctionID": "f1",
+          "Function": "Deictic",
+          "Target": {
+            "Kind": "Item",
+            "ID": "doors"
+          },
+          "Anchor": {
+            "Position": "During",
+            "FirstWord": 0,
+            "LastWord": 1
+          },
+          "Intensity": 0.6,
+          "Requirement": "Required",
+          "Behaviour": {
+            "Name": "Point",
+            "BodyPart": "RightHand",
+            "TowardsTarget": true
+          }
+        }
+      ],
+      "Plan": [
+        {
+          "FunctionID": "f1",
+          "Function": "Deictic",
+          "Target": {
+            "Kind": "Item",
+            "ID": "doors"
+          },
+          "Anchor": {
+            "Position": "During",
+            "FirstWord": 0,
+            "LastWord": 1
+          },
+          "Intensity": 0.6,
+          "Requirement": "Required",
+          "Behaviour": {
+            "Name": "Point",
+            "BodyPart": "RightHand",
+            "TowardsTarget": true,
+            "Amplitude": 0.72
+          },
+          "Times": {
+            "Start": 0,
+            "Peak": 0.122,
+            "End": 0.813
+          }
+        }
+      ],
+      "FunctionStatus": [
+        {
+          "FunctionID": "f1",
+          "Status": "Realised",
+          "Behaviour": "Point"
+        }
+      ],
+      "ProcessActions": [
+        "MU-Actuate doors"
+      ],
+      "Actions": null,
+      "Conformance": [],
+      "FaceAnimation": null,
+      "BodyAnimation": [
+        {
+          "Data": "Point RightHand 0.00-0.81 peak 0.12 amplitude 0.72 towards doors (Deictic f1)"
+        }
+      ]
+    },
+    {
+      "Sentence": "hello! who are you?",
+      "LevelRequested": 0,
+      "RunSeconds": 1.2,
+      "Invalid": [],
+      "Reply": "I am your autonomous assistant in this metaverse building.",
+      "Words": [
+        {
+          "Word": "I",
+          "Start": 0,
+          "End": 0.129
+        },
+        {
+          "Word": "am",
+          "Start": 0.129,
+          "End": 0.322
+        },
+        {
+          "Word": "your",
+          "Start": 0.322,
+          "End": 0.644
+        },
+        {
+          "Word": "autonomous",
+          "Start": 0.644,
+          "End": 1.353
+        },
+        {
+          "Word": "assistant",
+          "Start": 1.353,
+          "End": 1.998
+        },
+        {
+          "Word": "in",
+          "Start": 1.998,
+          "End": 2.191
+        },
+        {
+          "Word": "this",
+          "Start": 2.191,
+          "End": 2.513
+        },
+        {
+          "Word": "metaverse",
+          "Start": 2.513,
+          "End": 3.158
+        },
+        {
+          "Word": "building.",
+          "Start": 3.158,
+          "End": 3.867
+        }
+      ],
+      "SpeechSeconds": 3.87,
+      "FunctionsOutcome": {
+        "LevelRequested": 0,
+        "LevelProduced": 0,
+        "LevelDeclared": 2,
+        "FunctionCount": 0
+      },
+      "Functions": [],
+      "Plan": [],
+      "FunctionStatus": [],
+      "ProcessActions": [],
+      "Actions": null,
+      "Conformance": [],
+      "FaceAnimation": null,
+      "BodyAnimation": null
+    },
+    {
+      "Sentence": "hello! who are you?",
+      "LevelRequested": 1,
+      "RunSeconds": 3,
+      "Invalid": [],
+      "Reply": "I am your assistant in this metaverse building.",
+      "Words": [
+        {
+          "Word": "I",
+          "Start": 0,
+          "End": 0.128
+        },
+        {
+          "Word": "am",
+          "Start": 0.128,
+          "End": 0.32
+        },
+        {
+          "Word": "your",
+          "Start": 0.32,
+          "End": 0.639
+        },
+        {
+          "Word": "assistant",
+          "Start": 0.639,
+          "End": 1.279
+        },
+        {
+          "Word": "in",
+          "Start": 1.279,
+          "End": 1.471
+        },
+        {
+          "Word": "this",
+          "Start": 1.471,
+          "End": 1.79
+        },
+        {
+          "Word": "metaverse",
+          "Start": 1.79,
+          "End": 2.43
+        },
+        {
+          "Word": "building.",
+          "Start": 2.43,
+          "End": 3.133
+        }
+      ],
+      "SpeechSeconds": 3.13,
+      "FunctionsOutcome": {
+        "LevelRequested": 1,
+        "LevelProduced": 1,
+        "LevelDeclared": 2,
+        "FunctionCount": 1
+      },
+      "Functions": [
+        {
+          "FunctionID": "f1",
+          "Function": "Greeting",
+          "Target": {
+            "Kind": "User"
+          },
+          "Anchor": {
+            "Position": "Before"
+          },
+          "Intensity": 0.8,
+          "Requirement": "Required"
+        }
+      ],
+      "Plan": [
+        {
+          "FunctionID": "f1",
+          "Function": "Greeting",
+          "Target": {
+            "Kind": "User"
+          },
+          "Anchor": {
+            "Position": "Before"
+          },
+          "Intensity": 0.8,
+          "Requirement": "Required",
+          "Behaviour": {
+            "Name": "Wave",
+            "BodyPart": "RightHand",
+            "TowardsTarget": true,
+            "Amplitude": 0.86
+          },
+          "Times": {
+            "Start": -0.8,
+            "Peak": -0.4,
+            "End": 0
+          }
+        }
+      ],
+      "FunctionStatus": [
+        {
+          "FunctionID": "f1",
+          "Status": "Realised",
+          "Behaviour": "Wave"
+        }
+      ],
+      "ProcessActions": [],
+      "Actions": null,
+      "Conformance": [],
+      "FaceAnimation": null,
+      "BodyAnimation": [
+        {
+          "Data": "Wave RightHand -0.80-0.00 peak -0.40 amplitude 0.86 towards User (Greeting f1)"
+        }
+      ]
+    },
+    {
+      "Sentence": "hello! who are you?",
+      "LevelRequested": 2,
+      "RunSeconds": 3,
+      "Invalid": [],
+      "Reply": "I am your assistant in this metaverse building.",
+      "Words": [
+        {
+          "Word": "I",
+          "Start": 0,
+          "End": 0.128
+        },
+        {
+          "Word": "am",
+          "Start": 0.128,
+          "End": 0.32
+        },
+        {
+          "Word": "your",
+          "Start": 0.32,
+          "End": 0.639
+        },
+        {
+          "Word": "assistant",
+          "Start": 0.639,
+          "End": 1.279
+        },
+        {
+          "Word": "in",
+          "Start": 1.279,
+          "End": 1.471
+        },
+        {
+          "Word": "this",
+          "Start": 1.471,
+          "End": 1.79
+        },
+        {
+          "Word": "metaverse",
+          "Start": 1.79,
+          "End": 2.43
+        },
+        {
+          "Word": "building.",
+          "Start": 2.43,
+          "End": 3.133
+        }
+      ],
+      "SpeechSeconds": 3.13,
+      "FunctionsOutcome": {
+        "LevelRequested": 2,
+        "LevelProduced": 2,
+        "LevelDeclared": 2,
+        "FunctionCount": 1
+      },
+      "Functions": [
+        {
+          "FunctionID": "f1",
+          "Function": "Greeting",
+          "Target": {
+            "Kind": "User"
+          },
+          "Anchor": {
+            "Position": "Before"
+          },
+          "Intensity": 0.8,
+          "Requirement": "Required",
+          "Behaviour": {
+            "Name": "Wave",
+            "BodyPart": "RightHand",
+            "TowardsTarget": true
+          }
+        }
+      ],
+      "Plan": [
+        {
+          "FunctionID": "f1",
+          "Function": "Greeting",
+          "Target": {
+            "Kind": "User"
+          },
+          "Anchor": {
+            "Position": "Before"
+          },
+          "Intensity": 0.8,
+          "Requirement": "Required",
+          "Behaviour": {
+            "Name": "Wave",
+            "BodyPart": "RightHand",
+            "TowardsTarget": true,
+            "Amplitude": 0.86
+          },
+          "Times": {
+            "Start": -0.8,
+            "Peak": -0.4,
+            "End": 0
+          }
+        }
+      ],
+      "FunctionStatus": [
+        {
+          "FunctionID": "f1",
+          "Status": "Realised",
+          "Behaviour": "Wave"
+        }
+      ],
+      "ProcessActions": [],
+      "Actions": null,
+      "Conformance": [],
+      "FaceAnimation": null,
+      "BodyAnimation": [
+        {
+          "Data": "Wave RightHand -0.80-0.00 peak -0.40 amplitude 0.86 towards User (Greeting f1)"
+        }
+      ]
+    },
+    {
+      "Sentence": "is the lamp on the table?",
+      "LevelRequested": 0,
+      "RunSeconds": 1.1,
+      "Invalid": [],
+      "Reply": "The lamp is on the table.",
+      "Words": [
+        {
+          "Word": "The",
+          "Start": 0,
+          "End": 0.247
+        },
+        {
+          "Word": "lamp",
+          "Start": 0.247,
+          "End": 0.556
+        },
+        {
+          "Word": "is",
+          "Start": 0.556,
+          "End": 0.741
+        },
+        {
+          "Word": "on",
+          "Start": 0.741,
+          "End": 0.926
+        },
+        {
+          "Word": "the",
+          "Start": 0.926,
+          "End": 1.173
+        },
+        {
+          "Word": "table.",
+          "Start": 1.173,
+          "End": 1.667
+        }
+      ],
+      "SpeechSeconds": 1.67,
+      "FunctionsOutcome": {
+        "LevelRequested": 0,
+        "LevelProduced": 0,
+        "LevelDeclared": 2,
+        "FunctionCount": 0
+      },
+      "Functions": [],
+      "Plan": [],
+      "FunctionStatus": [],
+      "ProcessActions": [],
+      "Actions": null,
+      "Conformance": [],
+      "FaceAnimation": null,
+      "BodyAnimation": null
+    },
+    {
+      "Sentence": "is the lamp on the table?",
+      "LevelRequested": 1,
+      "RunSeconds": 5,
+      "Invalid": [],
+      "Reply": "Yes, the lamp is on the table.",
+      "Words": [
+        {
+          "Word": "Yes,",
+          "Start": 0,
+          "End": 0.364
+        },
+        {
+          "Word": "the",
+          "Start": 0.364,
+          "End": 0.606
+        },
+        {
+          "Word": "lamp",
+          "Start": 0.606,
+          "End": 0.909
+        },
+        {
+          "Word": "is",
+          "Start": 0.909,
+          "End": 1.091
+        },
+        {
+          "Word": "on",
+          "Start": 1.091,
+          "End": 1.273
+        },
+        {
+          "Word": "the",
+          "Start": 1.273,
+          "End": 1.515
+        },
+        {
+          "Word": "table.",
+          "Start": 1.515,
+          "End": 2
+        }
+      ],
+      "SpeechSeconds": 2,
+      "FunctionsOutcome": {
+        "LevelRequested": 1,
+        "LevelProduced": 1,
+        "LevelDeclared": 2,
+        "FunctionCount": 3
+      },
+      "Functions": [
+        {
+          "FunctionID": "f1",
+          "Function": "Deictic",
+          "Target": {
+            "Kind": "Item",
+            "ID": "lamp"
+          },
+          "Anchor": {
+            "Position": "During",
+            "FirstWord": 1,
+            "LastWord": 2
+          },
+          "Intensity": 0.6,
+          "Requirement": "Required"
+        },
+        {
+          "FunctionID": "f2",
+          "Function": "Deictic",
+          "Target": {
+            "Kind": "Item",
+            "ID": "table"
+          },
+          "Anchor": {
+            "Position": "During",
+            "FirstWord": 5,
+            "LastWord": 6
+          },
+          "Intensity": 0.6,
+          "Requirement": "Required"
+        },
+        {
+          "FunctionID": "f3",
+          "Function": "Affirmation",
+          "Target": {
+            "Kind": "User"
+          },
+          "Anchor": {
+            "Position": "During",
+            "FirstWord": 0,
+            "LastWord": 0
+          },
+          "Intensity": 0.4,
+          "Requirement": "Optional"
+        }
+      ],
+      "Plan": [
+        {
+          "FunctionID": "f1",
+          "Function": "Deictic",
+          "Target": {
+            "Kind": "Item",
+            "ID": "lamp"
+          },
+          "Anchor": {
+            "Position": "During",
+            "FirstWord": 1,
+            "LastWord": 2
+          },
+          "Intensity": 0.6,
+          "Requirement": "Required",
+          "Behaviour": {
+            "Name": "Point",
+            "BodyPart": "RightHand",
+            "TowardsTarget": true,
+            "Amplitude": 0.72
+          },
+          "Times": {
+            "Start": 0.164,
+            "Peak": 0.485,
+            "End": 1.109
+          }
+        },
+        {
+          "FunctionID": "f2",
+          "Function": "Deictic",
+          "Target": {
+            "Kind": "Item",
+            "ID": "table"
+          },
+          "Anchor": {
+            "Position": "During",
+            "FirstWord": 5,
+            "LastWord": 6
+          },
+          "Intensity": 0.6,
+          "Requirement": "Required",
+          "Behaviour": {
+            "Name": "Point",
+            "BodyPart": "RightHand",
+            "TowardsTarget": true,
+            "Amplitude": 0.72
+          },
+          "Times": {
+            "Start": 1.073,
+            "Peak": 1.394,
+            "End": 2.2
+          }
+        },
+        {
+          "FunctionID": "f3",
+          "Function": "Affirmation",
+          "Target": {
+            "Kind": "User"
+          },
+          "Anchor": {
+            "Position": "During",
+            "FirstWord": 0,
+            "LastWord": 0
+          },
+          "Intensity": 0.4,
+          "Requirement": "Optional",
+          "Behaviour": {
+            "Name": "Nod",
+            "BodyPart": "Head",
+            "TowardsTarget": true,
+            "Amplitude": 0.58
+          },
+          "Times": {
+            "Start": 0,
+            "Peak": 0.182,
+            "End": 0.564
+          }
+        }
+      ],
+      "FunctionStatus": [
+        {
+          "FunctionID": "f1",
+          "Status": "Realised",
+          "Behaviour": "Point"
+        },
+        {
+          "FunctionID": "f2",
+          "Status": "Realised",
+          "Behaviour": "Point"
+        },
+        {
+          "FunctionID": "f3",
+          "Status": "Realised",
+          "Behaviour": "Nod"
+        }
+      ],
+      "ProcessActions": [],
+      "Actions": null,
+      "Conformance": [],
+      "FaceAnimation": null,
+      "BodyAnimation": [
+        {
+          "Data": "Point RightHand 0.16-1.11 peak 0.49 amplitude 0.72 towards lamp (Deictic f1)"
+        },
+        {
+          "Data": "Point RightHand 1.07-2.20 peak 1.39 amplitude 0.72 towards table (Deictic f2)"
+        },
+        {
+          "Data": "Nod Head 0.00-0.56 peak 0.18 amplitude 0.58 towards User (Affirmation f3)"
+        }
+      ]
+    },
+    {
+      "Sentence": "is the lamp on the table?",
+      "LevelRequested": 2,
+      "RunSeconds": 3,
+      "Invalid": [],
+      "Reply": "Yes, the lamp is on the table.",
+      "Words": [
+        {
+          "Word": "Yes,",
+          "Start": 0,
+          "End": 0.364
+        },
+        {
+          "Word": "the",
+          "Start": 0.364,
+          "End": 0.606
+        },
+        {
+          "Word": "lamp",
+          "Start": 0.606,
+          "End": 0.909
+        },
+        {
+          "Word": "is",
+          "Start": 0.909,
+          "End": 1.091
+        },
+        {
+          "Word": "on",
+          "Start": 1.091,
+          "End": 1.273
+        },
+        {
+          "Word": "the",
+          "Start": 1.273,
+          "End": 1.515
+        },
+        {
+          "Word": "table.",
+          "Start": 1.515,
+          "End": 2
+        }
+      ],
+      "SpeechSeconds": 2,
+      "FunctionsOutcome": {
+        "LevelRequested": 2,
+        "LevelProduced": 2,
+        "LevelDeclared": 2,
+        "FunctionCount": 1
+      },
+      "Functions": [
+        {
+          "FunctionID": "f1",
+          "Function": "Affirmation",
+          "Target": {
+            "Kind": "User"
+          },
+          "Anchor": {
+            "Position": "During",
+            "FirstWord": 0,
+            "LastWord": 0
+          },
+          "Intensity": 0.8,
+          "Requirement": "Required",
+          "Behaviour": {
+            "Name": "Nod",
+            "BodyPart": "Head",
+            "TowardsTarget": true
+          }
+        }
+      ],
+      "Plan": [
+        {
+          "FunctionID": "f1",
+          "Function": "Affirmation",
+          "Target": {
+            "Kind": "User"
+          },
+          "Anchor": {
+            "Position": "During",
+            "FirstWord": 0,
+            "LastWord": 0
+          },
+          "Intensity": 0.8,
+          "Requirement": "Required",
+          "Behaviour": {
+            "Name": "Nod",
+            "BodyPart": "Head",
+            "TowardsTarget": true,
+            "Amplitude": 0.86
+          },
+          "Times": {
+            "Start": 0,
+            "Peak": 0.182,
+            "End": 0.564
+          }
+        }
+      ],
+      "FunctionStatus": [
+        {
+          "FunctionID": "f1",
+          "Status": "Realised",
+          "Behaviour": "Nod"
+        }
+      ],
+      "ProcessActions": [],
+      "Actions": null,
+      "Conformance": [],
+      "FaceAnimation": null,
+      "BodyAnimation": [
+        {
+          "Data": "Nod Head 0.00-0.56 peak 0.18 amplitude 0.86 towards User (Affirmation f1)"
+        }
+      ]
+    },
+    {
+      "Sentence": "close the window, it is cold",
+      "LevelRequested": 0,
+      "RunSeconds": 1.5,
+      "Invalid": [],
+      "Reply": "The window is now closed.",
+      "Words": [
+        {
+          "Word": "The",
+          "Start": 0,
+          "End": 0.247
+        },
+        {
+          "Word": "window",
+          "Start": 0.247,
+          "End": 0.679
+        },
+        {
+          "Word": "is",
+          "Start": 0.679,
+          "End": 0.864
+        },
+        {
+          "Word": "now",
+          "Start": 0.864,
+          "End": 1.111
+        },
+        {
+          "Word": "closed.",
+          "Start": 1.111,
+          "End": 1.667
+        }
+      ],
+      "SpeechSeconds": 1.67,
+      "FunctionsOutcome": {
+        "LevelRequested": 0,
+        "LevelProduced": 0,
+        "LevelDeclared": 2,
+        "FunctionCount": 0
+      },
+      "Functions": [],
+      "Plan": [],
+      "FunctionStatus": [],
+      "ProcessActions": [
+        "MU-Actuate window"
+      ],
+      "Actions": null,
+      "Conformance": [],
+      "FaceAnimation": null,
+      "BodyAnimation": null
+    },
+    {
+      "Sentence": "close the window, it is cold",
+      "LevelRequested": 1,
+      "RunSeconds": 4.2,
+      "Invalid": [],
+      "Reply": "Closing the window now.",
+      "Words": [
+        {
+          "Word": "Closing",
+          "Start": 0,
+          "End": 0.491
+        },
+        {
+          "Word": "the",
+          "Start": 0.491,
+          "End": 0.736
+        },
+        {
+          "Word": "window",
+          "Start": 0.736,
+          "End": 1.165
+        },
+        {
+          "Word": "now.",
+          "Start": 1.165,
+          "End": 1.533
+        }
+      ],
+      "SpeechSeconds": 1.53,
+      "FunctionsOutcome": {
+        "LevelRequested": 1,
+        "LevelProduced": 1,
+        "LevelDeclared": 2,
+        "FunctionCount": 2
+      },
+      "Functions": [
+        {
+          "FunctionID": "f1",
+          "Function": "Deictic",
+          "Target": {
+            "Kind": "Item",
+            "ID": "window"
+          },
+          "Anchor": {
+            "Position": "During",
+            "FirstWord": 1,
+            "LastWord": 2
+          },
+          "Intensity": 0.6,
+          "Requirement": "Required"
+        },
+        {
+          "FunctionID": "f2",
+          "Function": "Beat",
+          "Target": {
+            "Kind": "User"
+          },
+          "Anchor": {
+            "Position": "During",
+            "FirstWord": 3,
+            "LastWord": 3
+          },
+          "Intensity": 0.8,
+          "Requirement": "Required"
+        }
+      ],
+      "Plan": [
+        {
+          "FunctionID": "f1",
+          "Function": "Deictic",
+          "Target": {
+            "Kind": "Item",
+            "ID": "window"
+          },
+          "Anchor": {
+            "Position": "During",
+            "FirstWord": 1,
+            "LastWord": 2
+          },
+          "Intensity": 0.6,
+          "Requirement": "Required",
+          "Behaviour": {
+            "Name": "Point",
+            "BodyPart": "RightHand",
+            "TowardsTarget": true,
+            "Amplitude": 0.72
+          },
+          "Times": {
+            "Start": 0.291,
+            "Peak": 0.613,
+            "End": 1.365
+          }
+        },
+        {
+          "FunctionID": "f2",
+          "Function": "Beat",
+          "Target": {
+            "Kind": "User"
+          },
+          "Anchor": {
+            "Position": "During",
+            "FirstWord": 3,
+            "LastWord": 3
+          },
+          "Intensity": 0.8,
+          "Requirement": "Required",
+          "Behaviour": {
+            "Name": "Stroke",
+            "BodyPart": "RightHand",
+            "TowardsTarget": true,
+            "Amplitude": 0.86
+          },
+          "Times": {
+            "Start": 0.965,
+            "Peak": 1.349,
+            "End": 1.733
+          }
+        }
+      ],
+      "FunctionStatus": [
+        {
+          "FunctionID": "f1",
+          "Status": "Realised",
+          "Behaviour": "Point"
+        },
+        {
+          "FunctionID": "f2",
+          "Status": "Realised",
+          "Behaviour": "Stroke"
+        }
+      ],
+      "ProcessActions": [
+        "MU-Actuate window"
+      ],
+      "Actions": null,
+      "Conformance": [],
+      "FaceAnimation": null,
+      "BodyAnimation": [
+        {
+          "Data": "Point RightHand 0.29-1.37 peak 0.61 amplitude 0.72 towards window (Deictic f1)"
+        },
+        {
+          "Data": "Stroke RightHand 0.97-1.73 peak 1.35 amplitude 0.86 towards User (Beat f2)"
+        }
+      ]
+    },
+    {
+      "Sentence": "close the window, it is cold",
+      "LevelRequested": 2,
+      "RunSeconds": 3.2,
+      "Invalid": [],
+      "Reply": "Closing the window now.",
+      "Words": [
+        {
+          "Word": "Closing",
+          "Start": 0,
+          "End": 0.491
+        },
+        {
+          "Word": "the",
+          "Start": 0.491,
+          "End": 0.736
+        },
+        {
+          "Word": "window",
+          "Start": 0.736,
+          "End": 1.165
+        },
+        {
+          "Word": "now.",
+          "Start": 1.165,
+          "End": 1.533
+        }
+      ],
+      "SpeechSeconds": 1.53,
+      "FunctionsOutcome": {
+        "LevelRequested": 2,
+        "LevelProduced": 2,
+        "LevelDeclared": 2,
+        "FunctionCount": 1
+      },
+      "Functions": [
+        {
+          "FunctionID": "f1",
+          "Function": "Beat",
+          "Target": {
+            "Kind": "User"
+          },
+          "Anchor": {
+            "Position": "During",
+            "FirstWord": 3,
+            "LastWord": 3
+          },
+          "Intensity": 0.8,
+          "Requirement": "Required",
+          "Behaviour": {
+            "Name": "Stroke",
+            "BodyPart": "RightHand",
+            "TowardsTarget": true
+          }
+        }
+      ],
+      "Plan": [
+        {
+          "FunctionID": "f1",
+          "Function": "Beat",
+          "Target": {
+            "Kind": "User"
+          },
+          "Anchor": {
+            "Position": "During",
+            "FirstWord": 3,
+            "LastWord": 3
+          },
+          "Intensity": 0.8,
+          "Requirement": "Required",
+          "Behaviour": {
+            "Name": "Stroke",
+            "BodyPart": "RightHand",
+            "TowardsTarget": true,
+            "Amplitude": 0.86
+          },
+          "Times": {
+            "Start": 0.965,
+            "Peak": 1.349,
+            "End": 1.733
+          }
+        }
+      ],
+      "FunctionStatus": [
+        {
+          "FunctionID": "f1",
+          "Status": "Realised",
+          "Behaviour": "Stroke"
+        }
+      ],
+      "ProcessActions": [
+        "MU-Actuate window"
+      ],
+      "Actions": null,
+      "Conformance": [],
+      "FaceAnimation": null,
+      "BodyAnimation": [
+        {
+          "Data": "Stroke RightHand 0.97-1.73 peak 1.35 amplitude 0.86 towards User (Beat f1)"
+        }
+      ]
+    },
+    {
+      "Sentence": "no, stop, wait a moment",
+      "LevelRequested": 0,
+      "RunSeconds": 1.2,
+      "Invalid": [],
+      "Reply": "What\u0027s wrong?",
+      "Words": [
+        {
+          "Word": "What\u0027s",
+          "Start": 0,
+          "End": 0.371
+        },
+        {
+          "Word": "wrong?",
+          "Start": 0.371,
+          "End": 0.867
+        }
+      ],
+      "SpeechSeconds": 0.87,
+      "FunctionsOutcome": {
+        "LevelRequested": 0,
+        "LevelProduced": 0,
+        "LevelDeclared": 2,
+        "FunctionCount": 0
+      },
+      "Functions": [],
+      "Plan": [],
+      "FunctionStatus": [],
+      "ProcessActions": [],
+      "Actions": null,
+      "Conformance": [],
+      "FaceAnimation": null,
+      "BodyAnimation": null
+    },
+    {
+      "Sentence": "no, stop, wait a moment",
+      "LevelRequested": 1,
+      "RunSeconds": 3,
+      "Invalid": [],
+      "Reply": "Let me just pause for a moment.",
+      "Words": [
+        {
+          "Word": "Let",
+          "Start": 0,
+          "End": 0.251
+        },
+        {
+          "Word": "me",
+          "Start": 0.251,
+          "End": 0.438
+        },
+        {
+          "Word": "just",
+          "Start": 0.438,
+          "End": 0.752
+        },
+        {
+          "Word": "pause",
+          "Start": 0.752,
+          "End": 1.127
+        },
+        {
+          "Word": "for",
+          "Start": 1.127,
+          "End": 1.378
+        },
+        {
+          "Word": "a",
+          "Start": 1.378,
+          "End": 1.503
+        },
+        {
+          "Word": "moment.",
+          "Start": 1.503,
+          "End": 2.067
+        }
+      ],
+      "SpeechSeconds": 2.07,
+      "FunctionsOutcome": {
+        "LevelRequested": 1,
+        "LevelProduced": 1,
+        "LevelDeclared": 2,
+        "FunctionCount": 1
+      },
+      "Functions": [
+        {
+          "FunctionID": "f1",
+          "Function": "Stop",
+          "Target": {
+            "Kind": "User"
+          },
+          "Anchor": {
+            "Position": "During",
+            "FirstWord": 5,
+            "LastWord": 6
+          },
+          "Intensity": 0.8,
+          "Requirement": "Required"
+        }
+      ],
+      "Plan": [
+        {
+          "FunctionID": "f1",
+          "Function": "Stop",
+          "Target": {
+            "Kind": "User"
+          },
+          "Anchor": {
+            "Position": "During",
+            "FirstWord": 5,
+            "LastWord": 6
+          },
+          "Intensity": 0.8,
+          "Requirement": "Required",
+          "Behaviour": {
+            "Name": "StopPalm",
+            "BodyPart": "RightHand",
+            "TowardsTarget": true,
+            "Amplitude": 0.86
+          },
+          "Times": {
+            "Start": 1.178,
+            "Peak": 1.44,
+            "End": 2.267
+          }
+        }
+      ],
+      "FunctionStatus": [
+        {
+          "FunctionID": "f1",
+          "Status": "Realised",
+          "Behaviour": "StopPalm"
+        }
+      ],
+      "ProcessActions": [],
+      "Actions": [
+        {
+          "Header": "MMM-ACT-V2.2",
+          "Action": "MM-Animate"
+        }
+      ],
+      "Conformance": [],
+      "FaceAnimation": null,
+      "BodyAnimation": [
+        {
+          "Data": "StopPalm RightHand 1.18-2.27 peak 1.44 amplitude 0.86 towards User (Stop f1)"
+        },
+        {
+          "Data": "MM-Animate: the Persona moves in the M-Instance"
+        }
+      ]
+    },
+    {
+      "Sentence": "no, stop, wait a moment",
+      "LevelRequested": 2,
+      "RunSeconds": 2.9,
+      "Invalid": [],
+      "Reply": "Wait a moment.",
+      "Words": [
+        {
+          "Word": "Wait",
+          "Start": 0,
+          "End": 0.292
+        },
+        {
+          "Word": "a",
+          "Start": 0.292,
+          "End": 0.408
+        },
+        {
+          "Word": "moment.",
+          "Start": 0.408,
+          "End": 0.933
+        }
+      ],
+      "SpeechSeconds": 0.93,
+      "FunctionsOutcome": {
+        "LevelRequested": 2,
+        "LevelProduced": 2,
+        "LevelDeclared": 2,
+        "FunctionCount": 1
+      },
+      "Functions": [
+        {
+          "FunctionID": "f1",
+          "Function": "Stop",
+          "Target": {
+            "Kind": "User"
+          },
+          "Anchor": {
+            "Position": "During",
+            "FirstWord": 0,
+            "LastWord": 2
+          },
+          "Intensity": 0.8,
+          "Requirement": "Required",
+          "Behaviour": {
+            "Name": "StopPalm",
+            "BodyPart": "RightHand",
+            "TowardsTarget": true
+          }
+        }
+      ],
+      "Plan": [
+        {
+          "FunctionID": "f1",
+          "Function": "Stop",
+          "Target": {
+            "Kind": "User"
+          },
+          "Anchor": {
+            "Position": "During",
+            "FirstWord": 0,
+            "LastWord": 2
+          },
+          "Intensity": 0.8,
+          "Requirement": "Required",
+          "Behaviour": {
+            "Name": "StopPalm",
+            "BodyPart": "RightHand",
+            "TowardsTarget": true,
+            "Amplitude": 0.86
+          },
+          "Times": {
+            "Start": 0,
+            "Peak": 0.146,
+            "End": 1.133
+          }
+        }
+      ],
+      "FunctionStatus": [
+        {
+          "FunctionID": "f1",
+          "Status": "Realised",
+          "Behaviour": "StopPalm"
+        }
+      ],
+      "ProcessActions": [],
+      "Actions": null,
+      "Conformance": [],
+      "FaceAnimation": null,
+      "BodyAnimation": [
+        {
+          "Data": "StopPalm RightHand 0.00-1.13 peak 0.15 amplitude 0.86 towards User (Stop f1)"
+        }
+      ]
+    }
+  ]
+}

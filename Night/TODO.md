@@ -12,6 +12,7 @@ How to write a request:
 Status is one of: todo, doing, done, blocked (the reason follows), skipped.
 Claude never deletes a request. A request that needs a decision from you is marked blocked with the question, and Claude goes on to the next one.
 
+
 ## Requests
 
 ORDER FOR THE NIGHT OF 2026-11-15/16 (author): N-27 first (the five SRS networks trained on 1, 5, 15, 30 and 60 minutes of LJ Speech: the author tests them on the morning of 2026-11-16) - start the training, which runs on the GPU by itself - then, while it runs, N-28 (PGM-AUA figures from the deck), N-29 (PRC, BKN, AUF after M3308), N-30 (AUC), N-31 (the new PGM-AUA software; its Ollama tests after the training), N-32 (the demo video re-rendered as Real-Virtual Environments, into the deck), with N-33 (AIH-HSP federated learning on chest X-rays) run alongside: its preparation and experiment 1 early (processor), then N-34 (TMA: the MEV records who, what, where and when), N-36 (the CUI App in the MAS App), experiment 2 of N-33 last - N-31 has priority over experiment 2, which moves to Monday night if needed (author); then any other request from the top as usual.
@@ -478,6 +479,7 @@ Request (author, 2026-11-15): "Implement the new version of PGM-AUA". After N-29
 - Tests: Level 0, 1 and 2 Final Responses (Level 2 written by hand in the test) all realised by AUF; a Required function not realisable is reported Not Realised; a BKN that answers above the Level requested fails conformance; every Data validates against its (new) schema; the end-to-end test with Ollama.
 Done looks like: tests pass (list them with the run times), what is real and what is stand-in, nothing committed.
 Needs: Ollama. THE GPU IS BUSY WITH N-27 (training uses 3.9 of 4 GB): run the Ollama tests after the N-27 training ends, or with Ollama on the processor (slower); say which.
+PROGRESS BY DAY 2026-11-16 (author: "i want to see pgm-aua working with the different options in BKN", "Yes, build it now"): DONE the BKN Levels part of N-29 (schemas: CFN, Final Response, PC Prompt, AUC-BKN, AUC-AUF, BPL new, AUF, FRD, AOG; upload set Downloads\Upload-2026-11-16, NOT uploaded) and of N-31 (BKN Level 0/1/2 with Ollama, AUC requests the Level capped by LevelDeclared, PRC ActionContext, Behaviour Planning Sub-AIM with word times, AOG/EFD/EBD from the planned Behaviours, AUC-AUF FunctionStatus; PgmLevelsTests Fast pass; PgmLevelsDemo with llama3.2:3b passes, page Downloads\PGM-AUA BKN Levels.html). LEFT for N-29/N-30/N-31: the web pages and the PRC/BKN/AUF spec text; no PAF-PDX in the Module (deck slide 19); Process Actions through MmmClient to the reference M-Instance; a real voice in the demo. Nothing committed.
 
 ### N-32 XRV-LTP demo video re-rendered as "Real-Virtual Environments", and put in the deck (2026-11-15)
 Status: todo

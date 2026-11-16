@@ -240,6 +240,7 @@
   "PGM1/V1.0/AIMs/AutomaticSpeechRecognition.json": "valid",
   "PGM1/V1.0/AIMs/AutonomousUser.json": "valid",
   "PGM1/V1.0/AIMs/BasicKnowledge.json": "valid",
+  "PGM1/V1.0/AIMs/BehaviourPlanning.json": "valid",
   "PGM1/V1.0/AIMs/BehaviouralandExpressiveAnalysis.json": "valid",
   "PGM1/V1.0/AIMs/ContextDescription.json": "valid",
   "PGM1/V1.0/AIMs/ContextDescriptionDemultiplexing.json": "valid",

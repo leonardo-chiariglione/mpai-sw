@@ -13,7 +13,7 @@ public sealed class PgmProvider : IAimProvider
     public static readonly string[] Aims =
     [
         "1PGM-AUC-V1.0-I01", "1PGM-CXT-V1.0-I01", "1PGM-PRC-V1.0-I01", "1PGM-BKN-V1.0-I01", "1PGM-DAC-V1.0-I01", "1PGM-USR-V1.0-I01", "1PGM-PAL-V1.0-I01", "1PGM-AUF-V1.0-I01",
-        "1PGM-PSD-V1.0-I01", "1PGM-FRD-V1.0-I01", "1PGM-AOG-V1.0-I01", "1PGM-EFD-V1.0-I01", "1PGM-EBD-V1.0-I01"
+        "1PGM-PSD-V1.0-I01", "1PGM-FRD-V1.0-I01", "1PGM-BPL-V1.0-I01", "1PGM-AOG-V1.0-I01", "1PGM-EFD-V1.0-I01", "1PGM-EBD-V1.0-I01"
     ];
 
     private readonly AmdStore _store;
@@ -34,23 +34,27 @@ public sealed class PgmProvider : IAimProvider
     {
         AimPortReader Ports(string name) => AimPortReader.Load(_store, name);
         var persona = settings.TryGetValue(BknAim.PersonaSetting, out var p) && p.Length > 0 ? p : "a-user-persona";
+        string[]? List(string key) => settings.TryGetValue(key, out var v) && v.Length > 0 ? v.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) : null;
+        int? Number(string key) => settings.TryGetValue(key, out var v) && int.TryParse(v, out var n) ? n : null;
+        var behaviours = List(BplAim.BehavioursSetting);
         return aimName switch
         {
-            "1PGM-AUC-V1.0-I01" => new AucAim(aimName, Ports(aimName)),
+            "1PGM-AUC-V1.0-I01" => new AucAim(aimName, Ports(aimName)) { FunctionLevel = Number(AucAim.LevelSetting) ?? 1 },
             "1PGM-CXT-V1.0-I01" => new CxtAim(aimName, Ports(aimName), _recogniser),
-            "1PGM-PRC-V1.0-I01" => new PrcAim(aimName, Ports(aimName)),
-            "1PGM-BKN-V1.0-I01" => new BknAim(aimName, Ports(aimName), _model ?? OllamaModel.From(settings), persona),
+            "1PGM-PRC-V1.0-I01" => new PrcAim(aimName, Ports(aimName)) { Items = List(PrcAim.ItemsSetting) ?? ["doors", "window", "table", "lamp"], PersonaBehaviours = behaviours ?? Communicative.Behaviours },
+            "1PGM-BKN-V1.0-I01" => new BknAim(aimName, Ports(aimName), _model ?? OllamaModel.From(settings), persona) { LevelDeclared = Number(BknAim.LevelSetting) ?? 1 },
             "1PGM-DAC-V1.0-I01" => new DacAim(aimName, Ports(aimName)),
             "1PGM-USR-V1.0-I01" => new UsrAim(aimName, Ports(aimName)),
             "1PGM-PAL-V1.0-I01" => new PalAim(aimName, Ports(aimName)),
             "1PGM-PSD-V1.0-I01" => new PsdAim(aimName, Ports(aimName)),
             "1PGM-FRD-V1.0-I01" => new FrdAim(aimName, Ports(aimName)),
+            "1PGM-BPL-V1.0-I01" => new BplAim(aimName, Ports(aimName), behaviours),
             "1PGM-AOG-V1.0-I01" => new AogAim(aimName, Ports(aimName)),
             "1PGM-EFD-V1.0-I01" => new EfdAim(aimName, Ports(aimName)),
             "1PGM-EBD-V1.0-I01" => new EbdAim(aimName, Ports(aimName)),
             // The composite builds its Sub-AIMs from their own Metadata.
             "1PGM-AUF-V1.0-I01" => new AufAim(aimName, Ports(aimName),
-                (PsdAim)Make("1PGM-PSD-V1.0-I01", settings), (FrdAim)Make("1PGM-FRD-V1.0-I01", settings), (AogAim)Make("1PGM-AOG-V1.0-I01", settings), (EfdAim)Make("1PGM-EFD-V1.0-I01", settings),
+                (PsdAim)Make("1PGM-PSD-V1.0-I01", settings), (FrdAim)Make("1PGM-FRD-V1.0-I01", settings), (BplAim)Make("1PGM-BPL-V1.0-I01", settings), (AogAim)Make("1PGM-AOG-V1.0-I01", settings), (EfdAim)Make("1PGM-EFD-V1.0-I01", settings),
                 (EbdAim)Make("1PGM-EBD-V1.0-I01", settings), _voice, settings.TryGetValue("Avatar.Id", out var a) && a.Length > 0 ? a : "a-user-avatar"),
             _ => throw new NotSupportedException($"PgmProvider does not provide '{aimName}'.")
         };

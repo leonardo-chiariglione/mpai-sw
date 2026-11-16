@@ -1,0 +1,106 @@
+{
+  "Identifier": {
+    "ImplementerID": "1",
+    "ImplementationID": "PGM-BPL-V1.0-I01",
+    "AIMName": "1PGM-BPL-V1.0-I01"
+  },
+  "Header": "PGM-BPL-V1.0",
+  "APIProfile": "Basic",
+  "OnDegraded": "Continue",
+  "Description": "The Behaviour Planning (PGM-BPL) AIM is a Sub-AIM of A-User Formation (PGM-AUF). It receives the Communicative Functions of the Final Response and, for each function that carries no Behaviour, chooses the Behaviour that realises it on the Persona of the A-User, from the closed list of its Function and among the Behaviours of the Avatar Model; for a function that carries a Behaviour it checks that the Persona can perform it. It times every Behaviour on the words of its Anchor, aligning the Text with the Machine Speech, and gives the Communicative Functions, each with its Behaviour and its times, to Animation Object Generation. It is driven by the AUC-AUF Request and reports, in its AUC-AUF Response, for each function, Realised, Modified or Not Realised with the reason.",
+  "InternalTypes": [],
+  "ExternalPorts": [
+    {
+      "Name": "AUCAUFRequest",
+      "Direction": "Input",
+      "DataType": "PGM-UCF-V1.0",
+      "Technology": "Software",
+      "Protocol": "",
+      "IsRemote": false
+    },
+    {
+      "Name": "CommunicativeFunctions",
+      "Direction": "Input",
+      "DataType": "PGM-CFN-V1.0",
+      "Technology": "Software",
+      "Protocol": "",
+      "IsRemote": false
+    },
+    {
+      "Name": "Text",
+      "Direction": "Input",
+      "DataType": "OSD-BTO-V1.5",
+      "Technology": "Software",
+      "Protocol": "",
+      "IsRemote": false
+    },
+    {
+      "Name": "MachineSpeech",
+      "Direction": "Input",
+      "DataType": "OSD-BSO-V1.5",
+      "Technology": "Software",
+      "Protocol": "",
+      "IsRemote": false,
+      "IsOptional": true
+    },
+    {
+      "Name": "AvatarModel",
+      "Direction": "Input",
+      "DataType": "OSD-B3O-V1.5",
+      "Technology": "Software",
+      "Protocol": "",
+      "IsRemote": false,
+      "IsOptional": true
+    },
+    {
+      "Name": "CommunicativeFunctions",
+      "Direction": "Output",
+      "DataType": "PGM-CFN-V1.0",
+      "Technology": "Software",
+      "Protocol": "",
+      "IsRemote": false
+    },
+    {
+      "Name": "AUCAUFResponse",
+      "Direction": "Output",
+      "DataType": "PGM-UCF-V1.0",
+      "Technology": "Software",
+      "Protocol": "",
+      "IsRemote": false
+    }
+  ],
+  "SubAIMs": [],
+  "Topology": [],
+  "Implementations": [
+    {
+      "ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/AIMs/AMDs/1PGM-BPL-V1.0-I01.json",
+      "MASPort": 443,
+      "BinaryName": "Mpai.Pgm.Bpl",
+      "Architecture": "x86-64",
+      "OperatingSystem": "Windows",
+      "Version": "1.0",
+      "Source": "AIMStorage"
+    }
+  ],
+  "ResourcePolicies": [
+    {
+      "Name": "Memory",
+      "Minimum": "0.1 GB",
+      "Request": "0.2 GB",
+      "Maximum": "0.5 GB"
+    },
+    {
+      "Name": "CPU:Class",
+      "Minimum": "Low",
+      "Request": "Low",
+      "Maximum": "Medium"
+    }
+  ],
+  "DataXMData": {},
+  "Documentation": [
+    {
+      "Type": "Specification",
+      "URI": "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/behaviour-planning/"
+    }
+  ]
+}

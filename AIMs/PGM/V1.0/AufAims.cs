@@ -41,12 +41,12 @@ public sealed class PsdAim : PgmAim
 // A Port carries one Message at a time: of the Actions the Port carries the first (in this slice Basic Knowledge gives at most one).
 public sealed class FrdAim : PgmAim
 {
-    private readonly string _request, _final, _text, _action, _actions, _response;
+    private readonly string _request, _final, _text, _functions, _action, _actions, _response;
 
     public FrdAim(string instanceId, AimPortReader ports) : base(instanceId, ports)
     {
         _request = In(Auc.Auf); _final = In("PGM-FRS-V1.0");
-        _text = Out("OSD-BTO-V1.5"); _action = Out("MMM-ACT-V2.2"); _actions = Out("MMM-PAT-V2.2"); _response = Out(Auc.Auf);
+        _text = Out("OSD-BTO-V1.5"); _functions = Out(Communicative.Header); _action = Out("MMM-ACT-V2.2"); _actions = Out("MMM-PAT-V2.2"); _response = Out(Auc.Auf);
     }
 
     public override Task<Message> ProcessAsync(Message message)
@@ -55,6 +55,18 @@ public sealed class FrdAim : PgmAim
         if (Read(message, _final) is { } fr)
         {
             if (fr["Text"] is JsonObject text) outputs.Add((_text, text.DeepClone()));
+            // The Communicative Functions, as a Communicative Functions Data Type for Behaviour Planning (a Level 0 Final Response has none).
+            if (fr["CommunicativeFunctions"] is JsonArray { Count: > 0 } functions)
+            {
+                var cfn = new JsonObject { ["Header"] = Communicative.Header };
+                Session.Of(fr).Stamp(cfn);
+                cfn["CommunicativeFunctionsID"] = NewId("cfn");
+                cfn["CommunicativeFunctionsTime"] = Time();
+                cfn["FinalResponseID"] = (string?)fr["FinalResponseID"] ?? "";
+                cfn["Level"] = Communicative.LevelOf(fr);
+                cfn["Functions"] = functions.DeepClone();
+                outputs.Add((_functions, cfn));
+            }
             if (fr["Actions"] is JsonArray { Count: > 0 } actions && actions[0] is JsonObject first) outputs.Add((_action, first.DeepClone()));
             if (fr["ProcessActions"] is JsonObject processActions) outputs.Add((_actions, processActions.DeepClone()));
             if (Read(message, _request) is { } rq && Auc.IsRequest(rq)) outputs.Add((_response, AufResponse.Make(rq)));
@@ -63,43 +75,53 @@ public sealed class FrdAim : PgmAim
     }
 }
 
-// PGM-AOG-V1.0 - Animation Object Generation. Generates the animation of the Persona of the A-User from an Action of MMM-TEC V2.2 that goes with the text: for MM-Animate, a Face Animation
-// Object (PAF-AMO, Port 1) and a Body Animation Object (PAF-AMO, Port 2). A STUB of this slice: the Animation Qualifier names a symbolic pose (PoseToken) and the data is the Action itself;
-// the frames of the face (FACS) and of the body (BAP, BVH), from the text and the speech, are for Entity Face Description and Entity Body Description to make.
+// PGM-AOG-V1.0 - Animation Object Generation. Generates the animation of the Persona of the A-User from the Communicative Functions planned by Behaviour Planning (each with its Behaviour
+// and its times) and from an Action of MMM-TEC V2.2 that goes with the text (MM-Animate: the Persona moves in the M-Instance): a Face Animation Object (PAF-AMO, Port 1) with the
+// Behaviours of the eyes and the face, and a Body Animation Object (PAF-AMO, Port 2) with those of the head, the hands and the torso. A STUB of the movement: the Animation Qualifier
+// names a symbolic format (PoseToken) and each item of the data is one timed Behaviour ("Nod Head 1.20-1.90 peak 1.45 amplitude 0.65 towards User"); the frames of the face (FACS) and
+// of the body (BAP, BVH) are for a realiser to make.
 public sealed class AogAim : PgmAim
 {
-    private readonly string _request, _action, _face, _body, _response;
+    private readonly string _request, _functions, _action, _face, _body, _response;
 
     public AogAim(string instanceId, AimPortReader ports) : base(instanceId, ports)
     {
-        _request = In(Auc.Auf); _action = In("MMM-ACT-V2.2");
+        _request = In(Auc.Auf); _functions = In(Communicative.Header); _action = In("MMM-ACT-V2.2");
         _face = Out("PAF-AMO-V1.6", 1); _body = Out("PAF-AMO-V1.6", 2); _response = Out(Auc.Auf);
     }
 
-    private JsonObject Animation(string idPrefix, string action) => new()
+    private JsonObject Animation(string idPrefix, IEnumerable<string> items) => new()
     {
         ["Header"] = "PAF-AMO-V1.6", ["AnimationObjectID"] = NewId(idPrefix),
-        ["AnimationObjectData"] = new JsonArray(new JsonObject { ["Data"] = action }),
+        ["AnimationObjectData"] = new JsonArray(items.Select(i => (JsonNode)new JsonObject { ["Data"] = i }).ToArray()),
         ["AnimationQualifier"] = new JsonObject { ["Header"] = "TFA-AMQ-V1.5", ["AnimationQualifierID"] = NewId("amq"), ["SubTypes"] = "Animation", ["Formats"] = new JsonObject { ["ContentFormat"] = "PoseToken" } }
     };
 
     public override Task<Message> ProcessAsync(Message message)
     {
         var outputs = new List<(string, JsonNode?)>();
-        if (Read(message, _action) is { } action)
+        var action = Read(message, _action);
+        var functions = Read(message, _functions);
+        if (action is null && functions is null) return Done(Give(message, outputs));
+
+        var face = new List<string>(); var body = new List<string>();
+        foreach (var f in functions?["Functions"] as JsonArray ?? [])
         {
-            var keyword = (string?)action["Action"] ?? "";
-            if (keyword == "MM-Animate")
-            {
-                outputs.Add((_face, Animation("fan", keyword)));
-                outputs.Add((_body, Animation("ban", keyword)));
-            }
-            if (Read(message, _request) is { } rq && Auc.IsRequest(rq))
-            {
-                var r = AufResponse.Make(rq);
-                r["ActionStatus"] = new JsonArray(new JsonObject { ["Action"] = keyword, ["Status"] = keyword == "MM-Animate" ? "completed" : "failed" });
-                outputs.Add((_response, r));
-            }
+            if (f is not JsonObject o || (string?)o["Behaviour"]?["Name"] is not { } b) continue;
+            var t = o["Times"];
+            var target = o["Target"] is JsonObject tg ? " towards " + ((string?)tg["ID"] ?? (string?)tg["Kind"]) : "";
+            var item = $"{b} {(string?)o["Behaviour"]?["BodyPart"]} {(double?)t?["Start"]:0.00}-{(double?)t?["End"]:0.00} peak {(double?)t?["Peak"]:0.00} amplitude {(double?)o["Behaviour"]?["Amplitude"]:0.00}{target} ({(string?)o["Function"]} {(string?)o["FunctionID"]})";
+            (Communicative.IsFace(b) ? face : body).Add(item);
+        }
+        var keyword = (string?)action?["Action"] ?? "";
+        if (keyword == "MM-Animate") body.Add("MM-Animate: the Persona moves in the M-Instance");
+        if (face.Count > 0) outputs.Add((_face, Animation("fan", face)));
+        if (body.Count > 0) outputs.Add((_body, Animation("ban", body)));
+        if (Read(message, _request) is { } rq && Auc.IsRequest(rq))
+        {
+            var r = AufResponse.Make(rq);
+            if (action is not null) r["ActionStatus"] = new JsonArray(new JsonObject { ["Action"] = keyword, ["Status"] = keyword == "MM-Animate" ? "completed" : "failed" });
+            outputs.Add((_response, r));
         }
         return Done(Give(message, outputs));
     }
@@ -122,7 +144,7 @@ public sealed class EfdAim : PgmAim
         var outputs = new List<(string, JsonNode?)>();
         if (Read(message, _speech) is not null)
         {
-            var note = Read(message, _motion)?["AnimationObjectData"]?[0]?["Data"] is JsonValue g ? $"speaking; gesture {(string?)g}" : "speaking";
+            var note = Read(message, _motion)?["AnimationObjectData"] is JsonArray { Count: > 0 } g ? "speaking; " + string.Join("; ", g.Select(i => (string?)i?["Data"])) : "speaking";
             outputs.Add((_face, new JsonObject
             {
                 ["Header"] = "PAF-FDO-V1.6", ["FaceDescriptorsObjectID"] = NewId("fdo"),
@@ -150,7 +172,7 @@ public sealed class EbdAim : PgmAim
         var outputs = new List<(string, JsonNode?)>();
         if (Read(message, _final) is not null)
         {
-            var note = Read(message, _motion)?["AnimationObjectData"]?[0]?["Data"] is JsonValue g ? $"gesture {(string?)g}" : "at rest";
+            var note = Read(message, _motion)?["AnimationObjectData"] is JsonArray { Count: > 0 } g ? string.Join("; ", g.Select(i => (string?)i?["Data"])) : "at rest";
             outputs.Add((_body, new JsonObject
             {
                 ["Header"] = "PAF-BDO-V1.6", ["BodyDescriptorsObjectID"] = NewId("bdo"),
@@ -179,14 +201,20 @@ public static class AufResponse
 public sealed class AufAim : PgmAim
 {
     private readonly string _request, _model, _speechModel, _final, _state, _avatar, _response, _actions, _avatarIdPort;
-    private readonly PsdAim _psd; private readonly FrdAim _frd; private readonly AogAim _aog; private readonly EfdAim _efd; private readonly EbdAim _ebd;
+    private readonly PsdAim _psd; private readonly FrdAim _frd; private readonly BplAim _bpl; private readonly AogAim _aog; private readonly EfdAim _efd; private readonly EbdAim _ebd;
     private readonly ISpeechSynthesiser _voice;
     private readonly string _avatarId;
     private JsonObject? _pendingRequest, _pendingFinal, _avatarModel, _aUserState, _speechModelObject;
 
-    public AufAim(string instanceId, AimPortReader ports, PsdAim psd, FrdAim frd, AogAim aog, EfdAim efd, EbdAim ebd, ISpeechSynthesiser voice, string avatarId = "a-user-avatar") : base(instanceId, ports)
+    // What the last formation planned and animated (for a report): the Communicative Functions with their Behaviours and times, the Face and Body Animation Objects.
+    public JsonObject? LastPlan { get; private set; }
+    public JsonObject? LastFaceAnimation { get; private set; }
+    public JsonObject? LastBodyAnimation { get; private set; }
+    public double? LastSpeechSeconds { get; private set; }
+
+    public AufAim(string instanceId, AimPortReader ports, PsdAim psd, FrdAim frd, BplAim bpl, AogAim aog, EfdAim efd, EbdAim ebd, ISpeechSynthesiser voice, string avatarId = "a-user-avatar") : base(instanceId, ports)
     {
-        (_psd, _frd, _aog, _efd, _ebd, _voice, _avatarId) = (psd, frd, aog, efd, ebd, voice, avatarId);
+        (_psd, _frd, _bpl, _aog, _efd, _ebd, _voice, _avatarId) = (psd, frd, bpl, aog, efd, ebd, voice, avatarId);
         _request = In(Auc.Auf); _model = In("OSD-B3O-V1.5"); _speechModel = In("AIP-MLO-V1.0"); _final = In("PGM-FRS-V1.0"); _state = In("MMC-EST-V2.5"); _avatarIdPort = In("OSD-IID-V1.5");
         _avatar = Out("PAF-PAV-V1.6"); _response = Out(Auc.Auf); _actions = Out("MMM-PAT-V2.2");
     }
@@ -211,15 +239,33 @@ public sealed class AufAim : PgmAim
         {
             Ports = With(_psd, (_psd.InputKey("MMC-EST-V2.5"), _aUserState), (_psd.InputKey(Auc.Auf), request))
         });
-        // 2. Final Response Demultiplexing, 3. Animation Object Generation
+        // 2. Final Response Demultiplexing
         var frd = await _frd.ProcessAsync(new Message { Ports = With(_frd, (_frd.InputKey(Auc.Auf), request), (_frd.InputKey("PGM-FRS-V1.0"), final)) });
         var others = Take(frd, _frd, "MMM-PAT-V2.2");
-        var aog = await _aog.ProcessAsync(new Message { Ports = With(_aog, (_aog.InputKey(Auc.Auf), request), (_aog.InputKey("MMM-ACT-V2.2"), Take(frd, _frd, "MMM-ACT-V2.2"))) });
-        var faceMotion = Take(aog, _aog, "PAF-AMO-V1.6", 1); var bodyMotion = Take(aog, _aog, "PAF-AMO-V1.6", 2);
-        // 4. Text-To-Speech
-        var words = TextOf(Take(frd, _frd, "OSD-BTO-V1.5") ?? final["Text"] as JsonObject) ?? "";
+        // 3. Text-To-Speech
+        var textObject = Take(frd, _frd, "OSD-BTO-V1.5") ?? final["Text"] as JsonObject;
+        var words = TextOf(textObject) ?? "";
         var speech = words.Length > 0 ? await _voice.SynthesiseAsync(words) : null;
-        // 5. Entity Face Description, 6. Entity Body Description
+        LastSpeechSeconds = Communicative.SecondsOf(speech);
+        // 4. Behaviour Planning: a Behaviour and its times on the Machine Speech for every Communicative Function (none at Level 0)
+        var functions = Take(frd, _frd, Communicative.Header);
+        Message? bpl = null;
+        if (functions is not null)
+            bpl = await _bpl.ProcessAsync(new Message
+            {
+                Ports = With(_bpl, (_bpl.InputKey(Auc.Auf), request), (_bpl.InputKey(Communicative.Header), functions), (_bpl.InputKey("OSD-BTO-V1.5"), textObject),
+                    (_bpl.InputKey("OSD-BSO-V1.5"), speech), (_bpl.InputKey("OSD-B3O-V1.5"), _avatarModel))
+            });
+        var plan = bpl is null ? null : Take(bpl, _bpl, Communicative.Header);
+        LastPlan = plan;
+        // 5. Animation Object Generation
+        var aog = await _aog.ProcessAsync(new Message
+        {
+            Ports = With(_aog, (_aog.InputKey(Auc.Auf), request), (_aog.InputKey("MMM-ACT-V2.2"), Take(frd, _frd, "MMM-ACT-V2.2")), (_aog.InputKey(Communicative.Header), plan))
+        });
+        var faceMotion = Take(aog, _aog, "PAF-AMO-V1.6", 1); var bodyMotion = Take(aog, _aog, "PAF-AMO-V1.6", 2);
+        LastFaceAnimation = faceMotion; LastBodyAnimation = bodyMotion;
+        // 6. Entity Face Description, 7. Entity Body Description
         var efd = await _efd.ProcessAsync(new Message
         {
             Ports = With(_efd, (_efd.InputKey(Auc.Auf), request), (_efd.InputKey("PGM-FRS-V1.0"), final), (_efd.InputKey("OSD-BSO-V1.5"), speech),
@@ -231,7 +277,7 @@ public sealed class AufAim : PgmAim
                 (_ebd.InputKey("PAF-AMO-V1.6"), bodyMotion))
         });
 
-        // 7. Portable Avatar Multiplexing
+        // 8. Portable Avatar Multiplexing
         var session = Session.Of(request);
         var pav = new JsonObject { ["Header"] = "PAF-PAV-V1.6" };
         pav["MInstanceID"] = session.MInstance;
@@ -254,6 +300,12 @@ public sealed class AufAim : PgmAim
             ["AvatarSynthesis"] = new JsonObject { ["Outcome"] = "success" }
         };
         if (Read(aog, _aog.OutputKey(Auc.Auf)) is { } animated && animated["ActionStatus"] is JsonNode status) response["ActionStatus"] = status.DeepClone();
+        // The report on each Communicative Function, from Behaviour Planning.
+        if (bpl is not null && Read(bpl, _bpl.OutputKey(Auc.Auf)) is { } planned)
+        {
+            if (planned["FunctionStatus"] is JsonNode fs) response["FunctionStatus"] = fs.DeepClone();
+            if ((string?)planned["Outcome"] == "achieved_differently") { response["Outcome"] = "achieved_differently"; response["Reason"] = planned["Reason"]?.DeepClone(); }
+        }
 
         return Give(message, [(_avatar, pav), (_response, response), (_actions, others)]);
     }

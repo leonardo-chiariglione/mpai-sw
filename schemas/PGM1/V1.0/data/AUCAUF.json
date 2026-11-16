@@ -77,6 +77,12 @@
       "Action":          { "$ref": "https://schemas.mpai.community/MMM4/V2.2/data/Actions.json#/properties/Action" },
       "Status":                  { "type": "string", "description": "For instance proceeding, completed, stopped, failed." } } } },
 
+    "FunctionStatus":            { "type": "array", "description": "Response only. For each Communicative Function of the Final Response, whether A-User Formation realised it.", "items": { "type": "object", "additionalProperties": false, "required": [ "FunctionID", "Status" ], "properties": {
+      "FunctionID":              { "type": "string" },
+      "Status":                  { "type": "string", "enum": [ "Realised", "Modified", "NotRealised" ], "description": "Realised: as given. Modified: realised with another Behaviour than the one given. NotRealised: left out." },
+      "Behaviour":               { "$ref": "https://schemas.mpai.community/PGM1/V1.0/data/CommunicativeFunctions.json#/$defs/BehaviourName", "description": "The Behaviour that realised the function." },
+      "Reason":                  { "type": "string", "description": "Why the function was modified or not realised (for instance: the Persona has no such Behaviour)." } } } },
+
     "PortableAvatarID":          { "type": "string", "description": "Response only. Identifier of the Portable Avatar produced and given to A-User Control for authorisation." },
     "StorageOutcome":            { "type": "array", "description": "Response only. Outcome of the writes instructed by the Request.", "items": { "type": "object", "additionalProperties": false, "required": [ "Category", "Result" ], "properties": {
       "Category":                { "type": "string" },

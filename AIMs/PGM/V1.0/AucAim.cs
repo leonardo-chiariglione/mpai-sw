@@ -27,6 +27,17 @@ public sealed class AucAim : PgmAim
     // What the Controller of the test (or the Module) may ask: how the command ended.
     public string Outcome { get; private set; } = "";
 
+    // THE COMMUNICATIVE FUNCTIONS (M3308 3.5). The Level wanted (setting Auc.FunctionLevel, 1 by default) and the Functions allowed (all of the closed list by default); A-User Control
+    // never requests a Level above the one Basic Knowledge declared (LevelDeclared of its AUC-BKN Response). What it learnt: Basic Knowledge's FunctionsOutcome and, from
+    // A-User Formation, the status of each function.
+    public const string LevelSetting = "Auc.FunctionLevel";
+    public int FunctionLevel { get; set; } = 1;
+    public string[] FunctionsAllowed { get; set; } = Communicative.Functions;
+    public int? BknLevelDeclared { get; set; }
+    public int LevelRequested { get; private set; }
+    public JsonObject? FunctionsOutcome { get; private set; }
+    public JsonArray? FunctionStatus { get; private set; }
+
     public AucAim(string instanceId, AimPortReader ports) : base(instanceId, ports)
     {
         _humanIn = In("PGM-HCM-V1.0"); _paResponse = In("MMM-PAC-V2.2"); _paIn = In("MMM-PAT-V2.2"); _avatarIn = In("PAF-PAV-V1.6");
@@ -69,13 +80,21 @@ public sealed class AucAim : PgmAim
                 ["Requirement"] = "optional",
                 ["Allowed"] = new JsonArray("MU-Actuate", "MM-Animate"),
                 ["MaxSteps"] = 3,
-                ["Syntax"] = "MMM-TEC-V2.2"
+                ["Syntax"] = "MMM-TEC-V2.2",
+                // The Level of Communicative Functions: the one wanted, never above the Level Basic Knowledge declared in its last Response.
+                ["FunctionLevel"] = LevelRequested = Math.Min(FunctionLevel, BknLevelDeclared ?? FunctionLevel),
+                ["Functions"] = new JsonArray(FunctionsAllowed.Select(f => (JsonNode)f).ToArray())
             };
             outputs.Add((_bknOut, rq));
         }
 
         if (Read(message, _bknIn) is { } bkn && !Auc.IsRequest(bkn))
         {
+            if (bkn["FunctionsOutcome"] is JsonObject fo)
+            {
+                FunctionsOutcome = (JsonObject)fo.DeepClone();
+                BknLevelDeclared = (int?)fo["LevelDeclared"];
+            }
             // Decided: the Human Command is answered at once; A-User Formation is asked to form what BKN concluded.
             var concluded = (string?)bkn["DeliberationState"] == "concluded";
             outputs.Add((_humanOut, HumanResponse(concluded ? (_authorised ? "accepted" : "rejected") : "escalated")));
@@ -110,7 +129,11 @@ public sealed class AucAim : PgmAim
         if (Read(message, _paResponse) is { } paResponse)
             Outcome = paResponse["PAStatus"] is JsonArray st && st.Any(s => s is JsonObject o && o.ContainsKey("Ack")) ? "done" : "failed";
 
-        if (Read(message, _aufIn) is { } auf && !Auc.IsRequest(auf) && Outcome.Length == 0) Outcome = "formed";
+        if (Read(message, _aufIn) is { } auf && !Auc.IsRequest(auf))
+        {
+            if (auf["FunctionStatus"] is JsonArray fs) FunctionStatus = (JsonArray)fs.DeepClone();
+            if (Outcome.Length == 0) Outcome = "formed";
+        }
 
         return Done(Give(message, Merge(outputs)));
     }

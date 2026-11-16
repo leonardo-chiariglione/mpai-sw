@@ -17,7 +17,7 @@ public class PgmSliceTests
     private static readonly string[] All =
     [
         "1PGM-AUC-V1.0-I01", "1PGM-CXT-V1.0-I01", "1PGM-PRC-V1.0-I01", "1PGM-BKN-V1.0-I01", "1PGM-DAC-V1.0-I01", "1PGM-USR-V1.0-I01", "1PGM-PAL-V1.0-I01", "1PGM-AUF-V1.0-I01",
-        "1PGM-PSD-V1.0-I01", "1PGM-FRD-V1.0-I01", "1PGM-AOG-V1.0-I01", "1PGM-EFD-V1.0-I01", "1PGM-EBD-V1.0-I01"
+        "1PGM-PSD-V1.0-I01", "1PGM-FRD-V1.0-I01", "1PGM-BPL-V1.0-I01", "1PGM-AOG-V1.0-I01", "1PGM-EFD-V1.0-I01", "1PGM-EBD-V1.0-I01"
     ];
 
     public static IEnumerable<object[]> AimNames => All.Select(a => new object[] { a });
@@ -170,13 +170,14 @@ public class PgmSliceTests
         foreach (var (key, json) in result.Ports) Assert.Equal("valid", PgmRig.Check(JsonNode.Parse(json)!));
     }
 
-    // Animation Object Generation: the Action MM-Animate becomes a Face Animation Object (Port 1) and a Body Animation Object (Port 2); another Action gives none.
+    // Animation Object Generation: the Action MM-Animate (the Persona moves in the M-Instance) becomes a Body Animation Object (Port 2) - the face is moved by the Communicative
+    // Functions and the speech, not by this Action; another Action gives none.
     [Fact]
     public async Task AnimationObjectGenerationAnimatesFromTheAction()
     {
         var aog = (AogAim)Make("1PGM-AOG-V1.0-I01");
         var animated = await aog.ProcessAsync(new Message { Ports = new Dictionary<string, string> { [aog.InputKey("MMM-ACT-V2.2")] = Action("MM-Animate").ToJsonString() } });
-        Assert.True(animated.Ports.ContainsKey(aog.OutputKey("PAF-AMO-V1.6", 1)));
+        Assert.False(animated.Ports.ContainsKey(aog.OutputKey("PAF-AMO-V1.6", 1)));
         Assert.True(animated.Ports.ContainsKey(aog.OutputKey("PAF-AMO-V1.6", 2)));
         foreach (var (key, json) in animated.Ports) Assert.Equal("valid", PgmRig.Check(JsonNode.Parse(json)!));
         var other = await aog.ProcessAsync(new Message { Ports = new Dictionary<string, string> { [aog.InputKey("MMM-ACT-V2.2")] = Action("MM-Send").ToJsonString() } });

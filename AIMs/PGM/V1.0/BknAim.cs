@@ -66,6 +66,13 @@ public sealed class BknAim : PgmAim
         return Give(message, outputs);
     }
 
+
+    // ---- the Communicative Functions (M3308 3.5) -----------------------------------------------------------------------------------------------------
+
+    // The highest Level this Basic Knowledge produces (a setting of the implementation, Bkn.Level; 1 by default, as M3308 3.6 proposes for the models of the reference software).
+    public const string LevelSetting = "Bkn.Level";
+    public int LevelDeclared { get; init; } = 1;
+
     private async Task<List<(string, JsonNode?)>> Conclude(JsonObject request, JsonObject prompt)
     {
         var session = Session.Of(request);
@@ -73,7 +80,23 @@ public sealed class BknAim : PgmAim
         if (allowed is not { Length: > 0 }) allowed = ["MU-Actuate", "MM-Animate"];
         var said = (string?)prompt["Prompt"] ?? "";
 
-        string reply; var worldActions = new List<(string Verb, string Target)>(); var personaActions = new List<string>();
+        // The Level: what A-User Control requested, no higher than this AIM declares; the Functions: those A-User Control allows that the Persona can perform (PC Prompt).
+        var levelRequested = (int?)request["Actions"]?["FunctionLevel"] ?? 0;
+        var level = Math.Min(levelRequested, LevelDeclared);
+        var context = prompt["ActionContext"] as JsonObject;
+        static string[] Strings(JsonNode? n) => (n as JsonArray)?.Select(x => (string?)x).Where(x => x is not null).Select(x => x!).ToArray() ?? [];
+        var functionsAllowed = Strings(request["Actions"]?["Functions"]);
+        if (functionsAllowed.Length == 0) functionsAllowed = Communicative.Functions;
+        var personaFunctions = Strings(context?["Functions"]);
+        var functions = personaFunctions.Length > 0 ? functionsAllowed.Intersect(personaFunctions).ToArray() : functionsAllowed;
+        var personaBehaviours = Strings(context?["Behaviours"]);
+        var referents = (prompt["ResolvedReferents"] as JsonArray)?.Select(r => (string?)r?["EntityID"]).Where(x => x is not null).Select(x => x!) ?? [];
+        var items = Strings(context?["Items"]).Concat(referents).Distinct().ToArray();
+        var places = Strings(context?["MLocations"]);
+        if (functions.Length == 0) level = 0;
+
+        string reply; var worldActions = new List<(string Verb, string Target)>(); var moves = new List<string>();
+        var produced = new JsonArray();
         var failure = "";
         try
         {
@@ -81,16 +104,29 @@ public sealed class BknAim : PgmAim
                 "You are the A-User, an autonomous assistant of a responsible human in a metaverse building. " +
                 "'reply' is what you say aloud to the human: one or two short natural sentences, never a command name. " +
                 "If the human asks you to do something to an item of the building (for instance to open doors), add one entry to worldActions: verb 'MU-Actuate', target the item (for instance 'doors'). " +
-                "If you want to make a gesture yourself, put its plain name in personaGestures (for instance 'nod' or 'wave'). Otherwise leave the lists empty. " +
-                "Example. Human: 'please close the window'. You: {\"reply\":\"Closing the window now.\",\"worldActions\":[{\"verb\":\"MU-Actuate\",\"target\":\"window\"}],\"personaGestures\":[\"nod\"]}. " +
-                "Example. Human: 'how are you'. You: {\"reply\":\"I am fine, thank you.\",\"worldActions\":[],\"personaGestures\":[]}.";
-            var raw = await _model.AnswerAsync(system, said, Schema(allowed));
+                "If you need to go somewhere in the building yourself, put the place in personaMoves (for instance 'doors'). Otherwise leave the lists empty. ";
+            if (level >= 1)
+                system +=
+                    "While you speak, your body can express communicative functions. In 'functions' list the ones that suit your reply (usually one to three): " +
+                    "'function' is one of: " + string.Join("; ", functions.Select(f => $"{f} ({Communicative.Meaning[f]})")) + ". " +
+                    "'words' are the exact words of your reply that the function goes with (copy them from the reply). " +
+                    "'target' is 'User' (the human) or one of the items: " + string.Join(", ", items.Concat(places)) + " - or 'none'. " +
+                    "'intensity' is from 0 (slight) to 1 (very marked). 'required' is true if the function is essential to what you mean. " +
+                    (level >= 2 ? "'behaviour' is the movement that realises the function, chosen among those allowed for it: " +
+                        string.Join("; ", functions.Select(f => $"{f}: {string.Join(", ", Communicative.BehavioursOf[f].Where(b => personaBehaviours.Length == 0 || personaBehaviours.Contains(b)))}")) + ". " : "");
+            system +=
+                "Example. Human: 'please close the window'. You: {\"reply\":\"Closing the window now.\",\"worldActions\":[{\"verb\":\"MU-Actuate\",\"target\":\"window\"}],\"personaMoves\":[]" +
+                (level >= 1 ? ",\"functions\":[{\"function\":\"Deictic\",\"words\":\"the window\",\"target\":\"window\",\"intensity\":0.6,\"required\":true" + (level >= 2 ? ",\"behaviour\":\"Point\"" : "") + "}]" : "") + "}. " +
+                "Example. Human: 'how are you'. You: {\"reply\":\"I am fine, thank you.\",\"worldActions\":[],\"personaMoves\":[]" +
+                (level >= 1 ? ",\"functions\":[{\"function\":\"Affirmation\",\"words\":\"fine\",\"target\":\"User\",\"intensity\":0.4,\"required\":false" + (level >= 2 ? ",\"behaviour\":\"Smile\"" : "") + "}]" : "") + "}.";
+            var raw = await _model.AnswerAsync(system, said, Schema(allowed, level, functions, items.Concat(places).ToArray(), personaBehaviours));
             var json = JsonNode.Parse(raw) as JsonObject ?? throw new InvalidOperationException("the model did not give a JSON object");
             reply = (string?)json["reply"] ?? "";
             foreach (var a in json["worldActions"] as JsonArray ?? [])
                 if (a is JsonObject o && (string?)o["verb"] is { } v && allowed.Contains(v) && (string?)o["target"] is { Length: > 0 } t) worldActions.Add((v, t));
-            foreach (var g in json["personaGestures"] as JsonArray ?? [])
-                if ((string?)g is { Length: > 0 } name) personaActions.Add(name);
+            foreach (var g in json["personaMoves"] as JsonArray ?? [])
+                if ((string?)g is { Length: > 0 } name) moves.Add(name);
+            if (level >= 1) produced = Functions(json["functions"] as JsonArray, reply, level, functions, items, places);
         }
         catch (Exception e)
         {
@@ -124,26 +160,74 @@ public sealed class BknAim : PgmAim
                     ["Header"] = "MMM-3CP-V2.2", ["MUActuatePAID"] = NewId("pa" + ++n), ["Time"] = Time(),
                     ["MUActuatePARQ"] = new JsonObject { ["RQ1"] = new JsonObject { ["Complement"] = "Nil", ["ItemID"] = target } }
                 };
-        // What goes with the text is an Action of MMM-TEC V2.2, not a Process Action: when the model wants the Persona to gesture, the Action is MM-Animate.
-        if (personaActions.Count > 0)
+        // The Actions of the Final Response move the Persona in the M-Instance (M3308 Q5): MM-Animate. What the body expresses while speaking is in the Communicative Functions.
+        if (moves.Count > 0)
             fr["Actions"] = new JsonArray(new JsonObject { ["Header"] = "MMM-ACT-V2.2", ["Action"] = "MM-Animate" });
         if (pas.Count > 0)
             fr["ProcessActions"] = new JsonObject { ["Header"] = "MMM-PAT-V2.2", ["MEnvironmentTime"] = Time(), ["ProcessActions"] = pas };
+        // A Level 1 or 2 request answered with no function: a Level 0 Final Response.
+        var levelProduced = produced.Count == 0 ? 0 : produced.Any(f => f is JsonObject o && o.ContainsKey("Behaviour")) ? 2 : 1;
+        if (levelProduced > 0)
+        {
+            fr["FunctionLevel"] = levelProduced;
+            fr["CommunicativeFunctions"] = produced;
+        }
 
         response["Outcome"] = "achieved";
         response["DeliberationState"] = "concluded";
         response["Conclusion"] = new JsonObject { ["Headline"] = reply, ["FinalResponseID"] = (string)fr["FinalResponseID"]! };
-        response["ActionsOutcome"] = new JsonObject { ["Outcome"] = pas.Count + personaActions.Count > 0 ? "produced" : "not_requested", ["StepCount"] = pas.Count + personaActions.Count };
+        response["ActionsOutcome"] = new JsonObject { ["Outcome"] = pas.Count + moves.Count > 0 ? "produced" : "not_requested", ["StepCount"] = pas.Count + moves.Count };
+        var outcome = new JsonObject { ["LevelRequested"] = levelRequested, ["LevelProduced"] = levelProduced, ["LevelDeclared"] = LevelDeclared, ["FunctionCount"] = produced.Count };
+        if (levelProduced < levelRequested)
+            outcome["Reason"] = levelRequested > LevelDeclared ? $"this Basic Knowledge produces up to Level {LevelDeclared}"
+                              : functions.Length == 0 ? "no Function is both allowed and in the repertoire of the Persona"
+                              : levelProduced == 0 ? "the model gave no function that conforms" : "the model gave no Behaviour that conforms";
+        response["FunctionsOutcome"] = outcome;
         return [(_final, fr), (_response, response)];
     }
 
-    // What the model must give: constrained by a schema, so that a small model cannot invent fields.
-    private static JsonObject Schema(string[] allowed) => new()
+    // The functions of the model, kept only if they conform: an allowed Function, words found in the reply (the Anchor), a Target the PC Prompt gives, and at Level 2 a Behaviour of
+    // the list of its Function (a wrong Behaviour is dropped, the function kept: a Level 2 Final Response may carry functions without behaviour).
+    private static JsonArray Functions(JsonArray? given, string reply, int level, string[] functions, string[] items, string[] places)
     {
-        ["type"] = "object",
-        ["additionalProperties"] = false,
-        ["required"] = new JsonArray("reply", "worldActions", "personaGestures"),
-        ["properties"] = new JsonObject
+        var result = new JsonArray();
+        var words = Communicative.Words(reply);
+        static string Bare(string w) => new string(w.Where(char.IsLetterOrDigit).ToArray()).ToLowerInvariant();
+        var bare = words.Select(Bare).ToArray();
+        var n = 0;
+        foreach (var g in given ?? [])
+        {
+            if (g is not JsonObject o || (string?)o["function"] is not { } name || !functions.Contains(name)) continue;
+            var f = new JsonObject { ["FunctionID"] = $"f{++n}", ["Function"] = name };
+
+            var target = (string?)o["target"] ?? "none";
+            if (target.Equals("User", StringComparison.OrdinalIgnoreCase)) f["Target"] = new JsonObject { ["Kind"] = "User" };
+            else if (items.Contains(target)) f["Target"] = new JsonObject { ["Kind"] = "Item", ["ID"] = target };
+            else if (places.Contains(target)) f["Target"] = new JsonObject { ["Kind"] = "MLocation", ["ID"] = target };
+            else if (name is "Gaze" or "Deictic") continue;   // a look or a pointing towards nothing that is known
+
+            // The Anchor: the words of the reply the model named, found in the reply.
+            var anchor = Communicative.Words((string?)o["words"] ?? "").Select(Bare).Where(w => w.Length > 0).ToArray();
+            var first = -1;
+            for (var i = 0; anchor.Length > 0 && i + anchor.Length <= bare.Length && first < 0; i++)
+                if (anchor.Select((w, k) => bare[i + k] == w).All(x => x)) first = i;
+            if (first < 0 && anchor.Length > 0) first = Array.IndexOf(bare, anchor[0]);
+            f["Anchor"] = first >= 0
+                ? new JsonObject { ["Position"] = "During", ["FirstWord"] = first, ["LastWord"] = Math.Min(words.Length - 1, first + Math.Max(1, anchor.Length) - 1) }
+                : new JsonObject { ["Position"] = "Before" };
+            f["Intensity"] = Math.Round(Math.Clamp((double?)o["intensity"] ?? 0.5, 0, 1), 2);
+            f["Requirement"] = (bool?)o["required"] == true ? "Required" : "Optional";
+            if (level >= 2 && (string?)o["behaviour"] is { } b && Communicative.BehavioursOf[name].Contains(b))
+                f["Behaviour"] = new JsonObject { ["Name"] = b, ["BodyPart"] = Communicative.BodyPartOf(b), ["TowardsTarget"] = f.ContainsKey("Target") };
+            result.Add(f);
+        }
+        return result;
+    }
+
+    // What the model must give: constrained by a schema, so that a small model cannot invent fields or names outside the closed lists.
+    private static JsonObject Schema(string[] allowed, int level, string[] functions, string[] targets, string[] personaBehaviours)
+    {
+        var properties = new JsonObject
         {
             ["reply"] = new JsonObject { ["type"] = "string" },
             ["worldActions"] = new JsonObject
@@ -160,7 +244,33 @@ public sealed class BknAim : PgmAim
                     }
                 }
             },
-            ["personaGestures"] = new JsonObject { ["type"] = "array", ["items"] = new JsonObject { ["type"] = "string" } }
+            ["personaMoves"] = new JsonObject { ["type"] = "array", ["items"] = new JsonObject { ["type"] = "string" } }
+        };
+        var required = new JsonArray("reply", "worldActions", "personaMoves");
+        if (level >= 1)
+        {
+            var item = new JsonObject
+            {
+                ["function"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray(functions.Select(f => (JsonNode)f).ToArray()) },
+                ["words"] = new JsonObject { ["type"] = "string" },
+                ["target"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray(new[] { "User", "none" }.Concat(targets).Distinct().Select(t => (JsonNode)t).ToArray()) },
+                ["intensity"] = new JsonObject { ["type"] = "number" },
+                ["required"] = new JsonObject { ["type"] = "boolean" }
+            };
+            var itemRequired = new JsonArray("function", "words", "target", "intensity", "required");
+            if (level >= 2)
+            {
+                var behaviours = functions.SelectMany(f => Communicative.BehavioursOf[f]).Distinct().Where(b => personaBehaviours.Length == 0 || personaBehaviours.Contains(b));
+                item["behaviour"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray(behaviours.Select(b => (JsonNode)b).ToArray()) };
+                itemRequired.Add("behaviour");
+            }
+            properties["functions"] = new JsonObject
+            {
+                ["type"] = "array",
+                ["items"] = new JsonObject { ["type"] = "object", ["additionalProperties"] = false, ["required"] = itemRequired, ["properties"] = item }
+            };
+            required.Add("functions");
         }
-    };
+        return new JsonObject { ["type"] = "object", ["additionalProperties"] = false, ["required"] = required, ["properties"] = properties };
+    }
 }

@@ -77,6 +77,11 @@ public sealed class PrcAim : PgmAim
     private readonly string _descriptors, _request, _historyIn, _query, _prompt, _queryOut, _response, _historyOut;
     private JsonObject? _cxd, _pendingRequest;
 
+    // The Items of the Space that may be Targets (setting Space.Items) and the Behaviours of the Persona (setting Persona.Behaviours): configuration of the implementation.
+    public const string ItemsSetting = "Space.Items";
+    public string[] Items { get; init; } = ["doors", "window", "table", "lamp"];
+    public string[] PersonaBehaviours { get; init; } = Communicative.Behaviours;
+
     public PrcAim(string instanceId, AimPortReader ports) : base(instanceId, ports)
     {
         _descriptors = In("PGM-CXD-V1.0"); _request = In(Auc.Prc); _historyIn = In("PGM-IHI-V1.0"); _query = In("PGM-KPR-V1.0");
@@ -112,6 +117,15 @@ public sealed class PrcAim : PgmAim
             prompt["DialogID"] = (string?)request["RequestID"] ?? Auc.IdOf(request);
             prompt["Prompt"] = CxtAim.WordsOf(context) ?? "";
             prompt["SceneContext"] = context;
+            // The Action context: the Process Actions, the Items of the Space that may be Targets, and what the Persona can express with its body (the Functions and Behaviours
+            // of its repertoire).
+            prompt["ActionContext"] = new JsonObject
+            {
+                ["Repertoire"] = new JsonArray("MU-Actuate", "MM-Animate"), ["MaxSteps"] = 3,
+                ["Items"] = new JsonArray(Items.Select(i => (JsonNode)i).ToArray()),
+                ["Functions"] = new JsonArray(Communicative.Functions.Select(f => (JsonNode)f).ToArray()),
+                ["Behaviours"] = new JsonArray(PersonaBehaviours.Select(b => (JsonNode)b).ToArray())
+            };
             outputs.Add((_prompt, prompt));
             var response = Auc.Make(Auc.Prc, Auc.Response, session, Auc.IdOf(request));
             response["Outcome"] = "achieved";

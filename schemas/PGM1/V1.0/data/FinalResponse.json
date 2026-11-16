@@ -1,7 +1,7 @@
 { "$schema":               "https://json-schema.org/draft/2020-12/schema",
   "$id":                   "https://schemas.mpai.community/PGM1/V1.0/data/FinalResponse.json",
   "title":                 "Final Response V1.0",
-  "description":           "The deliberated content produced by Basic Knowledge: the text to be uttered, the Actions that go with the text (for instance animating the Persona while it speaks) and the Process Actions that carry out the response, which may be more remote from the text. It is the only output of Basic Knowledge, apart from the AUC-BKN Response and the exchanges with its partners, and it is sent to A-User Formation.",
+  "description":           "The deliberated content produced by Basic Knowledge: the text to be uttered, the Communicative Functions that go with the text (what the A-User means to do with its body, towards whom or what and with which words), the Actions that go with the text (for instance moving the Persona in the M-Instance) and the Process Actions that carry out the response, which may be more remote from the text. It is the only output of Basic Knowledge, apart from the AUC-BKN Response and the exchanges with its partners, and it is sent to A-User Formation.",
   "type":                  "object",
   "additionalProperties":  false,
   "required":              [ "Header", "MInstance", "UEnvironment", "SessionID", "FinalResponseID", "FinalResponseTime" ],
@@ -18,11 +18,21 @@
     "DialogID":            { "type": "string", "description": "Identifier of the dialogue (the Model Context Protocol session) in which the Final Response was deliberated." },
     "Text":                { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/BasicTextObject.json", "description": "The text to be uttered by the A-User." },
     "Actions":             { "type": "array", "items": { "$ref": "https://schemas.mpai.community/MMM4/V2.2/data/Actions.json" },
-                             "description": "The Actions of MMM-TEC V2.2 that the A-User performs and that go with the text, typically on its own Persona (for instance MM-Animate)." },
+                             "description": "The Actions of MMM-TEC V2.2 that the A-User performs and that go with the text, typically on its own Persona (for instance MM-Animate to move the Persona in the M-Instance)." },
+
+    "FunctionLevel":       { "type": "integer", "enum": [ 0, 1, 2 ],
+                             "description": "The Level of the Final Response. 0: no Communicative Functions. 1: Communicative Functions without Behaviour. 2: Communicative Functions, each of which may carry the Behaviour that realises it. It is not higher than the Level that A-User Control requested in the AUC-BKN Request. Absent: Level 0." },
+
+    "CommunicativeFunctions": { "type": "array", "items": { "allOf": [ { "$ref": "https://schemas.mpai.community/PGM1/V1.0/data/CommunicativeFunctions.json#/$defs/Function" }, { "not": { "required": [ "Times" ] } } ] },
+                             "description": "What the A-User means to do with its body while it utters the Text: each function from the closed list of Functions, anchored to words of the Text, with its Target (the User, or an Item or an M-Location given in the PC Prompt), its Intensity and its Requirement and, at Level 2, possibly its Behaviour. The times are given by A-User Formation, not here." },
 
     "ProcessActions":      { "$ref": "https://schemas.mpai.community/MMM4/V2.2/data/ProcessActions.json",
                              "description": "The Process Actions, in the syntax of MMM-TEC V2.2, that carry out the response. Present only if A-User Control asked for them." },
 
     "DataXMData":          { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
     "DescrMetadata":       { "type": "string", "maxLength": 2048 } },
-  "anyOf":                 [ { "required": [ "Text" ] }, { "required": [ "Actions" ] }, { "required": [ "ProcessActions" ] } ] }
+  "anyOf":                 [ { "required": [ "Text" ] }, { "required": [ "Actions" ] }, { "required": [ "ProcessActions" ] } ],
+  "dependentRequired":     { "CommunicativeFunctions": [ "FunctionLevel", "Text" ] },
+  "allOf":                 [
+    { "if": { "required": [ "FunctionLevel" ], "properties": { "FunctionLevel": { "const": 0 } } }, "then": { "properties": { "CommunicativeFunctions": { "maxItems": 0 } } } },
+    { "if": { "required": [ "FunctionLevel" ], "properties": { "FunctionLevel": { "const": 1 } } }, "then": { "properties": { "CommunicativeFunctions": { "items": { "not": { "required": [ "Behaviour" ] } } } } } } ] }

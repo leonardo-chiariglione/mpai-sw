@@ -70,7 +70,9 @@
       "Locations":              { "type": "array", "items": { "type": "string" }, "description": "M-Locations in which the Process Actions may be performed." },
       "RightsRefs":             { "type": "array", "items": { "type": "string" }, "description": "Identifiers of the Rights that the A-User holds and may use." },
       "WalletLimit":            { "type": "number", "minimum": 0 },
-      "Syntax":                 { "type": "string", "const": "MMM-TEC-V2.2", "description": "The Process Actions shall conform with the grammar of MMM-TEC V2.2." } } },
+      "Syntax":                 { "type": "string", "const": "MMM-TEC-V2.2", "description": "The Process Actions shall conform with the grammar of MMM-TEC V2.2." },
+      "FunctionLevel":          { "type": "integer", "enum": [ 0, 1, 2 ], "description": "The Level of Communicative Functions requested of the Final Response (0: none; 1: functions; 2: functions that may carry their Behaviour). Never higher than the Level that Basic Knowledge declares." },
+      "Functions":              { "type": "array", "items": { "$ref": "https://schemas.mpai.community/PGM1/V1.0/data/CommunicativeFunctions.json#/$defs/FunctionName" }, "description": "The Communicative Functions that the Final Response may contain." } } },
 
     "GoalUnderstood":           { "type": "object", "additionalProperties": false, "required": [ "Objective" ], "description": "Response only. The goal as the AIM understood it.", "properties": {
       "Objective":              { "type": "string" },
@@ -99,9 +101,16 @@
         "Reason":               { "type": "string", "enum": [ "none", "ambiguity_unresolved", "partner_unavailable", "constraint_conflict", "insufficient_context", "deadline_exceeded", "not_permitted" ] },
         "Description":          { "type": "string" } } } } } },
 
+    "FunctionsOutcome":         { "type": "object", "additionalProperties": false, "required": [ "LevelProduced", "LevelDeclared" ], "description": "Response only. The Communicative Functions of the Final Response.", "properties": {
+      "LevelRequested":         { "type": "integer", "enum": [ 0, 1, 2 ] },
+      "LevelProduced":          { "type": "integer", "enum": [ 0, 1, 2 ], "description": "The Level of the Final Response; it may be lower than the Level requested." },
+      "LevelDeclared":          { "type": "integer", "enum": [ 0, 1, 2 ], "description": "The highest Level that this Basic Knowledge produces." },
+      "FunctionCount":          { "type": "integer", "minimum": 0 },
+      "Reason":                 { "type": "string", "description": "Why the Level produced is lower than the Level requested." } } },
+
     "DataXMData":               { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
     "DescrMetadata":            { "type": "string", "maxLength": 2048 } },
-  "allOf":                      [ { "if": { "properties": { "Mode": { "const": "RQ" } } }, "then": { "required": [ "Instruction", "Exchange", "Goal" ], "properties": { "RequestID": false, "Outcome": false, "Reason": false, "StorageOutcome": false, "GoalUnderstood": false, "DeliberationState": false, "Conclusion": false, "UnmetNeeds": false, "ActionsOutcome": false } } },
+  "allOf":                      [ { "if": { "properties": { "Mode": { "const": "RQ" } } }, "then": { "required": [ "Instruction", "Exchange", "Goal" ], "properties": { "RequestID": false, "Outcome": false, "Reason": false, "StorageOutcome": false, "GoalUnderstood": false, "DeliberationState": false, "Conclusion": false, "UnmetNeeds": false, "ActionsOutcome": false, "FunctionsOutcome": false } } },
   { "if": { "properties": { "Mode": { "const": "RS" } } }, "then": { "required": [ "RequestID", "Outcome", "GoalUnderstood", "DeliberationState" ], "properties": { "Instruction": false, "Exchange": false, "Storage": false, "ProcessActionOutcome": false, "Goal": false, "Correction": false, "Abandon": false, "Actions": false } } },
   { "then": { "required": [ "Reason" ] }, "if": { "required": [ "Mode", "Outcome" ], "properties": {
     "Mode":                     { "const": "RS" },

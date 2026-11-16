@@ -7,7 +7,7 @@
   "Header": "PGM-FRD-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
-  "Description": "The Final Response Demultiplexing (PGM-FRD) AIM is a Sub-AIM of A-User Formation (PGM-AUF). It takes apart the Final Response produced by Basic Knowledge: the Text, which goes to Text-To-Speech and to Portable Avatar Multiplexing; the Actions, which go with the text and go to Animation Object Generation; and the Process Actions, more remote from the text, which A-User Formation gives to A-User Control unchanged. It is driven by the AUC-AUF Request and reports with an AUC-AUF Response.",
+  "Description": "The Final Response Demultiplexing (PGM-FRD) AIM is a Sub-AIM of A-User Formation (PGM-AUF). It takes apart the Final Response produced by Basic Knowledge: the Text, which goes to Text-To-Speech and to Portable Avatar Multiplexing; the Communicative Functions, which go to Behaviour Planning; the Actions, which go with the text and go to Animation Object Generation; and the Process Actions, more remote from the text, which A-User Formation gives to A-User Control unchanged. It is driven by the AUC-AUF Request and reports with an AUC-AUF Response.",
   "InternalTypes": [],
   "ExternalPorts": [
     {
@@ -30,6 +30,14 @@
       "Name": "Text",
       "Direction": "Output",
       "DataType": "OSD-BTO-V1.5",
+      "Technology": "Software",
+      "Protocol": "",
+      "IsRemote": false
+    },
+    {
+      "Name": "CommunicativeFunctions",
+      "Direction": "Output",
+      "DataType": "PGM-CFN-V1.0",
       "Technology": "Software",
       "Protocol": "",
       "IsRemote": false
@@ -90,7 +98,7 @@
   "Documentation": [
     {
       "Type": "Specification",
-      "URI": "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/"
+      "URI": "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/final-response-demultiplexing/"
     }
   ]
 }

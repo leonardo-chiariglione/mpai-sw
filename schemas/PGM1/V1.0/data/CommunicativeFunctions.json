@@ -1,0 +1,80 @@
+{ "$schema":                 "https://json-schema.org/draft/2020-12/schema",
+  "$id":                     "https://schemas.mpai.community/PGM1/V1.0/data/CommunicativeFunctions.json",
+  "title":                   "Communicative Functions V1.0",
+  "description":             "What the A-User means to do with its body while it utters the Text of a Final Response: for each function, towards whom or what, with which words, how markedly and, at Level 2, with which behaviour. Basic Knowledge gives the functions in the Final Response (Level 1 or 2); Final Response Demultiplexing gives them to Behaviour Planning, which gives them to Animation Object Generation with a behaviour and its times for every function. The Function and the Behaviour are taken from closed lists, and a Behaviour shall be one of those allowed for its Function.",
+  "type":                    "object",
+  "additionalProperties":    false,
+  "required":                [ "Header", "CommunicativeFunctionsID", "CommunicativeFunctionsTime", "Level", "Functions" ],
+
+  "properties":              {
+
+    "Header":                { "type": "string", "const": "PGM-CFN-V1.0" },
+    "MInstance":             { "type": "string", "description": "Identifier of the M-Instance." },
+    "UEnvironment":          { "type": "string", "description": "Identifier of the U-Environment." },
+    "SessionID":             { "type": "string", "description": "Identifier of the A-User session." },
+    "CommunicativeFunctionsID": { "type": "string", "description": "Identifier of this instance." },
+    "CommunicativeFunctionsTime": { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SimpleTime.json" },
+    "FinalResponseID":       { "type": "string", "description": "Identifier of the Final Response whose Text the functions go with." },
+    "Level":                 { "$ref": "#/$defs/Level" },
+    "Functions":             { "type": "array", "items": { "$ref": "#/$defs/Function" } },
+    "DataXMData":            { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
+    "DescrMetadata":         { "type": "string", "maxLength": 2048 } },
+
+  "$defs":                   {
+
+    "Level":                 { "type": "integer", "enum": [ 0, 1, 2 ],
+                               "description": "0: no functions. 1: functions without behaviour. 2: functions, each of which may carry the behaviour that realises it." },
+
+    "FunctionName":          { "type": "string", "enum": [ "Gaze", "Deictic", "Greeting", "Affirmation", "Negation", "Beat", "Iconic", "Metaphoric", "Uncertainty", "Attention", "Invitation", "Stop" ],
+                               "description": "Gaze: looks at the Target. Deictic: indicates the Target. Greeting: greets or takes leave of the Target. Affirmation: says yes or agrees. Negation: says no or disagrees. Beat: marks the words of the Anchor as important. Iconic: depicts the shape, size or movement of what the Anchor names. Metaphoric: gives a concrete form to an abstract idea. Uncertainty: shows doubt. Attention: shows that it listens to or attends to the Target. Invitation: invites the Target to act or to speak. Stop: asks the Target to stop or to wait." },
+
+    "BehaviourName":         { "type": "string", "enum": [ "LookAt", "TurnTowards", "Point", "HeadPoint", "Nod", "HeadShake", "HeadTilt", "Wave", "Bow", "Smile", "RaiseEyebrows", "Frown", "Shrug", "PalmUp", "HoldOut", "StopPalm", "Stroke", "Trace", "Frame", "LeanForward" ],
+                               "description": "LookAt: eyes, and head if needed, towards the Target. TurnTowards: head, torso or whole body towards the Target. Point: index finger towards the Target. HeadPoint: a short head movement towards the Target. Nod: head down and up. HeadShake: head left and right. HeadTilt: head tilted to one side. Wave: open hand moved side to side. Bow: torso bent forward and back. Smile: a social smile. RaiseEyebrows: both eyebrows raised. Frown: brows drawn together. Shrug: shoulders raised and dropped. PalmUp: open hand, palm up. HoldOut: hand held out towards the Target, as when offering. StopPalm: hand raised, palm towards the Target. Stroke: a short downward hand movement on the peak word. Trace: the hand draws a shape or a path. Frame: two hands show a size or a boundary. LeanForward: torso leaning towards the Target." },
+
+    "BodyPart":              { "type": "string", "enum": [ "Eyes", "Head", "Face", "Shoulders", "LeftHand", "RightHand", "BothHands", "Torso", "WholeBody" ] },
+
+    "Function":              { "type": "object", "additionalProperties": false, "required": [ "FunctionID", "Function", "Anchor", "Requirement" ], "properties": {
+      "FunctionID":          { "type": "string", "description": "Identifier of the function, unique in the Final Response; A-User Formation reports on it." },
+      "Function":            { "$ref": "#/$defs/FunctionName" },
+      "Target":              { "type": "object", "additionalProperties": false, "required": [ "Kind" ], "description": "Towards whom or what. Absent when the Function has no target.", "properties": {
+        "Kind":              { "type": "string", "enum": [ "User", "Item", "MLocation" ] },
+        "ID":                { "type": "string", "description": "Identifier of the Item or of the M-Location, as the PC Prompt gives it." } } },
+
+      "Anchor":              { "type": "object", "additionalProperties": false, "required": [ "Position" ], "description": "Where in the utterance the function goes. Words are the words of the Text, separated by white space, counted from 0.", "properties": {
+        "Position":          { "type": "string", "enum": [ "During", "Before", "After" ] },
+        "FirstWord":         { "type": "integer", "minimum": 0 },
+        "LastWord":          { "type": "integer", "minimum": 0 } } },
+
+      "Intensity":           { "type": "number", "minimum": 0, "maximum": 1, "description": "How marked the function is, from 0 to 1." },
+      "Requirement":         { "type": "string", "enum": [ "Required", "Optional" ], "description": "Required: A-User Formation realises it or says why not. Optional: A-User Formation may leave it out." },
+      "Behaviour":           { "type": "object", "additionalProperties": false, "required": [ "Name" ], "description": "Level 2 only. The behaviour that realises the function.", "properties": {
+        "Name":              { "$ref": "#/$defs/BehaviourName" },
+        "BodyPart":          { "$ref": "#/$defs/BodyPart" },
+        "TowardsTarget":     { "type": "boolean", "description": "Whether the behaviour is directed towards the Target." },
+        "Amplitude":         { "type": "number", "minimum": 0, "maximum": 1 },
+        "Repetitions":       { "type": "integer", "minimum": 1 },
+        "PeakWord":          { "type": "integer", "minimum": 0, "description": "The word of the Anchor on which the peak of the behaviour falls." } } },
+
+      "Times":               { "type": "object", "additionalProperties": false, "required": [ "Start", "End" ], "description": "Given by Behaviour Planning only: start, peak and end of the behaviour, in seconds from the start of the Machine Speech.", "properties": {
+        "Start":             { "type": "number" },
+        "Peak":              { "type": "number" },
+        "End":               { "type": "number" } } } },
+
+      "allOf":               [
+        { "if": { "properties": { "Anchor": { "properties": { "Position": { "const": "During" } } } } }, "then": { "properties": { "Anchor": { "required": [ "FirstWord", "LastWord" ] } } } },
+        { "if": { "required": [ "Behaviour" ], "properties": { "Function": { "const": "Gaze" } } },        "then": { "properties": { "Behaviour": { "properties": { "Name": { "enum": [ "LookAt", "TurnTowards" ] } } } } } },
+        { "if": { "required": [ "Behaviour" ], "properties": { "Function": { "const": "Deictic" } } },     "then": { "properties": { "Behaviour": { "properties": { "Name": { "enum": [ "Point", "HeadPoint", "LookAt" ] } } } } } },
+        { "if": { "required": [ "Behaviour" ], "properties": { "Function": { "const": "Greeting" } } },    "then": { "properties": { "Behaviour": { "properties": { "Name": { "enum": [ "Wave", "Nod", "Bow", "Smile" ] } } } } } },
+        { "if": { "required": [ "Behaviour" ], "properties": { "Function": { "const": "Affirmation" } } }, "then": { "properties": { "Behaviour": { "properties": { "Name": { "enum": [ "Nod", "Smile" ] } } } } } },
+        { "if": { "required": [ "Behaviour" ], "properties": { "Function": { "const": "Negation" } } },    "then": { "properties": { "Behaviour": { "properties": { "Name": { "enum": [ "HeadShake", "Frown" ] } } } } } },
+        { "if": { "required": [ "Behaviour" ], "properties": { "Function": { "const": "Beat" } } },        "then": { "properties": { "Behaviour": { "properties": { "Name": { "enum": [ "Stroke", "Nod", "RaiseEyebrows" ] } } } } } },
+        { "if": { "required": [ "Behaviour" ], "properties": { "Function": { "const": "Iconic" } } },      "then": { "properties": { "Behaviour": { "properties": { "Name": { "enum": [ "Trace", "Frame" ] } } } } } },
+        { "if": { "required": [ "Behaviour" ], "properties": { "Function": { "const": "Metaphoric" } } },  "then": { "properties": { "Behaviour": { "properties": { "Name": { "enum": [ "PalmUp", "Frame", "Trace" ] } } } } } },
+        { "if": { "required": [ "Behaviour" ], "properties": { "Function": { "const": "Uncertainty" } } }, "then": { "properties": { "Behaviour": { "properties": { "Name": { "enum": [ "Shrug", "HeadTilt", "PalmUp" ] } } } } } },
+        { "if": { "required": [ "Behaviour" ], "properties": { "Function": { "const": "Attention" } } },   "then": { "properties": { "Behaviour": { "properties": { "Name": { "enum": [ "LookAt", "LeanForward", "HeadTilt", "Nod" ] } } } } } },
+        { "if": { "required": [ "Behaviour" ], "properties": { "Function": { "const": "Invitation" } } },  "then": { "properties": { "Behaviour": { "properties": { "Name": { "enum": [ "PalmUp", "HoldOut", "Nod", "LookAt" ] } } } } } },
+        { "if": { "required": [ "Behaviour" ], "properties": { "Function": { "const": "Stop" } } },        "then": { "properties": { "Behaviour": { "properties": { "Name": { "enum": [ "StopPalm", "HeadShake" ] } } } } } } ] } },
+
+  "allOf":                   [
+    { "if": { "properties": { "Level": { "const": 0 } } }, "then": { "properties": { "Functions": { "maxItems": 0 } } } },
+    { "if": { "properties": { "Level": { "const": 1 } } }, "then": { "properties": { "Functions": { "items": { "not": { "required": [ "Behaviour" ] } } } } } } ] }
