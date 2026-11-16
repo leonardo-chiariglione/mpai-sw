@@ -15,7 +15,7 @@ using Mpai.Aih;
 using Mpai.Aih.Hsp;
 using Mpai.Aih.Hfl;
 using Mpai.Aih.Nnm;
-using Mpai.Nnw.NoConstraint;
+using Mpai.Nnw.Watermarking;
 
 namespace Mpai.Aih.FlDemo;
 
@@ -34,7 +34,7 @@ namespace Mpai.Aih.FlDemo;
 // gives its Attestation token over a challenge of the Back End, which accepts an update only where the token proves approved code and the signature verifies - the
 // simulated sender goes away. On the screen: in round 1 a copy of an update changed on the way, refused (signature); in round 2 a Front End started with altered code,
 // whose vault does not open and whose update is refused (token). Still NOT here: the Controllers and the Modules, real images.
-internal static class Program
+internal static partial class Program
 {
     private static readonly string Root = FindRoot();
     private static readonly string Work = Path.Combine(Path.GetTempPath(), "aih-fl-demo-" + Guid.NewGuid().ToString("N"));
@@ -56,6 +56,12 @@ internal static class Program
 
     private static async Task<int> Main(string[] args)
     {
+        if (args.Contains("--arrivals"))
+        {
+            try { await CompareArrivals(args); return 0; }
+            catch (Exception ex) { Console.WriteLine("FAILED: " + ex); return 1; }
+            finally { try { Directory.Delete(Work, true); } catch { } }
+        }
         Secure = args.Contains("--secure");
         Say("AIH-HSP V1.1 - federated learning, narrated" + (Secure ? " - SECURE MODE (a root of trust and a Security API for each party)" : ""));
         Say("THIS IS A SIMULATION OF THE PLATFORM: synthetic chest-like images, a small network trained from random weights, components called directly (no Controller, no AIM host),");
@@ -140,6 +146,8 @@ internal static class Program
         var amds = new AmdStore(Path.Combine(Root, "AIMs", "AMDs")); amds.Scan();
         var nnw = new NnwProvider(amds);
         var wex = nnw.Create(NnwProvider.Wex, new Dictionary<string, string>(), null); var wexPorts = AimPortReader.Load(amds, NnwProvider.Wex);
+        // the Back End trains its first model with During-Training Watermark Insertion: 40 passes of the network with the final layer, then 80 of the final layer alone
+        var dwi = nnw.Create(NnwProvider.Dwi, new Dictionary<string, string> { ["NetworkEpochs"] = FirstModelEpochs.ToString(), ["HeadEpochs"] = "80" }, null); var dwiPorts = AimPortReader.Load(amds, NnwProvider.Dwi);
         var hfl = new HflAimProcessor("hfl", AimPortReader.Load(amds, AihProvider.Hfl));
         var ports = AimPortReader.Load(amds, AihProvider.Hfl);
         var conformance = new AIF.Metadata.L2Conformance(Path.Combine(Root, "schemas"), _ => null);
@@ -147,10 +155,11 @@ internal static class Program
         using var judge = new FrontEndTrainer(networkPath, new FileSharedStorage(Path.Combine(Work, "judge"), "j", "j"));
         string Acc(JsonObject m) => $"{judge.Score(m, checkSet).Accuracy:P0}";
 
-        // THE WATERMARK (NoConstraint, IMT; M3304). It has ONE use: the Back End is sure that a trained AIM it receives was made from ITS model. So it is the same in every round
-        // and for every End User: one key, kept by the Back End (the Locator that names the method carries a KeyReference, never the key), and one payload. It is inserted in DWI
-        // mode (During-Training Watermark Insertion): in the network before the Back End trains it, the marked weights kept as the mark set them while it trains - the network learns
-        // around the mark. The Front Ends check no watermark; the Back End checks it with Watermark Extraction (NNW-WEX V2.0) on every trained AIM it receives.
+        // THE WATERMARK (NCT, No-Constraint Traceability, IMT; M3304). It has ONE use: the Back End is sure that a trained AIM it receives was made from ITS model. So it is the
+        // same in every round and for every End User: one key, kept by the Back End (the Locator that names the method carries a KeyReference, never the key), and one payload.
+        // The Back End's During-Training Watermark Insertion AIM (NNW-DWI V2.0) trains the first model with it: the mark is inserted in the network before it trains and the
+        // marked weights are kept as the mark set them - the network learns around the mark. The Front Ends check no watermark; the Back End checks it with its Watermark
+        // Extraction AIM (NNW-WEX V2.0) on every trained AIM it receives.
         // THE SECURE MODE: the parties start their roots of trust and Security APIs; the Back End enrols the three Front Ends (the identity key of each one's TPM and
         // its public signing key). The enrolment is done directly here.
         FlParty? backEnd = null; var frontEnds = new FlParty[EndUsers.Length]; FlUpdateGate? gate = null;
@@ -171,20 +180,26 @@ internal static class Program
         }
 
         var key = Secure ? KeyFrom("key-backend", FlWatermarkKey.Material(backEnd!.For(BackEndOwner))) : NnwJson.NewKey("key-backend"); const string payload = "1010010111000011";
-        var locator = NnwJson.LocatorObject("wlc-backend", Bits, "key:backend", valuesPerBit: ValuesPerBit);
-        var markSeed = NnwJson.Seed(key); var markBits = NoConstraint.Bits(payload);
+        var locator = NnwJson.LocatorObject("wlc-backend", NnwJson.NctMethod(Bits, ValuesPerBit), "key:backend");
 
         // The Back End's first model: the network (its starting weights are random) and the final layer, trained together on neutral cases, with the mark.
         Step("The Back End makes its first model: the network and the final layer trained together on 200 neutral cases, the watermark inserted during the training (DWI)");
         JsonObject current;
-        using (var seed = new FrontEndTrainer(networkPath, Vault(Path.Combine(Work, "seed"), "be", backEnd)))
         {
-            var k = 0; foreach (var (img, f) in Cases(Neutral, 200, 1)) seed.KeepCase("n" + k++, img, f);
-            current = seed.Train(null, epochs: 80, networkEpochs: FirstModelEpochs, mark: onnx => NoConstraint.InsertOnnx(onnx, markSeed, markBits, null, ValuesPerBit));
+            var network = File.ReadAllBytes(networkPath);
+            var untrained = NnwJson.UntrainedModel("model-untrained", network, judge.FeatureCount);
+            var dataset = NnwJson.DatasetObject("neutral-200", [1, FrontEndTrainer.ImageSide, FrontEndTrainer.ImageSide],
+                                                Cases(Neutral, 200, 1).Select(c => (FrontEndTrainer.Standardise(c.Image), c.Finding)));
+            var trained = await dwi.ProcessAsync(new Message { MessageId = "dwi-first", Ports = new Dictionary<string, string> {
+                [dwiPorts.Input(NnwJson.Model)] = untrained.ToJsonString(), [dwiPorts.Input(NnwJson.Dataset)] = dataset.ToJsonString(),
+                [dwiPorts.Input(NnwJson.Payload)] = NnwJson.PayloadObject("pld-backend", payload).ToJsonString(), [dwiPorts.Input(NnwJson.Key)] = key.ToJsonString(),
+                [dwiPorts.Input(NnwJson.Locator)] = locator.ToJsonString() } });
+            if (trained.IsError) throw new InvalidOperationException(trained.Payload);
+            current = JsonNode.Parse(trained.Payload)!.AsObject();
             current["MLModelObjectID"] = "model-0";
         }
-        Say($"   watermark: {NoConstraint.MethodName(Bits, ValuesPerBit)}; {Bits * ValuesPerBit} weights of the network set by the mark and kept while the network was trained; the key stays with the Back End");
-        Say("   NOTICE: " + NoConstraint.Notice);
+        Say($"   During-Training Watermark Insertion (NNW-DWI): {NnwJson.NctMethod(Bits, ValuesPerBit)}; {Bits * ValuesPerBit} weights of the network set by the mark and kept while the network was trained; the key stays with the Back End");
+        Say("   NOTICE: " + NnwJson.NctNotice);
         if (Secure) Say("   the watermark key is a persistent key of the Back End's Security API (sealed to its code); its value goes only into memory, to the Key at the Input Port of WEX");
         Say($"   accuracy on the fixed check set of 200 cases: {Acc(current)}");
 

@@ -1,7 +1,7 @@
 using System.Text.Json.Nodes;
 using AIF.Controller;
 using AIF.Store;
-using Mpai.Nnw.NoConstraint;
+using Mpai.Nnw.Watermarking;
 using Mpai.Onnx;
 
 namespace Mpai.Aif.Tests;
@@ -128,7 +128,7 @@ public class NnwNoConstraintTests
         var pwi = provider.Create(NnwProvider.Pwi, new Dictionary<string, string>(), null);
         var wex = provider.Create(NnwProvider.Wex, new Dictionary<string, string>(), null);
 
-        var key = NnwJson.NewKey("key-1"); var locator = NnwJson.LocatorObject("wlc-1", 16, "key:backend-1");
+        var key = NnwJson.NewKey("key-1"); var locator = NnwJson.LocatorObject("wlc-1", NnwJson.NctMethod(16), "key:backend-1");
         var original = File.ReadAllBytes(Network);
         var model = ModelWithNetwork(original);
 

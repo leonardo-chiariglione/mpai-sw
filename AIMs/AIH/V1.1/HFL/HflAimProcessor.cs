@@ -35,8 +35,64 @@ public sealed class HflAimProcessor : IAimProcessor
     private readonly List<RoundOutcome> _outcomes = new();
     public IReadOnlyList<RoundOutcome> Outcomes => _outcomes;                          // what each round made (or did not make), without who sent what
 
+    // HOW THE NEW NN MODEL IS MADE: an Implementer's choice (the specification says only "produces a new NN Model"); see FlMethods. Average waits for the answers of a
+    // round (the first slice's behaviour); the other methods make a new model from the current one and EACH trained AIM as it arrives, as AIH-HSP works.
+    public FlMethod Method { get; set; } = FlMethod.Average;
+    public double Alpha { get; set; } = 0.5;                                         // FedAsync: the share of a fresh AIM
+    public FlLabelBank? Bank { get; set; }                                           // LabelBank: the Back End's inputs and their labels
+    public string LastNote { get; private set; } = "";
+    private readonly List<string> _made = new();                                     // the Back End's models, oldest first (for the staleness of an AIM)
+
+    private int Staleness(JsonObject? post)
+    {
+        var id = post?["MLModelObjectID"]?.GetValue<string>() ?? "";
+        var from = id.Contains('>') ? id[..id.IndexOf('>')] : id;
+        var at = _made.LastIndexOf(from);
+        return at < 0 ? 0 : _made.Count - 1 - at;
+    }
+
+    // ONE TRAINED AIM HAS ARRIVED: the check of the update, the new model by the method, the check on the fixed set, and the model out (or the old one stays).
+    private void Arrived(JsonObject? post, float[] weights, Dictionary<string, string> outputs)
+    {
+        var cases = Cases(post); var stale = Staleness(post);
+        var why = Policy?.CheckUpdate(weights, Current);
+        if (why is not null || Current is null || CurrentModel is null)
+        {
+            _refusals.Add(new RoundRefusal(_round + 1, "update", why ?? "the Back End has no model to start from."));
+            _outcomes.Add(new RoundOutcome(_round + 1, null, _pre, 0, cases, false)); LastNote = why ?? ""; return;
+        }
+        float[] next;
+        switch (Method)
+        {
+            case FlMethod.Replace: next = weights; LastNote = "the trained AIM taken as it is"; break;
+            case FlMethod.FedAsync:
+            {
+                var share = FlMethods.MixShare(Alpha, stale);
+                next = FlMethods.Mix(Current, weights, share); LastNote = $"mixed in with a share of {share:P1} (trained from a model {stale} behind)"; break;
+            }
+            case FlMethod.LabelBank:
+            {
+                var bank = Bank ?? throw new InvalidOperationException("LabelBank needs the Back End's label bank.");
+                next = Vector(bank.Learn(CurrentModel, post!, cases)); LastNote = bank.Note; break;
+            }
+            default: throw new InvalidOperationException("not a per-arrival method: " + Method);
+        }
+        var candidate = ModelOf("candidate", next, cases);
+        var gate = Policy?.CheckResult(CurrentModel, candidate);
+        if (gate is not null)
+        {
+            _refusals.Add(new RoundRefusal(_round + 1, "result", gate));
+            _outcomes.Add(new RoundOutcome(_round + 1, null, _pre, 1, cases, false)); LastNote += "; REFUSED: " + gate; return;
+        }
+        var model = ModelOf($"hbe-model-{++_round}", next, cases);
+        model["DescrMetadata"] = $"{FlMethods.Describe(Method)}: {LastNote}" + (_network is null ? "" : "; the final layer and the network");
+        outputs[_modelOut] = model.ToJsonString();
+        Current = next; CurrentModel = model; _made.Add(model["MLModelObjectID"]!.GetValue<string>());
+        _outcomes.Add(new RoundOutcome(_round, model["MLModelObjectID"]!.GetValue<string>(), _pre, 1, cases, true));
+    }
+
     // Sets the model the next round starts from (the Back End's current NN Model).
-    public void StartFrom(JsonObject model) { Current = Vector(model); CurrentModel = model; _network = FrontEndTrainer.NetworkOf(model) ?? _network; }
+    public void StartFrom(JsonObject model) { Current = Vector(model); CurrentModel = model; _network = FrontEndTrainer.NetworkOf(model) ?? _network; if (model["MLModelObjectID"]?.GetValue<string>() is string id) _made.Add(id); }
 
     public string InstanceId { get; }
 
@@ -80,6 +136,7 @@ public sealed class HflAimProcessor : IAimProcessor
                 var post = response["PostLearnNNModel"] as JsonObject;
                 var weights = Vector(post);
                 if (_network is null && post is not null) _network = FrontEndTrainer.NetworkOf(post);
+                if (Method != FlMethod.Average) { Arrived(post, weights, outputs); return Task.FromResult(new Message { MessageId = message.MessageId, MessageType = "FederatedLearn", DataType = AihJson.FederatedLearn, Payload = outputs.Values.FirstOrDefault() ?? "", Ports = outputs, More = more }); }
                 var why = Policy is null ? null : Policy.CheckUpdate(weights, Current ?? (_answers.Count > 0 ? _answers[0] : null));
                 if (Policy is null && _answers.Count > 0 && _answers[0].Length != weights.Length) throw new FormatException("a model of another size than the first answer.");
                 if (why is not null) { _refused++; _refusals.Add(new RoundRefusal(_round + 1, "update", why)); }
@@ -90,10 +147,7 @@ public sealed class HflAimProcessor : IAimProcessor
                     float[]? mean = null;
                     if (taken > 0)
                     {
-                        // Weighted by the number of cases each model learned from (federated averaging).
-                        mean = new float[_answers[0].Length];
-                        var total = (double)_cases.Sum();
-                        for (var a = 0; a < taken; a++) for (var i = 0; i < mean.Length; i++) mean[i] += (float)(_answers[a][i] * (_cases[a] / total));
+                        mean = FlMethods.Average(_answers, _cases);
                         var gate = Policy is null || CurrentModel is null ? null : Policy.CheckResult(CurrentModel, ModelOf("evaluation", mean, _cases.Sum()));
                         if (gate is not null) { _refusals.Add(new RoundRefusal(_round + 1, "result", gate)); mean = null; }
                     }

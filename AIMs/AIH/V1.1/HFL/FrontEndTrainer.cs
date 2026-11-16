@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Json.Nodes;
 
 using AIF.SharedStorage;
+using Mpai.Onnx;
 
 namespace Mpai.Aih.Hfl;
 
@@ -108,6 +109,18 @@ public sealed class FrontEndTrainer : IDisposable
         FitHead(w, data, epochs, learningRate);
         var what = networkEpochs > 0 ? "network and final layer" : "final layer (the network unchanged)";
         return Keep(w, net.ToOnnx(), $"{what} trained by one Health Front End on {data.Count} of its End User's own cases", start?["MLModelObjectID"]?.GetValue<string>(), data.Count);
+    }
+
+    // Trains a model on inputs with targets given here (a target is a probability, 0..1), not on the End User's cases; nothing is kept. Used by the Back End's
+    // distillation (FlDistillation): its own inputs, labelled by the End Users' models.
+    public JsonObject TrainOn(JsonObject start, IReadOnlyList<(float[] Input, float Y)> data, int networkEpochs, int headEpochs, float learningRate = 0.01f, float networkRate = 0.0002f)
+    {
+        var w = Weights(start);
+        var cases = data.Select(d => (Prepare(d.Input), d.Y)).ToList();
+        var net = NetworkFor(start);
+        if (networkEpochs > 0) TrainTogether(net, w, cases, networkEpochs, networkRate, learningRate);
+        FitHead(w, cases.Select(c => (net.Features(c.Item1), c.Y)).ToList(), headEpochs, learningRate);
+        return ModelObject((start["MLModelObjectID"]?.GetValue<string>() ?? "start") + ">distilled", w, $"trained on {cases.Count} inputs with targets", 1, net.ToOnnx());
     }
 
     // The NN Models kept, oldest first.

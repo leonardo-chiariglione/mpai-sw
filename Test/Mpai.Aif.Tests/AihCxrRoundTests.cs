@@ -9,7 +9,7 @@ using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using Mpai.Aih;
 using Mpai.Aih.Hfl;
-using Mpai.Nnw.NoConstraint;
+using Mpai.Nnw.Watermarking;
 using Mpai.Onnx;
 using Xunit.Abstractions;
 

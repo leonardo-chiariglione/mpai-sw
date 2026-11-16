@@ -9,7 +9,7 @@ using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using Mpai.Onnx;
 
-namespace Mpai.Nnw.NoConstraint;
+namespace Mpai.Nnw.Watermarking;
 
 // THE NoConstraint WATERMARKING METHOD (IMT: patent application "Procédé pour protéger par traçage un réseau artificiel de neurones", filed 13 May 2025; C. De Sousa Trias,
 // "Robust Watermarking for Neural Networks in Multimedia Tasks", Chapter VII; analysed in M3304). Its use is subject to the notice of IMT at the top of this file (and NOTICE.txt).
@@ -34,7 +34,8 @@ namespace Mpai.Nnw.NoConstraint;
 //     in 100, but its bits then agree with a payload of B bits only once in 2^B.
 //   - The positions. Among the float tensors of two or more dimensions; the first and the last of them (the input and output layers) are avoided, as the patent advises,
 //     where at least three are left. A Locator may name the tensors instead (Targets).
-public static class NoConstraint
+// NCT, No-Constraint Traceability: one of the three methods of the AIMs of this Implementation (Aims.cs); it is part of their code and of nothing else.
+internal static class NoConstraint
 {
     // The notice of Institut Mines-Telecom (NOTICE.txt): a program that uses the method shows it.
     public const string Notice = "The NoConstraint watermarking method and its code is made available here by Institut Mines-Telecom for demonstration purposes. " +
@@ -44,8 +45,12 @@ public static class NoConstraint
     public const double Smallest = 0.5, Largest = 2.0;            // the magnitudes of W_X, in standard deviations of the weights that carry it
     public const double Confidence95 = 1.6449;
 
-    public const string MethodPrefix = "NoConstraint";
-    public static string MethodName(int bits, int valuesPerBit = ValuesPerBit) => $"{MethodPrefix} (IMT): {bits} bits, {valuesPerBit} values a bit, Pearson detection";
+    // The name of the method in a Locator: "NCT - No-Constraint Traceability (IMT): 16 bits, 16 values a bit, Pearson detection". A Locator written before the name changed
+    // ("NoConstraint (IMT): ...") is read as well.
+    public const string MethodPrefix = "NCT";
+    private const string FormerPrefix = "NoConstraint";
+    public static string MethodName(int bits, int valuesPerBit = ValuesPerBit) => $"{MethodPrefix} - No-Constraint Traceability (IMT): {bits} bits, {valuesPerBit} values a bit, Pearson detection";
+    public static bool Names(string? method) => method is not null && (method.StartsWith(MethodPrefix, StringComparison.Ordinal) || method.StartsWith(FormerPrefix, StringComparison.Ordinal));
 
     // The number of bits, and of values a bit, of a method named by MethodName; null where it is not this method.
     public static int? BitsOf(string? method) => Numbers(method)?.Bits;
@@ -53,8 +58,8 @@ public static class NoConstraint
 
     private static (int Bits, int ValuesPerBit)? Numbers(string? method)
     {
-        if (method is null || !method.StartsWith(MethodPrefix, StringComparison.Ordinal)) return null;
-        var m = Regex.Match(method, @"(\d+) bits, (\d+) values a bit");
+        if (!Names(method)) return null;
+        var m = Regex.Match(method!, @"(\d+) bits, (\d+) values a bit");
         if (!m.Success) return null;
         int bits = int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture), vpb = int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture);
         return bits > 0 && vpb > 1 ? (bits, vpb) : null;
@@ -75,7 +80,7 @@ public static class NoConstraint
 
     public static byte[] Seed(IEnumerable<double> keyData) => SHA256.HashData(keyData.SelectMany(BitConverter.GetBytes).ToArray());
 
-    private sealed class Stream
+    internal sealed class Stream
     {
         private readonly byte[] _seed; private byte[] _block = Array.Empty<byte>(); private int _at = 32; private long _counter;
         public Stream(byte[] seed, string purpose) => _seed = SHA256.HashData(seed.Concat(System.Text.Encoding.UTF8.GetBytes(purpose)).ToArray());

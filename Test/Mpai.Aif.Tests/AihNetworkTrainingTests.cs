@@ -1,6 +1,7 @@
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using Mpai.Aih.Hfl;
+using Mpai.Onnx;
 
 namespace Mpai.Aif.Tests;
 

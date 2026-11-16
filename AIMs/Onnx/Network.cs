@@ -4,7 +4,7 @@ using System.Linq;
 
 using Mpai.Onnx;
 
-namespace Mpai.Aih.Hfl;
+namespace Mpai.Onnx;
 
 // THE NETWORK OF THE NN MODEL, TRAINABLE (federated learning: the Front Ends train the network itself, not only the final layer).
 //
@@ -233,6 +233,9 @@ public sealed class Network
 
     // All the weights, and their gradients, in the order of the file (the order OnnxFloats.Read gives).
     public IEnumerable<(float[] Values, float[] Grads)> Parameters() => _tensors.Select(t => (_values[t.Name], _grads[t.Name]));
+
+    // The names of the weight tensors, in the same order as Parameters (the names of the ONNX file).
+    public IReadOnlyList<string> ParameterNames => _tensors.Select(t => t.Name).ToList();
 
     public float[] Weights() => _tensors.SelectMany(t => _values[t.Name]).ToArray();
 

@@ -1,6 +1,6 @@
 using AIF.SharedStorage;
 using Mpai.Aih.Hfl;
-using Mpai.Nnw.NoConstraint;
+using Mpai.Nnw.Watermarking;
 using Mpai.Onnx;
 
 namespace Mpai.Aif.Tests;
