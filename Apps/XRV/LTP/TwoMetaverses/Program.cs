@@ -334,7 +334,8 @@ static class Show
 
         var logFile = Path.Combine(outDir, "log.json");
         File.WriteAllText(logFile, new JsonObject { ["duration"] = end, ["frames"] = frames }.ToJsonString());
-        File.Copy(Path.Combine(showDir, "applause.wav"), Path.Combine(outDir, "applause.wav"), true);
+        // the sound mix reads every sound of the show (applause and the performers' voices) from the output folder
+        foreach (var wav in Directory.GetFiles(showDir, "*.wav")) File.Copy(wav, Path.Combine(outDir, Path.GetFileName(wav)), true);
         foreach (var p in problems) log("PROBLEM " + p);
         log($"fired: {fired.Count} Action IDs; frames: {frames.Count}; problems: {problems.Count}");
         return new ShowResult(problems.Count == 0, logFile, end, sounds.Select(s => (s.Item1, s.Item2, s.Item3, s.Item4, s.Item5)).ToList(), fired, problems);
