@@ -84,6 +84,10 @@ public sealed class AvatarUaHost
         _web.CoreWebView2.SetVirtualHostNameToFolderMapping(
             _assetsHost, _assetsDir, CoreWebView2HostResourceAccessKind.Allow);
         if (Diagnose is { } log) await WatchAsync(log);
+        // The page and the Face are local files: nothing to keep in the disk cache. A damaged cache (net::ERR_CACHE_READ_FAILURE)
+        // left the page without its scripts and the Face did not load (ASM, 2026-11-17), so the cache is emptied before every start.
+        try { await _web.CoreWebView2.Profile.ClearBrowsingDataAsync(CoreWebView2BrowsingDataKinds.DiskCache); }
+        catch (Exception e) { Diagnose?.Invoke("[avatar page] the disk cache was not emptied: " + e.Message); }
         _web.CoreWebView2.Navigate($"https://{_assetsHost}/{viewerPage}" + (string.IsNullOrWhiteSpace(faceName) ? "" : "?name=" + Uri.EscapeDataString(faceName)));
 
         _renderer = new AvatarUnit(json =>
