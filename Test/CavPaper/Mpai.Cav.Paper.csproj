@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- N-35 (night of 2026-11-16/17): the experiments for the paper "Towards Standardised AI Architectures for Distributed
+       Connected Autonomous Vehicles" on the traffic simulation of N-19 (Test/CavDriving): performance as a matrix over ODD cells,
+       the failure layers (missed detections, phantoms), and interchangeable motion AIMs behind one interface. -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CavDriving\Mpai.Cav.DrivingSim.csproj" />
+    <ProjectReference Include="..\..\AIMs\CAV\V2.0\Ams\Mpai.Cav.Ams.csproj" />
+  </ItemGroup>
+
+</Project>
