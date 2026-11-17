@@ -31,16 +31,21 @@
 <div id="stage"></div><div id="bubble"></div>
 <div id="side">
   <h1>Open the door when the bell rings</h1>
+  <button id="demoSide" style="font-size:16px;padding:10px">Start the demo</button>
+  <div id="demo" style="font-size:15px;color:#ffd479;min-height:20px"></div>
   <div class="muted">You are the human of the Host User. What you see and hear is the Room, rendered to you by MU-Actuate. Everything else happens in the M-Instance (MM Process Actions).</div>
+  <div id="ready" class="muted">Connecting...</div>
   <div id="state">Door: <b id="doorState">?</b> &nbsp; Pending: <span id="pending">nothing</span></div>
   <label class="muted" for="cmd">Your command to your User (write it, or speak it)</label>
-  <textarea id="cmd">Open the door if a bell rings and greet whoever is at the door.</textarea>
+  <textarea id="cmd">Open the door when the bell rings.</textarea>
   <div class="row"><button id="send">Send command</button><button id="mic" class="alt" title="Click to speak, click again to stop">Speak</button></div>
   <div class="muted">The other User (the Visitor), outside, in the street:</div>
   <div class="row"><button id="ring" class="alt">Visitor comes and rings the bell</button><button id="knock" class="alt">Visitor comes and knocks</button></div>
+  <div class="row"><button id="reset" class="alt" title="The door closed, the Personae back at their places, the A-User Module started again">New scene</button></div>
   <div id="log"></div>
 </div>
-<div id="start"><button id="go">Enter the room (sound on)</button></div>
+<script>if (location.protocol === 'file:') document.write('<div style="position:fixed;inset:0;z-index:9;background:#1d2126;color:#fff;display:flex;align-items:center;justify-content:center;font:18px Segoe UI,Arial;text-align:center;padding:20px">This page works only from the demo server.<br>Start MMM\\Run-Door.ps1, then open<br><a style="color:#9cc7ff" href="http://127.0.0.1:7101/viewer/door.html">http://127.0.0.1:7101/viewer/door.html</a></div>');</script>
+<div id="start"><div style="display:flex;flex-direction:column;gap:12px;align-items:center"><button id="demoGo">Start the demo</button><button id="go" class="alt" style="font-size:14px;padding:8px 14px">Just enter the room</button></div></div>
 <script type="module">
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -79,7 +84,16 @@ box(T, H, S, 0xe9e2d6, -S / 2, H / 2, 0); box(T, H, S, 0xe9e2d6, S / 2, H / 2, 0
 const side = (S - DW) / 2;
 box(side, H, T, 0xe9e2d6, -(DW / 2 + side / 2), H / 2, S / 2); box(side, H, T, 0xe9e2d6, DW / 2 + side / 2, H / 2, S / 2);   // south wall, each side of the door
 box(DW, H - DH, T, 0xe9e2d6, 0, DH + (H - DH) / 2, S / 2);                        // above the door
-box(0.9, 0.75, 0.5, 0x6b4f37, 2.1, 0.375, -2.2); box(0.5, 0.45, 0.5, 0x6b4f37, 1.2, 0.225, -2.2);   // a table and a stool, north-east
+// The furniture is the M-Instance's (Items of Kind Table, with their footprint, width east-west and depth north-south): a top on four legs, a stool at each end.
+const furniture = new Map();
+function table(t) {
+  const [w, d] = t.Footprint ?? [1.2, 0.7], top = w - 0.6, g = new THREE.Group(); const wood = 0x6b4f37;
+  const part = (sx, sy, sz, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), mat(wood)); m.position.set(x, y, z); m.castShadow = m.receiveShadow = true; g.add(m); };
+  part(top, 0.05, d, 0, 0.75, 0);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) part(0.06, 0.73, 0.06, sx * (top / 2 - 0.06), 0.365, sz * (d / 2 - 0.06));
+  for (const sx of [-1, 1]) part(0.36, 0.45, 0.36, sx * (w / 2 - 0.18), 0.225, 0);
+  g.position.copy(P(t.X, t.Y)); scene.add(g); return g;
+}
 const doorstep = box(1.4, 0.03, 1.0, 0x777777, 0, 0.015, S / 2 + 0.6);
 // the door leaf, hinged on its west side, opening into the room
 const hinge = new THREE.Group(); hinge.position.set(-DW / 2, 0, S / 2); scene.add(hinge);
@@ -128,8 +142,11 @@ async function persona(file) {
     if (A.ru && A.rf) { A.ru.userData.up = armAngle(g, A.ru, A.rf, true); A.ru.userData.down = armAngle(g, A.ru, A.rf, false); }
   } catch (e) { console.warn('arms', e); }
   for (const b of [A.lt, A.rt, A.lc, A.rc, A.rf]) if (b) b.userData.rest = b.quaternion.clone();
-  const vis = []; root.traverse(o => { if (o.isMesh && o.morphTargetDictionary) for (const [n, i] of Object.entries(o.morphTargetDictionary)) if (/AA_VI_0[1-3]/.test(n)) vis.push([o, i]); });
-  return { g, A, vis, phase: 0, wave: 0, mouth: 0 };
+  // the visemes the Personae carry (the Oculus set, AA_VI_00 to AA_VI_14): [mesh, index] for each
+  const visIdx = Array.from({ length: VIS_COUNT }, () => []);
+  root.traverse(o => { if (o.isMesh && o.morphTargetDictionary) for (const [n, i] of Object.entries(o.morphTargetDictionary)) { const m = /AA_VI_(\d\d)/.exec(n); if (m && +m[1] < VIS_COUNT) visIdx[+m[1]].push([o, i]); } });
+  A.head = boneOf(root, /Head$/i); if (A.head) A.head.userData.rest = A.head.quaternion.clone();
+  return { g, A, visIdx, vcur: new Float32Array(VIS_COUNT), vtarget: [0, 0], phase: 0, wave: 0, nod: 0, mouth: 0, acts: [] };
 }
 const people = new Map();   // ID -> { g, A, at: Vector3, target: Vector3, yaw, ... }
 const yawToRot = yaw => Math.PI + THREE.MathUtils.degToRad(yaw ?? 0);   // yaw 0 looks north (-z); the model looks +z
@@ -139,7 +156,7 @@ function pose(p, dt) {
   const d = p.target.clone().sub(p.at); d.y = 0; const dist = d.length();
   const walking = dist > 0.02;
   if (walking) {
-    const step = Math.min(dist, walkSpeed * dt); p.at.add(d.normalize().multiplyScalar(step));
+    const step = Math.min(dist, Math.max(walkSpeed, dist * 2) * dt); p.at.add(d.normalize().multiplyScalar(step));   // the M-Instance's pace; faster when behind it
     g.rotation.y = Math.atan2(d.x, d.z); p.phase += dt * walkSpeed * 4.2;
   } else {                                                                   // standing: turn to the yaw the M-Instance gives
     const diff = THREE.MathUtils.euclideanModulo(yawToRot(p.yaw) - g.rotation.y + Math.PI, Math.PI * 2) - Math.PI;
@@ -154,9 +171,70 @@ function pose(p, dt) {
   if (A.ru?.userData.down) {
     p.wave = Math.max(0, Math.min(1, p.wave + (p.waving ? dt * 3 : -dt * 3)));
     A.ru.quaternion.copy(A.ru.userData.down).slerp(A.ru.userData.up, p.wave);
-    if (A.rf) { A.rf.quaternion.copy(A.rf.userData.rest); if (p.wave > 0.5) { g.updateMatrixWorld(true); swing(A.rf, axisOf(g, 0, 0, 1), 25 * Math.sin(performance.now() / 160)); } }
+    if (A.rf) { A.rf.quaternion.copy(A.rf.userData.rest); if (p.wave > 0.5 && p.swing !== false) { g.updateMatrixWorld(true); swing(A.rf, axisOf(g, 0, 0, 1), 25 * Math.sin(performance.now() / 160)); } }
   }
-  for (const [mesh, i] of p.vis) mesh.morphTargetInfluences[i] = p.mouth;
+  // the head: a Nod of the Body Descriptors, while its times last
+  if (A.head?.userData.rest) { A.head.quaternion.copy(A.head.userData.rest); if (p.nod > 0) { g.updateMatrixWorld(true); swing(A.head, axisOf(g, 1, 0, 0), 12 * p.nod * Math.sin(performance.now() / 110)); } }
+  // the mouth: the viseme of the speech at this moment, eased (as the MMM viewer applies an AudioVisemeStream)
+  for (let i = 0; i < VIS_COUNT; i++) {
+    const goal = i === p.vtarget[0] ? p.vtarget[1] : 0;
+    p.vcur[i] += (goal - p.vcur[i]) * (goal > p.vcur[i] ? 0.6 : 0.25);
+    for (const [mesh, at] of p.visIdx[i]) mesh.morphTargetInfluences[at] = p.vcur[i] < 0.01 ? 0 : p.vcur[i];
+  }
+}
+
+// ---------------------------------------------------------------- the mouth from the speech: the viseme method of MMM/Viewer/index.html, on the speech of the Portable Avatar
+const VIS_STEP = 256, LPC = 12, VIS_COUNT = 15;                                   // samples (16 ms at 16 kHz); the order of the envelope; the visemes
+const GRID = Array.from({ length: 70 }, (_, i) => 250 + 50 * i);
+const TAB = GRID.map(h => Array.from({ length: LPC + 1 }, (_, k) => [Math.cos(2 * Math.PI * h * k / 16000), Math.sin(2 * Math.PI * h * k / 16000)]));
+function formants(f) {
+  const n = f.length, x = new Float64Array(n);
+  for (let i = 0; i < n; i++) x[i] = (f[i] - (i ? 0.95 * f[i - 1] : 0)) * (0.54 - 0.46 * Math.cos(2 * Math.PI * i / (n - 1)));
+  const r = new Float64Array(LPC + 1);
+  for (let k = 0; k <= LPC; k++) { let acc = 0; for (let i = k; i < n; i++) acc += x[i] * x[i - k]; r[k] = acc; }
+  if (r[0] < 1e-9) return [0, 0];
+  r[0] *= 1.0001;
+  const a = new Float64Array(LPC + 1); a[0] = 1; let err = r[0];
+  for (let i = 1; i <= LPC; i++) {
+    let acc = r[i]; for (let j = 1; j < i; j++) acc += a[j] * r[i - j];
+    const k = -acc / err, was = a.slice();
+    for (let j = 1; j < i; j++) a[j] = was[j] + k * was[i - j];
+    a[i] = k; err *= 1 - k * k; if (err <= 0) break;
+  }
+  const power = TAB.map(row => { let re = 0, im = 0; for (let k = 0; k <= LPC; k++) { re += a[k] * row[k][0]; im -= a[k] * row[k][1]; } return 1 / (re * re + im * im + 1e-12); });
+  const peaks = []; for (let i = 1; i < power.length - 1; i++) if (power[i] > power[i - 1] && power[i] >= power[i + 1]) peaks.push(GRID[i]);
+  const f1 = peaks.find(h => h <= 1000) ?? 0, f2 = peaks.find(h => f1 && h > f1 + 250 && h <= 3300) ?? 0;
+  return [f1, f2];
+}
+function visemeOf(f, wasLoud) {
+  let e = 0; for (let i = 0; i < f.length; i++) e += f[i] * f[i];
+  const rms = Math.sqrt(e / f.length);
+  if (rms < 0.012) return [0, 0];
+  let z = 0; for (let i = 1; i < f.length; i++) if ((f[i] >= 0) !== (f[i - 1] >= 0)) z++;
+  const open = Math.min(1, (rms - 0.012) / 0.12);
+  if (z / f.length > 0.3) return [rms > 0.04 ? 7 : 2, Math.min(1, 0.4 + open)];
+  if (!wasLoud && rms > 0.03) return [1, 0.8];
+  const [f1, f2] = formants(f);
+  if (f1 === 0) return [10, Math.max(0.15, open * 0.5)];
+  if (f1 > 650) return [10, Math.max(0.2, open)];
+  if (f1 > 430) return f2 > 1700 ? [11, Math.max(0.2, open * 0.8)] : [13, Math.max(0.2, open * 0.8)];
+  return f2 > 1900 ? [12, Math.max(0.2, open * 0.7)] : [14, Math.max(0.2, open * 0.7)];
+}
+// The visemes of a decoded speech, one [viseme, weight] each 16 ms (the samples taken back to 16 kHz first).
+function visemesOf(buf) {
+  const src = buf.getChannelData(0), step = buf.sampleRate / 16000, n = Math.floor(src.length / step), s = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const x = i * step, k = Math.floor(x), t = x - k; s[i] = src[k] * (1 - t) + (src[k + 1] ?? 0) * t; }
+  const frames = []; let loud = false;
+  for (let off = 0; off + VIS_STEP <= n; off += VIS_STEP) { const fr = visemeOf(s.subarray(off, off + VIS_STEP), loud); loud = fr[0] !== 0; frames.push(fr); }
+  return frames;
+}
+// The Behaviours of the Body Descriptors of the Portable Avatar ("Wave RightHand 0.20-1.10 peak 0.60 amplitude 0.70 towards User (Greeting f1)"): name, start, end (seconds of the speech).
+async function behavioursOf(id) {
+  try {
+    const d = await (await fetch('/door/avatar/' + encodeURIComponent(id))).json();
+    return [...(d.body ?? []), ...(d.face ?? [])].flatMap(x => x.split(';')).map(x => /^\s*(\w+) (\w+) (-?[\d.]+)-(-?[\d.]+)/.exec(x)).filter(Boolean)
+      .map(m => ({ name: m[1], part: m[2], start: +m[3], end: +m[4] }));
+  } catch { return []; }
 }
 
 // ---------------------------------------------------------------- sound: what is heard in the room
@@ -165,19 +243,34 @@ async function play(id, x, y, speaker) {
   if (played.has(id) || !ctx) return; played.add(id);
   const r = await fetch('/door/sound/' + encodeURIComponent(id)); if (!r.ok) return;
   const buf = await ctx.decodeAudioData(await r.arrayBuffer());
+  // A Persona's speech: the mouth from its visemes; the wave and the nod from the Behaviours of the Body Descriptors, at their times in the speech.
+  const frames = speaker ? visemesOf(buf) : null, acts = speaker ? await behavioursOf(id) : [];
   const src = ctx.createBufferSource(); src.buffer = buf;
   const pan = ctx.createStereoPanner(); pan.pan.value = Math.max(-1, Math.min(1, (x ?? 0) / 4));
-  const an = ctx.createAnalyser(); an.fftSize = 512; src.connect(an); an.connect(pan); pan.connect(ctx.destination); src.start();
+  src.connect(pan); pan.connect(ctx.destination);
+  const t0 = ctx.currentTime; src.start(t0);
   if (speaker) {
-    speaker.waving = true; const data = new Float32Array(an.fftSize);
-    const tick = () => { an.getFloatTimeDomainData(data); let e = 0; for (const v of data) e += v * v; speaker.mouth = Math.min(1, Math.sqrt(e / data.length) * 9); if (!src.ended) requestAnimationFrame(tick); };
-    src.onended = () => { src.ended = true; speaker.mouth = 0; setTimeout(() => speaker.waving = false, 600); bubble.style.display = 'none'; };
+    speaker.acts = acts;
+    const during = (name, t) => acts.some(a => a.name === name && t >= a.start - 0.15 && t <= Math.max(a.end, a.start + 0.9) + 0.3);
+    const tick = () => {
+      const t = ctx.currentTime - t0;
+      speaker.vtarget = src.ended ? [0, 0] : frames[Math.floor(t / 0.016)] ?? [0, 0];
+      speaker.waving = during('Wave', t) || during('Point', t); speaker.swing = during('Wave', t); speaker.nod = during('Nod', t) ? 1 : 0;
+      if (!src.ended || speaker.waving) requestAnimationFrame(tick); else { speaker.nod = 0; }
+    };
+    src.onended = () => { src.ended = true; speaker.vtarget = [0, 0]; setTimeout(() => { bubble.style.display = 'none'; }, 400); };
     tick();
   }
 }
 
 // ---------------------------------------------------------------- the M-Instance, as it is rendered
-const bubble = $('bubble'); let bubbleFor = null;
+const bubble = $('bubble'); let bubbleFor = null, lastLog = [], sceneNo = null, saidShown = 0;
+// The words the Persona says (the log's 'says "..."' line of A-User Formation's speech), in a bubble over it while it speaks.
+function showWords(p) {
+  const i = lastLog.findLastIndex(x => x.includes(' says "'));
+  if (i < 0 || i < saidShown) return; saidShown = i + 1;
+  bubble.textContent = lastLog[i].split('"')[1]; bubbleFor = p; bubble.style.display = 'block';
+}
 async function poll() {
   try {
     const st = await (await fetch('state')).json();
@@ -188,8 +281,10 @@ async function poll() {
         if (!p) { p = { loading: true }; people.set(t.ID, p); const q = await persona(t.Model ?? 'Persona1.glb'); Object.assign(p, q, { loading: false, at: P(t.X, t.Y), target: P(t.X, t.Y), yaw: t.Yaw }); p.g.rotation.y = yawToRot(t.Yaw); }
         if (!p.loading) { p.target = P(t.X, t.Y); p.yaw = t.Yaw; }
         // MM-Animate: the Persona's Stream (a Portable Avatar); what it says is played from the Persona, with the wave of the greeting
-        if (!p.loading && t.Animation && t.Animating && !played.has(t.Animation)) play(t.Animation, t.X, t.Y, p);
+        if (!p.loading && t.Animation && t.Animating && !played.has(t.Animation)) { play(t.Animation, t.X, t.Y, p); showWords(p); }
+        if (!p.loading && !t.Animating && bubbleFor === p && !p.vtarget[0] && bubble.style.display === 'block') bubble.style.display = 'none';   // its speech is over in the M-Instance
       }
+      if (t.Kind === 'Table' && !furniture.has(t.ID)) furniture.set(t.ID, table(t));
       if (t.Kind === 'Audio') play(t.ID, t.X, t.Y, null);
       if (t.Kind === 'Speech' && !played.has(t.ID)) {
         const who = [...people.entries()].filter(([, p]) => !p.loading).sort((a, b) => a[1].at.distanceTo(P(t.X, t.Y)) - b[1].at.distanceTo(P(t.X, t.Y)))[0];
@@ -198,6 +293,12 @@ async function poll() {
       }
     }
     const l = await (await fetch('/door/log')).json();
+    lastLog = l.log;
+    // A new scene: every Persona at its place at once (no walk back), nothing said, no bubble
+    if (sceneNo !== null && l.scene !== sceneNo) { for (const p of people.values()) if (!p.loading) { p.at.copy(p.target); p.waving = false; p.nod = 0; p.vtarget = [0, 0]; } bubble.style.display = 'none'; }
+    sceneNo = l.scene;
+    $('ready').textContent = l.resetting ? 'Starting a new scene...' : l.readiness; $('ready').style.color = l.ready ? '#8fd18f' : '#ffd479';
+    $('send').disabled = !l.ready || l.resetting;
     walkSpeed = l.walkSpeed; $('pending').textContent = l.pending ?? 'nothing'; $('mic').disabled = !l.asr; if (!l.asr) $('mic').title = 'No speech recognition (Whisper) on this machine';
     const html = l.log.map(x => { const who = x.slice(9).split(':')[0]; const cls = who === 'Human' ? 'Human' : who === 'Visitor' ? 'Visitor' : who === 'Context Description' ? 'ctx' : who === 'M-Instance' ? 'mi' : 'Host'; return `<div class="${cls}">${x.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</div>`; }).join('');
     if ($('log').dataset.n !== String(l.log.length)) { $('log').innerHTML = html; $('log').dataset.n = l.log.length; $('log').scrollTop = 1e9; }
@@ -210,7 +311,12 @@ renderer.setAnimationLoop(() => {
   const now = performance.now(), dt = Math.min(1, (now - last) / 1000); last = now;   // up to 1 s: a page the browser throttles (hidden) keeps time with the M-Instance
   const want = doorOpen ? -1.75 : 0; doorAngle += Math.sign(want - doorAngle) * Math.min(Math.abs(want - doorAngle), dt * 1.6); hinge.rotation.y = doorAngle;
   for (const p of people.values()) if (!p.loading && p.g) pose(p, dt);
-  if (bubbleFor && bubble.style.display === 'block') { const v = bubbleFor.at.clone(); v.y = 2.05; v.project(camera); bubble.style.left = (v.x + 1) / 2 * stage.clientWidth + 'px'; bubble.style.top = (1 - v.y) / 2 * stage.clientHeight + 'px'; }
+  if (bubbleFor && bubble.style.display === 'block') {
+    const v = bubbleFor.at.clone(); v.y = 2.05; v.project(camera);
+    const half = bubble.offsetWidth / 2 + 8;   // kept inside the picture
+    bubble.style.left = Math.max(half, Math.min(stage.clientWidth - half, (v.x + 1) / 2 * stage.clientWidth)) + 'px';
+    bubble.style.top = Math.max(bubble.offsetHeight + 8, (1 - v.y) / 2 * stage.clientHeight) + 'px';
+  }
   controls.update(); renderer.render(scene, camera);
 });
 
@@ -219,6 +325,7 @@ $('go').onclick = () => { ctx = new AudioContext(); $('start').remove(); };
 $('send').onclick = () => fetch('/door/command', { method: 'POST', body: $('cmd').value });
 $('ring').onclick = () => fetch('/door/visitor?sound=bell', { method: 'POST' });
 $('knock').onclick = () => fetch('/door/visitor?sound=knock', { method: 'POST' });
+$('reset').onclick = () => fetch('/door/reset', { method: 'POST' });
 let rec = null;
 $('mic').onclick = async () => {
   if (rec) { const r = rec; rec = null; $('mic').textContent = 'Speak'; $('mic').className = 'alt'; r.stop(); return; }
@@ -232,6 +339,61 @@ $('mic').onclick = async () => {
   } };
   $('mic').textContent = 'Stop'; $('mic').className = 'rec';
 };
+// ---------------------------------------------------------------- "Start the demo": a new scene, the human says the command, the bell 5 s after it is accepted
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function tell(t, c) { $('demo').textContent = t; $('demo').style.color = c ?? '#ffd479'; }
+const logNow = async () => await (await fetch('/door/log')).json();
+async function waitFor(test, ms) { const end = Date.now() + ms; while (Date.now() < end) { const r = test(await logNow()); if (r) return r; await sleep(300); } return null; }
+// the microphone until the human stops speaking (1 s of silence), or 10 s
+async function listen() {
+  // no answer to the microphone permission within 10 s: no microphone
+  const stream = await Promise.race([navigator.mediaDevices.getUserMedia({ audio: true }), sleep(10000).then(() => { throw new Error('no microphone'); })]);
+  const c = new AudioContext({ sampleRate: 16000 }); const srcN = c.createMediaStreamSource(stream); const proc = c.createScriptProcessor(4096, 1, 1); const chunks = [];
+  let spoke = false, quiet = 0; const t0 = Date.now();
+  await new Promise(done => {
+    proc.onaudioprocess = e => {
+      const d = new Float32Array(e.inputBuffer.getChannelData(0)); chunks.push(d);
+      const rms = Math.sqrt(d.reduce((a, v) => a + v * v, 0) / d.length);
+      if (rms > 0.02) { spoke = true; quiet = 0; } else if (spoke) quiet += d.length / 16000;
+      if ((spoke && quiet >= 1) || Date.now() - t0 > 10000 || (!spoke && Date.now() - t0 > 7000)) done();
+    };
+    srcN.connect(proc); proc.connect(c.destination);
+  });
+  proc.disconnect(); stream.getTracks().forEach(t => t.stop()); await c.close();
+  if (!spoke) return null;
+  const n = chunks.reduce((a, b) => a + b.length, 0), pcm = new Int16Array(n); let o = 0; for (const ch of chunks) for (const v of ch) pcm[o++] = Math.max(-1, Math.min(1, v)) * 32767;
+  return pcm;
+}
+let demoRunning = false;
+async function startDemo() {
+  if (demoRunning) return; demoRunning = true; $('demoSide').disabled = true;
+  try {
+    if (!ctx) ctx = new AudioContext(); $('start')?.remove();
+    tell('Starting a new scene...');
+    await fetch('/door/reset', { method: 'POST' }); await sleep(800);
+    if (!await waitFor(l => l.ready && !l.resetting, 60000)) { tell('The A-User is not ready. Press Start the demo again.', '#f88'); return; }
+    let text = '';
+    if ((await logNow()).asr && navigator.mediaDevices?.getUserMedia) {
+      tell('Say: "Open the door when the bell rings"', '#8fd18f');
+      try { const pcm = await listen(); if (pcm) { tell('Understanding what you said...'); text = (await (await fetch('/door/speak', { method: 'POST', body: pcm.buffer })).text()).trim(); } }
+      catch (e) { console.warn(e); }
+    }
+    if (!text) { text = $('cmd').value.trim() || 'Open the door when the bell rings.'; tell('Nothing heard: the written command is sent.'); await sleep(1500); }
+    $('cmd').value = text;
+    const n = (await logNow()).log.length;
+    tell(`You said: "${text}"`);
+    await fetch('/door/command', { method: 'POST', body: text });
+    const resp = await waitFor(l => l.log.slice(n).find(x => x.includes('Human Command Response:')), 60000);
+    if (!resp || !/Human Command Response: accepted/i.test(resp)) { tell('The A-User did not accept the command' + (resp ? ' (' + resp.split('Human Command Response: ')[1] + ')' : '') + '. Press Start the demo again.', '#f88'); return; }
+    for (let s = 5; s > 0; s--) { tell(`Command accepted. The bell rings in ${s} s...`, '#8fd18f'); await sleep(1000); }
+    tell('The bell rings.', '#8fd18f');
+    const m = (await logNow()).log.length;
+    await fetch('/door/visitor?sound=bell', { method: 'POST' });
+    if (await waitFor(l => l.log.slice(m).find(x => x.includes('At the Hall, inside')), 120000)) tell('The door is open and the Visitor is in.', '#8fd18f');
+  } finally { demoRunning = false; $('demoSide').disabled = false; }
+}
+$('demoGo').onclick = startDemo;
+$('demoSide').onclick = startDemo;
 poll();
 </script>
 </body>
