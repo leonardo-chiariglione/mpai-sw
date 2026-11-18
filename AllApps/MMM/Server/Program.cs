@@ -144,11 +144,13 @@ var meetingDemo = Array.IndexOf(args, "--meeting-demo");
 var meetingPause = meetingDemo >= 0 && meetingDemo + 1 < args.Length && double.TryParse(args[meetingDemo + 1], out var mp) ? mp : 5.0;
 var inside = new HttpClient { BaseAddress = new Uri(url) }; inside.DefaultRequestHeaders.Add("X-Mmm-Internal", internalKey);
 var meeting = new MeetingServices(inside, m, meetingDemo >= 0 ? MeetingUseCase.ScriptedRecognizer() : !noAsr && whisper.Available ? whisper.RecognizeAsync : null);
+// --llm llama3.1: the language model of the Secretary and of the summary (default llama3.2:3b, which fits on a 4 GB card and leaves the processor to Whisper).
+var llm = Arg("--llm") ?? "llama3.2:3b";
 // The summary, for who asks (--no-summary: none): the language model and the voices are asked only when somebody does.
-using var summary = new SummaryServices(repo);
+using var summary = new SummaryServices(repo, llm);
 if (!args.Contains("--no-summary")) { meeting.Summarise = summary.SummariseAsync; meeting.Translate = summary.TranslateAsync; meeting.Synthesise = summary.SynthesiseAsync; }
 // What the Secretary understands when a participant speaks to it: the JSON Interface of the Voice Command Interface, with the Application Context of the Secretary (the language model is loaded at the first request).
-using var secretaryUnderstands = new SecretaryInterpreter(repo, "llama3.1");
+using var secretaryUnderstands = new SecretaryInterpreter(repo, llm);
 if (!args.Contains("--no-summary")) meeting.Interpret = secretaryUnderstands.InterpretAsync;
 await meeting.StartAsync();
 meeting.Preinvite(invite);

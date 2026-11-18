@@ -12,11 +12,12 @@
 # draft: the emails are saved as Outlook drafts, nothing is sent; send: they are sent without asking (only when you have said so); none: no emails.
 # -Stay: the script does not wait for Enter at the end and leaves the server and the tunnel running (to be started a day before the meeting); close the server window and end cloudflared when it is over.
 # -Written: no speech recognition (Whisper) and no language model (Ollama): the participants write their requests to the Secretary (the requests of the list); no minutes, no summary.
+# Without -Written (spoken): Whisper, the language model (-Llm, default llama3.2:3b, which fits on a 4 GB card; it is loaded before the server starts) and the voices.
 # -Join funnel (the default): the emails link to the join page AllApps\MMM\Join\join.html, published at this PC's stable Tailscale address (Funnel, only that folder), which sends each guest on to
 # the meeting's own address; mail filters distrust trycloudflare.com links (2026-11-18). The meeting itself does not go through Funnel (too slow for the avatars). -Join none: the emails carry the meeting's address.
 # -Officers A,B: the people, besides the chair, who may register with the MPAI Officer Account Level (the Rights to every place of the building).
 param([string]$Chair = '', [string]$Guests = '', [string]$Until = '', [double]$Hours = 3, [int]$Port = 7099, [ValidateSet('funnel', 'cloudflare')][string]$Via = 'cloudflare', [switch]$Visitors,
-      [string]$Group = '', [string]$When = '', [string]$Officers = '', [string]$HostName = '', [ValidateSet('ask', 'draft', 'send', 'none')][string]$Mail = 'ask', [switch]$Preview, [switch]$Stay, [switch]$Written, [ValidateSet('funnel', 'none')][string]$Join = 'funnel')
+      [string]$Group = '', [string]$When = '', [string]$Officers = '', [string]$HostName = '', [ValidateSet('ask', 'draft', 'send', 'none')][string]$Mail = 'ask', [switch]$Preview, [switch]$Stay, [switch]$Written, [ValidateSet('funnel', 'none')][string]$Join = 'funnel', [string]$Llm = 'llama3.2:3b')
 
 $here = $PSScriptRoot
 $local = "http://127.0.0.1:$Port"
@@ -94,7 +95,13 @@ if (Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyCon
 $dotnet = (Get-Command dotnet -ErrorAction SilentlyContinue).Source
 if (-not $dotnet) { $dotnet = 'C:\Program Files\dotnet\dotnet.exe' }
 $period = if ($Until) { "--until $Until" } else { "--hours $Hours" }      # not $when: PowerShell names ignore case, and $when was $When, the date the emails give (they said "--hours 3")
-$arguments = "run --project `"$here\Server\Mpai.Mmm.Server.csproj`" -c Release -- $local --world --identity --chair $Chair --host $HostName --invites $invites --invite $((@($Chair) + @($HostName) + $names | Select-Object -Unique) -join ',') $period" + $(if ($Visitors) { ' --visitors' } else { '' }) + $(if ($Officers) { " --officers $Officers" } else { '' }) + $(if ($Written) { ' --no-asr --no-summary' } else { '' })
+$arguments = "run --project `"$here\Server\Mpai.Mmm.Server.csproj`" -c Release -- $local --world --identity --chair $Chair --host $HostName --invites $invites --invite $((@($Chair) + @($HostName) + $names | Select-Object -Unique) -join ',') $period" + $(if ($Visitors) { ' --visitors' } else { '' }) + $(if ($Officers) { " --officers $Officers" } else { '' }) + $(if ($Written) { ' --no-asr --no-summary' } else { " --llm $Llm" })
+# SPOKEN (without -Written): the language model of the Secretary and of the summary is loaded on the card now (the first load takes about 20 s), so the first request is answered at once.
+if (-not $Written) {
+    Write-Host "Loading the language model $Llm..."
+    try { $null = Invoke-RestMethod -Uri 'http://127.0.0.1:11434/api/generate' -Method Post -ContentType 'application/json' -TimeoutSec 120 -Body (@{ model = $Llm; prompt = 'hi'; stream = $false; keep_alive = '6h'; options = @{ num_predict = 1 } } | ConvertTo-Json -Compress); Write-Host 'The language model is ready.' }
+    catch { Write-Host "Ollama did not load $Llm ($($_.Exception.Message)): the Secretary will understand only the written requests until it does." }
+}
 Start-Process -FilePath $dotnet -ArgumentList $arguments -WindowStyle Normal
 Write-Host 'The server starts (the first time it compiles, about a minute)...'
 $up = $false

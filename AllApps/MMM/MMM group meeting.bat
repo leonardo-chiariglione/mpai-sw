@@ -10,5 +10,11 @@ set MAILMODE=ask
 set /p MAILMODE=Emails - ask, draft, send or none (Enter for ask): 
 if "%GROUP%"=="" set GROUP=MMM
 if "%MAILMODE%"=="" set MAILMODE=ask
-call "%~dp0Run-Meeting.bat" -Group %GROUP% -When "%WHEN%" -Mail %MAILMODE%
+rem SPOKEN: speech recognition (Whisper), the language model (Ollama) and the voices; WRITTEN: none of them, the participants write their requests to the Secretary.
+set VERSION=spoken
+set /p VERSION=Spoken or written (Enter for spoken): 
+set WRITTEN=
+if /i "%VERSION%"=="written" set WRITTEN=-Written
+if /i "%VERSION%"=="w" set WRITTEN=-Written
+call "%~dp0Run-Meeting.bat" -Group %GROUP% -When "%WHEN%" -Mail %MAILMODE% %WRITTEN%
 pause

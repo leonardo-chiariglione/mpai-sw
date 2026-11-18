@@ -66,7 +66,7 @@
 <input id="secText" type="text" placeholder="Write to the Secretary, then Enter (for example: raise my hand)" autocomplete="off" style="width:100%;box-sizing:border-box;margin:2px 0 6px;padding:6px 8px;font-size:14px;background:#111;color:#eee;border:1px solid #f2c94c;border-radius:6px">
 <b>Summary (of what is said from your request on)</b><div>"Summarise the meeting" - it appears on your display and grows as the meeting goes on<br>"Stop the summary" - it stops growing (and stops at the end of the meeting)<br>"Summarise the meeting in Greek" / "in French" / ...<br>"Summarise the meeting out loud" - spoken as well<br>"Hide the summary" - "stop reading"</div>
 <b>Your hand</b><div>"Raise my hand" - "lower my hand"</div>
-<b>Your microphone</b><div>"Mute me" - "unmute me"</div>
+<b>Your microphone</b><div>"Mute me" - "unmute me"; or keep it off and hold the Hold to talk button while you speak</div>
 <b>Your screen</b><div>"Share my screen" (choose what in the screen helper's window) - "stop sharing"</div>
 <b>Her answers</b><div>Written, on your display. "Answer out loud" - she speaks them too; "answer in writing" - back to written only</div>
 <b>The meeting</b><div>"Close the meeting" (the convener only; she asks you to confirm: "yes" / "no")</div>
@@ -954,6 +954,16 @@ async function microphone() {
   micBtn.onclick = () => setMute(!client.muted);
   client.setMute = setMute;
   document.getElementById('bar').appendChild(micBtn);
+  // HOLD TO TALK: a participant who keeps the microphone off (people in the same room hear each other) holds this button while speaking; on release the microphone is as it was.
+  const talk = document.createElement('button'); talk.id = 'talkBtn'; talk.textContent = 'Hold to talk';
+  talk.title = 'Keep your microphone off and hold this button while you speak: only then is your voice sent.';
+  Object.assign(talk.style, { order: 4, background: 'var(--panel)', color: 'inherit', border: '1px solid #5a8', borderRadius: '8px', padding: '0 14px', fontSize: '14px', lineHeight: '1.15', cursor: 'pointer', touchAction: 'none', userSelect: 'none' });
+  let before = null;                                                                  // the microphone before the button was pressed (null: not pressed)
+  talk.onpointerdown = e => { e.preventDefault(); talk.setPointerCapture(e.pointerId); before = client.muted; setMute(false); talk.style.background = '#2a6a46'; talk.textContent = 'Talking...'; };
+  const release = () => { if (before === null) return; setMute(before); before = null; talk.style.background = 'var(--panel)'; talk.textContent = 'Hold to talk'; };
+  for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) talk.addEventListener(ev, release);
+  talk.oncontextmenu = e => e.preventDefault();
+  document.getElementById('bar').appendChild(talk);
   const ctx = new AudioContext({ sampleRate: 16000 });
   let src;
   if (tone) { src = ctx.createGain(); const o = ctx.createOscillator(); o.frequency.value = 220; const g = ctx.createGain(); o.connect(g); g.connect(src); o.start(); setInterval(() => { g.gain.value = (Date.now() / 1000 | 0) % 6 < 3 ? 0.3 : 0; }, 100); }
