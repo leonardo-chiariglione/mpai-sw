@@ -39,7 +39,7 @@ public sealed class SmcAimProcessor : IAimProcessor
         try
         {
             var segments = SpeechObject.Read(json).ToList();
-            var model = _trainer.Train(segments);
+            var model = _trainer.Train(segments, (JsonNode.Parse(json) as JsonObject)?["BasicSpeechObjectID"]?.GetValue<string>());
             if (model.Seconds < MinimumSeconds)
                 _report?.Invoke($"CAE-SMC-V2.5: {model.Seconds:0.##} s of speech in {model.SegmentCount} segment(s): the model is of reduced quality.");
             var text = ModelObject(model).ToJsonString();
@@ -64,7 +64,9 @@ public sealed class SmcAimProcessor : IAimProcessor
         {
             ["Header"] = OutputType,
             ["MLModelObjectID"] = "smc-" + Guid.NewGuid().ToString("N")[..12],
-            ["MLModelData"] = new JsonArray(new JsonObject { ["Data"] = Convert.ToBase64String(bytes) }),
+            ["MLModelData"] = model.DataId is { } dataId
+                ? new JsonArray(new JsonObject { ["DataID"] = dataId })
+                : new JsonArray(new JsonObject { ["Data"] = Convert.ToBase64String(bytes) }),
             ["MLModelQualifier"] = new JsonObject
             {
                 ["Header"] = "TFA-MMQ-V1.5", ["MLModelQualifierID"] = "smc-q-" + Guid.NewGuid().ToString("N")[..8],

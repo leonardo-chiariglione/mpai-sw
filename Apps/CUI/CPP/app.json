@@ -1,0 +1,29 @@
+{
+    "Name": "Company Performance Prediction",
+    "Description": "How likely a company is to default or to stop operating within 12, 24 or 36 months, and why: which figures weigh most. A demonstration model trained on Polish companies, not for real decisions.",
+    "Icon": "icon.svg",
+    "Version": "2.1",
+    "Standard": "MPAI-CUI V2.1",
+    "UseCase": "CPP",
+    "Module": "1CUI-CPP-V2.1-I01",
+    "Keywords": [
+        "company",
+        "default",
+        "bankruptcy",
+        "risk",
+        "finance",
+        "prediction"
+    ],
+    "Categories": [
+        "Finance"
+    ],
+    "Languages": [
+        "en"
+    ],
+    "Asks": [
+        "a company (ready-made, or a JSON file of your own)",
+        "the prediction horizon",
+        "what-if changes of five figures"
+    ],
+    "Keeps": "Nothing."
+}

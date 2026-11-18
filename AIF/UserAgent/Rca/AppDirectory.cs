@@ -66,6 +66,10 @@ public sealed class AppDirectory : IDisposable
             http.DefaultRequestHeaders.Add("MPAI-Client", clientId);
     }
 
+    // A FILE AN APP OFFERS WITH ITS WORKFLOW, named by an address relative to the Service (Apps/<id>/Files/...), in this client's collection.
+    public Task<byte[]> FileAsync(string relative) => http.GetByteArrayAsync(apps + relative.TrimStart('/'));
+    public Task<string> FileTextAsync(string relative) => http.GetStringAsync(apps + relative.TrimStart('/'));
+
     // THIS CLIENT IS CLOSING: the Service stops counting it at once.
     public async Task LeaveAsync()
     {

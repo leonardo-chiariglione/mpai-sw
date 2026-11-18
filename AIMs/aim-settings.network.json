@@ -1,0 +1,4 @@
+{
+  "1CAE-SMC-V2.5-I01": { "SpeechNetworks": "Models/SRS-LJ" },
+  "1MMC-TTS-V2.5-I01": { "Tts": "piper", "SpeechModel": "network" }
+}

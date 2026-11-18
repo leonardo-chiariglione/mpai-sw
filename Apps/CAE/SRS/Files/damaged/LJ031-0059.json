@@ -1,0 +1,16 @@
+{
+ "clip": "LJ031-0059",
+ "text": "Dr. Carrico treated the President's known ad-renal insufficiency by administering hydrocortisone.",
+ "sections": [
+  {
+   "from": 0.27,
+   "to": 1.06,
+   "words": "carrico treated"
+  },
+  {
+   "from": 2.27,
+   "to": 4.45,
+   "words": "adrenal insufficiency"
+  }
+ ]
+}

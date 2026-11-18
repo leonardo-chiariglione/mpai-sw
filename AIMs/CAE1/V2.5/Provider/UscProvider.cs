@@ -36,6 +36,12 @@ public sealed class UscProvider : IAimProvider
 
     // The setting "SpeechModel": "stand-in" (the default) is the three numbers of the stand-in; "openvoice" is the tone-colour embedding of OpenVoice V2, made by Speech Model Creation and spoken in by the Piper Text To Speech.
     private static bool OpenVoiceModel(IReadOnlyDictionary<string, string> settings) => settings.GetValueOrDefault("SpeechModel", "stand-in") == "openvoice";
+    // "network": the Text To Speech is the Piper one of MPAI-MMC, which speaks with the network that Speech Model Creation gives (a network trained offline, see SpeechNetworks).
+    private static bool NetworkModel(IReadOnlyDictionary<string, string> settings) => settings.GetValueOrDefault("SpeechModel", "stand-in") == "network";
+
+    // THE NETWORKS TRAINED OFFLINE (NetworkSpeechTrainer): the folder named by the setting "SpeechNetworks" of Speech Model Creation, Models/SRS-LJ by default. Speech Segments for
+    // Modelling whose Speech Object has the name of one of them are given that network, whatever the setting "SpeechModel"; other segments are modelled as that setting says.
+    private static string SpeechNetworks(IReadOnlyDictionary<string, string> settings) => Mpai.Core.MpaiPaths.Resolve(settings.GetValueOrDefault("SpeechNetworks", "Models/SRS-LJ"));
 
     public bool CanCreate(string aimName) => aimName is Smc or Sra or Tts or Sfa or Sfb or Efp or Pei or Nei or Aap or Vap or Tic or Tar or Pap or Sft or Sfd or Sds or Ncm or Ast or Amx;
 
@@ -58,11 +64,12 @@ public sealed class UscProvider : IAimProvider
         {
             // The input is the Speech Segments for Modelling (the first Basic Speech Object Port), the output the Neural Network Speech Model.
             Smc => new SmcAimProcessor(aimName, ports.Input("OSD-BSO-V1.5"), ports.Output("AIP-MLO-V1.0"),
-                       OpenVoiceModel(settings) ? new OpenVoiceSpeechTrainer(new OpenVoiceWorker(settings)) : new StandInSpeechTrainer()),
+                       new OfflineNetworkOr(SpeechNetworks(settings), OpenVoiceModel(settings) ? new OpenVoiceSpeechTrainer(new OpenVoiceWorker(settings)) : new StandInSpeechTrainer())),
             // The Damaged Segment is the first Basic Speech Object input, the Synthesised Speech the second.
             Sra => new SraAimProcessor(aimName, ports.Input("OSD-BSO-V1.5", 1), ports.Input("CAE-DLS-V2.5"), ports.Input("OSD-BSO-V1.5", 2), ports.Output("OSD-BSO-V1.5")),
             Tts => settings.GetValueOrDefault("Tts", "stand-in") == "piper"
-                ? OpenVoiceModel(settings)
+                ? NetworkModel(settings) ? new TtsAimProcessor(aimName, TtsFactory.Create(settings), ports)
+                : OpenVoiceModel(settings)
                     ? new VoiceCloningTtsAimProcessor(aimName, new TextByTextTtsAimProcessor(new TtsAimProcessor(aimName, TtsFactory.Create(settings), ports), ports.Input("OSD-BTO-V1.5"), ports.Output("OSD-BSO-V1.5")), ports.InputOrDefault("AIP-MLO-V1.0", ""), ports.Output("OSD-BSO-V1.5"), new OpenVoiceWorker(settings))
                                         : new TextByTextTtsAimProcessor(new TtsAimProcessor(aimName, TtsFactory.Create(settings), ports), ports.Input("OSD-BTO-V1.5"), ports.Output("OSD-BSO-V1.5"))
                 : new StandInTtsAimProcessor(aimName, ports),

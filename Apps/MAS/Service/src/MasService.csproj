@@ -38,6 +38,8 @@
     <ProjectReference Include="..\..\..\..\AIF\PortData\Mpai.Aif.PortData.csproj" />
     <!-- MMC-AMQ leaves, plus the RSR leaves so the avatar can speak -->
     <ProjectReference Include="..\..\..\..\AIMs\CAE1\V2.5\Provider\Mpai.Cae.Usc.csproj" />
+    <!-- MPAI-CUI CPP V2.1: the Module of Company Performance Prediction (the CUI-CPP App of the MAS App, 2026-11-18) -->
+    <ProjectReference Include="..\..\..\..\AIMs\CUI\V2.1\Mpai.Cui.csproj" />
     <ProjectReference Include="..\..\..\..\AIMs\MMC\V2.5\ASR\Mpai.Mmc.Asr.csproj" />
     <ProjectReference Include="..\..\..\..\AIMs\MMC\V2.5\TIQ\Mpai.Mmc.Tiq.csproj" />
     <ProjectReference Include="..\..\..\..\AIMs\MMC\V2.5\TTS\Mpai.Mmc.Tts.csproj" />

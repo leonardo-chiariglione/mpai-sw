@@ -79,6 +79,14 @@ public sealed class BasicSpeechObjectCodec : IPortDataCodec
         if (!string.IsNullOrEmpty(speech.DescrMetadata))
             wire["DescrMetadata"] = speech.DescrMetadata;
 
+        // WHEN AND WHERE THE SPEECH IS (2026-11-15): elements of the schema, kept on the wire - a segment that Audio Segmentation cut from a
+        // programme says from when to when it runs, and every AIM after it (Speaker Identity Recognition, Automatic Speech Recognition, the
+        // Scene Descriptors) needs that time. Before, they were dropped here and the segments arrived without time.
+        if (speech.BasicSpeechObjectTime is not null)
+            wire["BasicSpeechObjectTime"] = JsonNode.Parse(MpaiJson.ToJson(speech.BasicSpeechObjectTime));
+        if (speech.BasicSpeechObjectSpaceTime is not null)
+            wire["BasicSpeechObjectSpaceTime"] = JsonNode.Parse(MpaiJson.ToJson(speech.BasicSpeechObjectSpaceTime));
+
         if (speech.SpeechQualifier is not null)
             wire["BasicSpeechDataQualifier"] =
                 QualifierToWire(speech.SpeechQualifier);
@@ -106,6 +114,8 @@ public sealed class BasicSpeechObjectCodec : IPortDataCodec
             UEnvironmentID      = (string?)root["UEnvironmentID"],
             BasicSpeechObjectID = (string?)root["BasicSpeechObjectID"] ?? string.Empty,
             DescrMetadata       = (string?)root["DescrMetadata"],
+            BasicSpeechObjectTime      = root["BasicSpeechObjectTime"] is JsonObject t ? MpaiJson.FromJson<SimpleTime>(t.ToJsonString()) : null,
+            BasicSpeechObjectSpaceTime = root["BasicSpeechObjectSpaceTime"] is JsonObject st ? MpaiJson.FromJson<SpaceTime>(st.ToJsonString()) : null,
             Data                = data,
             SpeechQualifier     = qualifier
         };

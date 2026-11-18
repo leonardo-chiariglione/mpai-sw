@@ -34,6 +34,9 @@ internal static partial class Program
         new("FedAsync a=0.5", FlMethod.FedAsync, 0.5),
         new("Label bank, neutral inputs", FlMethod.LabelBank),
         new("Label bank, varied inputs", FlMethod.LabelBank, VariedBank: true),
+        new("Learning added, step 1", FlMethod.AddLearning, 1.0),
+        new("Learning added, step 0.5", FlMethod.AddLearning, 0.5),
+        new("Learning added, step 0.2", FlMethod.AddLearning, 0.2),
     };
 
     // Images of no End User's device, each with a look of its own; the Back End holds them, unlabelled.

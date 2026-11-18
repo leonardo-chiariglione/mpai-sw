@@ -22,6 +22,10 @@
     <ProjectReference Include="..\..\AIF\ControllerApi\Mpai.Aif.Api.csproj" />
     <ProjectReference Include="..\..\AIF\Metadata\AIF.Metadata.csproj" />
     <ProjectReference Include="..\..\AIMs\CUI\V2.1\Mpai.Cui.csproj" />
+    <!-- the CUI-CPP App of the MAS App (2026-11-18): the devices of its User Agent, the workflow reader, the codecs of the Service -->
+    <ProjectReference Include="..\..\AIF\UserAgent\Ua\Mpai.Ua.csproj" />
+    <ProjectReference Include="..\..\AIF\UserAgent\Wdl\Mpai.Wdl.csproj" />
+    <ProjectReference Include="..\..\AIF\PortData\Mpai.Aif.PortData.csproj" />
     <!-- The App is built with the tests and run as programs (CompanyAppTests): nothing of it is linked. -->
     <ProjectReference Include="..\..\Apps\CUI\CPP\Controller\CuiController.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\Apps\CUI\CPP\Ua\CuiUa.csproj" ReferenceOutputAssembly="false" />

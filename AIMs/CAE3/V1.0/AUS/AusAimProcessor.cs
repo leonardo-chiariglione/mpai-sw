@@ -59,9 +59,11 @@ public sealed class AusAimProcessor : IAimProcessor
         float[] samples = WavReader.ReadMono16k(input);
         var turns = _segmenter.Segment(samples);
 
-        // Times are absolute when the input says when it began, as the time it was acquired.
-        double begin = input.BasicSpeechObjectTime?.SimpleTimeData.FirstOrDefault()?.StartTime
-                       ?? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() / 1000.0;
+        // Times are absolute when the input says when it began, as the time it was acquired. A time the input gives as RELATIVE (TimeType false: a programme,
+        // counted from its start) stays relative (2026-11-15: the segments of a television programme are at programme times).
+        var given = input.BasicSpeechObjectTime?.SimpleTimeData.FirstOrDefault();
+        double begin = given?.StartTime ?? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() / 1000.0;
+        bool absolute = given is null || given.TimeType != false;
 
         var entries = new List<BasicSpeechObjectEntry>();
         var overlaps = new JsonArray();
@@ -72,7 +74,7 @@ public sealed class AusAimProcessor : IAimProcessor
             var bso = new BasicSpeechObject
             {
                 BasicSpeechObjectID = Guid.NewGuid().ToString(),
-                BasicSpeechObjectTime = Instant(begin + turn.Start, begin + turn.End),
+                BasicSpeechObjectTime = Instant(begin + turn.Start, begin + turn.End, absolute),
                 Data = pcm,
                 SpeechQualifier = Qualifier(),
                 DescrMetadata = $"Speaker {turn.Speaker}"
@@ -81,8 +83,8 @@ public sealed class AusAimProcessor : IAimProcessor
             overlaps.Add(new JsonObject { ["Confidence"] = turn.Overlap, ["SpeechObjectID"] = bso.BasicSpeechObjectID });
             times.Add(new TimeSegment
             {
-                FlagsByte = 1, StartTime = begin + turn.Start, EndTime = begin + turn.Start,
-                AccuracyMode = "single", AccuracyPlusMinus = 0.1, TimeType = true, TimeUnit = "00"
+                FlagsByte = absolute ? 1 : 0, StartTime = begin + turn.Start, EndTime = begin + turn.Start,
+                AccuracyMode = "single", AccuracyPlusMinus = 0.1, TimeType = absolute, TimeUnit = "00"
             });
         }
 
@@ -128,12 +130,12 @@ public sealed class AusAimProcessor : IAimProcessor
                ?? throw new InvalidOperationException("the Speech Object holds no Basic Speech Object.");
     }
 
-    private static SimpleTime Instant(double start, double end) => new()
+    private static SimpleTime Instant(double start, double end, bool absolute = true) => new()
     {
         SimpleTimeID = Guid.NewGuid().ToString(),
         SimpleTimeData =
         {
-            new TimeSegment { FlagsByte = 1, StartTime = start, EndTime = end, AccuracyMode = "single", AccuracyPlusMinus = 0.1, TimeType = true, TimeUnit = "00" }
+            new TimeSegment { FlagsByte = absolute ? 1 : 0, StartTime = start, EndTime = end, AccuracyMode = "single", AccuracyPlusMinus = 0.1, TimeType = absolute, TimeUnit = "00" }
         }
     };
 

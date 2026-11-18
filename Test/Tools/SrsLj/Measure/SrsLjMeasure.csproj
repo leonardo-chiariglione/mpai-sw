@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- N-27: restores the held-out LJ Speech clips with each network through the SRS App and measures speaker similarity (ECAPA) and the words understood (Whisper). -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\AIMs\MMC\V2.5\SIR\Mpai.Mmc.Sir.csproj" />
+    <ProjectReference Include="..\..\..\..\AIMs\OSD\V1.5\Speech\Mpai.Osd.Speech.csproj" />
+  </ItemGroup>
+</Project>

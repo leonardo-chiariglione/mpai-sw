@@ -423,6 +423,19 @@ public sealed class MasServer
             await ctx.Response.Body.WriteAsync(bytes);
             return true;
         }
+        // GET /Apps/{id}/Files/{path} - a file the App offers with its workflow (ready-made inputs a person may pick, e.g. the damaged recordings of the
+        // Speech Restoration System): only what is under the folder Files of the App.
+        if (rest.Length >= 4 && rest[2] == "Files")
+        {
+            var files = System.IO.Path.GetFullPath(System.IO.Path.Combine(app.Folder, "Files"));
+            var wanted = System.IO.Path.GetFullPath(System.IO.Path.Combine(files, System.IO.Path.Combine(rest[3..].Select(Uri.UnescapeDataString).ToArray())));
+            if (!wanted.StartsWith(files + System.IO.Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) || !System.IO.File.Exists(wanted))
+            { await Write(ctx, 404, "text/plain", "No such file."); return true; }
+            ctx.Response.StatusCode  = 200;
+            ctx.Response.ContentType = System.IO.Path.GetExtension(wanted).ToLowerInvariant() switch { ".wav" => "audio/wav", ".json" => "application/json", _ => IconType(wanted) };
+            await ctx.Response.Body.WriteAsync(await System.IO.File.ReadAllBytesAsync(wanted));
+            return true;
+        }
         // GET /Apps/{id}/Descriptor
         if (rest.Length == 3 && rest[2] == "Descriptor")
         {

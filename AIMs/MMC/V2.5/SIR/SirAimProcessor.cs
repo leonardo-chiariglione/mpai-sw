@@ -110,7 +110,12 @@ public sealed class SirAimProcessor : IAimProcessor
         Sir($"out: path={(_activated ? "Identify" : "CoarseSpeech-VADgate")} label=<{_top?.InstanceLabel ?? "<none>"}> conf={(_top?.LabelConfidenceLevel ?? 0f):F3} candidates={identity.InstanceIdentifierData.Count}");
 
         if (_text is { Length: > 0 }) identity = AuxiliaryText.RaiseNamed(identity, _text, TextBonus);
-        var json = MpaiJson.ToJson(identity);
+        // WHICH SPEECH IT IS THE IDENTITY OF (2026-11-15): the Instance Identifier names the Object identified (ObjectID) and its time, so that
+        // whoever gathers the descriptors (in Television Media Analysis, the Multimodal Scene) puts the identity with its utterance.
+        var node = System.Text.Json.Nodes.JsonNode.Parse(MpaiJson.ToJson(identity))!.AsObject();
+        if (!string.IsNullOrEmpty(speech.BasicSpeechObjectID)) node["ObjectID"] = speech.BasicSpeechObjectID;
+        if (speech.BasicSpeechObjectTime is not null) node["InstanceTime"] = System.Text.Json.Nodes.JsonNode.Parse(MpaiJson.ToJson(speech.BasicSpeechObjectTime));
+        var json = node.ToJsonString();
         await Task.CompletedTask;
 
         return new Message

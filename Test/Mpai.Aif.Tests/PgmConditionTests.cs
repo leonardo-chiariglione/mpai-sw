@@ -21,6 +21,9 @@ public class PgmConditionTests
         public Task<string> AnswerAsync(string system, string user, JsonObject schema)
         {
             Systems.Add(system);
+            // Basic Knowledge's first question: is the command conditional?
+            if (schema["properties"]?["condition"] is not null && schema["properties"]?["reply"] is null)
+                return Task.FromResult(new JsonObject { ["condition"] = "if a bell rings", ["sound"] = "Bell" }.ToJsonString());
             var held = system.Contains("it has happened now");
             var answer = held
                 ? new JsonObject
@@ -91,11 +94,18 @@ public class PgmConditionTests
         await rig.RunAsync();
         Assert.NotNull(auc.PendingGoal);
         Assert.Single(rig.At("MMM-PAC-V2.2"));
+        // Heard by the Sub-AIM Audio Scene Description of Context Description: Basic Audio Scene Descriptors, valid, the Audio Event in their Descriptive Metadata.
+        var cxt = (CxtAim)rig.Aims["1PGM-CXT-V1.0-I01"];
+        Assert.NotNull(cxt.Asd);
+        Assert.Equal("valid", PgmRig.Check(cxt.LastAudioScene!));
+        Assert.Equal("Knock", AudioEvents.EventOf(cxt.LastAudioScene)?.Class);
 
         // The bell: the Condition holds; Basic Knowledge is asked again; the Persona walks to the Doorway - MM-Animate At the Doorway, With the Portable Avatar of the walk
         // (no speech: the motion is formed first).
         rig.Write("OSD-BAO-V1.5", Sound("bell-1", Mpai.Mmm.Server.DoorUseCase.Bell()));
         await rig.RunAsync();
+        Assert.Equal("Bell", AudioEvents.EventOf(cxt.LastAudioScene)?.Class);
+        Assert.Equal("valid", PgmRig.Check(cxt.LastAudioScene!));
         Assert.Null(auc.PendingGoal);
         Assert.Contains(model.Systems, x => x.Contains("it has happened now"));
         var walkAvatar = rig.At("PAF-PAV-V1.6").Last();

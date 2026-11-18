@@ -16,7 +16,7 @@ using Mpai.Wdl;
 using Mpai.Xrv;
 using Mpai.Xrv.VirtualVenue;
 
-// THE XRV-LTP DEMO ON TWO METAVERSES (N-26, 2026-11-15).
+// THE XRV-LTP DEMO IN REAL-VIRTUAL ENVIRONMENTS (N-26, 2026-11-15; named so 2026-11-18, N-32): the Real Environment, the Theatre, and the Virtual Environment, the Square - both drawn as M-Instances.
 //   1. Two M-Instances of MMM-TEC V2.2 behind their MMM-API: "Theatre" (the Real Environment) and "Square" (the Virtual Environment), their M-Locations and Processes as the
 //      Process Action lists say (Test/Data/XRV/LongerEvening/ProcessActions-*.json).
 //   2. The User Agent (Mpai.Ua: the workflow Apps/XRV/LTP/XRV-LTP.orch) binds three devices - the Show (the documents of the longer evening), the RealVenue (MmmVenue of the Theatre)

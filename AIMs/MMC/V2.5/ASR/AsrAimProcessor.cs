@@ -75,6 +75,13 @@ public sealed class AsrAimProcessor : IAimProcessor
         Trace("[ASR-OUT] text=<" + (text?.GetText() ?? "<null>") + ">");
 
         var json = MpaiJson.ToJson(text);
+        // THE TIME OF THE WORDS (2026-11-15): in Television Media Analysis each utterance is a segment of the programme; the text says when it was
+        // spoken - the time of the speech it recognises - so that the Multimodal Scene puts it with its utterance.
+        if (television && speech?.BasicSpeechObjectTime is { } spoken && System.Text.Json.Nodes.JsonNode.Parse(json) is System.Text.Json.Nodes.JsonObject withTime)
+        {
+            withTime["BasicTextObjectSpaceTime"] = System.Text.Json.Nodes.JsonNode.Parse(MpaiJson.ToJson(spoken));   // a Simple Time, as the schema of the Basic Text Object has it
+            json = withTime.ToJsonString();
+        }
         try { /*AMQTRACE_ASR_OUT*/ Mpai.Core.MpaiDiag.WriteText("4_ASR_out.txt", text?.GetText() ?? "(null)"); } catch {}
 
         return new Message

@@ -184,6 +184,7 @@ public partial class RcaShell : ComponentBase
                 _controllers[appId] = north = new RemoteControllerApiAsync(Http) { NewKey = () => Mas.WebCryptoKey.CreateAsync(Js), KeyFromSpki = spki => Mas.WebCryptoKey.FromSpkiAsync(Js, spki) };
 
             AppTitle = app?.Name ?? (appId == "MAS" ? "" : appId);
+            if (appId != "MAS") runningApp = appId;
             stopEnabled = true;
             Refresh();
 
@@ -331,10 +332,21 @@ public partial class RcaShell : ComponentBase
                 if (!pressed) return null;
                 try
                 {
+                    // An address relative to the Service (Apps/<id>/Files/...) is a file of the App: fetched through this origin, as the Service is.
+                    var relative = !Uri.TryCreate(example.Uri, UriKind.Absolute, out _);
                     using var web = new HttpClient();
-                    var fetched = await web.GetByteArrayAsync(example.Uri);
+                    var fetched = relative ? await Http.GetByteArrayAsync(Directory().FileUrl(example.Uri)) : await web.GetByteArrayAsync(example.Uri);
                     if (SpeechWav.Pcm16kMono(fetched) is not { Length: > 0 } examplePcm) { Instruct($"I could not read the example {example.Label}."); return null; }
-                    return MpaiJson.ToJson(SpeechPackaging.FromPcm16k(examplePcm, _sourceLanguage));
+                    // THE SECTIONS IT COMES WITH, where the App gives them beside it: they fill the table of damaged sections, should the workflow ask for one.
+                    readySections = null;
+                    if (relative)
+                        try { readySections = DamagedSections.FromSidecar(await Http.GetStringAsync(Directory().FileUrl(DamagedSections.SidecarOf(example.Uri)))); }
+                        catch (HttpRequestException) { }
+                    // ITS NAME IS KEPT: speech named by the workflow (the Speech Segments for Modelling of a network, a ready-made recording) is that speech.
+                    var packaged = SpeechPackaging.FromPcm16k(examplePcm, _sourceLanguage);
+                    var named = System.Text.Json.Nodes.JsonNode.Parse(MpaiJson.ToJson(packaged))!.AsObject();
+                    named["BasicSpeechObjectID"] = example.Label;
+                    return named.ToJsonString();
                 }
                 catch (HttpRequestException) { Instruct($"I could not fetch the example {example.Label}."); return null; }
             }
@@ -367,10 +379,42 @@ public partial class RcaShell : ComponentBase
             return pcm.Length == 0 ? null : MpaiJson.ToJson(SpeechPackaging.FromPcm16k(pcm, _sourceLanguage));
         });
 
+        // THE TABLE OF DAMAGED SECTIONS (Speech Restoration System): from, to and the words said there, filled in from the sections a ready-made recording comes
+        // with. It gives the Damaged List; the words are kept for when the workflow asks for them.
+        devices.RegisterAcquire("CAE-DLS-V2.5", async (viaVad, wanted, abandon) =>
+        {
+            var stop = (_appStopping ?? _stopping)?.Token ?? CancellationToken.None;
+            sectionRows = (readySections ?? []).Select(r => new SectionRow { From = r.From, To = r.To, Words = r.Words }).ToList();
+            if (sectionRows.Count == 0) sectionRows.Add(new SectionRow());
+            sectionProblem = null;
+            var chosen = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            sectionsChosen = chosen; choosingSections = true;
+            Refresh();
+            using var c1 = stop.Register(() => chosen.TrySetResult(false));
+            using var c2 = abandon.Register(() => chosen.TrySetResult(false));
+            var ok = await chosen.Task;
+            choosingSections = false; Refresh();
+            if (!ok) return null;
+            var rows = sectionRows.Select(r => new DamagedSections.Row(r.From, r.To, r.Words)).ToList();
+            sectionWords = rows;
+            return DamagedSections.DamagedList(rows);
+        });
+
+        // COMPANY PERFORMANCE PREDICTION (MPAI-CUI CPP): the company the person chooses - ready-made, of the App's files, or their own file - the horizon and what-if,
+        // given to the Module as they are chosen; the Report shows what the Module gives, as it gives it, beside the company chosen before.
+        company = new CompanyDevice();
+        company.Opened += () => { choosingCompany = true; _ = LoadCompaniesAsync(); Refresh(); };
+        devices.RegisterDevice("Company", company);
+        devices.RegisterDevice("Report", new CompanyReportDevice(latest => { report = CompanyReport.Of(latest); Refresh(); }));
+
         // TEXT: typed by the person, or the name of an App chosen from the list.
         devices.RegisterAcquire("OSD-BTO-V1.5", async (viaVad, wanted, abandon) =>
         {
             var stop = (_appStopping ?? _stopping)?.Token ?? CancellationToken.None;
+
+            // THE WORDS OF THE TABLE OF DAMAGED SECTIONS, kept when the table gave the Damaged List.
+            if ((wanted ?? "").Contains(DamagedSections.WordsMarker, StringComparison.Ordinal) && sectionWords is { Count: > 0 } tableWords)
+                return DamagedSections.TextList(tableWords);
 
             // HOW MANY ARE HERE: a sentence when others use the Service now; else nothing.
             if ((wanted ?? "").Contains("Concurrency", StringComparison.OrdinalIgnoreCase))
@@ -679,6 +723,80 @@ public partial class RcaShell : ComponentBase
     }
 
     private void PickExample(TaskCompletionSource<bool> pick) => pick.TrySetResult(true);
+
+    // ---- Company Performance Prediction ------------------------------------------------------------------------------------------------------------------------
+    private string? runningApp;
+    private CompanyDevice? company;
+    private bool choosingCompany;
+    private List<(string Name, string File)> companies = new();
+    private string? companyProblem;
+    private double horizon = 12;
+    private CompanyReport? report, previousReport;
+    private string? reportName, previousName;
+    private readonly Dictionary<string, double> whatIf = CompanyDevice.KeyFigures.ToDictionary(f => f.Code, _ => 0.0);
+
+    private async Task LoadCompaniesAsync()
+    {
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(await Http.GetStringAsync(Directory().FileUrl($"Apps/{runningApp}/Files/companies/index.json")));
+            companies = doc.RootElement.GetProperty("companies").EnumerateArray().Select(c => (c.GetProperty("name").GetString() ?? "", c.GetProperty("file").GetString() ?? "")).ToList();
+        }
+        catch (Exception ex) when (ex is HttpRequestException or System.Text.Json.JsonException or KeyNotFoundException) { companies = new(); }
+        Refresh();
+    }
+
+    private async Task PickCompany(string name, string file)
+    {
+        try { GiveCompany(System.Text.Json.Nodes.JsonNode.Parse(await Http.GetStringAsync(Directory().FileUrl(file))) as System.Text.Json.Nodes.JsonObject, name); }
+        catch (Exception ex) when (ex is HttpRequestException or System.Text.Json.JsonException) { companyProblem = $"I could not read {name}."; }
+    }
+
+    private async Task CompanyFileChosen(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            using var stream = e.File.OpenReadStream(5_000_000);
+            using var reader = new System.IO.StreamReader(stream);
+            GiveCompany(System.Text.Json.Nodes.JsonNode.Parse(await reader.ReadToEndAsync()) as System.Text.Json.Nodes.JsonObject, System.IO.Path.GetFileNameWithoutExtension(e.File.Name));
+        }
+        catch (Exception ex) when (ex is System.IO.IOException or System.Text.Json.JsonException) { companyProblem = "That is not a company file (see the README of the App)."; }
+    }
+
+    private void GiveCompany(System.Text.Json.Nodes.JsonObject? json, string name)
+    {
+        if (json is null || company is null) { companyProblem = "That is not a company file."; return; }
+        companyProblem = company.Give(json, name, horizon);
+        if (companyProblem is not null) return;
+        if (report is not null) { previousReport = report; previousName = reportName; }        // the company before, beside the new one
+        report = null; reportName = name;
+        foreach (var k in whatIf.Keys.ToList()) whatIf[k] = 0;
+        Refresh();
+    }
+
+    private void HorizonChosen(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var m)) { horizon = m; company?.GiveHorizon(m); }
+    }
+
+    private void ApplyWhatIf() => company?.WhatIf(whatIf.ToDictionary(k => k.Key, k => k.Value / 100.0));
+
+    private static string Pct(double? p) => p is { } x ? (x * 100).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + " %" : "-";
+
+    // The table of damaged sections, while the workflow waits for it.
+    private sealed class SectionRow { public double From { get; set; } public double To { get; set; } public string Words { get; set; } = ""; }
+    private List<SectionRow> sectionRows = new();
+    private bool choosingSections;
+    private string? sectionProblem;
+    private TaskCompletionSource<bool>? sectionsChosen;
+    private IReadOnlyList<DamagedSections.Row>? readySections, sectionWords;
+    private void AddSection() { var last = sectionRows.LastOrDefault(); sectionRows.Add(new SectionRow { From = last?.To ?? 0, To = (last?.To ?? 0) + 0.5 }); }
+    private void RemoveSection(SectionRow row) { if (sectionRows.Count > 1) sectionRows.Remove(row); }
+    private void SectionsChosen()
+    {
+        sectionProblem = DamagedSections.Problem(sectionRows.Select(r => new DamagedSections.Row(r.From, r.To, r.Words)).ToList());
+        if (sectionProblem is null) sectionsChosen?.TrySetResult(true);
+    }
 
     private void EmotionChosen()
     {

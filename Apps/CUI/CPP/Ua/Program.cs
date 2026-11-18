@@ -48,26 +48,12 @@ internal static class Program
         var workflowFile = Value(args, "--workflow") ?? Path.Combine(MpaiPaths.Root, "Apps", "CUI", "CPP", "CUI-CPP.orch");
         var controller = Value(args, "--controller") ?? "http://127.0.0.1:5061";
 
-        // THE DEVICES: what the company gives, each bound by the workflow to one Port; what is not given is a device that gives nothing.
-        var devices = new DeviceRegistry();
-        var asked = new List<string>();
-        IDevice Given(string device, string dataType, JsonNode? datum, bool required)
-        {
-            if (datum is null) { if (required) throw new InvalidOperationException($"The company file gives no {device}."); return new SilentDevice(); }
-            asked.Add(device);
-            return new GivenDevice(dataType, datum.ToJsonString());
-        }
-        try
-        {
-            devices.RegisterDevice("Horizon", new GivenDevice("number", months.ToString("R", CultureInfo.InvariantCulture)));
-            devices.RegisterDevice("Financial", Given("FinancialDescriptors", "CUI-FND-V2.1", company["FinancialDescriptors"], true));
-            devices.RegisterDevice("Governance", Given("GovernanceDescriptors", "CUI-GVS-V2.1", company["GovernanceDescriptors"], true));
-            devices.RegisterDevice("Climate", Given("ClimateRiskDescriptors", "CUI-LRD-V2.1", company["ClimateRiskDescriptors"], false));
-            devices.RegisterDevice("Cyber", Given("CyberRiskDescriptors", "CUI-CRD-V2.1", company["CyberRiskDescriptors"], false));
-            devices.RegisterDevice("SecondaryRisks", Given("SecondaryRiskStatements", "CUI-SRS-V2.1", company["SecondaryRiskStatements"], false));
-        }
-        catch (InvalidOperationException e) { Console.Error.WriteLine(e.Message); return 2; }
-        var report = new ReportDevice(asked.Contains("SecondaryRiskStatements"));
+        // THE DEVICES (2026-11-18: the same workflow as the MAS App): the device "Company" gives the company of the file, part by part, and the horizon; the Report
+        // keeps what the Module gives. A company with no Financial or no Governance Descriptors is refused before the Module is asked.
+        var companyDevice = new CompanyDevice();
+        if (companyDevice.Give(company, Path.GetFileNameWithoutExtension(companyFile), months) is { } why) { Console.Error.WriteLine(why); return 2; }
+        var devices = new DeviceRegistry().RegisterDevice("Company", companyDevice);
+        var report = new ReportDevice(company["SecondaryRiskStatements"] is not null);
         devices.RegisterDevice("Report", report);
 
         using var api = new Mpai.Mas.Client.RemoteControllerApi(controller);

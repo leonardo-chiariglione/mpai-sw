@@ -1,0 +1,48 @@
+{
+ "companies": [
+  {
+   "name": "A small healthy company",
+   "file": "Apps/CPP/Files/companies/healthy-small.json"
+  },
+  {
+   "name": "A large blue-chip company",
+   "file": "Apps/CPP/Files/companies/blue-chip.json"
+  },
+  {
+   "name": "An average company",
+   "file": "Apps/CPP/Files/companies/average.json"
+  },
+  {
+   "name": "A family-owned company",
+   "file": "Apps/CPP/Files/companies/family-owned.json"
+  },
+  {
+   "name": "A company with heavy debts",
+   "file": "Apps/CPP/Files/companies/leveraged.json"
+  },
+  {
+   "name": "A loss-making company",
+   "file": "Apps/CPP/Files/companies/loss-making.json"
+  },
+  {
+   "name": "A company in distress",
+   "file": "Apps/CPP/Files/companies/distressed.json"
+  },
+  {
+   "name": "A young start-up",
+   "file": "Apps/CPP/Files/companies/startup.json"
+  },
+  {
+   "name": "A company exposed to climate risks",
+   "file": "Apps/CPP/Files/companies/climate-exposed.json"
+  },
+  {
+   "name": "A company hit by a cyber attack",
+   "file": "Apps/CPP/Files/companies/cyber-attacked.json"
+  },
+  {
+   "name": "A company with every risk",
+   "file": "Apps/CPP/Files/companies/all-risks.json"
+  }
+ ]
+}

@@ -45,7 +45,10 @@ public sealed class BvsAimProcessor : IAimProcessor
             Header                          = "OSD-BVS-V1.5",
             MInstanceID                     = (string?)System.Text.Json.Nodes.JsonNode.Parse(json)?["MInstanceID"] ?? _instanceId,
             // When and where the Scene is: when and where its picture was acquired (the schema requires it).
-            BVSDescriptorsSpaceTime         = obj.BasicVisualObjectTime ?? new SpaceTime { SpaceTimeID = System.Guid.NewGuid().ToString() },
+            // (2026-11-18) the picture's own BasicVisualObjectTime, as the Object gives it: the visual codec does not carry it into the object it reads.
+            BVSDescriptorsSpaceTime         = obj.BasicVisualObjectTime
+                                              ?? (System.Text.Json.Nodes.JsonNode.Parse(json)?["BasicVisualObjectTime"] is System.Text.Json.Nodes.JsonObject time ? Mpai.Core.MpaiJson.FromJson<SpaceTime>(time.ToJsonString()) : null)
+                                              ?? new SpaceTime { SpaceTimeID = System.Guid.NewGuid().ToString() },
             BasicVisualSceneDescriptorsID   = System.Guid.NewGuid().ToString(),
             VisualObjectCount               = 1,
             // The camera's place is not known here: at the origin, looking ahead.

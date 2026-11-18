@@ -48,6 +48,7 @@ public static class PortDataSchema
         ["OSD-PNT-V1.5"] = "OSD/V1.5/data/Point.json",
         ["MMC-SUM-V2.5"] = "MMC/V2.5/data/Summary.json",
         ["MMC-EEM-V2.5"] = "MMC/V2.5/data/Emotion.json",
+        ["CAE-DLS-V2.5"] = "CAE1/V2.5/data/DamagedList.json",
         ["OSD-BMO-V1.5"] = "OSD/V1.5/data/BasicMultimodalObject.json",
         ["PAF-FDO-V1.6"] = "PAF/V1.6/data/FaceDescriptorsObject.json",
 

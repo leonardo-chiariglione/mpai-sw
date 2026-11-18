@@ -13,6 +13,9 @@ namespace Mpai.Osd.Tma;
 // differs enough from the one before it, as PySceneDetect's ContentDetector, the library of the reference software of V1.4, does: the mean over the pixels of the mean of the
 // absolute differences of Hue, Saturation and Value reaches the threshold (27), and the scene before is at least MinSceneLength frames long (15). For each scene the first
 // changed frame is given, and, where ImagesPerScene (1; 5 in the reference software of V1.4) is more, frames spread over the scene after it, in one Basic Visual Object a scene.
+// Where SampleSeconds is given (Television Media Analysis: 1), the frames are taken through the whole scene, one every SampleSeconds, so that who is on the screen is seen as the
+// scene goes on. THE TIME IS THE PROGRAMME'S (2026-11-18; the author: the MEV knows of no other time): a scene runs from its first frame to its last, in seconds from the first
+// frame of the video (a relative Simple Time), and BasicVisualObjectProperties.FrameTimes gives the time of each frame given.
 public sealed class VisualChangeDetection(string instanceId, IReadOnlyDictionary<string, string>? settings = null) : TmaAim(instanceId)
 {
     public const double DefaultThreshold = 27.0;
@@ -21,6 +24,7 @@ public sealed class VisualChangeDetection(string instanceId, IReadOnlyDictionary
     private readonly double threshold = Setting(settings, "Threshold", DefaultThreshold);
     private readonly int minSceneLength = (int)Setting(settings, "MinSceneLength", DefaultMinSceneLength);
     private readonly int imagesPerScene = Math.Max(1, (int)Setting(settings, "ImagesPerScene", 1));
+    private readonly double sampleSeconds = Setting(settings, "SampleSeconds", 0);
 
     private static double Setting(IReadOnlyDictionary<string, string>? s, string key, double fallback) =>
         s is not null && s.TryGetValue(key, out var v) && double.TryParse(v, System.Globalization.CultureInfo.InvariantCulture, out var d) ? d : fallback;
@@ -75,6 +79,16 @@ public sealed class VisualChangeDetection(string instanceId, IReadOnlyDictionary
         return result;
     }
 
+    // A stretch of the programme: from and to, in seconds from its start (a relative Simple Time).
+    public static JsonObject ProgrammeTime(double from, double to) => new()
+    {
+        ["Header"] = "OSD-STM-V1.5", ["SimpleTimeID"] = TmaTypes.NewId("st"),
+        ["SimpleTimeData"] = new JsonArray(new JsonObject
+        {
+            ["FlagsByte"] = 0, ["StartTime"] = Math.Round(from, 3), ["EndTime"] = Math.Round(to, 3), ["AccuracyMode"] = "single", ["AccuracyPlusMinus"] = 0.0, ["TimeType"] = false, ["TimeUnit"] = "00"
+        })
+    };
+
     public override IEnumerable<(string DataType, int Port, JsonObject Json)> Handle(string dataType, int port, JsonObject json)
     {
         if (json["BasicVisualObjectData"] is not JsonArray entries) yield break;
@@ -86,18 +100,20 @@ public sealed class VisualChangeDetection(string instanceId, IReadOnlyDictionary
             if (frames.Count == 0) yield break;
 
             var fps = (double?)json["BasicVisualObjectProperties"]?["FrameRate"] ?? DefaultFramesPerSecond;
-            var begin = DateTimeOffset.UtcNow;
             var starts = Cuts(frames, threshold, minSceneLength);
             for (var s = 0; s < starts.Count; s++)
             {
                 var from = starts[s];
                 var to = s + 1 < starts.Count ? starts[s + 1] : frames.Count;     // the scene is [from, to)
                 var picked = new List<int> { from };
-                for (var k = 1; k < imagesPerScene; k++)
-                {
-                    var f = from + (int)Math.Round(k * (to - from) / (double)imagesPerScene);
-                    if (f > picked[^1] && f < to) picked.Add(f);
-                }
+                if (sampleSeconds > 0)
+                    for (var f = from + (int)Math.Round(sampleSeconds * fps); f < to; f += Math.Max(1, (int)Math.Round(sampleSeconds * fps))) picked.Add(f);
+                else
+                    for (var k = 1; k < imagesPerScene; k++)
+                    {
+                        var f = from + (int)Math.Round(k * (to - from) / (double)imagesPerScene);
+                        if (f > picked[^1] && f < to) picked.Add(f);
+                    }
                 var data = new JsonArray();
                 foreach (var f in picked)
                 {
@@ -110,9 +126,13 @@ public sealed class VisualChangeDetection(string instanceId, IReadOnlyDictionary
                     ["Header"] = "OSD-BVO-V1.5",
                     ["MInstanceID"] = (string?)json["MInstanceID"] ?? "tma",
                     ["BasicVisualObjectID"] = TmaTypes.NewId("scene"),
-                    ["BasicVisualObjectTime"] = TmaTypes.SpaceTime(begin.AddSeconds(from / fps)),
+                    ["BasicVisualObjectTime"] = new JsonObject { ["Header"] = "OSD-SPT-V1.5", ["SpaceTimeID"] = TmaTypes.NewId("spt"), ["Time"] = ProgrammeTime(from / fps, to / fps) },
                     ["BasicVisualObjectData"] = data,
-                    ["BasicVisualObjectProperties"] = new JsonObject { ["FrameRate"] = fps, ["FirstFrame"] = from, ["Frames"] = to - from }
+                    ["BasicVisualObjectProperties"] = new JsonObject
+                    {
+                        ["FrameRate"] = fps, ["FirstFrame"] = from, ["Frames"] = to - from,
+                        ["FrameTimes"] = new JsonArray(picked.Select(f => (JsonNode)Math.Round(f / fps, 3)).ToArray())
+                    }
                 });
             }
         }

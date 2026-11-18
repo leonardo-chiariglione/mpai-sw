@@ -1,14 +1,14 @@
 {
     "Name": "Speech Restoration System",
-    "Description": "Replace the damaged parts of a recording of speech with speech made in the voice of the speaker.",
+    "Description": "Repair a recording of speech where words are lost under noise: the lost words are said again in the voice of the speaker. The voice is a network trained on 1, 5, 15, 30 or 60 minutes of ONE speaker, the LJ Speech reader: compare them.",
     "Icon": "icon.svg",
-    "Version": "1.0",
+    "Version": "1.1",
     "Standard": "MPAI-CAE V2.5",
     "UseCase": "USC",
     "Module": "1CAE-SRS-V2.5-I01",
     "Keywords": ["speech", "restoration", "voice", "damaged"],
     "Categories": ["Audio"],
     "Languages": ["en"],
-    "Asks": ["speech of the speaker", "the damaged speech", "where it is damaged and what was said there"],
-    "Keeps": "Nothing: the restored speech is written where the user says."
+    "Asks": ["a damaged recording (ready-made, or a WAV file of the same speaker)", "where it is damaged and the words said there", "the network that restores it"],
+    "Keeps": "Nothing: the restored speech is played; the stand-alone App writes it where the user says."
 }

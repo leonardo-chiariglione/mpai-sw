@@ -1,4 +1,8 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using AIF.Controller;
 using Mpai.Core;
@@ -15,6 +19,7 @@ public sealed class TtsAimProcessor : IAimProcessor
     private readonly string      _inputPort;
     private readonly string      _outputPort;
     private readonly string      _spsPort;
+    private readonly string      _modelPort;
     private readonly PiperTtsAim _tts;
     public string InstanceId { get; }
     public TtsAimProcessor(
@@ -27,9 +32,19 @@ public sealed class TtsAimProcessor : IAimProcessor
         _inputPort  = ports.Input("OSD-BTO-V1.5");   // dual-typed port [OSD-BTO, OSD-TXO]
         _outputPort = ports.Output("OSD-BSO-V1.5");  // dual-typed port [OSD-BSO, OSD-SPO]
         _spsPort    = ports.InputOrDefault("MMC-SPS-V2.5", 1, string.Empty);   // optional emotion
+        _modelPort  = ports.InputOrDefault("AIP-MLO-V1.0", 1, string.Empty);   // optional Speech Model
     }
     public async Task<Message> ProcessAsync(Message message)
     {
+        // A SPEECH MODEL THAT IS A NETWORK OF THE DEPLOYMENT (named by its ID, MLModelData DataID): each text of the Text Object said
+        // with it, one speech file for each (the Speech Restoration System puts each in its place). A Speech Model of another kind is
+        // not used, as before: this Text To Speech speaks in its own voice.
+        if (_modelPort.Length > 0 && message.Ports.TryGetValue(_modelPort, out var modelJson) && !string.IsNullOrWhiteSpace(modelJson) && modelJson.Contains("\"DataID\"", StringComparison.Ordinal))
+        {
+            try { return await SpeakWithNetworkAsync(message, NetworkOf(modelJson)); }
+            catch (Exception ex) when (ex is FormatException or InvalidOperationException or IOException)
+            { return Message.Error(message.MessageId, InstanceId, "MMC-TTS-V2.5: " + ex.Message); }
+        }
         var text = MpaiJson.FromJson<BasicTextObject>(message.Ports[_inputPort]);
 
         SpeechPersonalStatus? sps = null;
@@ -52,6 +67,50 @@ public sealed class TtsAimProcessor : IAimProcessor
             Payload     = json,
             Ports       = new Dictionary<string, string> { [_outputPort] = json }
         };
+    }
+
+    private async Task<Message> SpeakWithNetworkAsync(Message message, string network)
+    {
+        var root = JsonNode.Parse(message.Ports[_inputPort]) as JsonObject ?? throw new FormatException("The Text is a JSON object.");
+        var texts = root["BasicTextData"] is JsonArray items
+            ? items.OfType<JsonObject>().Select(i => i["Data"]?.GetValue<string>() ?? "").ToList()
+            : new List<string> { MpaiJson.FromJson<BasicTextObject>(message.Ports[_inputPort]).GetText() };
+        var data = new JsonArray();
+        foreach (var text in texts)
+            data.Add(new JsonObject { ["Data"] = Convert.ToBase64String(await _tts.SpeakWithNetworkAsync(network, text)) });
+        var id = "tts-" + Guid.NewGuid().ToString("N")[..12];
+        var json = new JsonObject
+        {
+            ["Header"] = "OSD-BSO-V1.5", ["BasicSpeechObjectID"] = id,
+            ["BasicSpeechDataQualifier"] = new JsonObject
+            {
+                ["Header"] = "TFA-SPQ-V1.5", ["SpeechQualifierID"] = "q-" + id, ["SubTypes"] = new JsonObject(),
+                ["Formats"] = new JsonObject { ["TransportFormats"] = new JsonObject { ["FileFormat"] = "WAV" } },
+                ["Attributes"] = new JsonObject { ["Source"] = "Synthetic" }
+            },
+            ["BasicSpeechObjectData"] = data,
+            ["DescrMetadata"] = "Said with the network of the Speech Model: " + Path.GetFileNameWithoutExtension(network)
+        }.ToJsonString();
+        return new Message
+        {
+            MessageId = message.MessageId, MessageType = "BasicSpeechObject", DataType = "OSD-BSO-V1.5", Payload = json,
+            Ports = new Dictionary<string, string> { [_outputPort] = json }
+        };
+    }
+
+    // The ID of the network an ML Model Object (AIP-MLO-V1.0) names: MLModelData {DataID}. The network itself is model data of this deployment (TtsFactory.NetworkFile):
+    // no file named in the data is opened. A Speech Model that is not a network (numbers in its Data) is refused: this Text To Speech cannot speak with it.
+    public static string NetworkOf(string modelJson)
+    {
+        JsonObject? root;
+        try { root = JsonNode.Parse(modelJson) as JsonObject; }
+        catch (System.Text.Json.JsonException ex) { throw new FormatException("The Speech Model is not JSON: " + ex.Message); }
+        var item = (root?["MLModelData"] as JsonArray)?.OfType<JsonObject>().FirstOrDefault(o => o["DataID"] is not null)
+                   ?? throw new FormatException("The Speech Model is not a network of this deployment (it has no DataID): this Text To Speech cannot speak with it.");
+        var id = item["DataID"]!.GetValue<string>();
+        if (string.IsNullOrWhiteSpace(id) || id.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || id.Contains("..", StringComparison.Ordinal))
+            throw new FormatException($"'{id}' is not the name of a network.");
+        return id;
     }
 
     // Map the Speech Personal Status emotion to Piper prosody flags (speaking rate

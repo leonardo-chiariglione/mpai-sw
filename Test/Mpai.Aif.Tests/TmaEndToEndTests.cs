@@ -86,14 +86,14 @@ public class TmaEndToEndTests : IDisposable
                 "1OSD-MSM-V1.5-I01" => new MultimodalSceneMultiplexing(aimName),
                 "1OSD-MED-V1.5-I01" => new MultimodalEventDescription(aimName),
                 "1CAE-AUS-V1.0-I01" => new Mpai.Cae.Aus.AusAimProcessor(aimName, Ecapa(settings), ports),
-                "1PAF-FIR-V1.6-I02" => new Mpai.Paf.Fir.FirAimProcessor(aimName, Scrfd(settings), ArcFace(settings), _gallery, ports),
+                "1PAF-FIR-V1.6-I02" => new Mpai.Paf.Fir.FirEachFace(aimName, Scrfd(settings), ArcFace(settings), _gallery),     // every face of every sampled frame, where and when
                 "1MMC-SIR-V2.5-I02" => new Mpai.Mmc.Sir.SirAimProcessor(aimName, Ecapa(settings), _gallery, ports),
                 "1MMC-ASR-V2.5-I02" => new Mpai.Aims.Asr.AsrAimProcessor(aimName, Mpai.Aims.Asr.AsrFactory.Create(settings), ports),
-                "1OSD-IDR-V1.5-I01" => new Mpai.Osd.Idr.IdrAimProcessor(aimName, ports),
+                "1OSD-IDR-V1.5-I01" => new IdentityReconciliationEach(aimName),          // as TMA needs it: each identity answered as it arrives
                 "1OSD-BVS-V1.5-I01" => new Mpai.Osd.Bvs.BvsAimProcessor(aimName, ports),
                 _ => throw new NotSupportedException(aimName)
             };
-            return aim is TmaAim ? aim : new Recorder(aim, _log);
+            return aim is TmaAim or Mpai.Paf.Fir.FirEachFace ? aim : new Recorder(aim, _log);
         }
 
         private Mpai.Mmc.Sir.SpeakerEmbedder Ecapa(IReadOnlyDictionary<string, string> s) => _ecapa ??= new(MpaiPaths.Given(s, "EcapaModel"));
@@ -186,6 +186,15 @@ public class TmaEndToEndTests : IDisposable
 
     private static JsonObject SpeechObject(byte[] wav) => new JsonObject { ["Header"] = "OSD-BSO-V1.5" }.With(wav);
 
+    // The sound of a programme as TV Splitting gives it: a Basic Speech Object whose time is that of the programme, from 0 (a MEV knows no other time).
+    private static JsonObject ProgrammeSpeech(byte[] wav, double seconds)
+    {
+        var o = SpeechObject(wav);
+        o["BasicSpeechObjectTime"] = new JsonObject { ["Header"] = "OSD-STM-V1.5", ["SimpleTimeID"] = "programme",
+            ["SimpleTimeData"] = new JsonArray(new JsonObject { ["FlagsByte"] = 0, ["StartTime"] = 0.0, ["EndTime"] = seconds, ["AccuracyMode"] = "single", ["AccuracyPlusMinus"] = 0.0, ["TimeType"] = false, ["TimeUnit"] = "00" }) };
+        return o;
+    }
+
     private static string AuxiliaryText() =>
         "A talk with " + string.Join(", ", People.Select(p => p.Name.Replace('_', ' '))) + ".";
 
@@ -205,9 +214,9 @@ public class TmaEndToEndTests : IDisposable
         {
             ["1CAE-AUS-V1.0-I01"] = new JsonObject { ["EcapaModel"] = Models("ecapa-tdnn.onnx") },
             ["1MMC-SIR-V2.5-I02"] = new JsonObject { ["EcapaModel"] = Models("ecapa-tdnn.onnx") },
-            ["1PAF-FIR-V1.6-I02"] = new JsonObject { ["ScrfdModel"] = Models("scrfd_10g_bnkps.onnx"), ["ArcFaceModel"] = Models("glintr100.onnx") },
+            ["1PAF-FIR-V1.6-I02"] = new JsonObject { ["ScrfdModel"] = Models("scrfd_10g_bnkps.onnx"), ["ArcFaceModel"] = PinnedFaceModel() ?? Models("glintr100.onnx") },
             ["1MMC-ASR-V2.5-I02"] = new JsonObject { ["ExecutablePath"] = Models("Whisper", "bin", "whisper-cli.exe"), ["ModelPath"] = Models("Whisper", "models", "ggml-small.bin"), ["LanguageCode"] = "en" },
-            ["1CVE-VCD-V1.0-I01"] = new JsonObject { ["ImagesPerScene"] = "1", ["MinSceneLength"] = "15" }
+            ["1CVE-VCD-V1.0-I01"] = new JsonObject { ["ImagesPerScene"] = "1", ["MinSceneLength"] = "15", ["SampleSeconds"] = "1" }
         };
         var path = Path.Combine(_folder, "settings.json");
         File.WriteAllText(path, settings.ToJsonString());
@@ -304,8 +313,44 @@ public class TmaEndToEndTests : IDisposable
     // What it must do: finish; give Event Descriptors that are valid against their schema and hold scenes. What each AIM gave is written down
     // (Test\Results\2026-11-14\tma-ami*.txt). How much of the programme: MPAI_TMA_AMI_SECONDS (30 by default; the whole is 300).
     [SkippableFact]
-    public void TheAmiMeeting()
+    public void TheAmiMeeting() => RunAmi(new SubjectGallery(), "tma-ami", "2026-11-14");
+
+    // ---- THE SAME MEETING, ITS FOUR PARTICIPANTS REGISTERED (2026-11-15) ----------------------------------------------------------------------------
+    //
+    // The author: "create two (or four if four are relevant) entities and use Access Control Registration to create entries in the speech and face DBs".
+    // Access Control Registration (1OSD-ACR-V1.5-I01, the Module of Apps/MMC/ACR, with its own AIMs EFD and ESD) registers A, B, C and D - the speaker
+    // letters of the AMI annotation, so that the labels stay anonymous - each from a face (his or her half of a camera picture taken OUTSIDE the clip)
+    // and from 10-30 s of his or her own headset OUTSIDE the clip (Data\AMI\IS1009c\enrol, machine-local, made from the AMI annotation). TMA then
+    // runs on the meeting with that gallery, which its SIR and FIR search. The reference who-speaks-when of the clip is beside the material
+    // (Data\AMI\IS1009c\IS1009c-10m00-15m00-who-speaks-when.csv); the outputs of AUS, SIR, FIR, IDR and ASR are written whole for the comparison.
+    [SkippableFact]
+    public void TheAmiMeetingWithItsParticipantsRegistered()
     {
+        var enrol = Path.Combine(Repository.Root, "Data", "AMI", "IS1009c", "enrol");
+        string[] people = ["A", "B", "C", "D"];
+        Skip.IfNot(people.All(p => File.Exists(Path.Combine(enrol, p + ".wav")) && File.Exists(Path.Combine(enrol, p + ".jpg"))), $"the registration material is not in {enrol}");
+        var store = Path.Combine(_folder, "gallery");
+        using (var acrApi = new ControllerApi(Repository.Amds, Path.Combine(Repository.Root, "AIMs", "aim-settings.json"), st => new Mpai.Providers.AcrProvider(st)))
+        {
+            Assert.Equal(AifError.OK, acrApi.StartFlow("1OSD-ACR-V1.5-I01", out var acr));
+            acrApi.SharedStorageInit(acr, store);
+            foreach (var p in people)
+            {
+                var face = MpaiJson.ToJson(BasicVisualObject.FromFile(p + ".jpg", File.ReadAllBytes(Path.Combine(enrol, p + ".jpg")), "Face"));
+                var speech = SpeechObject(File.ReadAllBytes(Path.Combine(enrol, p + ".wav"))).ToJsonString();
+                var r = acrApi.Advance(acr, [new("OSD-BVO-V1.5", 1, face), new("OSD-BSO-V1.5", 1, speech),
+                                             new("OSD-BTO-V1.5", 2, MpaiJson.ToJson(BasicTextObject.FromText(p))), TestAvatar.Datum]);
+                Assert.True(r.Error == AifError.OK, $"ACR, {p}: {r.Error}");
+            }
+        }
+        var gallery = SubjectGallery.Load(new AIF.SharedStorage.FileSharedStorage(store, "test", "test"));
+        AmiRecord($"--- {DateTime.Now:s}: registered by ACR: {string.Join(", ", gallery.SubjectIds.Order())}; with a face: {gallery.ScoreFace(new float[512]).Count}, with a voice: {gallery.ScoreVoice(new float[192]).Count}", "2026-11-15", "tma-ami-registered");
+        RunAmi(gallery, "tma-ami-registered", "2026-11-15");
+    }
+
+    private void RunAmi(SubjectGallery registered, string name, string day)
+    {
+        string AmiRecord(string line) => TmaEndToEndTests.AmiRecord(line, day, name);
         var video = Data("TMA", "AMI-IS1009c-10m00-15m00-side-by-side.mp4");
         var ffmpeg = Ffmpeg();
         Skip.IfNot(File.Exists(Models("ecapa-tdnn.onnx")) && File.Exists(Models("glintr100.onnx")) && File.Exists(Models("Whisper", "bin", "whisper-cli.exe")), "the models are not in Models\\");
@@ -329,12 +374,12 @@ public class TmaEndToEndTests : IDisposable
         AmiRecord($"--- {DateTime.Now:s}: AMI IS1009c 10:00 +{seconds:F0} s, {jpgs.Count} frames at {fps}/s, {new FileInfo(wav).Length / 32000.0:F1} s of sound");
 
         var log = new ConcurrentQueue<(string Aim, string Port, string Json)>();
-        using var gallery = new GalleryHolder(new SubjectGallery());
+        using var gallery = new GalleryHolder(registered);
         using var api = new ControllerApi(_folder, settings, store => new Provider(store, gallery.Value, log));
         Assert.Equal(AifError.OK, api.StartFlow(Module, out var moduleId));
         var clock = System.Diagnostics.Stopwatch.StartNew();
         Assert.Equal(AifError.OK, api.InputWrite(moduleId, "OSD-BVO-V1.5", 1, bvo.ToJsonString(), 120_000));
-        Assert.Equal(AifError.OK, api.InputWrite(moduleId, "OSD-BSO-V1.5", 1, SpeechObject(File.ReadAllBytes(wav)).ToJsonString(), 120_000));
+        Assert.Equal(AifError.OK, api.InputWrite(moduleId, "OSD-BSO-V1.5", 1, ProgrammeSpeech(File.ReadAllBytes(wav), seconds).ToJsonString(), 120_000));
 
         JsonObject? last = null;
         for (var i = 0; i < 2000; i++)
@@ -347,23 +392,49 @@ public class TmaEndToEndTests : IDisposable
         AmiRecord("AIMs: " + string.Join("; ", api.Status(moduleId).Aims.Select(a => $"{a.Aim} {a.Status}{(string.IsNullOrEmpty(a.Reason) ? "" : " " + a.Reason)}")));
         var failures = log.Where(l => l.Port is "EXCEPTION" or "ERROR").ToList();
         AmiRecord($"exceptions/errors of AIMs: {failures.Count}" + string.Concat(failures.Take(5).Select(f => $"\n  {f.Aim} {f.Port}: {(f.Json.Length > 300 ? f.Json[..300] : f.Json)}")));
-        var dump = Path.Combine(Repository.Root, "Test", "Results", "2026-11-14");
+        var dump = Path.Combine(Repository.Root, "Test", "Results", day);
         Directory.CreateDirectory(dump);
-        File.WriteAllLines(Path.Combine(dump, "tma-ami-aim-outputs.txt"), log.Select(l => $"{l.Aim} | {l.Port} | {(l.Json.Length > 600 ? l.Json[..600] + "..." : l.Json)}"));
+        static bool Whole(string aim) => aim.Contains("AUS") || aim.Contains("SIR") || aim.Contains("FIR") || aim.Contains("IDR") || aim.Contains("ASR");
+        File.WriteAllLines(Path.Combine(dump, name + "-aim-outputs.txt"), log.Select(l => $"{l.Aim} | {l.Port} | {(l.Json.Length > 600 && !(Whole(l.Aim) && l.Json.Length < 200_000) ? l.Json[..600] + "..." : l.Json)}"));
         Assert.NotNull(last);
-        File.WriteAllText(Path.Combine(dump, "tma-ami-last-mev.json"), last!.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+        File.WriteAllText(Path.Combine(dump, name + "-last-mev.json"), last!.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
 
         var scenes = last["MultimodalSceneDescriptors"]!.AsArray();
         AmiRecord($"Event Descriptors: {scenes.Count} scenes: " +
                   $"{scenes.Count(x => x!["BasicMultimodalSceneDescriptorsData"]?[0]?["BXSOrBXSID"]?["BasicSpeechSceneDescriptors"] is not null)} of speech, " +
                   $"{scenes.Count(x => x!["BasicMultimodalSceneDescriptorsData"]?[0]?["BXSOrBXSID"]?["BasicVisualSceneDescriptors"] is not null)} of pictures");
         var data = log.Where(l => l.Json.Length > 0 && !l.Port.StartsWith("IN ") && l.Port is not ("ERROR" or "EXCEPTION")).ToList();
-        AmiRecord($"faces given by FIR: {data.Count(l => l.Aim.Contains("FIR") && l.Port.Contains("OSD-IID"))}; voices given by SIR: {data.Count(l => l.Aim.Contains("SIR") && l.Port.Contains("OSD-IID"))}");
+        AmiRecord($"voices given by SIR: {data.Count(l => l.Aim.Contains("SIR") && l.Port.Contains("OSD-IID"))}");
+        // WHO, WHAT, WHERE AND WHEN in the last MEV (2026-11-18): the faces recorded in the Visual Scenes, the utterances with their time, speaker, words and position.
+        var faceObjects = scenes.SelectMany(x => x!["BasicObjectsData"] as JsonArray ?? []).Select(o => o?["BXOOrBXOID"])
+                                .Where(o => (string?)o?["VisualQualifier"]?["Attributes"]?["VisualObjectType"] == "Face").ToList();
+        AmiRecord($"faces in the MEV: {faceObjects.Count}; by person: " + string.Join(", ", faceObjects.GroupBy(o => (string?)o!["VisualQualifier"]!["Attributes"]!["ObjectID"]!["InstanceIdentifierData"]![0]!["InstanceLabel"])
+                                                                                     .OrderByDescending(g => g.Count()).Select(g => $"{g.Key} {g.Count()}")));
+        var utterances = scenes.Select(x => x!["BasicMultimodalSceneDescriptorsData"]?[0]?["BXSOrBXSID"]?["BasicSpeechSceneDescriptors"]?[0]?["ObjectIDOrObject"]?[0]).Where(o => o is not null).ToList();
+        AmiRecord($"utterances: {utterances.Count}; with their time: {utterances.Count(u => u!["BasicSpeechObjectTime"] is not null || u["BasicSpeechObjectSpaceTime"]?["Time"] is not null)}; " +
+                  $"with a speaker: {utterances.Count(u => u!["BasicSpeechDataQualifier"]?["Attributes"]?["Metadata"]?["SpeakerIdentity"] is not null)}; " +
+                  $"with their words: {utterances.Count(u => u!["BasicSpeechDataQualifier"]?["Attributes"]?["Metadata"]?["ContentDescription"]?["TextObject"] is not null)}; " +
+                  $"with a position: {utterances.Count(u => u!["BasicSpeechObjectSpaceTime"]?["SpatialAttitude1"] is not null)}; " +
+                  $"voice-face alignments: {scenes.Sum(x => (x!["AlignedMMObjects"] as JsonArray)?.Count ?? 0)}");
         AmiRecord("texts: " + string.Join(" | ", data.Where(l => l.Aim.Contains("ASR")).Select(l => (string?)JsonNode.Parse(l.Json)?["BasicTextData"]?[0]?["Data"])));
         var verdict = PgmRig.Check(last);
         AmiRecord("valid against the schema: " + verdict);
         Assert.Equal("valid", verdict);
         Assert.True(scenes.Count > 0, "no scenes");
+    }
+
+    // THE FACE MODEL THE L3 PINS (2026-11-18): its AccessSources "face-embedder", SHA-256 4AB1D643..., the one Access Control Registration registers faces with, where the
+    // Controller has obtained it on this machine (AIF\Access). Models\glintr100.onnx is another file of the same name: its features cannot be compared with ACR's.
+    private static string? PinnedFaceModel()
+    {
+        var access = Path.Combine(Repository.Root, "AIF", "Access", "view");
+        if (!Directory.Exists(access)) return null;
+        foreach (var file in Directory.EnumerateFiles(access, "glintr100.onnx", SearchOption.AllDirectories))
+        {
+            using var stream = File.OpenRead(file);
+            if (Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(stream)).StartsWith("4AB1D6435D639628", StringComparison.Ordinal)) return file;
+        }
+        return null;
     }
 
     // ffmpeg: on the PATH, else where winget puts it (C:\Users\...\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_...\...\bin).
@@ -383,11 +454,11 @@ public class TmaEndToEndTests : IDisposable
         if (p.ExitCode != 0) throw new InvalidOperationException($"{Path.GetFileName(exe)} failed: {err}");
     }
 
-    private static string AmiRecord(string line)
+    private static string AmiRecord(string line, string day, string name)
     {
-        var folder = Path.Combine(Repository.Root, "Test", "Results", "2026-11-14");
+        var folder = Path.Combine(Repository.Root, "Test", "Results", day);
         Directory.CreateDirectory(folder);
-        File.AppendAllText(Path.Combine(folder, "tma-ami.txt"), line + "\n");
+        File.AppendAllText(Path.Combine(folder, name + ".txt"), line + "\n");
         return line;
     }
 

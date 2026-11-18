@@ -43,11 +43,17 @@ public sealed class HflAimProcessor : IAimProcessor
     public string LastNote { get; private set; } = "";
     private readonly List<string> _made = new();                                     // the Back End's models, oldest first (for the staleness of an AIM)
 
-    private int Staleness(JsonObject? post)
+    private readonly Dictionary<string, float[]> _weightsOf = new();               // AddLearning: every model the Back End made, to find the one an AIM started from
+
+    private static string StartedFrom(JsonObject? post)
     {
         var id = post?["MLModelObjectID"]?.GetValue<string>() ?? "";
-        var from = id.Contains('>') ? id[..id.IndexOf('>')] : id;
-        var at = _made.LastIndexOf(from);
+        return id.Contains('>') ? id[..id.IndexOf('>')] : id;
+    }
+
+    private int Staleness(JsonObject? post)
+    {
+        var at = _made.LastIndexOf(StartedFrom(post));
         return at < 0 ? 0 : _made.Count - 1 - at;
     }
 
@@ -75,6 +81,17 @@ public sealed class HflAimProcessor : IAimProcessor
                 var bank = Bank ?? throw new InvalidOperationException("LabelBank needs the Back End's label bank.");
                 next = Vector(bank.Learn(CurrentModel, post!, cases)); LastNote = bank.Note; break;
             }
+            case FlMethod.AddLearning:
+            {
+                if (!_weightsOf.TryGetValue(StartedFrom(post), out var from))
+                {
+                    const string unknown = "the Back End's model this AIM started from is not known: its learning cannot be measured.";
+                    _refusals.Add(new RoundRefusal(_round + 1, "update", unknown));
+                    _outcomes.Add(new RoundOutcome(_round + 1, null, _pre, 0, cases, false)); LastNote = unknown; return;
+                }
+                var step = FlMethods.MixShare(Alpha, stale);
+                next = FlMethods.AddLearning(Current, weights, from, step); LastNote = $"its learning added with a step of {step:P1} (started from a model {stale} behind)"; break;
+            }
             default: throw new InvalidOperationException("not a per-arrival method: " + Method);
         }
         var candidate = ModelOf("candidate", next, cases);
@@ -87,12 +104,12 @@ public sealed class HflAimProcessor : IAimProcessor
         var model = ModelOf($"hbe-model-{++_round}", next, cases);
         model["DescrMetadata"] = $"{FlMethods.Describe(Method)}: {LastNote}" + (_network is null ? "" : "; the final layer and the network");
         outputs[_modelOut] = model.ToJsonString();
-        Current = next; CurrentModel = model; _made.Add(model["MLModelObjectID"]!.GetValue<string>());
+        Current = next; CurrentModel = model; _made.Add(model["MLModelObjectID"]!.GetValue<string>()); _weightsOf[_made[^1]] = next;
         _outcomes.Add(new RoundOutcome(_round, model["MLModelObjectID"]!.GetValue<string>(), _pre, 1, cases, true));
     }
 
     // Sets the model the next round starts from (the Back End's current NN Model).
-    public void StartFrom(JsonObject model) { Current = Vector(model); CurrentModel = model; _network = FrontEndTrainer.NetworkOf(model) ?? _network; if (model["MLModelObjectID"]?.GetValue<string>() is string id) _made.Add(id); }
+    public void StartFrom(JsonObject model) { Current = Vector(model); CurrentModel = model; _network = FrontEndTrainer.NetworkOf(model) ?? _network; if (model["MLModelObjectID"]?.GetValue<string>() is string id) { _made.Add(id); _weightsOf[id] = Current; } }
 
     public string InstanceId { get; }
 

@@ -18,3 +18,13 @@ Bankruptcy dataset (CC BY 4.0) by `AIMs/CUI/Tools/Mpai.Cui.Train`. The L3 of the
 file on this machine to obtain it from instead. A demonstration model, trained on companies of Poland: **not for real companies**.
 
 The data cross the Controller API as the JSON instance of their schema (`Mpai.Aif.PortData`: a codec for each CUI Data Type and for `number`; what crosses is checked against the published schema).
+
+## In the MAS App (2026-11-18)
+
+The same workflow, `CUI-CPP.orch`, runs in the MAS App (browser and desktop clients). It binds two devices of the client: **Company** - the person chooses one of eleven ready-made companies (`Files/companies`, named in plain words in `index.json`) or a company file of their own, and the horizon (12, 24 or 36 months); after a result, five figures of the same company can be moved from -50 % to +100 % (revenues CEA1, operating result CEBDIFFVAL, total debts SPPDTOT, equity SPPATOT, interest and other financial expenses CEC3) and given again - and **Report** - the probability of default, of discontinuity and, with secondary risks, the Secondary Discontinuity Probability, each with what weighs most, beside the company chosen before. The Service builds the Module with `Mpai.Cui.CuiProvider`; the App is listed in the Service's `Apps` (id `CPP`).
+
+**How to demonstrate it.**
+1. Choose "A small healthy company", then "A company in distress": the two reports side by side - default probability and the figures that weigh most.
+2. On the company in distress, move one figure - twice the total debts (+100 %), Apply: the default probability rises; halve them: it falls.
+3. Choose "A company exposed to climate risks" or "A company hit by a cyber attack": the discontinuity probability and its parts (financial, governance, climate, cyber) change while the default may not.
+Say each time: a demonstration model trained on Polish companies, not for real companies.

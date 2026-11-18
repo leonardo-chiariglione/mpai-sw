@@ -103,6 +103,20 @@ public sealed class PiperTtsAim : ITtsAim
 
     public Task<BasicSpeechObject> ProcessAsync(BasicTextObject text) => ProcessAsync(text, "");
 
+    // THE VOICE OF A NEURAL NETWORK SPEECH MODEL. When the Speech Model input of the
+    // AIM carries a network (a Piper/VITS voice made from the speech of a speaker,
+    // CAE-USC Speech Model Creation), the text is said with it - and with nothing
+    // else: a network that fails is an error, never the default voice in its place.
+    public Func<string, PiperVoice>? NetworkVoice { get; init; }
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<string, PiperVoice> _networks = new();
+
+    public async Task<byte[]> SpeakWithNetworkAsync(string network, string text)
+    {
+        var voice = _networks.GetOrAdd(network, id => (NetworkVoice ?? throw new InvalidOperationException("This Text To Speech cannot speak with a network."))(id));
+        var wav = await voice.Engine.GenerateAsync(text, "");
+        return wav.SpeechData;
+    }
+
     // Overload carrying extra Piper flags (prosody) derived from a Speech Personal
     // Status by the AIF processor. Empty => neutral synthesis (unchanged).
     public async Task<BasicSpeechObject> ProcessAsync(BasicTextObject text, string prosodyArgs)

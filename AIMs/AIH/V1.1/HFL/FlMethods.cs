@@ -14,7 +14,10 @@ namespace Mpai.Aih.Hfl;
 //   FedAsync   new = (1 - a) current + a arrived, a smaller when the AIM was trained from an older model of the Back End (Xie et al. 2019)
 //   LabelBank  incremental distillation: the Back End holds its own inputs (never an End User's data) and a label for each; an arrived AIM's answers move the labels by
 //              its share of all the cases received so far; the Back End's model is then trained on the labels. The bank is the training set made of every AIM received.
-public enum FlMethod { Average, Replace, FedAsync, LabelBank }
+//   AddLearning  the arrived AIM as a training input, nothing averaged and no data at the Back End (author, 2026-11-17): what the Front End learned = the arrived AIM
+//              minus the Back End's model it started from; the Back End's current model takes that learning with a step size, smaller when the AIM is older.
+//              new = current + step (arrived - started from), step = a / sqrt(1 + staleness)
+public enum FlMethod { Average, Replace, FedAsync, LabelBank, AddLearning }
 
 public static class FlMethods
 {
@@ -22,6 +25,7 @@ public static class FlMethods
     {
         FlMethod.Average => "Federated averaging", FlMethod.Replace => "The trained AIM taken as it is",
         FlMethod.FedAsync => "Asynchronous mixing of the trained AIM into the Back End's model", FlMethod.LabelBank => "Incremental distillation through the Back End's label bank",
+        FlMethod.AddLearning => "The Front End's learning added to the Back End's model",
         _ => m.ToString()
     };
 
@@ -39,6 +43,14 @@ public static class FlMethods
     {
         var next = new float[current.Length];
         for (var i = 0; i < next.Length; i++) next[i] = (float)((1 - share) * current[i] + share * arrived[i]);
+        return next;
+    }
+
+    // current + step x (arrived - startedFrom): the learning of one Front End, added number by number.
+    public static float[] AddLearning(float[] current, float[] arrived, float[] startedFrom, double step)
+    {
+        var next = new float[current.Length];
+        for (var i = 0; i < next.Length; i++) next[i] = (float)(current[i] + step * (arrived[i] - startedFrom[i]));
         return next;
     }
 }

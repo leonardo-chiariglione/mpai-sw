@@ -170,9 +170,12 @@ public sealed class RemoteControllerApiAsync : IAsyncControllerApi
         if (!codecs.Knows(dataType)) return new ControllerApi.Read(AifError.Failed, null);
         try
         {
-            using var limit = Limit(timeoutMs);
+            // The time the reader allows is told to the Service (?timeout=), which waits for a continuous Module's Port that long and answers; this request
+            // is abandoned only a little later, so that an answer on its way is not lost to the abandoning (as RemoteControllerApi does, 2026-11-18: without it
+            // the Service held each read 60 s, and a browser - six connections to a host - had none left to write the inputs with).
+            using var limit = Limit(timeoutMs < 0 ? timeoutMs : timeoutMs + 3000);
             var root = await RootAsync();
-            var response = await GetAsync($"{root}/{mid}/Output/{Segment(dataType, portNumber)}", limit.Token);
+            var response = await GetAsync($"{root}/{mid}/Output/{Segment(dataType, portNumber)}{(timeoutMs > 0 ? "?timeout=" + timeoutMs : "")}", limit.Token);
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return new ControllerApi.Read(AifError.NotProduced, null);
             if (!response.IsSuccessStatusCode) return new ControllerApi.Read(AifError.Failed, null);
             if (await OutputBytesAsync(response, root, mid, dataType, portNumber) is not { } wire) return new ControllerApi.Read(AifError.NotProduced, null);

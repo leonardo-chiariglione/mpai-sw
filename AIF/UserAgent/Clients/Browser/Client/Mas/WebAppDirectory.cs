@@ -30,6 +30,9 @@ public sealed class WebAppDirectory
         apps = "MPAI/AIFU/" + (string.IsNullOrWhiteSpace(collection) ? "" : $"c/{Uri.EscapeDataString(collection.Trim())}/");
     }
 
+    // A FILE AN APP OFFERS WITH ITS WORKFLOW, named by an address relative to the Service (Apps/<id>/Files/...): through this origin, in this client's collection.
+    public string FileUrl(string relative) => apps + relative.TrimStart('/');
+
     public async Task<IReadOnlyList<App>> ListAsync() => Parse(await http.GetStringAsync($"{apps}Apps"));
 
     public async Task<IReadOnlyList<App>> SearchAsync(string? words, string? category) =>

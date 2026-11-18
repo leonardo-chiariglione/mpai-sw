@@ -53,7 +53,14 @@ public static class TtsFactory
         return new PiperTtsAim(
             defaultVoice.Engine,
             defaultVoice.Profile,
-            voices);
+            voices)
+        {
+            // A NETWORK GIVEN AS THE SPEECH MODEL (a Piper/VITS voice made from the
+            // speech of a speaker), named by its ID: <SpeechNetworks>\<id>\<id>.onnx, the
+            // folder of networks of this deployment (Models/SRS-LJ by default), spoken
+            // with the same piper program.
+            NetworkVoice = id => BuildVoice(runner, NetworkFile(settings, id), NetworkFile(settings, id) + ".json")
+        };
     }
 
     // One voice per "Voice:<lang>" setting, plus the default voice registered
@@ -114,6 +121,17 @@ public static class TtsFactory
         }
 
         return voices;
+    }
+
+    // The network of a Speech Model by its ID, in the folder of networks the setting SpeechNetworks names. An ID that is not a plain name, or names no network, is refused.
+    public static string NetworkFile(IReadOnlyDictionary<string, string> settings, string id)
+    {
+        if (string.IsNullOrWhiteSpace(id) || id.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || id.Contains("..", StringComparison.Ordinal))
+            throw new InvalidOperationException($"'{id}' is not the name of a network.");
+        var folder = Mpai.Core.MpaiPaths.Resolve(settings.TryGetValue("SpeechNetworks", out var f) && !string.IsNullOrWhiteSpace(f) ? f : "Models/SRS-LJ");
+        var file = Path.Combine(folder, id, id + ".onnx");
+        if (!File.Exists(file) || !File.Exists(file + ".json")) throw new InvalidOperationException($"This deployment has no network {id} (in {folder}).");
+        return file;
     }
 
     private static PiperVoice BuildVoice(

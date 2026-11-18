@@ -21,6 +21,8 @@ namespace Mpai.Cae.Srs;
 // --say       what was said in each damaged section, in order (one --say for each section)
 // --out       the restored speech
 // --stand-in  speak with the stand-in tone and not in the voice of the speaker (no voice engine needed)
+// --network   a network trained offline on the speech of the speaker (Models\SRS-LJ\<name>, e.g. LJ-05min): Speech Model Creation gives it, Text To Speech speaks with it;
+//             the --voice files are given as the Speech Segments for Modelling of that name
 //
 //   SrsApp --demo <folder> --original clip.wav [--sections 1.0-1.8,3.0-3.6]      for a demonstration: writes original.wav and damaged.wav (the sections made silent) to restore
 internal static class Program
@@ -31,7 +33,7 @@ internal static class Program
     {
         try
         {
-            var voice = new List<string>(); var say = new List<string>(); string? damaged = null, sections = null, output = null, demo = null, original = null; var standIn = false;
+            var voice = new List<string>(); var say = new List<string>(); string? damaged = null, sections = null, output = null, demo = null, original = null, network = null; var standIn = false;
             for (var i = 0; i < args.Length; i++)
                 switch (args[i])
                 {
@@ -41,6 +43,7 @@ internal static class Program
                     case "--say": say.Add(args[++i]); break;
                     case "--out": output = args[++i]; break;
                     case "--stand-in": standIn = true; break;
+                    case "--network": network = args[++i]; break;
                     case "--demo": demo = args[++i]; break;
                     case "--original": original = args[++i]; break;
                     default: throw new ArgumentException($"I do not know {args[i]}. See the top of Program.cs, or the README.");
@@ -52,15 +55,34 @@ internal static class Program
             if (damagedSections.Count != say.Count) throw new ArgumentException($"{damagedSections.Count} damaged section(s) and {say.Count} --say: one text for each section.");
 
             Console.WriteLine("Starting the Module (a first start takes a while)...");
-            using var module = ModuleHost.Start(Module, standIn ? null : "openvoice", Console.WriteLine);
+            using var module = ModuleHost.Start(Module, standIn ? null : network is not null ? "network" : "openvoice", Console.WriteLine);
+            // THE SAME WORKFLOW AS IN THE MAS APP, answered from the command line: the damaged recording is the WAV file given (the workflow's WAV alternative);
+            // the voice is the speech given, named by the network (--network) - it answers the alternative of that network, or the first one when there is no
+            // --network (the deployment's own Speech Model Creation then models it); the table of damaged sections is --sections and --say. The workflow repeats
+            // until it is stopped: the App stops it when it has the restored speech.
             string? restored = null;
+            using var done = new System.Threading.CancellationTokenSource();
+            var voiceObject = Inputs.SpeechObjectOf(network ?? "voice", voice.ToArray());
+            var damagedObject = Inputs.SpeechObjectOf("damaged", damaged);
+            var answerVoiceTo = network ?? "LJ-01min";
             var devices = new DeviceRegistry()
-                .RegisterDevice("Voice", new GivenDevice("OSD-BSO-V1.5", Inputs.SpeechObjectOf("voice", voice.ToArray())))
-                .RegisterDevice("Texts", new GivenDevice("OSD-BTO-V1.5", Inputs.TextList(say)))
-                .RegisterDevice("Damaged", new GivenDevice("OSD-BSO-V1.5", Inputs.SpeechObjectOf("damaged", damaged)))
-                .RegisterDevice("DamagedList", new GivenDevice("CAE-DLS-V2.5", Inputs.DamagedList(damagedSections)))
-                .RegisterPresent("file", given => { if (given.TryGetValue("OSD-BSO-V1.5", out var speech)) restored = speech; return Task.CompletedTask; });            Console.WriteLine("Restoring...");
-            new WorkflowRun(module.Api, Path.Combine(ModuleHost.Root, "Apps", "CAE", "SRS", "SRS.orch"), devices, Environment.GetEnvironmentVariable("MPAI_DIAG") == "1" ? Console.WriteLine : null).Run();
+                .RegisterAcquire("OSD-BSO-V1.5", async (viaVad, wanted, abandon) =>
+                {
+                    if (wanted?.Contains("\"WAV\"", StringComparison.Ordinal) == true && !wanted.Contains("DataURI", StringComparison.Ordinal)) return damagedObject;
+                    if (SpeechWav.Example(wanted) is { } example && example.Label == answerVoiceTo) return voiceObject;
+                    try { await Task.Delay(System.Threading.Timeout.Infinite, abandon); } catch (OperationCanceledException) { }
+                    return null;
+                })
+                .RegisterAcquire("CAE-DLS-V2.5", (_, _) => Task.FromResult<string?>(Inputs.DamagedList(damagedSections)))
+                .RegisterAcquire("OSD-BTO-V1.5", (_, _) => Task.FromResult<string?>(Inputs.TextList(say)))
+                .RegisterPresent("file", given =>
+                {
+                    if (given.TryGetValue("OSD-BSO-V1.5", out var speech)) { restored = speech; done.Cancel(); }
+                    return Task.CompletedTask;
+                });
+            Console.WriteLine("Restoring...");
+            try { new WorkflowRun(module.Api, Path.Combine(ModuleHost.Root, "Apps", "CAE", "SRS", "SRS.orch"), devices, Environment.GetEnvironmentVariable("MPAI_DIAG") == "1" ? Console.WriteLine : null).Run(done.Token); }
+            catch (OperationCanceledException) when (restored is not null) { }
 
             if (restored is null) throw new InvalidOperationException("The Module gave no restored speech.");
             foreach (var file in Inputs.WriteSpeech(restored, output)) Console.WriteLine("Restored speech: " + file);            return 0;

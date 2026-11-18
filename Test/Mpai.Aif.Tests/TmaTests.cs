@@ -140,7 +140,47 @@ public class TmaTests
         var med = new MultimodalEventDescription("med");
         med.Handle(TmaTypes.Bms, 1, bms.Json).ToList();
         var mev = med.Handle(TmaTypes.Bms, 1, bms.Json).Last();
-        Assert.Equal(2, mev.Json["MultimodalSceneDescriptors"]!.AsArray().Count);
+        Assert.Single(mev.Json["MultimodalSceneDescriptors"]!.AsArray());     // the same Scene given again takes its own place (2026-11-15)
         Valid(mev.Json);
+    }
+
+    // WHAT THE MEV RECORDS OF AN UTTERANCE (2026-11-15): a segment of the programme with its time; the identity Speaker Identity Recognition gives
+    // and the text Automatic Speech Recognition gives for that time go into its Speech Qualifier, whichever comes first; the Multimodal Scene is given
+    // again with the same ID, and the Multimodal Event Descriptors keep one Scene, holding the speaker, the words and the programme time.
+    [Fact]
+    public void AnUtteranceRecordsItsSpeakerAndItsWordsAtItsProgrammeTime()
+    {
+        JsonObject Time(double from, double to) => new() { ["Header"] = "OSD-STM-V1.5", ["SimpleTimeID"] = "t" + from,
+            ["SimpleTimeData"] = new JsonArray(new JsonObject { ["FlagsByte"] = 0, ["StartTime"] = from, ["EndTime"] = to, ["AccuracyMode"] = "single", ["AccuracyPlusMinus"] = 0.1, ["TimeType"] = false, ["TimeUnit"] = "00" }) };
+        JsonObject Identity(string who, double from, double to) => new() { ["Header"] = "OSD-IID-V1.5", ["MInstanceID"] = "tma", ["InstanceIdentifier"] = who, ["ObjectID"] = "seg-" + from, ["InstanceTime"] = Time(from, to),
+            ["InstanceIdentifierData"] = new JsonArray(new JsonObject { ["InstanceLabel"] = who, ["LabelConfidenceLevel"] = 0.6, ["Taxonomy"] = new JsonObject { ["TaxonomyLevelIDs"] = new JsonArray("person"), ["TaxonomyDataURI"] = "" } }) };
+        JsonObject Words(string text, double from, double to) => new() { ["Header"] = "OSD-BTO-V1.5", ["BasicTextObjectID"] = "w" + from,
+            ["BasicTextObjectSpaceTime"] = Time(from, to), ["BasicTextData"] = new JsonArray(new JsonObject { ["Data"] = text }) };
+        JsonObject Segment(string id, double from, double to) { var b = Bso(id, ""); b["BasicSpeechObjectTime"] = Time(from, to); return b; }
+
+        var bss = new BasicSpeechSceneDescription("bss");
+        var msm = new MultimodalSceneMultiplexing("msm");
+        var med = new MultimodalEventDescription("med");
+        var idr = new IdentityReconciliationEach("idr");
+        JsonObject? mev = null;
+        void Into(IEnumerable<(string DataType, int Port, JsonObject Json)> given) { foreach (var g in given) foreach (var e in med.Handle(g.DataType, g.Port, g.Json)) mev = e.Json; }
+
+        // the first segment: the scene first, then its identity (through IDR) and its words
+        Into(msm.Handle(TmaTypes.Bss, 1, bss.Handle(TmaTypes.Bso, 1, Segment("seg-1.4", 1.4, 26.4)).Single().Json));
+        foreach (var id in idr.Handle(TmaTypes.Iid, 2, Identity("B", 1.4, 26.4))) Into(msm.Handle(id.DataType, id.Port, id.Json));
+        Into(msm.Handle(TmaTypes.Bto, 1, Words("Now this is an interface for a remote.", 1.4, 26.4)));
+        // the second: its words before its scene
+        Into(msm.Handle(TmaTypes.Bto, 1, Words("Okay, thank you very much.", 111.2, 120.1)));
+        Into(msm.Handle(TmaTypes.Bss, 1, bss.Handle(TmaTypes.Bso, 1, Segment("seg-111.2", 111.2, 120.1)).Single().Json));
+
+        var scenes = mev!["MultimodalSceneDescriptors"]!.AsArray();
+        Assert.Equal(2, scenes.Count);
+        JsonNode Speech(int i) => scenes[i]!["BasicMultimodalSceneDescriptorsData"]![0]!["BXSOrBXSID"]!["BasicSpeechSceneDescriptors"]![0]!["ObjectIDOrObject"]![0]!;
+        var first = Speech(0)["BasicSpeechDataQualifier"]!["Attributes"]!["Metadata"]!;
+        Assert.Equal("B", (string)first["SpeakerIdentity"]!["InstanceIdentifierData"]![0]!["InstanceLabel"]!);
+        Assert.Equal("Now this is an interface for a remote.", (string)first["ContentDescription"]!["TextObject"]!["BasicTextObjects"]![0]!["BTObjectIDOrBTObject"]![0]!["BasicTextData"]![0]!["Data"]!);
+        Assert.Equal(1.4, (double)scenes[0]!["BMSDescriptorsSpaceTime"]!["Time"]!["SimpleTimeData"]![0]!["StartTime"]!);          // programme time
+        Assert.Equal("Okay, thank you very much.", (string)Speech(1)["BasicSpeechDataQualifier"]!["Attributes"]!["Metadata"]!["ContentDescription"]!["TextObject"]!["BasicTextObjects"]![0]!["BTObjectIDOrBTObject"]![0]!["BasicTextData"]![0]!["Data"]!);
+        Valid(mev);
     }
 }

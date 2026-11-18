@@ -2,20 +2,22 @@
 #  SRS.orch - Speech Restoration System (CAE-USC V2.5)
 #  Workflow Description Language v0.3, AIF V3.0
 #
-#  One Controller, one Module, which executes by exchange: the four inputs are given,
-#  then the Restored Segment is asked for. The User Agent gets each datum from where
-#  its App says (the labels are the App's to answer):
+#  The same workflow for the stand-alone App and for the MAS App. One Controller,
+#  one Module, which executes by exchange: the four inputs are given, then the
+#  Restored Segment is asked for and played.
 #
-#    "Voice"       the Speech Segments for Modelling: speech of the speaker, to make the
-#                  model of the voice from
-#    "Texts"       the texts of the damaged sections, in order
-#    "Damaged"     the speech that is damaged
-#    "DamagedList" where it is damaged
+#    Damaged       the speech that is damaged: a ready-made recording of the LJ Speech
+#                  reader (clips never used to train the networks, two sections of each
+#                  covered by noise), or a WAV file of the same speaker
+#    DamagedList   where it is damaged: the sections, from and to, in seconds
+#    Texts         the words said in each section, in order (the same table gives both)
+#    Voice         the Speech Segments for Modelling: speech of the reader, named by the
+#                  network trained offline on 1, 5, 15, 30 or 60 minutes of her speech
+#                  (LJ-00min: the generator before it heard her)
 #
-#  and presents what the Module gives:
-#
-#    Restored      the Damaged Segment with the damaged sections replaced by speech
-#                  synthesised in the voice of the speaker
+#  The ready-made recordings and the speech of the reader are files of the App
+#  (Apps/SRS/Files), fetched by the client from the Service that offers the App.
+#  The stand-alone App answers from its command line.
 # =============================================================================
 
 workflow SRS over 1CAE-SRS-V2.5-I01
@@ -24,12 +26,44 @@ on Start:
 
     ask Controller to start
 
-    offer   Voice       (OSD-BSO-V1.5:1) from device "Voice"
-    offer   Texts       (OSD-BTO-V1.5)   from device "Texts"
-    offer   Damaged     (OSD-BSO-V1.5:2) from device "Damaged"
-    offer   DamagedList (CAE-DLS-V2.5)   from device "DamagedList"
-    ask     Restored    (OSD-BSO-V1.5)
-    present Restored
+    prompt "The Speech Restoration System repairs a recording of speech where some words are lost under noise: it says the lost words again, in the voice of the speaker, and puts them in their place. The voice is a neural network trained on recordings of ONE speaker, the reader of LJ Speech, a public-domain audiobook: it restores her speech, not anyone else's. Choose a damaged recording, mark where it is damaged and the words said there, then choose the network, trained on 1, 5, 15, 30 or 60 minutes of her speech, and compare: the more minutes, the closer the voice."
+
+    loop until Stop:
+
+        # --- the damaged recording: one of the ready-made ones, or a WAV file of the same speaker ---
+        prompt "Choose a damaged recording, or a WAV file of the same speaker."
+        acquire Damaged (OSD-BSO-V1.5) = { "BasicSpeechDataQualifier": { "Formats": { "TransportFormats": { "FileFormat": "WAV" } } } }
+             or Damaged (OSD-BSO-V1.5) = { "BasicSpeechObjectID": "LJ016-0277", "BasicSpeechObjectData": [ { "DataURI": "Apps/SRS/Files/damaged/LJ016-0277.wav" } ] }
+             or Damaged (OSD-BSO-V1.5) = { "BasicSpeechObjectID": "LJ031-0059", "BasicSpeechObjectData": [ { "DataURI": "Apps/SRS/Files/damaged/LJ031-0059.wav" } ] }
+             or Damaged (OSD-BSO-V1.5) = { "BasicSpeechObjectID": "LJ043-0017", "BasicSpeechObjectData": [ { "DataURI": "Apps/SRS/Files/damaged/LJ043-0017.wav" } ] }
+             or Damaged (OSD-BSO-V1.5) = { "BasicSpeechObjectID": "LJ015-0154", "BasicSpeechObjectData": [ { "DataURI": "Apps/SRS/Files/damaged/LJ015-0154.wav" } ] }
+             or Damaged (OSD-BSO-V1.5) = { "BasicSpeechObjectID": "LJ032-0216", "BasicSpeechObjectData": [ { "DataURI": "Apps/SRS/Files/damaged/LJ032-0216.wav" } ] }
+             or Damaged (OSD-BSO-V1.5) = { "BasicSpeechObjectID": "LJ010-0313", "BasicSpeechObjectData": [ { "DataURI": "Apps/SRS/Files/damaged/LJ010-0313.wav" } ] }
+
+        # --- where it is damaged and what was said there: one table - from s, to s, the words (filled in for a ready-made recording) ---
+        prompt "Mark each damaged section: where it starts and ends, in seconds, and the words said there."
+        acquire DamagedList (CAE-DLS-V2.5)
+        acquire Texts (OSD-BTO-V1.5) = { "BasicTextObjectID": "DamagedSectionWords" }
+
+        # --- the network that speaks the lost words ---
+        prompt "Now choose the network that speaks the lost words: trained on 1, 5, 15, 30 or 60 minutes of the reader, or LJ-00min, the generator before it heard her."
+        acquire Voice (OSD-BSO-V1.5) = { "BasicSpeechObjectID": "LJ-01min", "BasicSpeechObjectData": [ { "DataURI": "Apps/SRS/Files/voice/LJ-reader.wav" } ] }
+             or Voice (OSD-BSO-V1.5) = { "BasicSpeechObjectID": "LJ-05min", "BasicSpeechObjectData": [ { "DataURI": "Apps/SRS/Files/voice/LJ-reader.wav" } ] }
+             or Voice (OSD-BSO-V1.5) = { "BasicSpeechObjectID": "LJ-15min", "BasicSpeechObjectData": [ { "DataURI": "Apps/SRS/Files/voice/LJ-reader.wav" } ] }
+             or Voice (OSD-BSO-V1.5) = { "BasicSpeechObjectID": "LJ-30min", "BasicSpeechObjectData": [ { "DataURI": "Apps/SRS/Files/voice/LJ-reader.wav" } ] }
+             or Voice (OSD-BSO-V1.5) = { "BasicSpeechObjectID": "LJ-60min", "BasicSpeechObjectData": [ { "DataURI": "Apps/SRS/Files/voice/LJ-reader.wav" } ] }
+             or Voice (OSD-BSO-V1.5) = { "BasicSpeechObjectID": "LJ-00min", "BasicSpeechObjectData": [ { "DataURI": "Apps/SRS/Files/voice/LJ-reader.wav" } ] }
+
+        # --- the Module is given the four inputs ---
+        offer Voice       (OSD-BSO-V1.5:1)
+        offer Texts       (OSD-BTO-V1.5)
+        offer Damaged     (OSD-BSO-V1.5:2)
+        offer DamagedList (CAE-DLS-V2.5)
+
+        # --- and gives the restored recording, which is played ---
+        ask     Restored    (OSD-BSO-V1.5)
+        prompt "Here is the recording, restored. Play it again, or go round once more and choose another network to compare."
+        present Restored
 
 on Stop:
     ask Controller to stop
