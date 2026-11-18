@@ -2,8 +2,8 @@ using System.Text.Json.Nodes;
 
 namespace Mpai.Aif.Tests;
 
-// THE MMM-TEC V2.2 API (MMM/Api/MMM-API.json, built from the schemas by
-// MMM/Api/build_openapi.py): the schemas under the server and the client have no
+// THE MMM-TEC V2.2 API (AllApps/MMM/Api/MMM-API.json, built from the schemas by
+// AllApps/MMM/Api/build_openapi.py): the schemas under the server and the client have no
 // recursion (the author, 2026/10/01). Every $ref of the document names a component
 // that exists, and no component reaches itself through its $refs. The paths are
 // those of the MMM-API chapter: one POST per Process Action, the Baseline Profile's
@@ -40,7 +40,7 @@ public class MmmApiTests
     [Fact]
     public void NoRecursion()
     {
-        var api = JsonNode.Parse(File.ReadAllText(Path.Combine(Repository.Root, "MMM", "Api", "MMM-API.json")))!.AsObject();
+        var api = JsonNode.Parse(File.ReadAllText(Path.Combine(Repository.Root, "AllApps", "MMM", "Api", "MMM-API.json")))!.AsObject();
         var schemas = api["components"]!["schemas"]!.AsObject();
         var parameters = api["components"]!["parameters"]!.AsObject();
         const string prefix = "#/components/schemas/";

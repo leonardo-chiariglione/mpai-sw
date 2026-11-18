@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace Mpai.Mmm;
 
 // THE OBJECTS OF THE MMM-API (MMM-API chapter, 3): what a Process sends to perform a
-// Process Action and what it receives. The names on the wire are those of MMM/Api/
+// Process Action and what it receives. The names on the wire are those of AllApps/MMM/Api/
 // MMM-API.json: camelCase for the API's own fields, Nil/At/From/To/Of/With as the
 // Backus-Naur Form of the Process Actions writes them.
 

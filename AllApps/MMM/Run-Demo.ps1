@@ -1,6 +1,6 @@
 # THE MMM DEMONSTRATION OF USE CASE 2 ("Friends meet in the metaverse"), one command:
-#   MMM\Run-Demo.ps1            the presenter steps through it: Space, right arrow or a click
-#   MMM\Run-Demo.ps1 4          it plays by itself, 4 seconds a step
+#   AllApps\MMM\Run-Demo.ps1            the presenter steps through it: Space, right arrow or a click
+#   AllApps\MMM\Run-Demo.ps1 4          it plays by itself, 4 seconds a step
 # Starts the M-Instance and its viewer, opens the viewer in the default browser, and stays
 # in this window (Enter here also shows the next step). Ctrl+C stops it.
 param([string]$Pace = 'manual')

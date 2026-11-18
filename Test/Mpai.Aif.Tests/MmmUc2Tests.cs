@@ -6,7 +6,7 @@ namespace Mpai.Aif.Tests;
 
 // USE CASE 2 OF MMM-TEC V2.2, "FRIENDS MEET IN THE METAVERSE" (Verification Use
 // Cases, 2), END TO END: an M-Instance behind its MMM-API, the Processes of the Use
-// Case as clients of it, the 19 steps of its workflow in order (MMM/Client/Uc2.cs).
+// Case as clients of it, the 19 steps of its workflow in order (AllApps/MMM/Client/Uc2.cs).
 // Each step is recorded with the HTTP status and PA Status it got, and with what can
 // be seen of the M-Environment after it - where the Personae are, which Locations are
 // perceptible - which is what the viewer draws. Recorded too are the checks the

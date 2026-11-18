@@ -16,11 +16,11 @@
 # Faults of the published schemas - a $ref to nothing - are corrected here, and each
 # correction is reported (FIXES). Run from the repository root:
 #
-#   python MMM/Api/build_openapi.py          writes MMM/Api/MMM-API.json and a report
+#   python AllApps/MMM/Api/build_openapi.py          writes AllApps/MMM/Api/MMM-API.json and a report
 import json, os, re, sys
 from collections import OrderedDict
 
-ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..")
+ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..")
 SCHEMAS = os.path.normpath(os.path.join(ROOT, "schemas"))
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "MMM-API.json")
 BASE = "https://schemas.mpai.community/"
@@ -203,7 +203,7 @@ paths["/api/v2.2/m-instance/capabilities"] = get("M-Instance Capabilities: Profi
 doc = OrderedDict([
     ("openapi", "3.1.0"),
     ("info", {"title": "MPAI-MMM API", "version": "2.2",
-              "description": "The API of MMM-TEC V2.2: one POST per Process Action, read-only Items and Capabilities. Built from the MMM-TEC V2.2 JSON Schemas by MMM/Api/build_openapi.py; its component schemas contain no recursion."}),
+              "description": "The API of MMM-TEC V2.2: one POST per Process Action, read-only Items and Capabilities. Built from the MMM-TEC V2.2 JSON Schemas by AllApps/MMM/Api/build_openapi.py; its component schemas contain no recursion."}),
     ("servers", [{"url": "https://localhost:7099"}]),
     ("security", [{"bearer": []}]),
     ("paths", paths),

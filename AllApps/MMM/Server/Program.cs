@@ -4,7 +4,7 @@ using Mpai.Mmm.Client;
 using Mpai.Mmm.Server;
 using Microsoft.Extensions.Hosting;
 
-// THE MMM SERVER, ALONE. dotnet run --project MMM/Server -- [url] [--demo [seconds|manual]]
+// THE MMM SERVER, ALONE. dotnet run --project AllApps/MMM/Server -- [url] [--demo [seconds|manual]]
 // The M-Instance of Use Case 2 behind the MMM-API, its viewer at <url>/viewer/.
 // --demo: Use Case 2 is played against it a step at a time (default 3 s apart), for
 // the viewer to show; the server stays up after it.
@@ -19,19 +19,19 @@ var pause = demo >= 0 && !manual && demo + 1 < args.Length && double.TryParse(ar
 const int Steps = 19;
 
 var repo = AppContext.BaseDirectory;
-while (repo is not null && !Directory.Exists(Path.Combine(repo, "MMM", "Viewer"))) repo = Path.GetDirectoryName(repo.TrimEnd(Path.DirectorySeparatorChar));
-if (repo is null) { Console.Error.WriteLine("The repository (MMM/Viewer, schemas) is not above this program."); return 1; }
+while (repo is not null && !Directory.Exists(Path.Combine(repo, "AllApps", "MMM", "Viewer"))) repo = Path.GetDirectoryName(repo.TrimEnd(Path.DirectorySeparatorChar));
+if (repo is null) { Console.Error.WriteLine("The repository (AllApps/MMM/Viewer, schemas) is not above this program."); return 1; }
 
 var m = new MInstance(Path.Combine(repo, "schemas"));
 // --door: "open the door when the bell rings" (M3313), its page at <url>/viewer/door.html.
 if (args.Contains("--door")) return await DoorUseCase.RunAsync(m, url, repo, args);
-// --world: the world of the MMM - the Metaverse Square, buildings with doors, the MPAI building with its meeting room - instead of Use Case 2 (MMM/World/world.json).
+// --world: the world of the MMM - the Metaverse Square, buildings with doors, the MPAI building with its meeting room - instead of Use Case 2 (AllApps/MMM/World/world.json).
 // --code 123456 (or MMM_CODE): nobody gets anything from the server without the meeting code. --invite A,B,C: the Users that are invited from the start, the first the convener.
 var worldMode = args.Contains("--world");
 string? Arg(string name) { var i = Array.IndexOf(args, name); return i >= 0 && i + 1 < args.Length ? args[i + 1] : null; }
 var code = Arg("--code") ?? Environment.GetEnvironmentVariable("MMM_CODE");
 var invite = (Arg("--invite") ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-// --identity: no meeting code; whoever asks is named (MMM/Server/Identity.cs). --chair Name (default: the first of --invite) is whoever browses on this machine. --invites Anna=token,Bruno=token: the
+// --identity: no meeting code; whoever asks is named (AllApps/MMM/Server/Identity.cs). --chair Name (default: the first of --invite) is whoever browses on this machine. --invites Anna=token,Bruno=token: the
 // personal links of the guests the chair invited (?invite=token). --guests login=Name: the same for people who come through `tailscale serve`. --visitors: anybody else may come in as a visitor,
 // to the atrium, which is public, and no further; without it nobody else is answered.
 var chairName = Arg("--chair") ?? invite.FirstOrDefault() ?? "Chair";
@@ -49,8 +49,8 @@ if (worldMode)
 {
     if (identity is not null) Mpai.Mmm.Client.Meeting.PlannedSeats = invite.Length + 1;      // the people invited and the Secretary: the room has that many seats
     World.Setup(m, repo);
-    // The Personae a registering human chooses from (MMM/Viewer/personae/catalogue): the Rocketbox avatars.
-    var catalogue = Path.Combine(repo, "MMM", "Viewer", "personae", "catalogue", "catalogue.json");
+    // The Personae a registering human chooses from (AllApps/MMM/Viewer/personae/catalogue): the Rocketbox avatars.
+    var catalogue = Path.Combine(repo, "AllApps", "MMM", "Viewer", "personae", "catalogue", "catalogue.json");
     if (File.Exists(catalogue))
     {
         var entries = JsonNode.Parse(File.ReadAllText(catalogue))!.AsArray();
@@ -127,7 +127,7 @@ void Next()
 
 var internalKey = Guid.NewGuid().ToString("N");        // how the services of the M-Instance (the AVS Service, the Secretary, the ASR Service) get past the meeting code: they are not guests
 var avatarFolder = Path.Combine(repo, "Apps", "ABV", "AVS", "Server", "avatars");
-var app = MmmServer.Build(m, url, Path.Combine(repo, "MMM", "Viewer"), manual ? Next : null, manual ? Back : null, manual ? Shown : null, code, Directory.Exists(avatarFolder) ? avatarFolder : null, internalKey, identity, officerNames);
+var app = MmmServer.Build(m, url, Path.Combine(repo, "AllApps", "MMM", "Viewer"), manual ? Next : null, manual ? Back : null, manual ? Shown : null, code, Directory.Exists(avatarFolder) ? avatarFolder : null, internalKey, identity, officerNames);
 await app.StartAsync();
 Console.WriteLine($"M-Instance {m.ID} on {url}; its viewer at {url.TrimEnd('/')}/viewer/");
 // The meeting's Processes: the AVS Service and the Secretary, acting through the MMM-API like any Process.

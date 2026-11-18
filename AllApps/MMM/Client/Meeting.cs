@@ -39,7 +39,7 @@ public static class Meeting
     public static int? PlannedSeats { get; set; }
 
     // The seats are given in the order the world lists them (the Secretary, who takes its seat first, is at the side; the first two people sit across the table and see each other). Nobody is in front of a
-    // shared screen in the view of whoever looks at it: the viewer draws aside the Personae between the viewer and the wall it faces (MMM/Viewer/index.html, compactSeat).
+    // shared screen in the view of whoever looks at it: the viewer draws aside the Personae between the viewer and the wall it faces (AllApps/MMM/Viewer/index.html, compactSeat).
     public static IEnumerable<(string ID, double X, double Y, double Yaw)> InOrderFor(string user, IEnumerable<(string ID, double X, double Y, double Yaw)> seats) => seats;
 
     // The seats kept when only n are planned: the first n of the world's, in its order.

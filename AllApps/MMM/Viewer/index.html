@@ -127,7 +127,7 @@ function label(text) {
 
 
 // ---------------------------------------------------------------- the world (?world): the Square, the buildings (glTF), their doors
-// MMM/World/world.json says where everything is: the Square, the buildings with their walls and doors, the rooms, the seats, the acoustics of the meeting room. The buildings are
+// AllApps/MMM/World/world.json says where everything is: the Square, the buildings with their walls and doors, the rooms, the seats, the acoustics of the meeting room. The buildings are
 // 3D Locations, rendered by their glTF; a door is a Right - the client asks the M-Instance to move its Persona through it (MM-Move) and the M-Instance refuses (403) a User that
 // has no Right to the Location behind it. What stops a walker is the walls; the door is shut until the M-Instance has let the Persona through.
 const W = new URLSearchParams(location.search).has('world') ? await (await fetch('world/world.json', { cache: 'no-store' })).json() : null;
@@ -205,7 +205,7 @@ function room(t) {
 }
 
 // ---------------------------------------------------------------- Personae
-// Their 3D Models (Rocketbox, MMM/Viewer/personae): the opacity material made
+// Their 3D Models (Rocketbox, AllApps/MMM/Viewer/personae): the opacity material made
 // transparent; measured as their skeleton poses them; arms brought down from the
 // T-pose they come in.
 const loader = new GLTFLoader(); const models = new Map();
@@ -361,7 +361,7 @@ async function persona(t) {
 const SIT_DROP = 0.45;
 const ELBOW_DROP = 0;   // the elbow (and with it the forearm and the upper arm) is this far (m) lower than the table's top plus the thickness of the forearm
 const HAND_SINK = 0.01;   // the lowest point of a hand on the table is this far (m) below its top, so that from a low eye it can never look as if it hovered
-const TABLE_REACH = 0.58;   // from the Persona's seat to where its wrists rest: the table's edge is 0.5 m ahead, the palms lie beyond it (SEAT_R - TABLE_R in MMM/World/make_world.py)
+const TABLE_REACH = 0.58;   // from the Persona's seat to where its wrists rest: the table's edge is 0.5 m ahead, the palms lie beyond it (SEAT_R - TABLE_R in AllApps/MMM/World/make_world.py)
 function sitPose(g, on) {
   const L = g.userData.legs; if (!L || !!g.userData.sitting === on) return; g.userData.sitting = on; g.userData.handRaised = false;
   for (const k of ['lt', 'rt', 'lc', 'rc']) { const b = L[k]; if (b) b.quaternion.copy(b.userData.base ??= b.quaternion.clone()); }
@@ -692,7 +692,7 @@ const screenObject = (id, proto) => ({ Header: 'OSD-BVO-V1.5', MInstanceID: 'MI1
   VisualQualifier: { Header: 'TFA-VIQ-V1.5', MInstanceID: 'MI1', VisualQualifierID: id + '-Q', SubTypes: {}, Formats: {}, Attributes: { Source: { Real: 'Raster' } } } });
 
 // THE SCREEN HELPER. The browser shows a bar of its own ("Stop sharing") when a page captures a screen, and a page cannot take it away. The Screen Helper is a small program on the sharer's machine
-// (MMM/ScreenHelper): the sharer chooses in its window what to share, and it sends the picture to the M-Instance as the page would, with no browser capture at all. If it is running, the buttons
+// (AllApps/MMM/ScreenHelper): the sharer chooses in its window what to share, and it sends the picture to the M-Instance as the page would, with no browser capture at all. If it is running, the buttons
 // use it; if not, the browser's own capture is the way, bar included.
 const HELPER = 'http://127.0.0.1:7391';
 async function helperCall(path, body) {

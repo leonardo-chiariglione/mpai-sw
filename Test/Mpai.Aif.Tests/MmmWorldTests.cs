@@ -7,7 +7,7 @@ using Mpai.Mmm.Server;
 
 namespace Mpai.Aif.Tests;
 
-// THE WORLD OF THE MMM (MMM/World/world.json, the glTF buildings): the Metaverse Square, the MPAI building (a public atrium, and wings of rooms: the members', the offices of MPAI, the meeting rooms of the groups), a library and a cafe. A building is a Location,
+// THE WORLD OF THE MMM (AllApps/MMM/World/world.json, the glTF buildings): the Metaverse Square, the MPAI building (a public atrium, and wings of rooms: the members', the offices of MPAI, the meeting rooms of the groups), a library and a cafe. A building is a Location,
 // its rooms are Locations in it, a door is a Right: the AVS Service gives it to the Users it invites, for the meeting - the rights carry the period of the meeting and are
 // withdrawn when it ends - and the others are refused (403). All through the MMM-API, as the browser client does it.
 [Trait("Group", "Fast")]
@@ -105,7 +105,7 @@ public class MmmWorldTests
                     foreach (var t in new[] { -0.8, 0, 0.8 })                      // a walker (30 cm) passes the door: nothing of the walls is in the way, outside, in the opening or inside
                         Assert.False(Blocked(x + along.Item1 * t, y + along.Item2 * t, solids), $"{d["id"]}: blocked at {t}");
                 }
-                var glb = File.ReadAllBytes(Path.Combine(Repository.Root, "MMM", "Viewer", (string)b["model"]!));
+                var glb = File.ReadAllBytes(Path.Combine(Repository.Root, "AllApps", "MMM", "Viewer", (string)b["model"]!));
                 Assert.Equal("glTF", Encoding.ASCII.GetString(glb, 0, 4));
                 var jsonLength = BitConverter.ToInt32(glb, 12);
                 var gltf = JsonNode.Parse(Encoding.UTF8.GetString(glb, 20, jsonLength))!;

@@ -95,11 +95,11 @@ public sealed class DoorUseCase
     public const string Table = "Table";
     private static readonly double[] TableAt = [0.8, -0.4];
 
-    // dotnet run --project MMM/Server -- [url] --door [--llm llama3.2:3b]: the M-Instance of the door, its page at <url>/viewer/door.html.
+    // dotnet run --project AllApps/MMM/Server -- [url] --door [--llm llama3.2:3b]: the M-Instance of the door, its page at <url>/viewer/door.html.
     public static async Task<int> RunAsync(MInstance m, string url, string repo, string[] args)
     {
         Setup(m);
-        var app = MmmServer.Build(m, url, Path.Combine(repo, "MMM", "Viewer"));
+        var app = MmmServer.Build(m, url, Path.Combine(repo, "AllApps", "MMM", "Viewer"));
         using var voice = new SummaryServices(repo);
         var llm = Array.IndexOf(args, "--llm") is var k and >= 0 && k + 1 < args.Length ? args[k + 1] : "llama3.2:3b";   // the language model of Basic Knowledge
         var whisper = new WhisperAsr(repo);

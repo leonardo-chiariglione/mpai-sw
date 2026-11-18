@@ -14,19 +14,19 @@ a Persona (a Rocketbox avatar of a catalogue of 113: it does not bring its own);
 | In the world | In MMM-TEC |
 |---|---|
 | The Square | a Location of two dimensions (MVS) |
-| The MPAI building, its atrium, its wings and rooms | Locations of three dimensions: a Location Object (the building) with Sub-Locations; the atrium is a public one; rendered by a glTF 3D Model (`MMM/Viewer/world/mpai.glb`) |
+| The MPAI building, its atrium, its wings and rooms | Locations of three dimensions: a Location Object (the building) with Sub-Locations; the atrium is a public one; rendered by a glTF 3D Model (`AllApps/MMM/Viewer/world/mpai.glb`) |
 | A door | a Right: the Right to move one's Persona to the Location behind it (MM-Move). Whoever has none is refused: 403 |
 | The meeting | the AVS Service gives the Users the chair invites a seat, the right to the doors (the wing, the room) and the right to speak, **for the meeting**: the Rights carry its period (`RightsTime`): after it the participants have no Right in the room |
 | The registration | Register (RGSrvc), as the Register page of MMM-TEC V2.2 says: the human selects Registration and is shown the options (Account Levels *Visitor*, *Participant* and *MPAI Officer*, all free: no Service Pricing Model; the Officer level - the Rights to every place of the building, the offices and the members' rooms included - is offered to the chair and to the people the chair designates, `-Officers`), selects a level, gives its Personal Data (first name, last name, email), and chooses its Persona among the Items the Account makes available (the catalogue; `PersonaChoice`). The Account carries `AccountLevel` and its Items. A Visitor Account has no seat in a meeting; a level not offered, or a Persona not in the catalogue, is refused (422). Nothing is uploaded |
 | The acoustics of the meeting room | an Acoustic Profile (CAE3, Scene: reverberation by frequency, early reflections, absorption, diffusion) in the Attributes of the room's Location Qualifier; the client renders the speech of the room with it |
 | The Persona walking | MM-Move; the client captures what it sees with MM-Capture |
 
-`MMM/World/make_world.py` writes the building and `world.json` (where everything is, the walls, the doors, the seats, the acoustics). `MMM/World/make_catalogue.py` makes the catalogue of Personae
-(`MMM/Viewer/personae/catalogue`, from the Rocketbox repository; not kept in git). `MMM/Client/World.cs` makes the Locations from `world.json`.
+`AllApps/MMM/World/make_world.py` writes the building and `world.json` (where everything is, the walls, the doors, the seats, the acoustics). `AllApps/MMM/World/make_catalogue.py` makes the catalogue of Personae
+(`AllApps/MMM/Viewer/personae/catalogue`, from the Rocketbox repository; not kept in git). `AllApps/MMM/Client/World.cs` makes the Locations from `world.json`.
 
 ## Running it
 
-**Through Tailscale (the way for the guests).** `AllApps\MMM\MMM meeting.bat`, or `MMM\Run-Meeting.bat -Chair Leonardo -Guests "anna@example.com=Anna,..." -Until 19:00`.
+**Through Tailscale (the way for the guests).** `AllApps\MMM\MMM meeting.bat`, or `AllApps\MMM\Run-Meeting.bat -Chair Leonardo -Guests "anna@example.com=Anna,..." -Until 19:00`.
 Tailscale tells the server who is asking, so nothing is typed and there is no code: whoever browses on this PC is the chair; a guest the chair listed (their Tailscale login = their name in the
 meeting) may go into the meeting room, for the meeting; any other login on the tailnet is a visitor, who may go into the atrium and no further. Nothing that does not come by Tailscale is answered.
 Needs: Tailscale on this PC and on each guest's, https certificates enabled for the tailnet (the admin console: DNS, HTTPS certificates: the microphone needs https), each guest invited to the tailnet
@@ -39,8 +39,8 @@ Closing the browser does not lose the place: coming back, the Persona is where i
 The chair has a button, bottom left: *End the meeting for everyone* (two clicks). The rights of everybody end, the Personae are sent out to the Square, nobody gets into the wing again.
 The meeting ends by itself at its time as well.
 
-**On this PC only**, no Tailscale: `dotnet run --project MMM/Server -- http://127.0.0.1:7099 --world --invite Leonardo,Anna,Bruno,Carla --hours 3`, and open
-`http://127.0.0.1:7099/viewer/?world=1&mic=1&user=Leonardo`. (`MMM\Run-Conference.bat` is the older way for guests outside the network: a meeting code and a Cloudflare tunnel.)
+**On this PC only**, no Tailscale: `dotnet run --project AllApps/MMM/Server -- http://127.0.0.1:7099 --world --invite Leonardo,Anna,Bruno,Carla --hours 3`, and open
+`http://127.0.0.1:7099/viewer/?world=1&mic=1&user=Leonardo`. (`AllApps\MMM\Run-Conference.bat` is the older way for guests outside the network: a meeting code and a Cloudflare tunnel.)
 
 ## Sharing a screen
 

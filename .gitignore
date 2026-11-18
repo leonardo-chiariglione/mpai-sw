@@ -97,11 +97,11 @@ Apps/ABV/AVS/Server/obj/
 /Test/eae-sep-png/
 /Test/*.pptx
 
-# The Persona catalogue (113 Rocketbox avatars, 629 MB): made by MMM/World/make_catalogue.py, not kept in git
-MMM/Viewer/personae/catalogue/*.glb
-MMM/tools/cloudflared.exe
-MMM/tools/FBX2glTF-windows-x86_64/
-MMM/tools/Microsoft-Rocketbox/
+# The Persona catalogue (113 Rocketbox avatars, 629 MB): made by AllApps/MMM/World/make_catalogue.py, not kept in git
+AllApps/MMM/Viewer/personae/catalogue/*.glb
+AllApps/MMM/tools/cloudflared.exe
+AllApps/MMM/tools/FBX2glTF-windows-x86_64/
+AllApps/MMM/tools/Microsoft-Rocketbox/
 
 # machine-local data too large for the repository (voice engine, datasets, photographs): see MpaiPaths.Data
 /Data/
@@ -121,5 +121,5 @@ Test/Data/Fl/chex-densenet121-features.onnx*
 
 # OSD-TMA test video (AMI Meeting Corpus, CC BY 4.0, 30.9 MB): kept out of git; Test/Data/TMA/README.md says where it comes from and how it was made
 Test/Data/TMA/*.mp4
-# Written by MMM/Run-Meeting.ps1 at each meeting (the address of the meeting, for the join page)
-MMM/Join/meeting.json
+# Written by AllApps/MMM/Run-Meeting.ps1 at each meeting (the address of the meeting, for the join page)
+AllApps/MMM/Join/meeting.json

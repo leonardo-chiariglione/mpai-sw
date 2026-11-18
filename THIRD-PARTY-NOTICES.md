@@ -5,7 +5,7 @@ following files, made by others, are included under their own licences.
 
 | Files | What | Licence |
 |---|---|---|
-| `MMM/Viewer/personae/Persona1.glb`, `Persona2.glb` | The Personae of the MMM viewer: Microsoft Rocketbox avatars Female_Adult_01 and Male_Adult_01, converted to glTF (`MMM/Viewer/personae/README.md`) | MIT, Copyright (c) 2020 Microsoft - `MMM/Viewer/personae/LICENSE-Rocketbox.md` |
+| `AllApps/MMM/Viewer/personae/Persona1.glb`, `Persona2.glb` | The Personae of the MMM viewer: Microsoft Rocketbox avatars Female_Adult_01 and Male_Adult_01, converted to glTF (`AllApps/MMM/Viewer/personae/README.md`) | MIT, Copyright (c) 2020 Microsoft - `AllApps/MMM/Viewer/personae/LICENSE-Rocketbox.md` |
 | `Apps/ABV/AVS/Server/avatars/Persona1.glb`, `Persona2.glb`, `Male03.glb`, `Male05.glb`, `Male08.glb`, `Thalia.glb` | The avatars of the Avatar Videoconference demo: Microsoft Rocketbox avatars converted to glTF (FBX2glTF; the Rocketbox `Bip01` skeleton). `Thalia.glb` is the Secretary's avatar of that demo and is not the Ready Player Me avatar of the Thalia client (`AIF/UserAgent/Assets/cav-avatar.glb`) | MIT, Copyright (c) 2020 Microsoft - `Apps/ABV/AVS/Server/avatars/LICENSE-Rocketbox.txt` |
 | `AIF/UserAgent/Assets/cav-avatar.glb` | Thalia's avatar, made with Ready Player Me | Creative Commons Attribution-NonCommercial-ShareAlike 4.0 (CC BY-NC-SA 4.0), https://creativecommons.org/licenses/by-nc-sa/4.0/ |
 

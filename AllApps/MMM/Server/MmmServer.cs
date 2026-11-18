@@ -19,7 +19,7 @@ namespace Mpai.Mmm.Server;
 // by MMM-TEC.
 public static class MmmServer
 {
-    // viewer: the folder of the viewer (MMM/Viewer), served at /viewer/ with the
+    // viewer: the folder of the viewer (AllApps/MMM/Viewer), served at /viewer/ with the
     // M-Instance as it can be seen at /viewer/state; null, no viewer.
     // onNext, onBack: what the viewer's "next step" (Space, up arrow, a click) and "previous
     // step" (down arrow) do in a manual demonstration; state: what the viewer is shown instead
@@ -33,7 +33,7 @@ public static class MmmServer
         builder.WebHost.UseUrls(url);
         var app = builder.Build();
         // THE JOIN PAGE (2026-11-18): the invitation emails link to it, at a stable address (Tailscale Funnel forwards its /mmm to /join here), and it sends the guest on to the address
-        // of the meeting. It holds nothing private, so it is answered to anybody, before any identity or code: join.html and meeting.json of MMM/Join, and nothing else.
+        // of the meeting. It holds nothing private, so it is answered to anybody, before any identity or code: join.html and meeting.json of AllApps/MMM/Join, and nothing else.
         var joinFolder = viewer is null ? null : Path.Combine(Path.GetDirectoryName(Path.GetFullPath(viewer).TrimEnd('/', '\\'))!, "Join");
         app.Use(async (ctx, next) =>
         {

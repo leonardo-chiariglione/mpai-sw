@@ -141,7 +141,7 @@ function aimBeam(mesh, from, to, radius) {
   mesh.scale.set(radius, L, radius);
 }
 
-// ------------------------------------------------------------------ Personae (Rocketbox, T-pose; posing adapted from MMM/Viewer)
+// ------------------------------------------------------------------ Personae (Rocketbox, T-pose; posing adapted from AllApps/MMM/Viewer)
 const loader = new GLTFLoader(); const gltfs = new Map();
 const loadModel = file => { if (!gltfs.has(file)) gltfs.set(file, loader.loadAsync('/personae/' + file)); return gltfs.get(file); };
 const boneOf = (root, re) => { let b = null; root.traverse(o => { if (o.isBone && re.test(o.name)) b = o; }); return b; };

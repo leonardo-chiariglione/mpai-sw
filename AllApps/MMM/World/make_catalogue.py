@@ -1,6 +1,6 @@
 """The Persona catalogue of the MMM: every Microsoft Rocketbox avatar (MIT licence) as a glTF binary, for the viewer.
 
-  python MMM/World/make_catalogue.py [rocketbox folder] [output folder] [--only NAME ...]
+  python AllApps/MMM/World/make_catalogue.py [rocketbox folder] [output folder] [--only NAME ...]
 
 Per avatar (Assets/Avatars/<Group>/<Name>): its textures to 1024 x 1024 (colour and normal maps JPEG, the opacity map PNG with its
 alpha) next to a copy of the _facial.fbx, under the names the FBX gives them, then FBX2glTF --binary. The result is <output>/<Name>.glb
@@ -10,7 +10,7 @@ import json, os, shutil, subprocess, sys, tempfile
 from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-# The Rocketbox repository (git clone https://github.com/microsoft/Microsoft-Rocketbox, about 14 GB: not kept in the repository), looked for in MMM/tools, or in the folder named by the environment variable ROCKETBOX (the 'Assets/Avatars' folder of the clone).
+# The Rocketbox repository (git clone https://github.com/microsoft/Microsoft-Rocketbox, about 14 GB: not kept in the repository), looked for in AllApps/MMM/tools, or in the folder named by the environment variable ROCKETBOX (the 'Assets/Avatars' folder of the clone).
 ROOT = next((p for p in [os.path.join(HERE, '..', 'tools', 'Microsoft-Rocketbox', 'Assets', 'Avatars'), os.environ.get('ROCKETBOX', '')] if os.path.isdir(p)), None)
 TOOL = os.path.join(HERE, '..', 'tools', 'FBX2glTF-windows-x86_64', 'FBX2glTF-windows-x86_64.exe')   # FBX2glTF v0.13.1, kept with the repository
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Viewer', 'personae', 'catalogue')

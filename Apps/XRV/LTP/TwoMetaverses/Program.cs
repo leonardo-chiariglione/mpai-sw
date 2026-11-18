@@ -374,8 +374,8 @@ static class Video
                         try { ctx.Response.OutputStream.Write(body); } catch { }
                         ctx.Response.Close(); return;
                     }
-                    string? file = path.StartsWith("lib/") ? Path.Combine(root, "MMM", "Viewer", path)
-                                 : path.StartsWith("personae/") ? Path.Combine(root, "MMM", "Viewer", path)
+                    string? file = path.StartsWith("lib/") ? Path.Combine(root, "AllApps", "MMM", "Viewer", path)
+                                 : path.StartsWith("personae/") ? Path.Combine(root, "AllApps", "MMM", "Viewer", path)
                                  : path == "log.json" ? Path.Combine(outDir, "log.json")
                                  : path.StartsWith("sounds/") ? Path.Combine(root, "Test", "Data", "XRV", "LongerEvening", path[7..])
                                  : Path.Combine(stage, path.Length == 0 ? "index.html" : path);

@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Mpai.Mmm.Server: the MMM-API of an M-Instance (MMM/Api/MMM-API.json), on
+  <!-- Mpai.Mmm.Server: the MMM-API of an M-Instance (AllApps/MMM/Api/MMM-API.json), on
        Kestrel. Run alone (Program.cs: url, schemas folder) or started in-process
        by the tests. -->
 
@@ -24,15 +24,15 @@
     <!-- Use Case 2, which the server can play (demo mode) -->
     <ProjectReference Include="..\Client\Mpai.Mmm.Client.csproj" />
     <!-- The summary on request: the language model (Ollama, of Entity Dialogue Processing) and the voices of Text-to-Speech -->
-    <ProjectReference Include="..\..\AIMs\MMC\V2.5\EDP\Mpai.Mmc.Edp.csproj" />
-    <ProjectReference Include="..\..\AIMs\MMC\V2.5\TTS\Mpai.Mmc.Tts.csproj" />
+    <ProjectReference Include="..\..\..\AIMs\MMC\V2.5\EDP\Mpai.Mmc.Edp.csproj" />
+    <ProjectReference Include="..\..\..\AIMs\MMC\V2.5\TTS\Mpai.Mmc.Tts.csproj" />
     <!-- What the Secretary understands: the JSON Interface of the Voice Command Interface -->
-    <ProjectReference Include="..\..\AIMs\MMC\V2.5\JSI\Mpai.Mmc.Jsi.csproj" />
+    <ProjectReference Include="..\..\..\AIMs\MMC\V2.5\JSI\Mpai.Mmc.Jsi.csproj" />
     <!-- "Open the door when the bell rings" (the door mode): the A-User Module of PGM-AUA on the AIF Controller, through the Controller API -->
-    <ProjectReference Include="..\..\AIF\Controller\AIF.Controller.csproj" />
-    <ProjectReference Include="..\..\AIF\ControllerApi\Mpai.Aif.Api.csproj" />
-    <ProjectReference Include="..\..\AIMs\PGM\V1.0\Mpai.Pgm.csproj" />
-    <ProjectReference Include="..\..\AIMs\PAF\V1.6\PDX\Mpai.Paf.Pdx.csproj" />
+    <ProjectReference Include="..\..\..\AIF\Controller\AIF.Controller.csproj" />
+    <ProjectReference Include="..\..\..\AIF\ControllerApi\Mpai.Aif.Api.csproj" />
+    <ProjectReference Include="..\..\..\AIMs\PGM\V1.0\Mpai.Pgm.csproj" />
+    <ProjectReference Include="..\..\..\AIMs\PAF\V1.6\PDX\Mpai.Paf.Pdx.csproj" />
   </ItemGroup>
 
 </Project>

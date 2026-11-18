@@ -102,7 +102,7 @@ const knob = new THREE.Mesh(new THREE.SphereGeometry(0.04), new THREE.MeshStanda
 const bellButton = box(0.08, 0.12, 0.03, 0xd4af37, DW / 2 + 0.2, 1.3, S / 2 + T / 2 + 0.02);
 let doorOpen = false, doorAngle = 0;
 
-// ---------------------------------------------------------------- Personae (Rocketbox, MMM/Viewer/personae): arms down, walk, wave, mouth
+// ---------------------------------------------------------------- Personae (Rocketbox, AllApps/MMM/Viewer/personae): arms down, walk, wave, mouth
 const loader = new GLTFLoader(); const models = new Map();
 const boneOf = (root, re) => { let b = null; root.traverse(o => { if (o.isBone && re.test(o.name)) b = o; }); return b; };
 const placeOf = (frame, bone) => frame.worldToLocal(bone.getWorldPosition(new THREE.Vector3()));
@@ -183,7 +183,7 @@ function pose(p, dt) {
   }
 }
 
-// ---------------------------------------------------------------- the mouth from the speech: the viseme method of MMM/Viewer/index.html, on the speech of the Portable Avatar
+// ---------------------------------------------------------------- the mouth from the speech: the viseme method of AllApps/MMM/Viewer/index.html, on the speech of the Portable Avatar
 const VIS_STEP = 256, LPC = 12, VIS_COUNT = 15;                                   // samples (16 ms at 16 kHz); the order of the envelope; the visemes
 const GRID = Array.from({ length: 70 }, (_, i) => 250 + 50 * i);
 const TAB = GRID.map(h => Array.from({ length: LPC + 1 }, (_, k) => [Math.cos(2 * Math.PI * h * k / 16000), Math.sin(2 * Math.PI * h * k / 16000)]));

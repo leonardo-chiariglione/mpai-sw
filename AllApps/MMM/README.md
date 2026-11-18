@@ -10,7 +10,7 @@ stripped-down Use Case 2.
 
 ## Demonstration: "Open the door when the bell rings" (M3313)
 
-`MMM\Run-Door.cmd` starts the M-Instance of a room with one door and opens `/viewer/door.html`. The Host User is an
+`AllApps\MMM\Run-Door.cmd` starts the M-Instance of a room with one door and opens `/viewer/door.html`. The Host User is an
 A-User App: its User Agent (`Server/DoorUseCase.cs`) and the A-User Module of PGM-AUA (`1PGM-ATU-V1.0-I01`, the AIMs of
 `AIMs/PGM/V1.0`) that the AIF Controller runs, reached through the Controller API only. The human writes (or speaks:
 Whisper) "Open the door if a bell rings and greet whoever is at the door". Basic Knowledge (Ollama, `llama3.2:3b`) finds
@@ -24,11 +24,11 @@ then asks Basic Knowledge for the words that follow and requests MM-Animate With
 
 ## Demonstration: Use Case 2, "Friends meet in the metaverse"
 
-`MMM\Run-Demo.cmd` (it runs `Run-Demo.ps1` without needing PowerShell's script policy
+`AllApps\MMM\Run-Demo.cmd` (it runs `Run-Demo.ps1` without needing PowerShell's script policy
 changed) starts an M-Instance and its 3-D viewer and opens the viewer in the browser; the
 presenter shows the 19 steps of the Use Case: **Space, up arrow or a click** for the next
 step, **down arrow** for the previous one (the scene as it was shown; nothing is undone in the
-M-Instance). `MMM\Run-Demo.cmd 4` plays them by itself, 4 s a step. Friend1 operates from the
+M-Instance). `AllApps\MMM\Run-Demo.cmd 4` plays them by itself, 4 s a step. Friend1 operates from the
 Universe, so nothing of it is drawn until step 6, when its captured data has been identified;
 Friend2 is already at its place when the Use Case begins. Everything is local: the
 viewer needs no internet (its three.js is in `Viewer/lib`, MIT licence).
@@ -72,5 +72,5 @@ built, not in the schemas:
 that every `$ref` resolves. After a change to the schemas:
 
 ```
-python MMM/Api/build_openapi.py
+python AllApps/MMM/Api/build_openapi.py
 ```

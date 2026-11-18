@@ -1,5 +1,5 @@
 # "OPEN THE DOOR WHEN THE BELL RINGS" (M3313), one command:
-#   MMM\Run-Door.ps1
+#   AllApps\MMM\Run-Door.ps1
 # Starts the M-Instance of the room and the door, with the Host User (an A-User App: User Agent + the A-User Module of
 # PGM-AUA on the AIF Controller) and the Visitor, and opens its page in the default browser. On the page: "Enter the room",
 # then send (or speak) the command when the page says "The A-User is ready.", then let the Visitor knock or ring.

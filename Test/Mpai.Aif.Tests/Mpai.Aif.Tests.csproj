@@ -52,9 +52,9 @@
     <ProjectReference Include="..\..\AIMs\PGM\V1.0\Mpai.Pgm.csproj" />
     <ProjectReference Include="..\..\AIMs\OSD\V1.5\TMA\Mpai.Osd.Tma.csproj" />
     <ProjectReference Include="..\..\AIMs\PAF\V1.6\PDX\Mpai.Paf.Pdx.csproj" />
-    <ProjectReference Include="..\..\MMM\Instance\Mpai.Mmm.csproj" />
-    <ProjectReference Include="..\..\MMM\Server\Mpai.Mmm.Server.csproj" />
-    <ProjectReference Include="..\..\MMM\Client\Mpai.Mmm.Client.csproj" />
+    <ProjectReference Include="..\..\AllApps\MMM\Instance\Mpai.Mmm.csproj" />
+    <ProjectReference Include="..\..\AllApps\MMM\Server\Mpai.Mmm.Server.csproj" />
+    <ProjectReference Include="..\..\AllApps\MMM\Client\Mpai.Mmm.Client.csproj" />
     <ProjectReference Include="..\..\AIMs\MMC\V2.5\OCR\Mpai.Mmc.Ocr.csproj" />
     <ProjectReference Include="..\..\AIMs\CAE3\V1.0\AUS\Mpai.Cae.Aus.csproj" />
     <ProjectReference Include="..\..\AIMs\CAE3\V1.0\AOE\Mpai.Cae.Aoe.csproj" />

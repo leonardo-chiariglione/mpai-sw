@@ -3,7 +3,7 @@
  "info": {
   "title": "MPAI-MMM API",
   "version": "2.2",
-  "description": "The API of MMM-TEC V2.2: one POST per Process Action, read-only Items and Capabilities. Built from the MMM-TEC V2.2 JSON Schemas by MMM/Api/build_openapi.py; its component schemas contain no recursion."
+  "description": "The API of MMM-TEC V2.2: one POST per Process Action, read-only Items and Capabilities. Built from the MMM-TEC V2.2 JSON Schemas by AllApps/MMM/Api/build_openapi.py; its component schemas contain no recursion."
  },
  "servers": [
   {

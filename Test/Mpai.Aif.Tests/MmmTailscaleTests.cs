@@ -55,7 +55,7 @@ public class MmmTailscaleTests
         m.Catalogue = new HashSet<string> { "Female_Adult_01", "Male_Adult_02" };
         m.CatalogueEntries = new JsonArray(new JsonObject { ["Name"] = "Female_Adult_01", ["Group"] = "Adults", ["Gender"] = "Female" }, new JsonObject { ["Name"] = "Male_Adult_02", ["Group"] = "Adults", ["Gender"] = "Male" });
         var identity = new Identity("Leonardo", new Dictionary<string, string> { ["anna@example.com"] = "Anna" }, null, visitors: true);
-        var app = MmmServer.Build(m, "http://127.0.0.1:0", Path.Combine(Repository.Root, "MMM", "Viewer"), identity: identity);
+        var app = MmmServer.Build(m, "http://127.0.0.1:0", Path.Combine(Repository.Root, "AllApps", "MMM", "Viewer"), identity: identity);
         await app.StartAsync();
         try
         {
@@ -95,7 +95,7 @@ public class MmmTailscaleTests
     {
         var m = new MInstance(Repository.Schemas);
         var identity = new Identity("Leonardo", new Dictionary<string, string>());
-        var app = MmmServer.Build(m, "http://127.0.0.1:0", Path.Combine(Repository.Root, "MMM", "Viewer"), identity: identity);
+        var app = MmmServer.Build(m, "http://127.0.0.1:0", Path.Combine(Repository.Root, "AllApps", "MMM", "Viewer"), identity: identity);
         await app.StartAsync();
         try
         {
@@ -114,7 +114,7 @@ public class MmmTailscaleTests
         var m = new MInstance(Repository.Schemas);
         World.Setup(m, Repository.Root);
         var identity = new Identity("Leonardo", new Dictionary<string, string>(), new Dictionary<string, string> { ["tok-anna"] = "Anna", ["tok-pres"] = "President" });
-        var app = MmmServer.Build(m, "http://127.0.0.1:0", Path.Combine(Repository.Root, "MMM", "Viewer"), identity: identity, officers: new HashSet<string> { "President" });
+        var app = MmmServer.Build(m, "http://127.0.0.1:0", Path.Combine(Repository.Root, "AllApps", "MMM", "Viewer"), identity: identity, officers: new HashSet<string> { "President" });
         await app.StartAsync();
         try
         {
@@ -161,7 +161,7 @@ public class MmmInvitationTests
     {
         var m = new MInstance(Repository.Schemas);
         var identity = new Identity("Leonardo", new Dictionary<string, string>(), new Dictionary<string, string> { ["tok-anna"] = "Anna", ["tok-leo"] = "Leonardo" });
-        var app = MmmServer.Build(m, "http://127.0.0.1:0", Path.Combine(Repository.Root, "MMM", "Viewer"), identity: identity);
+        var app = MmmServer.Build(m, "http://127.0.0.1:0", Path.Combine(Repository.Root, "AllApps", "MMM", "Viewer"), identity: identity);
         await app.StartAsync();
         try
         {
@@ -190,7 +190,7 @@ public class MmmInvitationTests
     {
         var m = new MInstance(Repository.Schemas);
         var identity = new Identity("Leonardo", new Dictionary<string, string>(), null, visitors: true);
-        var app = MmmServer.Build(m, "http://127.0.0.1:0", Path.Combine(Repository.Root, "MMM", "Viewer"), identity: identity);
+        var app = MmmServer.Build(m, "http://127.0.0.1:0", Path.Combine(Repository.Root, "AllApps", "MMM", "Viewer"), identity: identity);
         await app.StartAsync();
         try
         {

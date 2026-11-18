@@ -1,11 +1,11 @@
 """The world of the MMM, as files: the buildings as glTF (.glb) and world.json, which says where everything is.
 
-  python MMM/World/make_world.py
+  python AllApps/MMM/World/make_world.py
 
-Writes MMM/Viewer/world/{mpai,library,cafe}.glb and MMM/Viewer/world/world.json. Nothing here is downloaded: the buildings are made of boxes, with walls that
+Writes AllApps/MMM/Viewer/world/{mpai,library,cafe}.glb and AllApps/MMM/Viewer/world/world.json. Nothing here is downloaded: the buildings are made of boxes, with walls that
 have door and window openings, a floor, a ceiling, a table and chairs, and the Rocketbox avatars of the viewer are the people.
 
-Axes: space - x east, y north, z up, metres (MMM/AXES.md). glTF is Y-up, so a point (x, y, z) of space is written as (x, z, -y).
+Axes: space - x east, y north, z up, metres (AllApps/MMM/AXES.md). glTF is Y-up, so a point (x, y, z) of space is written as (x, z, -y).
 The MPAI building's glTF has its origin at the centre of its atrium; a small building's at the centre of its one room: the building is placed in the world by the Location it is.
 """
 import json, math, os, shutil, struct
@@ -66,7 +66,7 @@ class Mesh:
             n = add(b''.join(struct.pack('<3f', *v) for v in nor), 'f', 34962, 5126, 'VEC3', len(nor))
             i = add(b''.join(struct.pack('<I', v) for v in idx), 'I', 34963, 5125, 'SCALAR', len(idx), [min(idx)], [max(idx)])
             prims.append({'attributes': {'POSITION': p, 'NORMAL': n}, 'indices': i, 'material': len(mats) - 1})
-        doc = {'asset': {'version': '2.0', 'generator': 'MMM/World/make_world.py'}, 'scene': 0, 'scenes': [{'nodes': [0]}], 'nodes': [{'mesh': 0}], 'meshes': [{'primitives': prims}],
+        doc = {'asset': {'version': '2.0', 'generator': 'AllApps/MMM/World/make_world.py'}, 'scene': 0, 'scenes': [{'nodes': [0]}], 'nodes': [{'mesh': 0}], 'meshes': [{'primitives': prims}],
                'materials': mats, 'buffers': [{'byteLength': len(bin_)}], 'bufferViews': views, 'accessors': accs}
         js = json.dumps(doc, separators=(',', ':')).encode()
         while len(js) % 4: js += b' '
@@ -144,7 +144,7 @@ CORR = 3.0                  # width of a corridor
 RW, RD = 7.0, 8.0           # a room: 7 m along the corridor, 8 m deep
 DOOR_W = 1.8
 HW = CORR / 2
-MEETING_ROOMS = [('MeetingRoom', 'MMM meeting room')] + [(f'{g}-Room', f'{g} meeting room') for g in ('AIF', 'AIH', 'AIP', 'CAE', 'EVC', 'ISAC', 'MMC', 'NNW', 'PAF', 'XRV')]   # one for each group of MMM/Registry/groups.json
+MEETING_ROOMS = [('MeetingRoom', 'MMM meeting room')] + [(f'{g}-Room', f'{g} meeting room') for g in ('AIF', 'AIH', 'AIP', 'CAE', 'EVC', 'ISAC', 'MMC', 'NNW', 'PAF', 'XRV')]   # one for each group of AllApps/MMM/Registry/groups.json
 MEMBER_ROOMS = [(f'MemberRoom{i}', f"Members' room {i}") for i in range(1, 5)]
 OFFICES = [('Office-President', "President's office"), ('Office-VicePresident', "Vice-president's office"), ('Office-Board', "Board members' office"), ('Office-Secretariat', 'Secretariat')]
 

@@ -1,6 +1,6 @@
 # A CONFERENCE IN THE MMM WORLD, with people who are not on this network:
-#   MMM\Run-Conference.bat                      asks for the names of the participants (the convener first)
-#   MMM\Run-Conference.ps1 -Names Leonardo,Anna,Bruno,Carla,Dario
+#   AllApps\MMM\Run-Conference.bat                      asks for the names of the participants (the convener first)
+#   AllApps\MMM\Run-Conference.ps1 -Names Leonardo,Anna,Bruno,Carla,Dario
 # It starts the M-Instance with its world (the Metaverse Square, the MPAI building with its meeting room, a library and a cafe), closed with a MEETING CODE, and a Cloudflare quick
 # tunnel that gives it a public https address (no account). The server stays closed to the network: only the tunnel leads to it, and nobody gets in without the code.
 # The guests open the address, type their name (as it is in the list) and the code, allow the microphone, and walk to the MPAI Hall (W/S walk, A/D turn). Close both windows when
@@ -39,9 +39,9 @@ for ($i = 0; $i -lt 180 -and -not $up; $i++) {
 }
 if (-not $up) { Write-Host 'The server did not start. Look at its window.'; exit 1 }
 
-$cf = @("$here\tools\cloudflared.exe", "$here\..\Apps\ABV\AVS\tools\cloudflared.exe") | Where-Object { Test-Path $_ } | Select-Object -First 1
+$cf = @("$here\tools\cloudflared.exe", "$here\..\..\Apps\ABV\AVS\tools\cloudflared.exe") | Where-Object { Test-Path $_ } | Select-Object -First 1
 if (-not $cf) { $cf = (Get-Command cloudflared -ErrorAction SilentlyContinue).Source }
-if (-not $cf) { Write-Host 'cloudflared.exe is not found (MMM\tools\, Apps\ABV\AVS\tools\). The meeting is open on this PC only:'; Write-Host "  $local/viewer/?world=1&mic=1&user=$($list[0])&code=$code"; Read-Host 'Enter to close' | Out-Null; exit 0 }
+if (-not $cf) { Write-Host 'cloudflared.exe is not found (AllApps\MMM\tools\, Apps\ABV\AVS\tools\). The meeting is open on this PC only:'; Write-Host "  $local/viewer/?world=1&mic=1&user=$($list[0])&code=$code"; Read-Host 'Enter to close' | Out-Null; exit 0 }
 $log = Join-Path $env:TEMP 'mmm-tunnel.log'
 Remove-Item $log -ErrorAction SilentlyContinue
 Start-Process -FilePath $cf -ArgumentList 'tunnel', '--no-autoupdate', '--url', $local -RedirectStandardError $log -WindowStyle Minimized

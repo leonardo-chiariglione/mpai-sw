@@ -17,7 +17,7 @@
     <ProjectReference Include="..\..\..\..\AIF\ControllerApi\Mpai.Aif.Api.csproj" />
     <ProjectReference Include="..\..\..\..\AIF\UserAgent\Ua\Mpai.Ua.csproj" />
     <ProjectReference Include="..\..\..\..\AIF\UserAgent\Wdl\Mpai.Wdl.csproj" />
-    <ProjectReference Include="..\..\..\..\MMM\Server\Mpai.Mmm.Server.csproj" />
+    <ProjectReference Include="..\..\..\..\AllApps\MMM\Server\Mpai.Mmm.Server.csproj" />
     <ProjectReference Include="..\..\..\..\AIMs\XRV1\V1.0\Provider\Mpai.Xrv.csproj" />
   </ItemGroup>
 

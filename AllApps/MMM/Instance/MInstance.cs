@@ -150,7 +150,7 @@ public sealed class MInstance
     private readonly Dictionary<string, string> models = new(StringComparer.Ordinal);
     // The 3D Models (GLB files) given in turn to the Personae of the Users that register without one of their own.
     public IReadOnlyList<string> DefaultModels { get; set; } = [];
-    // The catalogue of Personae the M-Instance offers a registering human (Rocketbox avatars, MMM/Viewer/personae/catalogue): the human chooses one, it does not bring its own.
+    // The catalogue of Personae the M-Instance offers a registering human (Rocketbox avatars, AllApps/MMM/Viewer/personae/catalogue): the human chooses one, it does not bring its own.
     // A choice is the name of an entry (PersonaChoice in the Personal Profile); one that is not in the catalogue is refused (422).
     public IReadOnlySet<string> Catalogue { get; set; } = new HashSet<string>(StringComparer.Ordinal);
     // What the M-Instance shows a human that is about to register: the entries of the catalogue (Name, Group, Gender). It is the M-Instance's to offer; the human is not yet in it.

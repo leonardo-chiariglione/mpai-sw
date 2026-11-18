@@ -1,18 +1,18 @@
 ﻿# A MEETING IN THE MMM WORLD: the guests install nothing, each opens a personal link.
-#   MMM\Run-Meeting.ps1 -Chair Leonardo -Guests Anna,Bruno,Carla -Until 19:00
-#   MMM\Run-Meeting.ps1 -Chair Leonardo -Guests Anna,Bruno,Carla -Via cloudflare
+#   AllApps\MMM\Run-Meeting.ps1 -Chair Leonardo -Guests Anna,Bruno,Carla -Until 19:00
+#   AllApps\MMM\Run-Meeting.ps1 -Chair Leonardo -Guests Anna,Bruno,Carla -Via cloudflare
 # It starts the M-Instance with its world (the Metaverse Square, the MPAI building: a public atrium and the wings of rooms) and puts it on the internet at an https address (the microphone needs
 # https): -Via funnel (Tailscale Funnel, a stable address on this PC's Tailscale name; needs Tailscale logged in, Serve and Funnel enabled in its console) or -Via cloudflare (the default: a Cloudflare
 # quick tunnel: no account, a new address each time; cloudflared.exe).
 # THE CHAIR INVITES: each guest gets a personal link (?invite=...) that this script prints. The server turns it into the guest's name; the guests listed are the ones given the Rights to the wing of the
 # meeting rooms and to the MMM meeting room, for the meeting - the rights end with it. Without the link nobody is answered; with -Visitors anybody may come into the atrium (public), and no further.
 # You, on this PC: the address http://127.0.0.1:7099 - you are the chair. Close the server window when the meeting is over (the address goes with it).
-# A GROUP'S MEETING: -Group MMM -When "Thursday 22 October, 17:00 CEST" takes the people of the group from MMM\Registry\people.json (see Registry\README.md): the chair is the one who chairs the group, the others
+# A GROUP'S MEETING: -Group MMM -When "Thursday 22 October, 17:00 CEST" takes the people of the group from AllApps\MMM\Registry\people.json (see Registry\README.md): the chair is the one who chairs the group, the others
 # are the guests, each is sent an email with the personal link, composed through Outlook. -Mail ask (default): the recipients are shown and you are asked to confirm before anything is sent;
 # draft: the emails are saved as Outlook drafts, nothing is sent; send: they are sent without asking (only when you have said so); none: no emails.
 # -Stay: the script does not wait for Enter at the end and leaves the server and the tunnel running (to be started a day before the meeting); close the server window and end cloudflared when it is over.
 # -Written: no speech recognition (Whisper) and no language model (Ollama): the participants write their requests to the Secretary (the requests of the list); no minutes, no summary.
-# -Join funnel (the default): the emails link to the join page MMM\Join\join.html, published at this PC's stable Tailscale address (Funnel, only that folder), which sends each guest on to
+# -Join funnel (the default): the emails link to the join page AllApps\MMM\Join\join.html, published at this PC's stable Tailscale address (Funnel, only that folder), which sends each guest on to
 # the meeting's own address; mail filters distrust trycloudflare.com links (2026-11-18). The meeting itself does not go through Funnel (too slow for the avatars). -Join none: the emails carry the meeting's address.
 # -Officers A,B: the people, besides the chair, who may register with the MPAI Officer Account Level (the Rights to every place of the building).
 param([string]$Chair = '', [string]$Guests = '', [string]$Until = '', [double]$Hours = 3, [int]$Port = 7099, [ValidateSet('funnel', 'cloudflare')][string]$Via = 'cloudflare', [switch]$Visitors,
@@ -126,9 +126,9 @@ if ($Via -eq 'funnel') {
     $base = "https://$dns"
 }
 else {
-    $cf = @("$here\tools\cloudflared.exe", "$here\..\Apps\ABV\AVS\tools\cloudflared.exe") | Where-Object { Test-Path $_ } | Select-Object -First 1
+    $cf = @("$here\tools\cloudflared.exe", "$here\..\..\Apps\ABV\AVS\tools\cloudflared.exe") | Where-Object { Test-Path $_ } | Select-Object -First 1
     if (-not $cf) { $cf = (Get-Command cloudflared -ErrorAction SilentlyContinue).Source }
-    if (-not $cf) { Write-Host 'cloudflared.exe is not found (MMM\tools\, Apps\ABV\AVS\tools\).'; exit 1 }
+    if (-not $cf) { Write-Host 'cloudflared.exe is not found (AllApps\MMM\tools\, Apps\ABV\AVS\tools\).'; exit 1 }
     $log = Join-Path $env:TEMP 'mmm-tunnel.log'
     Remove-Item $log -ErrorAction SilentlyContinue
     Start-Process -FilePath $cf -ArgumentList 'tunnel', '--no-autoupdate', '--url', $local -RedirectStandardError $log -WindowStyle Minimized
@@ -140,7 +140,7 @@ else {
 }
 
 # THE JOIN PAGE (-Join funnel): Funnel forwards /mmm of this PC's Tailscale name to /join of the meeting server, which answers there only join.html and the meeting.json written here
-# (MMM\Join). Funnel serves a folder only for a Windows administrator; it forwards to a port for anybody. The emails link there.
+# (AllApps\MMM\Join). Funnel serves a folder only for a Windows administrator; it forwards to a port for anybody. The emails link there.
 $joinUrl = $null      # not $join: PowerShell names ignore case, and $join is $Join, the option (funnel or none), which refuses an address
 function Set-JoinMeeting($address) {
     $json = [ordered]@{ Address = $address; When = $When } | ConvertTo-Json -Compress

@@ -28,6 +28,6 @@ A round table of radius 0.9 at the origin; 5 seats on a circle of radius 1.5, se
 4. Audio: capture the microphone (getUserMedia, echoCancellation on), resample to 16 kHz mono Int16 with an AudioWorklet (or ScriptProcessor fallback), send ~100 ms chunks as binary frames type 0x01. A mute button. Play each incoming type-0x02 chunk through a Web Audio graph with a PannerNode (HRTF) at the speaker's position, the listener at the own seat facing the own yaw; schedule chunks back to back with ~120 ms of jitter buffer per speaker.
 5. A side panel: roster, the minutes (`minutes.text`, preformatted), a chat box.
 6. Test aids: `?bot=NAME&avatar=ID` joins at once without microphone and sends a synthetic speech-like signal (bursts of band-limited noise, ~1 s on, ~2 s off); `?autojoin=NAME&avatar=ID` joins at once with the microphone.
-7. No external network resources: three.js from `/lib/three/...` (copy `MMM\Viewer\lib\three` into `wwwroot/lib/three`); glTFLoader and SkeletonUtils from its `addons`.
+7. No external network resources: three.js from `/lib/three/...` (copy `AllApps\MMM\Viewer\lib\three` into `wwwroot/lib/three`); glTFLoader and SkeletonUtils from its `addons`.
 
 The client is one `index.html` (module script inline or `app.js`) in `Apps\ABV\AVS\Server\wwwroot`. Nothing in it depends on how the server computes the scene.

@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\AIF\UserAgent\Ua\Mpai.Ua.csproj" />
-    <ProjectReference Include="..\..\..\..\MMM\Client\Mpai.Mmm.Client.csproj" />
+    <ProjectReference Include="..\..\..\..\AllApps\MMM\Client\Mpai.Mmm.Client.csproj" />
   </ItemGroup>
 
 </Project>

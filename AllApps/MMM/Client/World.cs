@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 
 namespace Mpai.Mmm.Client;
 
-// THE WORLD OF THE MMM, AS THE M-INSTANCE HAS IT (MMM/World/world.json, written by make_world.py): the Metaverse Square, the buildings on it and the rooms in them.
+// THE WORLD OF THE MMM, AS THE M-INSTANCE HAS IT (AllApps/MMM/World/world.json, written by make_world.py): the Metaverse Square, the buildings on it and the rooms in them.
 // A building is a Location of three dimensions - a Location Object with its Sub-Locations, the rooms - rendered by a 3D Model Object (glTF); the Square is a Location of two.
 // A door is a Right: a Process that holds the Right to move its Persona to the Location behind the door may enter, and the others are refused (403). The buildings and
 // their rooms are the AVS Service's: not public. The MPAI building's atrium is public: anybody may enter, look, talk and ask. Its wings and rooms are not: the meeting room of a group holds the table and the seats of its meeting.
@@ -15,7 +15,7 @@ public static class World
         Uc2.PA("MMM-2MP-V2.2", "MMMove", DoorID(user, location), ("RQ3", "To", "PointOfView2", Uc2.PointOfView(location)));
 
     public static JsonObject Load(string repo) =>
-        JsonNode.Parse(File.ReadAllText(Path.Combine(repo, "MMM", "Viewer", "world", "world.json")))!.AsObject();
+        JsonNode.Parse(File.ReadAllText(Path.Combine(repo, "AllApps", "MMM", "Viewer", "world", "world.json")))!.AsObject();
 
     // The Square, the buildings and the rooms as Locations, and the seats of the meeting room; the Services of the meeting. Returns the world as read.
     public static JsonObject Setup(MInstance m, string repo)
