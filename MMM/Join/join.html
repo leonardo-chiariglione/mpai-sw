@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>MPAI meeting</title>
+<style>
+  body { margin: 0; font: 17px/1.5 system-ui, Segoe UI, Arial, sans-serif; background: #f4f5f7; color: #1d2330; }
+  main { max-width: 560px; margin: 12vh auto 0; padding: 0 16px; }
+  h1 { font-size: 22px; margin: 0 0 12px; }
+  p { margin: 0 0 10px; }
+  .muted { color: #5b6475; font-size: 15px; }
+</style>
+</head>
+<body>
+<main>
+<h1>MPAI meeting</h1>
+<p id="say">Opening the meeting...</p>
+<p class="muted" id="more"></p>
+</main>
+<script>
+// THE JOIN PAGE (2026-11-18). The invitation emails link here, at a stable address that does not change from one meeting to the next (Tailscale Funnel), and
+// never to the address of the meeting itself (a Cloudflare quick tunnel, new each time, that mail filters distrust). Run-Meeting.ps1 writes, next to this page,
+// meeting.json: the address of the meeting when it is open ("Address"), and when it is ("When"). This page only sends the guest on, with its personal invitation:
+// what the meeting needs - the avatars, the room, the speech - comes from the meeting's own address, not from here.
+(async () => {
+  const say = t => document.getElementById('say').textContent = t, more = t => document.getElementById('more').textContent = t;
+  const invite = new URLSearchParams(location.search).get('invite') ?? '';
+  if (!/^[0-9a-f]{8,64}$/.test(invite)) { say('This link is not complete.'); more('Open the link exactly as it is in your invitation email.'); return; }
+  let meeting = null;
+  try { const rs = await fetch('meeting.json', { cache: 'no-store' }); if (rs.ok) meeting = await rs.json(); } catch { }
+  const address = meeting?.Address ?? '';
+  if (/^https:\/\/[a-z0-9.-]+$/i.test(address)) {
+    location.replace(`${address}/viewer/?world=1&mic=1&invite=${encodeURIComponent(invite)}`);
+    return;
+  }
+  say(meeting?.When ? `The meeting is not open yet. It is on ${meeting.When}.` : 'The meeting is not open yet.');
+  more('Open this link again when the meeting starts.');
+})();
+</script>
+</body>
+</html>

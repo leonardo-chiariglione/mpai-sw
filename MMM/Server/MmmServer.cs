@@ -32,6 +32,33 @@ public static class MmmServer
         builder.Logging.ClearProviders();
         builder.WebHost.UseUrls(url);
         var app = builder.Build();
+        // THE JOIN PAGE (2026-11-18): the invitation emails link to it, at a stable address (Tailscale Funnel forwards its /mmm to /join here), and it sends the guest on to the address
+        // of the meeting. It holds nothing private, so it is answered to anybody, before any identity or code: join.html and meeting.json of MMM/Join, and nothing else.
+        var joinFolder = viewer is null ? null : Path.Combine(Path.GetDirectoryName(Path.GetFullPath(viewer).TrimEnd('/', '\\'))!, "Join");
+        app.Use(async (ctx, next) =>
+        {
+            if (joinFolder is null || ctx.Request.Method != "GET" || !ctx.Request.Path.StartsWithSegments("/join", out var rest)) { await next(); return; }
+            var name = rest.Value?.Trim('/') is { Length: > 0 } n ? n : "join.html";
+            var file = Path.Combine(joinFolder, name);
+            if (name is not ("join.html" or "meeting.json") || !File.Exists(file)) { ctx.Response.StatusCode = 404; return; }
+            // The meeting is open (meeting.json has its address): the guest is sent on from here, with its invitation - no script, no second request, which a browser may block.
+            var invite = ctx.Request.Query["invite"].ToString();
+            var meeting = Path.Combine(joinFolder, "meeting.json");
+            if (name == "join.html" && System.Text.RegularExpressions.Regex.IsMatch(invite, "^[0-9a-f]{8,64}$") && File.Exists(meeting))
+            {
+                string? address = null;
+                try { address = (string?)System.Text.Json.Nodes.JsonNode.Parse(await File.ReadAllTextAsync(meeting))?["Address"]; } catch (System.Text.Json.JsonException) { }
+                if (address is not null && System.Text.RegularExpressions.Regex.IsMatch(address, "^https://[A-Za-z0-9.-]+$"))
+                {
+                    ctx.Response.Headers.CacheControl = "no-store";
+                    ctx.Response.Redirect($"{address}/viewer/?world=1&mic=1&invite={invite}");
+                    return;
+                }
+            }
+            ctx.Response.Headers.CacheControl = "no-store";
+            ctx.Response.ContentType = name.EndsWith(".html", StringComparison.Ordinal) ? "text/html; charset=utf-8" : "application/json";
+            await ctx.Response.SendFileAsync(file);
+        });
         // WHO IS ASKING (identity): an invitation link (?invite=) is turned into its guest's name and kept in a cookie; the chair is whoever browses on this machine; a visitor, if the chair
         // allows them, is named at random. Nobody else is answered. The services of the M-Instance carry the internal key. What a person may do is the M-Instance's: the Rights the chair has given.
         if (identity is not null)

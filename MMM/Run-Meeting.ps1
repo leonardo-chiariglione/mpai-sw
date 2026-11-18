@@ -12,9 +12,11 @@
 # draft: the emails are saved as Outlook drafts, nothing is sent; send: they are sent without asking (only when you have said so); none: no emails.
 # -Stay: the script does not wait for Enter at the end and leaves the server and the tunnel running (to be started a day before the meeting); close the server window and end cloudflared when it is over.
 # -Written: no speech recognition (Whisper) and no language model (Ollama): the participants write their requests to the Secretary (the requests of the list); no minutes, no summary.
+# -Join funnel (the default): the emails link to the join page MMM\Join\join.html, published at this PC's stable Tailscale address (Funnel, only that folder), which sends each guest on to
+# the meeting's own address; mail filters distrust trycloudflare.com links (2026-11-18). The meeting itself does not go through Funnel (too slow for the avatars). -Join none: the emails carry the meeting's address.
 # -Officers A,B: the people, besides the chair, who may register with the MPAI Officer Account Level (the Rights to every place of the building).
 param([string]$Chair = '', [string]$Guests = '', [string]$Until = '', [double]$Hours = 3, [int]$Port = 7099, [ValidateSet('funnel', 'cloudflare')][string]$Via = 'cloudflare', [switch]$Visitors,
-      [string]$Group = '', [string]$When = '', [string]$Officers = '', [string]$HostName = '', [ValidateSet('ask', 'draft', 'send', 'none')][string]$Mail = 'ask', [switch]$Preview, [switch]$Stay, [switch]$Written)
+      [string]$Group = '', [string]$When = '', [string]$Officers = '', [string]$HostName = '', [ValidateSet('ask', 'draft', 'send', 'none')][string]$Mail = 'ask', [switch]$Preview, [switch]$Stay, [switch]$Written, [ValidateSet('funnel', 'none')][string]$Join = 'funnel')
 
 $here = $PSScriptRoot
 $local = "http://127.0.0.1:$Port"
@@ -55,11 +57,11 @@ foreach ($n in $names) { $b = New-Object byte[] 9; [Security.Cryptography.Random
 $b = New-Object byte[] 9; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); $hostToken = ([BitConverter]::ToString($b) -replace '-', '').ToLower()
 $invites = (@($names | ForEach-Object { "$_=$($tokens[$_])" }) + "$HostName=$hostToken") -join ','      # @(): with ONE guest the pipeline gives a string, and + would glue the host's token onto it
 
-function Get-Mails($base) {
+function Get-Mails($base, $joinAt = $null) {
     $subject = "MPAI $($grp.Id) meeting" + $(if ($When) { " - $When" } else { '' })
     @(foreach ($n in $names) {
         $p = $people[$n]; if (-not $p -or -not $p.Email) { continue }
-        $link = "$base/viewer/?world=1&mic=1&invite=$($tokens[$n])"
+        $link = if ($joinAt) { "$joinAt/join.html?invite=$($tokens[$n])" } else { "$base/viewer/?world=1&mic=1&invite=$($tokens[$n])" }
         $body = @"
 Dear $(($p.Name -split '\s+')[0]),
 
@@ -73,7 +75,7 @@ What you need: a PC with Chrome or Edge, and a headset (no loudspeakers: the roo
 You move by clicking the point you want to reach: your avatar walks there, through the doors of the MPAI building to the meeting rooms, and into the MMM meeting room, where you sit down by yourself.
 The mouse wheel turns you: wheel forward turns you counterclockwise, wheel backward clockwise. Ctrl + wheel forward zooms in, Ctrl + wheel backward zooms out.
 Q stands up, E sits again.
-The link works while the meeting is on; the address changes for each meeting.
+$(if ($joinAt) { 'The link opens the meeting while it is on; before, it says when the meeting is.' } else { 'The link works while the meeting is on; the address changes for each meeting.' })
 
 $($HostName)
 "@
@@ -83,7 +85,7 @@ $($HostName)
 
 if ($Preview) {
     Write-Host "Group $Group - chair: $Chair; guests: $($names -join ', ')"
-    foreach ($m in (Get-Mails 'https://(the address of the meeting)')) { Write-Host ('-' * 70); Write-Host "To: $($m.To)   Subject: $($m.Subject)"; Write-Host $m.Body }
+    foreach ($m in (Get-Mails 'https://(the address of the meeting)' $(if ($Join -eq 'funnel' -and $Via -ne 'funnel') { 'https://(this PC''s Tailscale name)/mmm' }))) { Write-Host ('-' * 70); Write-Host "To: $($m.To)   Subject: $($m.Subject)"; Write-Host $m.Body }
     exit 0
 }
 
@@ -91,8 +93,8 @@ if (Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyCon
 
 $dotnet = (Get-Command dotnet -ErrorAction SilentlyContinue).Source
 if (-not $dotnet) { $dotnet = 'C:\Program Files\dotnet\dotnet.exe' }
-$when = if ($Until) { "--until $Until" } else { "--hours $Hours" }
-$arguments = "run --project `"$here\Server\Mpai.Mmm.Server.csproj`" -c Release -- $local --world --identity --chair $Chair --host $HostName --invites $invites --invite $((@($Chair) + @($HostName) + $names | Select-Object -Unique) -join ',') $when" + $(if ($Visitors) { ' --visitors' } else { '' }) + $(if ($Officers) { " --officers $Officers" } else { '' }) + $(if ($Written) { ' --no-asr --no-summary' } else { '' })
+$period = if ($Until) { "--until $Until" } else { "--hours $Hours" }      # not $when: PowerShell names ignore case, and $when was $When, the date the emails give (they said "--hours 3")
+$arguments = "run --project `"$here\Server\Mpai.Mmm.Server.csproj`" -c Release -- $local --world --identity --chair $Chair --host $HostName --invites $invites --invite $((@($Chair) + @($HostName) + $names | Select-Object -Unique) -join ',') $period" + $(if ($Visitors) { ' --visitors' } else { '' }) + $(if ($Officers) { " --officers $Officers" } else { '' }) + $(if ($Written) { ' --no-asr --no-summary' } else { '' })
 Start-Process -FilePath $dotnet -ArgumentList $arguments -WindowStyle Normal
 Write-Host 'The server starts (the first time it compiles, about a minute)...'
 $up = $false
@@ -137,6 +139,29 @@ else {
     if (-not $base) { Write-Host 'The tunnel did not give an address. Look at the log:' $log; exit 1 }
 }
 
+# THE JOIN PAGE (-Join funnel): Funnel forwards /mmm of this PC's Tailscale name to /join of the meeting server, which answers there only join.html and the meeting.json written here
+# (MMM\Join). Funnel serves a folder only for a Windows administrator; it forwards to a port for anybody. The emails link there.
+$joinUrl = $null      # not $join: PowerShell names ignore case, and $join is $Join, the option (funnel or none), which refuses an address
+function Set-JoinMeeting($address) {
+    $json = [ordered]@{ Address = $address; When = $When } | ConvertTo-Json -Compress
+    [IO.File]::WriteAllText((Join-Path $here 'Join\meeting.json'), $json, (New-Object Text.UTF8Encoding($false)))
+}
+if ($Join -eq 'funnel' -and $Via -ne 'funnel') {
+    $tsj = (Get-Command tailscale -ErrorAction SilentlyContinue).Source
+    if (-not $tsj) { $tsj = @('C:\Program Files\Tailscale\tailscale.exe') | Where-Object { Test-Path $_ } | Select-Object -First 1 }
+    $dnsj = $null
+    if ($tsj) { try { $dnsj = ((& $tsj status --json | ConvertFrom-Json).Self.DNSName).TrimEnd('.') } catch { } }
+    if ($dnsj) {
+        Set-JoinMeeting $base
+        $out = & $tsj funnel --bg --set-path /mmm "http://127.0.0.1:$Port/join" 2>&1 | Out-String
+        $ok = $false
+        for ($i = 0; $i -lt 10 -and -not $ok; $i++) { try { $ok = (Invoke-WebRequest "https://$dnsj/mmm/meeting.json" -UseBasicParsing -TimeoutSec 5).Content -match [regex]::Escape($base) } catch { Start-Sleep 1 } }
+        if ($ok) { $joinUrl = "https://$dnsj/mmm"; Write-Host "  The join page is up: $joinUrl/join.html (the emails link there)." }
+        else { Write-Host "  The join page could not be published (Funnel): the emails carry the meeting's address.`n$out" }
+    }
+    else { Write-Host "  Tailscale is not running: no join page; the emails carry the meeting's address." }
+}
+
 Write-Host ''
 Write-Host '  For each guest - send them THEIR OWN link (Chrome or Edge on a PC, a headset, allow the microphone):' -ForegroundColor Green
 foreach ($n in $names) { Write-Host ("    {0,-12} {1}/viewer/?world=1&mic=1&invite={2}" -f $n, $base, $tokens[$n]) }
@@ -149,7 +174,7 @@ Write-Host ''
 Write-Host '  The first time, each chooses a Persona. Click the point to walk to - the MPAI doors, across the atrium to the south wing: the MMM meeting room is the first on the right. The wheel turns you, Ctrl + wheel zooms. Q stands up, E sits.'
 # THE EMAILS: one for each guest of the group, with the personal link, through Outlook (the account of this PC): shown first, sent only if you confirm - or saved as drafts.
 if ($Group -and $Mail -ne 'none') {
-    $mails = @(Get-Mails $base)
+    $mails = @(Get-Mails $base $joinUrl)
     Write-Host ''
     Write-Host "  Emails to send ($($mails.Count)), from your Outlook:" -ForegroundColor Green
     foreach ($m in $mails) { Write-Host ("    {0,-10} {1}" -f $m.Name, $m.To) }
@@ -193,3 +218,4 @@ Start-Sleep 4                                                                   
 Show-OnTop
 Read-Host 'Enter to take the meeting off the internet (the server has its own window)' | Out-Null
 if ($Via -eq 'funnel') { & $ts funnel reset | Out-Null } else { Get-Process cloudflared -ErrorAction SilentlyContinue | Stop-Process -Force }
+if ($joinUrl) { Set-JoinMeeting ''; & $tsj funnel --bg --set-path /mmm off 2>&1 | Out-Null }      # the join page goes off the internet with the meeting
