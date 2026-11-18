@@ -1,0 +1,664 @@
+{
+ "_comment": "The Units (UNT V1.0, DRAFT 2026-10-31): what acquires data from the real world and what delivers data to it, in the Physical Layer of a User Agent. Units are not AIMs. Sixteen Units, by the author: acquisition AOA, SOA, TOA, VOA, LOA, ROA, UOA, NSA, SDA, WDA; delivery 3OD, AOD, MOD, SOD, TOD, VOD. Units acquire and deliver Basic and full objects and scenes. 'ports' are the Data Types a Unit takes and gives; 'status': code = the Unit has code in D:\\AI. Schemas: schemas/UNT/V1.0. The earlier proposals OMA and OMD are not in UNT V1.0.",
+ "standard": "UNT",
+ "units": [
+  {
+   "acronym": "UNT-AOA",
+   "name": "Audio Object Acquisition",
+   "status": "code",
+   "ports": [
+    {
+     "direction": "Input",
+     "dataType": "CAE-UCM-V1.0"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-BAO-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-BAS-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-AUO-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-ASD-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-BAO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-AUO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-BAS-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-ASD-V1.5"
+    }
+   ],
+   "code": [
+    "AIF/UserAgent/PhysicalLayer/Devices/MicArrayAudioAcquisition.cs",
+    "AIF/UserAgent/PhysicalLayer/Devices/AlsaAudioAcquisition.cs",
+    "AIF/UserAgent/PhysicalLayer/Devices/FileAudioAcquisition.cs",
+    "AIF/UserAgent/PhysicalLayer/Units.cs"
+   ]
+  },
+  {
+   "acronym": "UNT-SOA",
+   "name": "Speech Object Acquisition",
+   "status": "code",
+   "ports": [
+    {
+     "direction": "Input",
+     "dataType": "CAE-UCM-V1.0"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-BSO-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-BSS-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-SPO-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-SSD-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-BSO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-SPO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-BSS-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-SSD-V1.5"
+    }
+   ],
+   "code": [
+    "AIF/UserAgent/PhysicalLayer/Units.cs",
+    "AIF/UserAgent/PhysicalLayer/Devices/MicArrayAudioAcquisition.cs"
+   ]
+  },
+  {
+   "acronym": "UNT-TOA",
+   "name": "Text Object Acquisition",
+   "status": "draft schema, no code",
+   "ports": [
+    {
+     "direction": "Input",
+     "dataType": "OSD-BTO-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-TXO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-BTO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-TXO-V1.5"
+    }
+   ],
+   "code": []
+  },
+  {
+   "acronym": "UNT-VOA",
+   "name": "Visual Object Acquisition",
+   "status": "code",
+   "ports": [
+    {
+     "direction": "Input",
+     "dataType": "CAE-UCM-V1.0"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-BVO-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-BVS-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-VIO-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-VSD-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-BVO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-VIO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-BVS-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-VSD-V1.5"
+    }
+   ],
+   "code": [
+    "AIF/UserAgent/PhysicalLayer/Camera/WebcamVisualAcquisition.cs",
+    "AIF/UserAgent/PhysicalLayer/Camera/WinFormsVisualAcquisition.cs",
+    "AIF/UserAgent/PhysicalLayer/Devices/FileVisualAcquisition.cs",
+    "AIF/UserAgent/PhysicalLayer/Units.cs"
+   ]
+  },
+  {
+   "acronym": "UNT-LOA",
+   "name": "LiDAR Object Acquisition",
+   "status": "draft schema, no code",
+   "ports": [
+    {
+     "direction": "Input",
+     "dataType": "OSD-BLO-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-BLS-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-LIO-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-LSD-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-BLO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-LIO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-BLS-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-LSD-V1.5"
+    }
+   ],
+   "code": []
+  },
+  {
+   "acronym": "UNT-ROA",
+   "name": "RADAR Object Acquisition",
+   "status": "draft schema, no code",
+   "ports": [
+    {
+     "direction": "Input",
+     "dataType": "OSD-BRO-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-BRS-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-RAO-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-RSD-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-BRO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-RAO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-BRS-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-RSD-V1.5"
+    }
+   ],
+   "code": []
+  },
+  {
+   "acronym": "UNT-UOA",
+   "name": "Ultrasound Object Acquisition",
+   "status": "draft schema, no code",
+   "ports": [
+    {
+     "direction": "Input",
+     "dataType": "OSD-BUO-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-BUS-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-USO-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-USD-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-BUO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-USO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-BUS-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-USD-V1.5"
+    }
+   ],
+   "code": []
+  },
+  {
+   "acronym": "UNT-NSA",
+   "name": "Navigation Satellite Acquisition",
+   "status": "draft schema, no code",
+   "ports": [
+    {
+     "direction": "Input",
+     "dataType": "CAV-NSO-V2.0"
+    },
+    {
+     "direction": "Output",
+     "dataType": "CAV-NSO-V2.0"
+    }
+   ],
+   "code": []
+  },
+  {
+   "acronym": "UNT-SDA",
+   "name": "Spatial Data Acquisition",
+   "status": "draft schema, no code",
+   "ports": [
+    {
+     "direction": "Input",
+     "dataType": "CAV-SPD-V2.0"
+    },
+    {
+     "direction": "Output",
+     "dataType": "CAV-SPD-V2.0"
+    }
+   ],
+   "code": []
+  },
+  {
+   "acronym": "UNT-PDA",
+   "name": "Pointing Data Acquisition",
+   "status": "draft schema, no code",
+   "ports": [
+    {
+     "direction": "Input",
+     "dataType": "OSD-BPO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-BPO-V1.5"
+    }
+   ],
+   "code": []
+  },
+  {
+   "acronym": "UNT-WDA",
+   "name": "Weather Data Acquisition",
+   "status": "draft schema, no code",
+   "ports": [
+    {
+     "direction": "Input",
+     "dataType": "CAV-WDT-V2.0"
+    },
+    {
+     "direction": "Output",
+     "dataType": "CAV-WDT-V2.0"
+    }
+   ],
+   "code": []
+  },
+  {
+   "acronym": "UNT-HDA",
+   "name": "Health Data Acquisition",
+   "status": "draft schema, no code",
+   "ports": [
+    {
+     "direction": "Input",
+     "dataType": "AIH-HLD-V1.1"
+    },
+    {
+     "direction": "Output",
+     "dataType": "AIH-HLD-V1.1"
+    }
+   ],
+   "code": []
+  },
+  {
+   "acronym": "UNT-3OD",
+   "name": "3D Model Object Delivery",
+   "status": "code",
+   "ports": [
+    {
+     "direction": "Input",
+     "dataType": "CAE-UCM-V1.0"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-B3O-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-3DO-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-B3S-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-3SD-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "PAF-FDO-V1.6"
+    },
+    {
+     "direction": "Input",
+     "dataType": "PAF-BDO-V1.6"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-B3O-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-3DO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-B3S-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-3SD-V1.5"
+    }
+   ],
+   "code": [
+    "AIF/UserAgent/PhysicalLayer/Avatar/WebView3DModelDelivery.cs",
+    "AIF/UserAgent/Assets/cav-webview.html",
+    "AIF/UserAgent/PhysicalLayer/Avatar/ModelDelivery.cs"
+   ]
+  },
+  {
+   "acronym": "UNT-AOD",
+   "name": "Audio Object Delivery",
+   "status": "code",
+   "ports": [
+    {
+     "direction": "Input",
+     "dataType": "CAE-UCM-V1.0"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-BAO-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-AUO-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-BAS-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-ASD-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-BAO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-AUO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-BAS-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-ASD-V1.5"
+    }
+   ],
+   "code": [
+    "AIF/UserAgent/PhysicalLayer/Units.cs",
+    "AIF/UserAgent/PhysicalLayer/Loudspeaker/WinmmSpeechDelivery.cs",
+    "AIF/UserAgent/UaKit/SpatialAudio/SpatialRenderer.cs",
+    "AIF/UserAgent/UaKit/SpatialAudio/AudioRendering.cs",
+    "AIF/UserAgent/UaKit/SpatialAudio/SteamAudio.cs"
+   ]
+  },
+  {
+   "acronym": "UNT-MOD",
+   "name": "Multimodal Object Delivery",
+   "status": "draft schema, no code",
+   "ports": [
+    {
+     "direction": "Input",
+     "dataType": "CAE-UCM-V1.0"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-BMO-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-MMO-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-BMS-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-MSD-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-BMO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-MMO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-BMS-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-MSD-V1.5"
+    }
+   ],
+   "code": []
+  },
+  {
+   "acronym": "UNT-SOD",
+   "name": "Speech Object Delivery",
+   "status": "code",
+   "ports": [
+    {
+     "direction": "Input",
+     "dataType": "CAE-UCM-V1.0"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-BSO-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-SPO-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-BSS-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-SSD-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-BSO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-SPO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-BSS-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-SSD-V1.5"
+    }
+   ],
+   "code": [
+    "AIF/UserAgent/PhysicalLayer/Loudspeaker/WinmmSpeechDelivery.cs",
+    "AIF/UserAgent/PhysicalLayer/Units.cs"
+   ]
+  },
+  {
+   "acronym": "UNT-TOD",
+   "name": "Text Object Delivery",
+   "status": "draft schema, no code",
+   "ports": [
+    {
+     "direction": "Input",
+     "dataType": "OSD-BTO-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-TXO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-BTO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-TXO-V1.5"
+    }
+   ],
+   "code": []
+  },
+  {
+   "acronym": "UNT-VOD",
+   "name": "Visual Object Delivery",
+   "status": "draft schema, no code",
+   "ports": [
+    {
+     "direction": "Input",
+     "dataType": "CAE-UCM-V1.0"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-BVO-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-VIO-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-BVS-V1.5"
+    },
+    {
+     "direction": "Input",
+     "dataType": "OSD-VSD-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-BVO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-VIO-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-BVS-V1.5"
+    },
+    {
+     "direction": "Output",
+     "dataType": "OSD-VSD-V1.5"
+    }
+   ],
+   "code": []
+  }
+ ],
+ "libraries": [
+  {
+   "name": "Steam Audio",
+   "description": "Steam Audio (Valve), the library that renders spatial audio: binaural, with HRTF. The native library (phonon.dll on Windows, libphonon.so on Linux) is in Models/SteamAudio; AIF/UserAgent/UaKit/SpatialAudio/SteamAudio.cs declares its functions, SpatialRenderer.cs and AudioRendering.cs use them.",
+   "paths": [
+    "Models/SteamAudio",
+    "AIF/UserAgent/UaKit/SpatialAudio/SteamAudio.cs"
+   ],
+   "software": [
+    "AIF/UserAgent/UaKit/SpatialAudio/Mpai.SpatialAudio.csproj"
+   ],
+   "url": "https://valvesoftware.github.io/steam-audio/"
+  },
+  {
+   "name": "three.js",
+   "description": "three.js 0.160.0, the library that renders the 3D models in the browser: the User Agent's page (AIF/UserAgent/Assets/cav-webview.html) imports it, with its GLTF loader and controls; a local copy is in MMM/Viewer/lib/three.",
+   "paths": [
+    "AIF/UserAgent/Assets/cav-webview.html",
+    "MMM/Viewer/lib/three"
+   ],
+   "software": [],
+   "url": "https://threejs.org/"
+  }
+ ]
+}

@@ -1,0 +1,169 @@
+{
+ "standards": {
+  "AIF": {
+   "name": "AI Framework",
+   "site": "https://aif.mpai.community",
+   "about": "https://mpai.community/standards/mpai-aif/about",
+   "flag": "X"
+  },
+  "AIH": {
+   "name": "Artificial Intelligence for Health",
+   "site": "https://aih.mpai.community",
+   "about": "https://mpai.community/standards/mpai-aih/about",
+   "flag": "X"
+  },
+  "AIP": {
+   "name": "Artificial Intelligence Passport",
+   "site": "https://aip.mpai.community",
+   "about": "https://mpai.community/standards/mpai-aip/about",
+   "flag": "X"
+  },
+  "AIT": {
+   "name": "Artificial Intelligence Tools",
+   "site": "https://ait.mpai.community",
+   "about": "https://mpai.community/standards/mpai-ait/about",
+   "flag": "N"
+  },
+  "CAE": {
+   "name": "Context-based Audio Enhancement",
+   "site": "https://cae.mpai.community",
+   "about": "https://mpai.community/standards/mpai-cae/about",
+   "flag": "X"
+  },
+  "CAV": {
+   "name": "Connected Autonomous Vehicles",
+   "site": "https://cav.mpai.community",
+   "about": "https://mpai.community/standards/mpai-cav/about",
+   "flag": "X"
+  },
+  "CUI": {
+   "name": "Compression and Understanding of Industrial Data",
+   "site": "https://cui.mpai.community",
+   "about": "https://mpai.community/standards/mpai-cui/about",
+   "flag": "X"
+  },
+  "EEV": {
+   "name": "AI-based End-to-End Video Coding",
+   "site": "https://eev.mpai.community",
+   "about": "https://mpai.community/standards/mpai-eev/about",
+   "flag": "X"
+  },
+  "EVC": {
+   "name": "AI-Enhanced Video Coding",
+   "site": "https://evc.mpai.community",
+   "about": "https://mpai.community/standards/mpai-evc/about",
+   "flag": "X"
+  },
+  "GME": {
+   "name": "Governance of the MPAI Ecosystem",
+   "site": "https://gme.mpai.community",
+   "about": "https://mpai.community/standards/mpai-gme/about",
+   "flag": "X"
+  },
+  "GSA": {
+   "name": "Integrative Genomic/Sensor Analysis",
+   "site": "https://gsa.mpai.community",
+   "about": "https://mpai.community/standards/mpai-gsa/about",
+   "flag": "N"
+  },
+  "HMC": {
+   "name": "Human and Machine Communication",
+   "site": "https://hmc.mpai.community",
+   "about": "https://mpai.community/standards/mpai-hmc/about",
+   "flag": "X"
+  },
+  "MAS": {
+   "name": "MPAI as a Service",
+   "site": "https://mas.mpai.community",
+   "about": "https://mpai.community/standards/mpai-mas/about",
+   "flag": "X"
+  },
+  "MMC": {
+   "name": "Multimodal Conversation",
+   "site": "https://mmc.mpai.community",
+   "about": "https://mpai.community/standards/mpai-mmc/about",
+   "flag": "X"
+  },
+  "MMM": {
+   "name": "MPAI Metaverse Model",
+   "site": "https://mmm.mpai.community",
+   "about": "https://mpai.community/standards/mpai-mmm/about",
+   "flag": "X"
+  },
+  "NNW": {
+   "name": "Neural Network Watermarking",
+   "site": "https://nnw.mpai.community",
+   "about": "https://mpai.community/standards/mpai-nnw/about",
+   "flag": "X"
+  },
+  "OSD": {
+   "name": "Object and Scene Description",
+   "site": "https://osd.mpai.community",
+   "about": "https://mpai.community/standards/mpai-osd/about",
+   "flag": "X"
+  },
+  "PAF": {
+   "name": "Portable Avatar Format",
+   "site": "https://paf.mpai.community",
+   "about": "https://mpai.community/standards/mpai-paf/about",
+   "flag": "X"
+  },
+  "PGM": {
+   "name": "Pursuing Goals in the Metaverse",
+   "site": "https://pgm.mpai.community",
+   "about": "https://mpai.community/standards/mpai-pgm/about",
+   "flag": "X"
+  },
+  "PRF": {
+   "name": "AI Module Profiles",
+   "site": "https://prf.mpai.community",
+   "about": "https://mpai.community/standards/mpai-prf/about",
+   "flag": "X"
+  },
+  "PTF": {
+   "name": "Process Instance Trust Framework",
+   "site": "https://ptf.mpai.community",
+   "about": "https://mpai.community/standards/mpai-ptf/about",
+   "flag": "X"
+  },
+  "SPG": {
+   "name": "Server-based Predictive Multiplayer Gaming",
+   "site": "https://spg.mpai.community",
+   "about": "https://mpai.community/standards/mpai-spg/about",
+   "flag": "X"
+  },
+  "TFA": {
+   "name": "Data Types, Formats, and Attributes",
+   "site": "https://tfa.mpai.community",
+   "about": "https://mpai.community/standards/mpai-tfa/about",
+   "flag": "N"
+  },
+  "WMG": {
+   "name": "AIW and AIM Implementation Guidelines",
+   "site": "https://wmg.mpai.community",
+   "about": "https://mpai.community/standards/mpai-wmg/about",
+   "flag": "N"
+  },
+  "XRV": {
+   "name": "Extended Reality Venues",
+   "site": "https://xrv.mpai.community",
+   "about": "https://mpai.community/standards/mpai-xrv/about",
+   "flag": "N"
+  }
+ },
+ "parts": {
+  "AIH-HSP": "Health Secure Platform",
+  "XRV-LTP": "Live Theatrical Performance",
+  "CAE-6DF": "Six Degrees of Freedom",
+  "NNW-NNT": "Neural Network Traceability",
+  "NNW-TEC": "Neural Network Watermarking - Technologies",
+  "CAV-ARC": "Architecture",
+  "SPG-MDL": "Mitigation of Data Loss effects",
+  "PGM-AUA": "Autonomous User Architecture",
+  "CAV-TEC": "Connected Autonomous Vehicle - Technologies",
+  "MMM-TEC": "MPAI Metaverse Model Technologies",
+  "CAE-USC": "Context-based Audio Enhancement - Use Cases",
+  "CUI-CPP": "Company Performance Prediction",
+  "CAE-ASM": "Audio Scene Management"
+ }
+}
