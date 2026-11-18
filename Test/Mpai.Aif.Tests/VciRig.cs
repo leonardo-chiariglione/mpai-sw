@@ -178,7 +178,19 @@ internal sealed class ScriptedOllama : IDisposable
             HttpListenerContext context;
             try { context = await _listener.GetContextAsync(); } catch { return; }
             using var reader = new StreamReader(context.Request.InputStream);
-            var request = JsonNode.Parse(await reader.ReadToEndAsync())!;
+            var text = await reader.ReadToEndAsync();
+            // Besides the chat, the client asks what is loaded and what is there (/api/ps, /api/tags: the card is shared) and whether a model exists (/api/show):
+            // nothing is loaded, nothing is listed, no model by another name.
+            var path = context.Request.Url!.AbsolutePath;
+            if (path != "/api/chat")
+            {
+                context.Response.StatusCode = path == "/api/show" ? 404 : 200;
+                context.Response.ContentType = "application/json";
+                await context.Response.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(path == "/api/show" ? """{"error":"not found"}""" : """{"models":[]}"""));
+                context.Response.Close();
+                continue;
+            }
+            var request = JsonNode.Parse(text)!;
             var messages = request["messages"]!.AsArray();
             var last = (string?)messages.Last()!["content"] ?? "";
             lock (Prompts) { Prompts.Add(last); Systems.Add((string?)messages[0]!["content"] ?? ""); }
