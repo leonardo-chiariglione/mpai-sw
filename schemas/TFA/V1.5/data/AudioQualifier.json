@@ -25,17 +25,17 @@
 
           "TransformSpace":       { "type": "object", "additionalProperties": false, "properties": {
             "Sequence":           { "type": "string", "enum": [ "Sequential", "Interleaved" ] },
-            "Precision":          { "type": "string", "enum": [ "float32", "float64" ] } } },
+            "Precision":          { "type": "string", "enum": [ "integer16", "integer24", "float32", "float64" ] } } },
 
           "SpherlHarmDecompos":   { "type": "object", "additionalProperties": false, "properties": {
             "SHDOrder":           { "type": "string", "enum": [ "1stOrder","2ndOrder","3rdOrder","4thOrder", "5thOrder","6thOrder","7thOrder" ] },
-            "Precision":          { "type": "string", "enum": [ "float32", "float64" ] } } },
+            "Precision":          { "type": "string", "enum": [ "integer16", "integer24", "float32", "float64" ] } } },
 
           "Ambisonics":           { "type": "object", "additionalProperties": false, "properties": {
             "Normalisation":      { "type": "string", "enum": [ "maxN","SN3D","N3D","N2D","SN2D" ] },
             "ChannelOrder":       { "type": "string", "enum": [ "FuMa","SID","ACN" ] },
             "Order":              { "type": "string", "enum": [ "1stOrder","2ndOrder","3rdOrder","4thOrder", "5thOrder","6thOrder","7thOrder" ] },
-            "Precision":          { "type": "string", "enum": [ "float32","float64" ] } } },
+            "Precision":          { "type": "string", "enum": [ "integer16", "integer24", "float32","float64" ] } } },
 
           "MultiPointAmbisonics": { "type": "array", "items": {
                                     "$ref": "#/properties/Formats/properties/ContentFormat/properties/RawData/properties/Ambisonics" } } } },
