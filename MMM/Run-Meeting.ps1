@@ -11,9 +11,10 @@
 # are the guests, each is sent an email with the personal link, composed through Outlook. -Mail ask (default): the recipients are shown and you are asked to confirm before anything is sent;
 # draft: the emails are saved as Outlook drafts, nothing is sent; send: they are sent without asking (only when you have said so); none: no emails.
 # -Stay: the script does not wait for Enter at the end and leaves the server and the tunnel running (to be started a day before the meeting); close the server window and end cloudflared when it is over.
+# -Written: no speech recognition (Whisper) and no language model (Ollama): the participants write their requests to the Secretary (the requests of the list); no minutes, no summary.
 # -Officers A,B: the people, besides the chair, who may register with the MPAI Officer Account Level (the Rights to every place of the building).
 param([string]$Chair = '', [string]$Guests = '', [string]$Until = '', [double]$Hours = 3, [int]$Port = 7099, [ValidateSet('funnel', 'cloudflare')][string]$Via = 'cloudflare', [switch]$Visitors,
-      [string]$Group = '', [string]$When = '', [string]$Officers = '', [string]$HostName = '', [ValidateSet('ask', 'draft', 'send', 'none')][string]$Mail = 'ask', [switch]$Preview, [switch]$Stay)
+      [string]$Group = '', [string]$When = '', [string]$Officers = '', [string]$HostName = '', [ValidateSet('ask', 'draft', 'send', 'none')][string]$Mail = 'ask', [switch]$Preview, [switch]$Stay, [switch]$Written)
 
 $here = $PSScriptRoot
 $local = "http://127.0.0.1:$Port"
@@ -91,7 +92,7 @@ if (Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyCon
 $dotnet = (Get-Command dotnet -ErrorAction SilentlyContinue).Source
 if (-not $dotnet) { $dotnet = 'C:\Program Files\dotnet\dotnet.exe' }
 $when = if ($Until) { "--until $Until" } else { "--hours $Hours" }
-$arguments = "run --project `"$here\Server\Mpai.Mmm.Server.csproj`" -c Release -- $local --world --identity --chair $Chair --host $HostName --invites $invites --invite $((@($Chair) + @($HostName) + $names | Select-Object -Unique) -join ',') $when" + $(if ($Visitors) { ' --visitors' } else { '' }) + $(if ($Officers) { " --officers $Officers" } else { '' })
+$arguments = "run --project `"$here\Server\Mpai.Mmm.Server.csproj`" -c Release -- $local --world --identity --chair $Chair --host $HostName --invites $invites --invite $((@($Chair) + @($HostName) + $names | Select-Object -Unique) -join ',') $when" + $(if ($Visitors) { ' --visitors' } else { '' }) + $(if ($Officers) { " --officers $Officers" } else { '' }) + $(if ($Written) { ' --no-asr --no-summary' } else { '' })
 Start-Process -FilePath $dotnet -ArgumentList $arguments -WindowStyle Normal
 Write-Host 'The server starts (the first time it compiles, about a minute)...'
 $up = $false

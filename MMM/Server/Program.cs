@@ -132,15 +132,18 @@ await app.StartAsync();
 Console.WriteLine($"M-Instance {m.ID} on {url}; its viewer at {url.TrimEnd('/')}/viewer/");
 // The meeting's Processes: the AVS Service and the Secretary, acting through the MMM-API like any Process.
 // The ASR Service recognises with Whisper (from Access: the L3 of ASR declares the program and the model), if they can be had.
+// --no-asr: no speech recognition (no Whisper): no minutes, and the participants write to the Secretary.
+var noAsr = args.Contains("--no-asr");
 var whisper = new WhisperAsr(repo);
-if (whisper.Available) { whisper.Start(); Console.WriteLine("Whisper starting for the ASR Service (the model loads in a few seconds)."); }
+if (noAsr) Console.WriteLine("No speech recognition (--no-asr): the participants write to the Secretary.");
+else if (whisper.Available) { whisper.Start(); Console.WriteLine("Whisper starting for the ASR Service (the model loads in a few seconds)."); }
 else Console.WriteLine("Whisper (the program and the model the L3 of ASR declares) is not in Access: the ASR Service finds no words.");
 // --meeting-demo [seconds]: the bots of the meeting use case play it against this server, a step at a time (default 5 s apart), for the viewer - open /viewer/?look=12,0 -
 // to show. The bots have no voices, so the ASR Service recognises the words of a script instead of Whisper.
 var meetingDemo = Array.IndexOf(args, "--meeting-demo");
 var meetingPause = meetingDemo >= 0 && meetingDemo + 1 < args.Length && double.TryParse(args[meetingDemo + 1], out var mp) ? mp : 5.0;
 var inside = new HttpClient { BaseAddress = new Uri(url) }; inside.DefaultRequestHeaders.Add("X-Mmm-Internal", internalKey);
-var meeting = new MeetingServices(inside, m, meetingDemo >= 0 ? MeetingUseCase.ScriptedRecognizer() : whisper.Available ? whisper.RecognizeAsync : null);
+var meeting = new MeetingServices(inside, m, meetingDemo >= 0 ? MeetingUseCase.ScriptedRecognizer() : !noAsr && whisper.Available ? whisper.RecognizeAsync : null);
 // The summary, for who asks (--no-summary: none): the language model and the voices are asked only when somebody does.
 using var summary = new SummaryServices(repo);
 if (!args.Contains("--no-summary")) { meeting.Summarise = summary.SummariseAsync; meeting.Translate = summary.TranslateAsync; meeting.Synthesise = summary.SynthesiseAsync; }

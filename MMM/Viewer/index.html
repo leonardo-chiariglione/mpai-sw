@@ -62,7 +62,8 @@
 <div id="notice"></div>
 <div id="bar"><button id="ghostBtn" style="order:7" title="G">Leave my body</button></div><div id="handsList"></div>
 <div id="summary" hidden><h2><span id="summaryTitle">Summary</span><span><button id="summaryClose" title="Close this panel">&times;</button><button id="summaryUpdate" title="A new summary, from everything said until now">Update</button></span></h2><div id="summaryText"></div></div>
-<div id="secHelp" hidden><h3>Say to the Secretary</h3>
+<div id="secHelp" hidden><h3 id="secHead">Say to the Secretary</h3>
+<input id="secText" type="text" placeholder="Write to the Secretary, then Enter (for example: raise my hand)" autocomplete="off" style="width:100%;box-sizing:border-box;margin:2px 0 6px;padding:6px 8px;font-size:14px;background:#111;color:#eee;border:1px solid #f2c94c;border-radius:6px">
 <b>Summary (of what is said from your request on)</b><div>"Summarise the meeting" - it appears on your display and grows as the meeting goes on<br>"Stop the summary" - it stops growing (and stops at the end of the meeting)<br>"Summarise the meeting in Greek" / "in French" / ...<br>"Summarise the meeting out loud" - spoken as well<br>"Hide the summary" - "stop reading"</div>
 <b>Your hand</b><div>"Raise my hand" - "lower my hand"</div>
 <b>Your microphone</b><div>"Mute me" - "unmute me"</div>
@@ -1122,13 +1123,20 @@ function startSecretary() {
   const swSet = on => {
     secretaryOn = on; sw.textContent = 'Secretary: ' + (on ? 'on' : 'off'); sw.style.borderColor = on ? '#5a8' : '#a55';
     sw.title = 'Off: nothing of the Secretary is heard or done on this page - no voice, no answers, no spoken summary.';
-    if (!on) { if (speaking) { try { speaking.onended = null; speaking.stop(); } catch { } speaking = null; } client.summary?.stop(); if (client.dialogue) set(false); if (hearCtx) roomOut(hearCtx).gain.value = 1; client.notice = 'The Secretary is off.'; }
+    if (!on) { if (speaking) { try { speaking.onended = null; speaking.stop(); } catch { } speaking = null; } client.summary?.stop(); if (open) set(false); if (hearCtx) roomOut(hearCtx).gain.value = 1; client.notice = 'The Secretary is off.'; }
     else client.notice = 'The Secretary is on.';
   };
   sw.onclick = () => swSet(!secretaryOn);
-  const set = on => { client.dialogue = on; document.getElementById('secHelp').hidden = !on; b.style.borderColor = on ? '#f2c94c' : '#5a8'; b.style.background = on ? '#4a4020' : 'var(--panel)'; if (!on) client.notice = 'Back to the meeting.'; else client.notice = 'The Secretary listens: what you say is not heard by the room.'; };
+  // WRITTEN REQUESTS (2026-11-18): the box of the panel sends what is written to the Secretary (ask:...). A meeting with no speech recognition (seat ;speech=0) has only those:
+  // the button opens the panel, and what the participant says still goes to the room.
+  let open = false;
+  const written = () => client.seatInfo?.speech === '0';
+  const box = document.getElementById('secText');
+  ['keydown', 'keyup', 'keypress'].forEach(k => box.addEventListener(k, e => e.stopPropagation()));      // typing does not walk the Persona
+  box.addEventListener('keydown', e => { if (e.key !== 'Enter') return; const t = box.value.trim(); if (!t) return; box.value = ''; if (!secretaryOn) { client.notice = 'The Secretary is off.'; return; } sendTo('Secretary', `Ask-${client.name}-${Date.now()}`, 'ask:' + t); client.notice = 'Sent to the Secretary: ' + t; });
+  const set = on => { open = on; client.dialogue = on && !written(); document.getElementById('secHelp').hidden = !on; document.getElementById('secHead').textContent = written() ? 'Write to the Secretary' : 'Say (or write) to the Secretary'; if (on) setTimeout(() => box.focus(), 0); b.style.borderColor = on ? '#f2c94c' : '#5a8'; b.style.background = on ? '#4a4020' : 'var(--panel)'; if (!on) client.notice = 'Back to the meeting.'; else client.notice = written() ? 'Write your request in the box: the room still hears you.' : 'The Secretary listens: what you say is not heard by the room.'; };
   swSet(true); client.notice = '';
-  b.onclick = () => { if (!secretaryOn) { client.notice = 'The Secretary is off: press Secretary: off to switch her on.'; return; } set(!client.dialogue); };
+  b.onclick = () => { if (!secretaryOn) { client.notice = 'The Secretary is off: press Secretary: off to switch her on.'; return; } set(!open); };
   const say = reply => {
     if (reply.Written) { document.getElementById('summaryTitle').textContent = 'Secretary'; document.getElementById('summaryText').textContent = reply.Say; document.getElementById('summary').hidden = false; }
     if (reply.Speech) {

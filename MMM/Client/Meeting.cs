@@ -322,6 +322,10 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
                     lock (summaryAsked) summaryAsked.Enqueue((from, id, asking.GetValueOrDefault("lang") ?? "en", asking.GetValueOrDefault("mode") ?? "written"));
                 }
                 else if (text.StartsWith("seat=", StringComparison.Ordinal)) await Sit(Meeting.ParseSeat(text));
+                else if (text.StartsWith("ask:", StringComparison.Ordinal))         // A REQUEST WRITTEN TO THE SECRETARY (2026-11-18): the same dialogue as a spoken one, without speech recognition
+                {
+                    lock (dialogueAsked) dialogueAsked.Enqueue((from, text[4..].Trim()));
+                }
                 else if (text.StartsWith("say:", StringComparison.Ordinal))
                 {
                     minutes.Add($"{from}: {text[4..].Trim()}");
@@ -578,7 +582,6 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
             if (Says(words, Yes) && !Says(words, No)) { await Reply(user, "Closing the meeting.", null, pref); await EndAsync(); return; }
             if (Says(words, No)) { await Reply(user, "The meeting stays open.", null, pref); return; }
         }
-        if (Interpret is null) { await Reply(user, "I cannot understand speech in this meeting.", null, pref); return; }
         if (StopSummary(words))                                                // the end of a summary asked before: it is made now, of what was said since
         {
             (int From, string Language, string Form) started; bool had;
@@ -594,7 +597,14 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
             lock (summaryStarted) summarySent.Remove(user);
             return;
         }
-        var command = Plain(words) is { } plain ? new JsonObject { ["UserCommandRQ"] = plain } : (await Interpret(user, words)).Command;
+        // The requests of the list are carried out without the language model; with none (--no-summary), they are the only ones understood.
+        var plain = Plain(words);
+        if (plain is null && Interpret is null)
+        {
+            await Reply(user, "Sorry, I understand only the requests of the list. Please write one of them as it is written there.", null, pref);
+            return;
+        }
+        var command = plain is not null ? new JsonObject { ["UserCommandRQ"] = plain } : (await Interpret!(user, words)).Command;
         if (command?["UserCommandRQ"] is not JsonObject rq)
         {
             await Reply(user, "Sorry, I did not catch a request. I can summarise the meeting, raise or lower your hand, switch your microphone, or close the meeting.", null, pref);
@@ -602,7 +612,8 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
         }
         var say = new List<string>(); var ui = new JsonObject();
         if (rq["Answers"] is JsonValue a) { pref.Voice = a.GetValue<string>() == "Spoken"; say.Add(pref.Voice ? "I will answer by voice as well as in writing." : "I will answer in writing only."); }
-        if (rq["Summary"] is JsonObject s)
+        if (rq["Summary"] is JsonObject && Summarise is null) say.Add("There is no summary in this meeting.");
+        else if (rq["Summary"] is JsonObject s)
         {
             var language = ((string?)s["Language"] ?? pref.Language).ToLowerInvariant(); var form = ((string?)s["Form"] ?? pref.Form).ToLowerInvariant();
             if (language is "ja" or "zh" && form == "spoken") { form = "written"; say.Add("No voice speaks that language, so I will write it."); }
@@ -791,7 +802,7 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
         if (user == convener)            // the convener's: to share a screen in the room (the others see it)
             await avs.PerformAsync("Rights Change", Uc2.C(user, with: [Meeting.SharePA(user), Meant(Uc2.Rights($"Share-Right-{user}", "May", "Granted", Meeting.ShareID(user)))]));
         await Doors(user, true);         // in the world of the MMM: and the right to go through the doors of the building to it
-        await Say(avs, replyId, user, Meeting.SeatText(Meeting.Seats.First(s => s.ID == seatId), persona, user == convener));
+        await Say(avs, replyId, user, Meeting.SeatText(Meeting.Seats.First(s => s.ID == seatId), persona, user == convener) + (recognize is null ? ";speech=0" : ""));      // no speech recognition: the page writes to the Secretary
     }
 
     // The Secretary moves its Persona to the seat it was given.

@@ -72,6 +72,7 @@ public class MmmSecretaryDialogueTests
         var services = new MeetingServices(http, m, _ => Task.FromResult(recognised.Count > 0 ? recognised.Dequeue() : "more"))
         {
             Synthesise = (text, language) => Task.FromResult(new byte[3200]),
+            Summarise = minutes => Task.FromResult("A summary."),       // a summary service is there: what it says is not the point
             Interpret = (user, words) => Task.FromResult<(JsonObject?, string?)>((words switch
             {
                 "raise my hand" => Command(new JsonObject { ["Hand"] = "Raise" }),
