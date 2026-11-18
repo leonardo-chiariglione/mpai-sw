@@ -6,7 +6,7 @@ namespace Mpai.Cav.Paper;
 // One run of the experiments: a scenario of Test\CavDriving (its context and variant), a surface, the sensing, a seed, an injection at the scene
 // layer and a motion implementation. The loop is that of Simulation.Run (N-19), with: the surface's grip limiting the vehicle; the sensing range and
 // noise; the injection between the scene description and the motion (where the ESS hands its scene over); and the measures of the paper.
-public sealed record Config(string Motion, Surface Surface, double Range, double Noise, int Seed, string Injection = "none");
+public sealed record Config(string Motion, Surface Surface, double Range, double Noise, int Seed, string Injection = "none", bool AgentGrip = false);   // AgentGrip: every vehicle, not only the CAV, within the grip of the surface
 
 public sealed record RunResult(
     string Context, string Variant, string Motion, string Surface, double Range, double Noise, int Seed, string Injection,
@@ -26,6 +26,7 @@ public static class Runner
     {
         var clock = System.Diagnostics.Stopwatch.StartNew();
         var sc = Make(index);
+        if (c.AgentGrip) foreach (var a in sc.Agents) if (a.Kind != RoadUserKind.Pedestrian) a.Grip = c.Surface.Grip;
         var rng = new Random(c.Seed * 7919 + index);
         var inj = new Random(c.Seed * 104729 + index * 31 + c.Injection.GetHashCode());
         var startLane = sc.Map.Lanes[sc.StartLane];

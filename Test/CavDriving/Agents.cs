@@ -32,6 +32,7 @@ public sealed class Agent
     public double FollowGap { get; init; } = 1.2;               // IDM time headway
     public double MaxAccel { get; init; } = 1.5;
     public Func<double, double>? DesiredSpeedAt { get; init; }   // a speed that changes with time (the head of a stop-and-go queue)
+    public double? Grip { get; set; }                           // the most the surface lets it brake and turn, m/s2 (null: as on a dry road, the scripts as they are)
 
     private bool _started;
     private double? _stoppedAt;
@@ -68,12 +69,13 @@ public sealed class Agent
 
         if (DesiredSpeedAt is not null) DesiredSpeed = Math.Max(0, DesiredSpeedAt(w.Time));
         double a = Idm(w);
-        // curves ahead: no more than 3 m/s2 sideways
+        // curves ahead: no more than 3 m/s2 sideways (nor more than the grip)
+        double side = Math.Min(3.0, Grip ?? 3.0);
         for (double ahead = 0; ahead < 40; ahead += 4)
         {
             double k = Math.Abs(Path.CurvatureAt(S + ahead));
             if (k < 1e-3) continue;
-            double vc = Math.Sqrt(3.0 / k);
+            double vc = Math.Sqrt(side / k);
             double need = (vc * vc - V * V) / (2 * Math.Max(ahead, 2));
             a = Math.Min(a, Math.Max(need, -4));
         }
@@ -95,6 +97,7 @@ public sealed class Agent
                 a = Math.Min(a, need);
             }
         }
+        if (Grip is double grip) a = Math.Clamp(a, -grip, Math.Min(MaxAccel, grip));   // the surface: no braking or accelerating beyond its grip
         A = a;
         V = Math.Max(0, V + a * dt);
         S += V * dt;

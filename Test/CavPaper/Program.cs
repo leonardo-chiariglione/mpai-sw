@@ -7,6 +7,7 @@ using Mpai.Cav.Paper;
 //   --matrix  [--seeds 5] [--motions core,idm,planner] [--sensing all|nominal]   experiment 1 (and 3): scenarios x surfaces x sensing x seeds x motions
 //   --failures [--seeds 3]          experiment 2: the driving core, dry, nominal sensing, every injection
 //   --fast                          one scenario: each injection and each motion once (the Fast test does the same in-process)
+//   --surfaces dry,wet,ice          the surfaces of --matrix (default all three); --agent-grip: every vehicle within the grip of the surface, not only the CAV
 //   --out <file.jsonl>              where the runs go (one JSON line each; appended)
 var argv = args.ToList();
 string Opt(string name, string dflt) { var i = argv.IndexOf(name); return i >= 0 && i + 1 < argv.Count ? argv[i + 1] : dflt; }
@@ -17,7 +18,8 @@ var seeds = int.Parse(Opt("--seeds", mode == "--failures" ? "3" : "5"));
 var motions = Opt("--motions", "core,idm,planner").Split(',');
 var outFile = Opt("--out", Path.Combine(reports, $"cav-paper-runs{mode.Replace("--", "-")}.jsonl"));
 var n = Runner.Count;
-var surfaces = new[] { Surface.Dry, Surface.Wet, Surface.Ice };
+var surfaces = Opt("--surfaces", "dry,wet,ice").Split(',').Select(n => n switch { "dry" => Surface.Dry, "wet" => Surface.Wet, "ice" => Surface.Ice, _ => throw new ArgumentException(n) }).ToArray();
+var agentGrip = argv.Contains("--agent-grip");
 var sensing = Opt("--sensing", "all") == "nominal" ? new[] { (150.0, 0.15) } : new[] { (150.0, 0.15), (150.0, 0.5), (60.0, 0.15), (60.0, 0.5) };
 string[] injections = ["none", "miss-p1", "miss-p5", "miss-p20", "miss-stretch0.5", "miss-stretch2",
                        "phantom-pedestrian-frame", "phantom-pedestrian-1s", "phantom-car-frame", "phantom-car-1s", "phantom-obstacle-frame", "phantom-obstacle-1s"];
@@ -28,7 +30,7 @@ switch (mode)
     case "--probe": for (var i = 0; i < n; i++) jobs.Add((i, new Config("core", Surface.Dry, 150, 0.15, 1))); break;
     case "--matrix":
         foreach (var m in motions) foreach (var s in surfaces) foreach (var (r, z) in sensing) for (var seed = 1; seed <= seeds; seed++) for (var i = 0; i < n; i++)
-            jobs.Add((i, new Config(m, s, r, z, seed)));
+            jobs.Add((i, new Config(m, s, r, z, seed, AgentGrip: agentGrip)));
         break;
     case "--failures":
         foreach (var inj in injections) for (var seed = 1; seed <= seeds; seed++) for (var i = 0; i < n; i++) jobs.Add((i, new Config("core", Surface.Dry, 150, 0.15, seed, inj)));
