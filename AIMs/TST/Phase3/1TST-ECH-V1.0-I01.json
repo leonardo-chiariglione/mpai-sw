@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-ECH-V1.0-I01", "AIMName": "1TST-ECH-V1.0-I01"},
-  "Header":           "TST-ECH-V1.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-ECH-V1.0-I01", "AIMInstID": "1TST-ECH-V1.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "TST-ECH-V1.0",
 
   "APIProfile":       "Basic",
   "Description":      "Test: gives its text back.",

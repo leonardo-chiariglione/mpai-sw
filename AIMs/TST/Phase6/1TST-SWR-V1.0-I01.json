@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-SWR-V1.0-I01", "AIMName": "1TST-SWR-V1.0-I01"},
-  "Header":           "TST-SWR-V1.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-SWR-V1.0-I01", "AIMInstID": "1TST-SWR-V1.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "TST-SWR-V1.0",
 
   "APIProfile":       "Basic",
   "Description":      "Test: writes to storage what its text says - key, value, readers, time - and says what it wrote or why it could not.",

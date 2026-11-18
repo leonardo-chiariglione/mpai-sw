@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CUI-PRP-V2.1-I01", "AIMName": "1CUI-PRP-V2.1-I01"},
-  "Header":           "CUI-PRP-V2.1",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CUI-PRP-V2.1-I01", "AIMInstID": "1CUI-PRP-V2.1-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CUI-PRP-V2.1",
   "APIProfile":       "Basic",
   "Description":      "This AIM computes the Secondary Discontinuity Probability of CUI-CPP.",
   "InternalTypes":    [],

@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-SFB-V2.5-I01", "AIMName": "1CAE-SFB-V2.5-I01"},
-  "Header":           "CAE-SFB-V2.5",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-SFB-V2.5-I01", "AIMInstID": "1CAE-SFB-V2.5-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAE-SFB-V2.5",
   "APIProfile":       "Basic",
   "Description":      "Speech Feature Analysis 2: measures the speech features of the Emotionless Speech.",
   "ExternalPorts":    [{"Name": "ModeSelector", "Direction": "Input", "DataType": "OSD-SEL-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},

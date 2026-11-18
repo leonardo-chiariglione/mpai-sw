@@ -1,5 +1,6 @@
-{ "Identifier":           {"ImplementerID": "1", "ImplementationID": "CAE-ASE-V1.0-I01", "AIMName": "1CAE-ASE-V1.0-I01"},
-  "Header":               "CAE-ASE-V1.0",
+{ "Identifier":           {"ImplementerID": "1", "ImplementationID": "CAE-ASE-V1.0-I01", "AIMInstID": "1CAE-ASE-V1.0-I01"},
+  "Header":               "AIF-AMM-V3.0",
+  "AIMType":              "CAE-ASE-V1.0",
 
   "APIProfile":           "Basic",
   "Description":          "Audio Scene Editing. One Audio Scene is open at a time, so a User Command need not name it: a Audio Scene arriving is opened, and the first Object added to no open Scene creates one. The User Command places Audio Objects - named as the User names them - (AddedObjects), moves them (MovedObjects), changes where they are (ChangedObjects), takes them out (RemovedObjects) and sets where the Scene is heard from (UserPoV). Every edit is a new version in Shared Storage. Outputs: the open Audio Scene, and the User Command, with its response (UserCommandRS) saying how each action was executed.",

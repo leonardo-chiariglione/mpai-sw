@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "NNW-DWI-V2.0-I01", "AIMName": "1NNW-DWI-V2.0-I01"},
-  "Header":           "NNW-DWI-V2.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "NNW-DWI-V2.0-I01", "AIMInstID": "1NNW-DWI-V2.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "NNW-DWI-V2.0",
   "APIProfile":       "Secure",
   "Description":      "During-Training Watermark Insertion with NCT, No-Constraint Traceability (Institut Mines-Telecom): the model is trained with the Training Dataset; the weights at secret positions chosen by the Key are set to values that carry the Payload before the training and kept at those values while the network learns around them.",
   "InternalTypes":    [],

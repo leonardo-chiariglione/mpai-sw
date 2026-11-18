@@ -64,7 +64,7 @@ internal static class Program
         {
             var text = File.ReadAllText(file);
             foreach (var aim in hosts.Keys)
-                text = Regex.Replace(text, "(\"AIMName\"\\s*:\\s*\"" + Regex.Escape(aim) + "\"\\s*,\\s*\"Relation\"\\s*:\\s*)\"Internal\"", "$1\"External\"");
+                text = Regex.Replace(text, "(\"AIMInstID\"\\s*:\\s*\"" + Regex.Escape(aim) + "\"\\s*,\\s*\"Relation\"\\s*:\\s*)\"Internal\"", "$1\"External\"");
             File.WriteAllText(Path.Combine(placed, Path.GetFileName(file)), text);
         }
         Console.WriteLine($"  Placed AMDs:   {placed}");

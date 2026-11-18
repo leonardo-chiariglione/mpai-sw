@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PGM-CDD-V1.0-I01",
-    "AIMName": "1PGM-CDD-V1.0-I01"
+    "AIMInstID": "1PGM-CDD-V1.0-I01"
   },
-  "Header": "PGM-CDD-V1.0",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PGM-CDD-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
   "Description": "The Context Description Demultiplexing (PGM-CDD) AIM is a Sub-AIM of Context Description. It demultiplexes the AUC-CXT Request, Domain Response and Interaction History Response into their Audio, Visual and User components, and routes the Audio and Visual Objects to the enhancement Sub-AIMs. [Template: to be completed.] The Context Description Demultiplexing AIM:",

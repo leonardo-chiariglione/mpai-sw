@@ -44,16 +44,17 @@ def existing_l2(header):
             d = json.load(open(f, encoding="utf-8-sig"))
         except Exception:
             continue
-        if d.get("Header") == header:
+        if d.get("AIMType") == header:
             return f, d
     return None, None
 
 
 def derive(l3, l2):
-    header = l3.get("Header") or aim_type(l3["Identifier"]["AIMName"])
+    header = l3.get("AIMType") or aim_type(l3["Identifier"]["AIMInstID"])
     out = {
-        "Identifier": {"ImplementerID": "IIDRA-assigned", "ImplementationID": "/* String from Implementer */", "AIMName": header},
-        "Header": header,
+        "Identifier": {"ImplementerID": "IIDRA-assigned", "ImplementationID": "/* String from Implementer */", "AIMCode": header},
+        "Header": "AIF-AMM-V3.0",
+        "AIMType": header,
         "APIProfile": l3.get("APIProfile", "Basic"),
         "Description": (l2 or {}).get("Description") or f"This AIM performs {header}.",
     }
@@ -69,15 +70,16 @@ def derive(l3, l2):
     out["ExternalPorts"] = ports
     if l3.get("SubAIMs"):
         out["SubAIMs"] = [{"Identifier": {"ImplementerID": "IIDRA-assigned", "ImplementationID": "/* String from Implementer */",
-                                          "AIMName": aim_type(s["Identifier"]["AIMName"]), "Relation": s["Identifier"].get("Relation", "")}}
+                                          "AIMCode": aim_type(s["Identifier"]["AIMInstID"]), "Relation": s["Identifier"].get("Relation", "")}}
                           for s in l3["SubAIMs"]]
         topology = []
         for line in l3.get("Topology", []):
             new = {}
             for side in ("Output", "Input"):
                 end = dict(line[side])
-                if end.get("AIMName"):
-                    end["AIMName"] = aim_type(end["AIMName"])
+                if "AIMInstID" in end:                   # the L3 names an AIM Instance, the L2 an AIM
+                    v = end.pop("AIMInstID")
+                    end = {"AIMCode": aim_type(v) if v else "", **end}
                 new[side] = end
             topology.append(new)
         out["Topology"] = topology
@@ -113,7 +115,7 @@ def render(d):
 def main():
     l3_path = sys.argv[1]
     l3 = json.load(open(l3_path, encoding="utf-8-sig"))
-    header = l3.get("Header") or aim_type(l3["Identifier"]["AIMName"])
+    header = l3.get("AIMType") or aim_type(l3["Identifier"]["AIMInstID"])
     path, l2 = existing_l2(header)
     text = render(derive(l3, l2))
     json.loads(text)

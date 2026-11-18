@@ -3,8 +3,9 @@
   "$id":              "https://schemas.mpai.community/AIH1/V1.1/AIMs/DeIdentificationAndAnonymisation.json",
   "title":            "De-Identification and Anonymisation V1.1",
 
-  "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":           "AIH-DIA-V1.1",
+  "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "AIH-DIA-V1.1",
 
   "APIProfile":       "Basic",
   "Description":      "This AIM de-identifies or anonymises AIH Data.",

@@ -1,5 +1,6 @@
-{ "Identifier":       { "ImplementerID": "1", "ImplementationID": "PAF-FPE-V1.6-I01", "AIMName": "1PAF-FPE-V1.6-I01" },
-  "Header":           "PAF-FPE-V1.6",
+{ "Identifier":       { "ImplementerID": "1", "ImplementationID": "PAF-FPE-V1.6-I01", "AIMInstID": "1PAF-FPE-V1.6-I01" },
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "PAF-FPE-V1.6",
   "APIProfile":"Basic","Description":"Face Personal Status Extraction.",
   "ExternalPorts":[{"Name": "FaceObject",         "Direction": "Input",  "DataType": "OSD-BVO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
                    {"Name": "FacePersonalStatus", "Direction": "Output", "DataType": "MMC-FPS-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],

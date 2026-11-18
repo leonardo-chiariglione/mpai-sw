@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PAF-FIR-V1.6-I02",
-    "AIMName": "1PAF-FIR-V1.6-I02"
+    "AIMInstID": "1PAF-FIR-V1.6-I02"
   },
-  "Header": "PAF-FIR-V1.6",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PAF-FIR-V1.6",
   "APIProfile": "Basic",
   "Description": "Face Identity Recognition: receives a Basic Visual Object, which carries the time it was acquired, and, optionally, the Basic Visual Scene Descriptors of the scene it was isolated from; detects the face, matches it against the Subject Gallery held in Shared Storage; and returns the face identity as an Instance Identifier - the coarse \"face\" layer when nobody matches, so that an identity is always returned for the face received - with the Bounding Box locating the face. The visual counterpart of Speaker Identity Recognition. Instance for Television Media Analysis: the Auxiliary Text raises the candidates named in it, and the pictures are taken without the Face tag.",
   "InternalTypes": [],

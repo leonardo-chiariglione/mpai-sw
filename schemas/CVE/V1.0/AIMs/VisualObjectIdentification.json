@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":           "CVE-VOI-V1.0",
+{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CVE-VOI-V1.0",
 
   "APIProfile":       "Basic",
   "Description":      "Visual Object Identification: produces the Identifier, based on a Taxonomy, of the Visual Object of a Visual Scene, described by its Basic Visual Scene Descriptors, that a Point of View crosses. The Point of View comes from the Body Descriptors of the Entity that indicates the object (Visual Direction Identification); Visual Object Extraction takes from the Visual Objects the one the Point of View crosses; Visual Instance Identification gives its Identifier.",
@@ -11,17 +12,17 @@
                       {"Name": "VisualObjects", "Direction": "Input", "DataType": "OSD-BVO-V1.5", "Technology": "", "Protocol": "", "IsRemote": ""},
                       {"Name": "VisualInstanceIdentifier", "Direction": "Output", "DataType": "OSD-IID-V1.5", "Technology": "", "Protocol": "", "IsRemote": ""}],
 
-  "SubAIMs":         [{"Header": "CVE-VDI-V1.0", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"}},
-                      {"Header": "OSD-VOE-V1.5", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"}},
-                      {"Header": "CVE-VII-V1.0", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"}}],
+  "SubAIMs":         [{"AIMType": "CVE-VDI-V1.0", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"}},
+                      {"AIMType": "OSD-VOE-V1.5", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"}},
+                      {"AIMType": "CVE-VII-V1.0", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"}}],
 
-  "Topology":        [{"Output": {"AIMName": "", "DataType": "PAF-BDO-V1.6"}, "Input": {"AIMName": "CVE-VDI-V1.0", "DataType": "PAF-BDO-V1.6"}},
-                      {"Output": {"AIMName": "", "DataType": "OSD-BVS-V1.5"}, "Input": {"AIMName": "CVE-VDI-V1.0", "DataType": "OSD-BVS-V1.5"}},
-                      {"Output": {"AIMName": "", "DataType": "OSD-BVS-V1.5"}, "Input": {"AIMName": "OSD-VOE-V1.5", "DataType": "OSD-BVS-V1.5"}},
-                      {"Output": {"AIMName": "", "DataType": "OSD-BVO-V1.5"}, "Input": {"AIMName": "OSD-VOE-V1.5", "DataType": "OSD-BVO-V1.5"}},
-                      {"Output": {"AIMName": "CVE-VDI-V1.0", "DataType": "OSD-OPV-V1.5"}, "Input": {"AIMName": "OSD-VOE-V1.5", "DataType": "OSD-OPV-V1.5"}},
-                      {"Output": {"AIMName": "OSD-VOE-V1.5", "DataType": "OSD-BVO-V1.5"}, "Input": {"AIMName": "CVE-VII-V1.0", "DataType": "OSD-BVO-V1.5"}},
-                      {"Output": {"AIMName": "CVE-VII-V1.0", "DataType": "OSD-IID-V1.5"}, "Input": {"AIMName": "", "DataType": "OSD-IID-V1.5"}}],
+  "Topology":        [{"Output": {"AIMCode": "", "DataType": "PAF-BDO-V1.6"}, "Input": {"AIMCode": "CVE-VDI-V1.0", "DataType": "PAF-BDO-V1.6"}},
+                      {"Output": {"AIMCode": "", "DataType": "OSD-BVS-V1.5"}, "Input": {"AIMCode": "CVE-VDI-V1.0", "DataType": "OSD-BVS-V1.5"}},
+                      {"Output": {"AIMCode": "", "DataType": "OSD-BVS-V1.5"}, "Input": {"AIMCode": "OSD-VOE-V1.5", "DataType": "OSD-BVS-V1.5"}},
+                      {"Output": {"AIMCode": "", "DataType": "OSD-BVO-V1.5"}, "Input": {"AIMCode": "OSD-VOE-V1.5", "DataType": "OSD-BVO-V1.5"}},
+                      {"Output": {"AIMCode": "CVE-VDI-V1.0", "DataType": "OSD-OPV-V1.5"}, "Input": {"AIMCode": "OSD-VOE-V1.5", "DataType": "OSD-OPV-V1.5"}},
+                      {"Output": {"AIMCode": "OSD-VOE-V1.5", "DataType": "OSD-BVO-V1.5"}, "Input": {"AIMCode": "CVE-VII-V1.0", "DataType": "OSD-BVO-V1.5"}},
+                      {"Output": {"AIMCode": "CVE-VII-V1.0", "DataType": "OSD-IID-V1.5"}, "Input": {"AIMCode": "", "DataType": "OSD-IID-V1.5"}}],
 
   "AIMLicence":       "/* AIM Licence offered by the Implementer (AIF-LIC-V3.0): Grant, Term, Updates, Payment, TermsURI - or omit it if the AIM needs no AIM Licence */",
 

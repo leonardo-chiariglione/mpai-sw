@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-SMC-V2.5-I01", "AIMName": "1CAE-SMC-V2.5-I01"},
-  "Header":           "CAE-SMC-V2.5",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-SMC-V2.5-I01", "AIMInstID": "1CAE-SMC-V2.5-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAE-SMC-V2.5",
   "APIProfile":       "Basic",
   "Description":      "Speech Model Creation: receives the Speech Segments for Modelling (a Basic Speech Object) and produces the Neural Network Speech Model (an ML Model Object).",
   "ExternalPorts":    [{"Name": "SpeechSegmentsForModelling", "Direction": "Input",  "DataType": "OSD-BSO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},

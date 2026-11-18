@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-VAP-V2.5-I01", "AIMName": "1CAE-VAP-V2.5-I01"},
-  "Header":           "CAE-VAP-V2.5",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-VAP-V2.5-I01", "AIMInstID": "1CAE-VAP-V2.5-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAE-VAP-V2.5",
   "APIProfile":       "Basic",
   "Description":      "Video Analysis for Preservation: detects the irregularities of the Preservation Audio-Visual File, puts them in the time of the Preservation Audio File, merges them with those of the Audio Analysis and gives their images.",
   "ExternalPorts":    [{"Name": "PreservationAudioVisualFile", "Direction": "Input", "IsOptional": true, "DataType": "OSD-BMO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},

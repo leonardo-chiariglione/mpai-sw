@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "OSD-MDX-V1.5-I01",
-    "AIMName": "1OSD-MDX-V1.5-I01"
+    "AIMInstID": "1OSD-MDX-V1.5-I01"
   },
-  "Header": "OSD-MDX-V1.5",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "OSD-MDX-V1.5",
   "APIProfile": "Basic",
   "Description": "Multimodal Scene Demultiplexing: demultiplexes the Basic Multimodal Scene Descriptors it receives into the Space-Time of the scene, the Speech Objects, the Text Object, the Audio Objects, the Visual Objects, the Face Object (a Visual Object that is a face), the Face and Body Descriptors, the Audio Scene Descriptors and the geometry of the scenes. What the scene does not hold is not produced.",
   "InternalTypes": [],

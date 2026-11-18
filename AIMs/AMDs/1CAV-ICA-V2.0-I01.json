@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAV-ICA-V2.0-I01", "AIMName": "1CAV-ICA-V2.0-I01"},
-  "Header":           "CAV-ICA-V2.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAV-ICA-V2.0-I01", "AIMInstID": "1CAV-ICA-V2.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAV-ICA-V2.0",
   "APIProfile":       "Basic",
   "Description":      "Ice Condition Analysis, Stage 1: the friction the road offers, estimated from the wheel slip the Responses report against the acceleration achieved and from the Weather Data - below zero with precipitation, ice is likely - given as the Road State; the Weather Data forwarded.",
   "InternalTypes":    [],

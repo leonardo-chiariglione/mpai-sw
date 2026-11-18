@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PGM-AEA-V1.0-I01",
-    "AIMName": "1PGM-AEA-V1.0-I01"
+    "AIMInstID": "1PGM-AEA-V1.0-I01"
   },
-  "Header": "PGM-AEA-V1.0",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PGM-AEA-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
   "Description": "The Acoustic Environment Analysis (PGM-AEA) AI Module derives a structured Acoustic Profile describing the environmental acoustic characteristics of an audio scene from an Audio Scene Description by",

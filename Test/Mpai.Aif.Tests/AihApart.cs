@@ -21,7 +21,7 @@ public sealed class AihApart : IDisposable
         foreach (var file in Directory.EnumerateFiles(Repository.Amds, "*.json")) File.Copy(file, Path.Combine(amds, Path.GetFileName(file)));
         var l3 = File.ReadAllText(Path.Combine(amds, composite + ".json"));
         foreach (var aim in aims)
-            l3 = System.Text.RegularExpressions.Regex.Replace(l3, "(\"AIMName\"\\s*:\\s*\"" + aim + "\"\\s*,\\s*\"Relation\"\\s*:\\s*)\"Internal\"", "$1\"External\"");
+            l3 = System.Text.RegularExpressions.Regex.Replace(l3, "(\"AIMInstID\"\\s*:\\s*\"" + aim + "\"\\s*,\\s*\"Relation\"\\s*:\\s*)\"Internal\"", "$1\"External\"");
         File.WriteAllText(Path.Combine(amds, composite + ".json"), l3);
         var process = new HostProcess(amds: amds, provider: Path.Combine(AppContext.BaseDirectory, "Mpai.Aih.dll") + ":Mpai.Aih.AihProvider",
                                       extra: ["--settings", settings], workingDirectory: Repository.Root);

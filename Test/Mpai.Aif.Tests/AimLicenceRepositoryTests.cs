@@ -78,7 +78,7 @@ public class AimLicenceRepositoryTests : IDisposable
         var licence = repository.LicenceOf(aim)!;
         Assert.Equal("valid", Valid(licence));                                                           // it is an AIM Licence as the schema says
         Assert.Equal(org.Anchor.AnchorId, (string?)licence["Licensee"]!["TrustAnchorID"]);               // the licensee is the holder of the Trust Anchor
-        Assert.Equal(aim, (string?)licence["AIM"]!["AIMName"]);
+        Assert.Equal(aim, (string?)licence["AIM"]!["AIMInstID"]);
         Assert.Equal("mpai-store", (string?)licence["Licensor"]!["LicensorID"]);                          // the Store grants
         Assert.Equal("2027-10-18T12:00:00Z", (string?)licence["Term"]!["NotAfter"]);                    // the offer's P1Y, from now
         Assert.Equal("Final", (string?)licence["Payment"]!["SPMStatus"]);                                // what was priced is paid...
@@ -441,8 +441,8 @@ public class AimLicenceRepositoryTests : IDisposable
         Assert.True(store.Publish(l3.ToJsonString(), replace: true).WasPublished);
         Assert.Single(Directory.GetFiles(Path.Combine(StoreFolder, "versions", store.List().First(n => n == aim)), "*.json"));   // the first version is kept
         var composite = JsonNode.Parse(store.Retrieve(aim))!.AsObject();
-        composite["Identifier"]!["AIMName"] = "1AIH-COMPOSITE-V1.1-I01";
-        composite["SubAIMs"] = new JsonArray(new JsonObject { ["Identifier"] = new JsonObject { ["ImplementerID"] = "1", ["ImplementationID"] = "X", ["AIMName"] = "1AIH-NOWHERE-V1.1-I01", ["Relation"] = "Internal" } });
+        composite["Identifier"]!["AIMInstID"] = "1AIH-COMPOSITE-V1.1-I01";
+        composite["SubAIMs"] = new JsonArray(new JsonObject { ["Identifier"] = new JsonObject { ["ImplementerID"] = "1", ["ImplementationID"] = "X", ["AIMInstID"] = "1AIH-NOWHERE-V1.1-I01", ["Relation"] = "Internal" } });
         var refused = store.Validate(composite.ToJsonString());
         Assert.Contains(refused.Errors, e => e.Contains("1AIH-NOWHERE-V1.1-I01"));
     }

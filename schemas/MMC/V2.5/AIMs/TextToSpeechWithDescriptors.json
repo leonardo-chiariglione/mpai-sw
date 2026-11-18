@@ -6,8 +6,9 @@
 
   "title":            "Text-to-Speech with Descriptors V2.5",
 
-  "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":           "MMC-TSD-V2.5",
+  "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "MMC-TSD-V2.5",
 
   "APIProfile":       "Basic",
   "Description":      "Text-to-Speech with Descriptors: speaks a Text Object with the voice that the Speech Descriptors Object describes, and gives the Speech Object. The Selector tells whether the output Speech retains the input Speech Descriptors. The Speech Descriptors Object is what Entity Speech Description gives from the speech of an Entity; its Qualifier says which descriptors it holds.",

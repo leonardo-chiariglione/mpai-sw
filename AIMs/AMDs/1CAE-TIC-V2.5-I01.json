@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-TIC-V2.5-I01", "AIMName": "1CAE-TIC-V2.5-I01"},
-  "Header":           "CAE-TIC-V2.5",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-TIC-V2.5-I01", "AIMInstID": "1CAE-TIC-V2.5-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAE-TIC-V2.5",
   "APIProfile":       "Basic",
   "Description":      "Tape Irregularity Classification: classifies the irregularities and selects the relevant ones.",
   "ExternalPorts":    [{"Name": "IrregularityAudioFiles", "Direction": "Input", "IsOptional": true, "DataType": "OSD-BAO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},

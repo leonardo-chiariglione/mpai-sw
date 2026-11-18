@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "MMC-PSI-V2.5-I01", "AIMName": "1MMC-PSI-V2.5-I01"},
-  "Header":           "MMC-PSI-V2.5",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "MMC-PSI-V2.5-I01", "AIMInstID": "1MMC-PSI-V2.5-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "MMC-PSI-V2.5",
 
   "APIProfile":       "Basic",
   "Description":      "PS-Speech Interpretation: gives the Speech Personal Status from the Speech Descriptors Object of a speech (the valence, arousal and dominance of the instance I03 of Entity Speech Description). The interpretation is that of MMC-SPE: the (valence, arousal) point is mapped to an Emotion by the quadrants of the affective circumplex, and the dominance to a Social Attitude. A Speech Descriptors Object of another format (a voice embedding) is refused. The model that gives these descriptors (in the instance I03 of Entity Speech Description) is licensed for non-commercial use only (CC-BY-NC-SA-4.0).",

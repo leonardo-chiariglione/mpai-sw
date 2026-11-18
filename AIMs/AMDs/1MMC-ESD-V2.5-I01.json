@@ -1,5 +1,6 @@
-{ "Identifier":       { "ImplementerID": "1", "ImplementationID": "MMC-ESD-V2.5-I01", "AIMName": "1MMC-ESD-V2.5-I01" },
-  "Header":           "MMC-ESD-V2.5",
+{ "Identifier":       { "ImplementerID": "1", "ImplementationID": "MMC-ESD-V2.5-I01", "AIMInstID": "1MMC-ESD-V2.5-I01" },
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "MMC-ESD-V2.5",
 
   "APIProfile":       "Basic",
   "Description":      "Entity Speech Description: computes the Speech Descriptors of an Entity from its Speech Object. Produces a Speech Descriptors Object carrying the ECAPA-TDNN speaker embedding. UserName (the User Agent's typed datum) keys the enrolment written to the Shared Storage gallery.",

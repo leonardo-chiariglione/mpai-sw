@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PGM-ASE-V1.0-I01",
-    "AIMName": "1PGM-ASE-V1.0-I01"
+    "AIMInstID": "1PGM-ASE-V1.0-I01"
   },
-  "Header": "PGM-ASE-V1.0",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PGM-ASE-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
   "Description": "The Audio Scene Enhancement (PGM-ASE) AIM interacts with three external entities through two distinct patterns. A-User Control issues the Audio CXT Request and receives the Audio CXT Response reporting the goal understood and the outcome reached. Domain Access and Private Storage are queried: the Audio Domain Request and the Audio Interaction History Request are issued by the AIM, and the Audio Domain Response and the Audio Interaction History Response are received in reply, in general during a subsequent processing cycle Audio Scene Enhancement",
@@ -80,7 +81,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "PGM-ASD-V1.0-I01",
-        "AIMName": "1PGM-ASD-V1.0-I01",
+        "AIMInstID": "1PGM-ASD-V1.0-I01",
         "Relation": "Internal"
       }
     },
@@ -88,7 +89,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "PGM-AEA-V1.0-I01",
-        "AIMName": "1PGM-AEA-V1.0-I01",
+        "AIMInstID": "1PGM-AEA-V1.0-I01",
         "Relation": "Internal"
       }
     },
@@ -96,7 +97,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "PGM-AII-V1.0-I01",
-        "AIMName": "1PGM-AII-V1.0-I01",
+        "AIMInstID": "1PGM-AII-V1.0-I01",
         "Relation": "Internal"
       }
     },
@@ -104,7 +105,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "PGM-ASM-V1.0-I01",
-        "AIMName": "1PGM-ASM-V1.0-I01",
+        "AIMInstID": "1PGM-ASM-V1.0-I01",
         "Relation": "Internal"
       }
     },
@@ -112,7 +113,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "PGM-EAM-V1.0-I01",
-        "AIMName": "1PGM-EAM-V1.0-I01",
+        "AIMInstID": "1PGM-EAM-V1.0-I01",
         "Relation": "Internal"
       }
     }
@@ -120,331 +121,331 @@
   "Topology": [
     {
       "Output": {
-        "AIMName": "1PGM-AII-V1.0-I01",
+        "AIMInstID": "1PGM-AII-V1.0-I01",
         "DataType": "PGM-IHI-V1.0"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-IHI-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-ASM-V1.0-I01",
+        "AIMInstID": "1PGM-ASM-V1.0-I01",
         "DataType": "PGM-IHI-V1.0"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-IHI-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-EAM-V1.0-I01",
+        "AIMInstID": "1PGM-EAM-V1.0-I01",
         "DataType": "PGM-IHI-V1.0"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-IHI-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-EAM-V1.0-I01",
+        "AIMInstID": "1PGM-EAM-V1.0-I01",
         "DataType": "OSD-EAD-V1.5"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-EAD-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-ASD-V1.0-I01",
+        "AIMInstID": "1PGM-ASD-V1.0-I01",
         "DataType": "PGM-UCC-V1.0"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-UCC-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-AEA-V1.0-I01",
+        "AIMInstID": "1PGM-AEA-V1.0-I01",
         "DataType": "PGM-UCC-V1.0"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-UCC-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-AII-V1.0-I01",
+        "AIMInstID": "1PGM-AII-V1.0-I01",
         "DataType": "PGM-UCC-V1.0"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-UCC-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-ASM-V1.0-I01",
+        "AIMInstID": "1PGM-ASM-V1.0-I01",
         "DataType": "PGM-UCC-V1.0"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-UCC-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-EAM-V1.0-I01",
+        "AIMInstID": "1PGM-EAM-V1.0-I01",
         "DataType": "PGM-UCC-V1.0"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-UCC-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-AEA-V1.0-I01",
+        "AIMInstID": "1PGM-AEA-V1.0-I01",
         "DataType": "PGM-DOM-V1.0"
       },
       "Input": {
-        "AIMName": "",
-        "DataType": "PGM-DOM-V1.0"
-      }
-    },
-    {
-      "Output": {
-        "AIMName": "1PGM-AII-V1.0-I01",
-        "DataType": "PGM-DOM-V1.0"
-      },
-      "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-DOM-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-ASM-V1.0-I01",
+        "AIMInstID": "1PGM-AII-V1.0-I01",
         "DataType": "PGM-DOM-V1.0"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-DOM-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-EAM-V1.0-I01",
+        "AIMInstID": "1PGM-ASM-V1.0-I01",
         "DataType": "PGM-DOM-V1.0"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-DOM-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "1PGM-EAM-V1.0-I01",
+        "DataType": "PGM-DOM-V1.0"
+      },
+      "Input": {
+        "AIMInstID": "",
+        "DataType": "PGM-DOM-V1.0"
+      }
+    },
+    {
+      "Output": {
+        "AIMInstID": "",
         "DataType": "OSD-BAO-V1.5"
       },
       "Input": {
-        "AIMName": "1PGM-ASD-V1.0-I01",
+        "AIMInstID": "1PGM-ASD-V1.0-I01",
         "DataType": "OSD-BAO-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-UCC-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-ASD-V1.0-I01",
+        "AIMInstID": "1PGM-ASD-V1.0-I01",
         "DataType": "PGM-UCC-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-ASD-V1.0-I01",
+        "AIMInstID": "1PGM-ASD-V1.0-I01",
         "DataType": "OSD-BAS-V1.5"
       },
       "Input": {
-        "AIMName": "1PGM-AEA-V1.0-I01",
+        "AIMInstID": "1PGM-AEA-V1.0-I01",
         "DataType": "OSD-BAS-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-UCC-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-AEA-V1.0-I01",
+        "AIMInstID": "1PGM-AEA-V1.0-I01",
         "DataType": "PGM-UCC-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-DOM-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-AEA-V1.0-I01",
-        "DataType": "PGM-DOM-V1.0"
-      }
-    },
-    {
-      "Output": {
-        "AIMName": "",
-        "DataType": "PGM-IHI-V1.0"
-      },
-      "Input": {
-        "AIMName": "1PGM-AEA-V1.0-I01",
-        "DataType": "PGM-IHI-V1.0"
-      }
-    },
-    {
-      "Output": {
-        "AIMName": "",
-        "DataType": "PGM-UCC-V1.0"
-      },
-      "Input": {
-        "AIMName": "1PGM-AII-V1.0-I01",
-        "DataType": "PGM-UCC-V1.0"
-      }
-    },
-    {
-      "Output": {
-        "AIMName": "1PGM-ASD-V1.0-I01",
-        "DataType": "OSD-BAS-V1.5"
-      },
-      "Input": {
-        "AIMName": "1PGM-AII-V1.0-I01",
-        "DataType": "OSD-BAS-V1.5"
-      }
-    },
-    {
-      "Output": {
-        "AIMName": "",
-        "DataType": "PGM-DOM-V1.0"
-      },
-      "Input": {
-        "AIMName": "1PGM-AII-V1.0-I01",
+        "AIMInstID": "1PGM-AEA-V1.0-I01",
         "DataType": "PGM-DOM-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-IHI-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-AII-V1.0-I01",
+        "AIMInstID": "1PGM-AEA-V1.0-I01",
         "DataType": "PGM-IHI-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-ASD-V1.0-I01",
+        "AIMInstID": "",
+        "DataType": "PGM-UCC-V1.0"
+      },
+      "Input": {
+        "AIMInstID": "1PGM-AII-V1.0-I01",
+        "DataType": "PGM-UCC-V1.0"
+      }
+    },
+    {
+      "Output": {
+        "AIMInstID": "1PGM-ASD-V1.0-I01",
         "DataType": "OSD-BAS-V1.5"
       },
       "Input": {
-        "AIMName": "1PGM-ASM-V1.0-I01",
+        "AIMInstID": "1PGM-AII-V1.0-I01",
         "DataType": "OSD-BAS-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-AEA-V1.0-I01",
+        "AIMInstID": "",
+        "DataType": "PGM-DOM-V1.0"
+      },
+      "Input": {
+        "AIMInstID": "1PGM-AII-V1.0-I01",
+        "DataType": "PGM-DOM-V1.0"
+      }
+    },
+    {
+      "Output": {
+        "AIMInstID": "",
+        "DataType": "PGM-IHI-V1.0"
+      },
+      "Input": {
+        "AIMInstID": "1PGM-AII-V1.0-I01",
+        "DataType": "PGM-IHI-V1.0"
+      }
+    },
+    {
+      "Output": {
+        "AIMInstID": "1PGM-ASD-V1.0-I01",
+        "DataType": "OSD-BAS-V1.5"
+      },
+      "Input": {
+        "AIMInstID": "1PGM-ASM-V1.0-I01",
+        "DataType": "OSD-BAS-V1.5"
+      }
+    },
+    {
+      "Output": {
+        "AIMInstID": "1PGM-AEA-V1.0-I01",
         "DataType": "CAE-ACP-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-ASM-V1.0-I01",
+        "AIMInstID": "1PGM-ASM-V1.0-I01",
         "DataType": "CAE-ACP-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-AII-V1.0-I01",
+        "AIMInstID": "1PGM-AII-V1.0-I01",
         "DataType": "PGM-AOT-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-ASM-V1.0-I01",
+        "AIMInstID": "1PGM-ASM-V1.0-I01",
         "DataType": "PGM-AOT-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-UCC-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-ASM-V1.0-I01",
+        "AIMInstID": "1PGM-ASM-V1.0-I01",
         "DataType": "PGM-UCC-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-DOM-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-ASM-V1.0-I01",
+        "AIMInstID": "1PGM-ASM-V1.0-I01",
         "DataType": "PGM-DOM-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-IHI-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-ASM-V1.0-I01",
+        "AIMInstID": "1PGM-ASM-V1.0-I01",
         "DataType": "PGM-IHI-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BAO-V1.5"
       },
       "Input": {
-        "AIMName": "1PGM-EAM-V1.0-I01",
+        "AIMInstID": "1PGM-EAM-V1.0-I01",
         "DataType": "OSD-BAO-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-ASD-V1.0-I01",
+        "AIMInstID": "1PGM-ASD-V1.0-I01",
         "DataType": "OSD-BAS-V1.5"
       },
       "Input": {
-        "AIMName": "1PGM-EAM-V1.0-I01",
+        "AIMInstID": "1PGM-EAM-V1.0-I01",
         "DataType": "OSD-BAS-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-AEA-V1.0-I01",
+        "AIMInstID": "1PGM-AEA-V1.0-I01",
         "DataType": "CAE-ACP-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-EAM-V1.0-I01",
+        "AIMInstID": "1PGM-EAM-V1.0-I01",
         "DataType": "CAE-ACP-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-AII-V1.0-I01",
+        "AIMInstID": "1PGM-AII-V1.0-I01",
         "DataType": "PGM-AOT-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-EAM-V1.0-I01",
+        "AIMInstID": "1PGM-EAM-V1.0-I01",
         "DataType": "PGM-AOT-V1.0"
       }
     }

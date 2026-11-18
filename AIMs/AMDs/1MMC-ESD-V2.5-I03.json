@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "MMC-ESD-V2.5-I03", "AIMName": "1MMC-ESD-V2.5-I03"},
-  "Header":           "MMC-ESD-V2.5",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "MMC-ESD-V2.5-I03", "AIMInstID": "1MMC-ESD-V2.5-I03"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "MMC-ESD-V2.5",
 
   "APIProfile":       "Basic",
   "Description":      "Entity Speech Description, the instance that describes the affect of the speech: gives the Speech Descriptors Object of a Speech Object. The descriptors are the three numbers that the wav2vec 2.0 model of audeering reads from the speech (valence, arousal, dominance), three numbers in this order; the Qualifier of the Object names the format (wav2vec 2.0 Dimensional Affect (valence, arousal, dominance)). PS-Speech Interpretation turns them into the Speech Personal Status. The instances I01 (ECAPA-TDNN) and I02 (OpenVoice) describe the voice, not the affect.",

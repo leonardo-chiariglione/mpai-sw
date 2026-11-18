@@ -2,8 +2,9 @@
   "$comment":             "https://schemas.mpai.community/AIF/V3.0/data/AIMMetadata.json",
   "$id":                  "https://schemas.mpai.community/CAE1/V2.5/AIMs/AudioSceneObjectIdentification.json",
   "title":                "Audio Scene Object Identification V2.5",
-  "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":            "CAE-ASI-V2.5",
+  "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":            "AIF-AMM-V3.0",
+  "AIMType":           "CAE-ASI-V2.5",
 
   "APIProfile":       "Basic",
   "Description":      "Audio Scene object Identification: classifies each audio object of the Basic Audio Scene with YAMNet and requalifies it - a speech object becomes a Basic Speech Object (OSD-BSO) for Speaker Recognition/ASR/Personal Status; other sound stays a Basic Audio Object (OSD-BAO) for Audio Instance Identification.",

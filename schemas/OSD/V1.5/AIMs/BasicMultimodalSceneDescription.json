@@ -6,8 +6,9 @@
 
   "title":            "Basic Multimodal Scene Description V1.5",
 
-  "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":           "OSD-BMS-V1.5",
+  "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "OSD-BMS-V1.5",
 
   "APIProfile":       "Basic",
   "Description":      "Basic Multimodal Scene Description: describes the Basic Multimodal Scene from the Audio, Speech and Visual Objects of the scene and the Space-Time they are in. Basic Audio Scene Description, Basic Speech Scene Description and Basic Visual Scene Description give the Basic Scene Descriptors of each medium, and Multimodal Alignment aligns them into the Basic Multimodal Scene Descriptors.",
@@ -20,19 +21,19 @@
                       {"Name": "VisualObjects", "Direction": "Input", "DataType": "OSD-BVO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
                       {"Name": "BasicMultimodalSceneDescriptors", "Direction": "Output", "DataType": "OSD-BMS-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
-  "SubAIMs":       [{"Header": "OSD-BAS-V1.5", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": ""}},
-                      {"Header": "OSD-BVS-V1.5", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": ""}},
-                      {"Header": "OSD-BSS-V1.5", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": ""}},
-                      {"Header": "OSD-MAL-V1.5", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": ""}}],
+  "SubAIMs":       [{"AIMType": "OSD-BAS-V1.5", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": ""}},
+                      {"AIMType": "OSD-BVS-V1.5", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": ""}},
+                      {"AIMType": "OSD-BSS-V1.5", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": ""}},
+                      {"AIMType": "OSD-MAL-V1.5", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": ""}}],
 
-  "Topology":      [{"Output": {"AIMName": "", "DataType": "OSD-BAO-V1.5"}, "Input": {"AIMName": "OSD-BAS-V1.5", "DataType": "OSD-BAO-V1.5"}},
-                      {"Output": {"AIMName": "", "DataType": "OSD-BVO-V1.5"}, "Input": {"AIMName": "OSD-BVS-V1.5", "DataType": "OSD-BVO-V1.5"}},
-                      {"Output": {"AIMName": "", "DataType": "OSD-BSO-V1.5"}, "Input": {"AIMName": "OSD-BSS-V1.5", "DataType": "OSD-BSO-V1.5"}},
-                      {"Output": {"AIMName": "", "DataType": "OSD-SPT-V1.5"}, "Input": {"AIMName": "OSD-BSS-V1.5", "DataType": "OSD-SPT-V1.5"}},
-                      {"Output": {"AIMName": "OSD-BAS-V1.5", "DataType": "OSD-BAS-V1.5"}, "Input": {"AIMName": "OSD-MAL-V1.5", "DataType": "OSD-BAS-V1.5"}},
-                      {"Output": {"AIMName": "OSD-BVS-V1.5", "DataType": "OSD-BVS-V1.5"}, "Input": {"AIMName": "OSD-MAL-V1.5", "DataType": "OSD-BVS-V1.5"}},
-                      {"Output": {"AIMName": "OSD-BSS-V1.5", "DataType": "OSD-BSS-V1.5"}, "Input": {"AIMName": "OSD-MAL-V1.5", "DataType": "OSD-BSS-V1.5"}},
-                      {"Output": {"AIMName": "OSD-MAL-V1.5", "DataType": "OSD-BMS-V1.5"}, "Input": {"AIMName": "", "DataType": "OSD-BMS-V1.5"}}],
+  "Topology":      [{"Output": {"AIMCode": "", "DataType": "OSD-BAO-V1.5"}, "Input": {"AIMCode": "OSD-BAS-V1.5", "DataType": "OSD-BAO-V1.5"}},
+                      {"Output": {"AIMCode": "", "DataType": "OSD-BVO-V1.5"}, "Input": {"AIMCode": "OSD-BVS-V1.5", "DataType": "OSD-BVO-V1.5"}},
+                      {"Output": {"AIMCode": "", "DataType": "OSD-BSO-V1.5"}, "Input": {"AIMCode": "OSD-BSS-V1.5", "DataType": "OSD-BSO-V1.5"}},
+                      {"Output": {"AIMCode": "", "DataType": "OSD-SPT-V1.5"}, "Input": {"AIMCode": "OSD-BSS-V1.5", "DataType": "OSD-SPT-V1.5"}},
+                      {"Output": {"AIMCode": "OSD-BAS-V1.5", "DataType": "OSD-BAS-V1.5"}, "Input": {"AIMCode": "OSD-MAL-V1.5", "DataType": "OSD-BAS-V1.5"}},
+                      {"Output": {"AIMCode": "OSD-BVS-V1.5", "DataType": "OSD-BVS-V1.5"}, "Input": {"AIMCode": "OSD-MAL-V1.5", "DataType": "OSD-BVS-V1.5"}},
+                      {"Output": {"AIMCode": "OSD-BSS-V1.5", "DataType": "OSD-BSS-V1.5"}, "Input": {"AIMCode": "OSD-MAL-V1.5", "DataType": "OSD-BSS-V1.5"}},
+                      {"Output": {"AIMCode": "OSD-MAL-V1.5", "DataType": "OSD-BMS-V1.5"}, "Input": {"AIMCode": "", "DataType": "OSD-BMS-V1.5"}}],
 
   "AIMLicence":       "/* AIM Licence offered by the Implementer (AIF-LIC-V3.0): Grant, Term, Updates, Payment, TermsURI - or omit it if the AIM needs no AIM Licence */",
 

@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "PAF-PBI-V1.6-I01", "AIMName": "1PAF-PBI-V1.6-I01"},
-  "Header":           "PAF-PBI-V1.6",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "PAF-PBI-V1.6-I01", "AIMInstID": "1PAF-PBI-V1.6-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "PAF-PBI-V1.6",
 
   "APIProfile":       "Basic",
   "Description":      "PS-Body Interpretation: gives the Body Personal Status from the Body Descriptors Object of a body (the 33 keypoints of Entity Body Description). FIRST IMPLEMENTATION, BY SIMPLE RULES: no model reads the Personal Status from the keypoints; six postures and gestures (arms raised, hand at the face, arms crossed, hands on the hips, arms open, head dropped) are recognised from the geometry of the keypoints and each is given a label of the vocabulary. A posture that is not among them gives no Personal Status.",

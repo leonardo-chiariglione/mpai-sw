@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "PAF-PDX-V1.6-I01", "AIMName": "1PAF-PDX-V1.6-I01"},
-  "Header":           "PAF-PDX-V1.6",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "PAF-PDX-V1.6-I01", "AIMInstID": "1PAF-PDX-V1.6-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "PAF-PDX-V1.6",
 
   "APIProfile":       "Basic",
   "Description":      "Portable Avatar Demultiplexing: gives the components present in a Portable Avatar, each on its Port; a component the Portable Avatar does not carry is not given. Two are always given, because what follows needs them to know who spoke and how: the Avatar ID (the Avatar's ID, or else the Portable Avatar's) and the Personal Status (neutral where the Portable Avatar carries none). Where the Portable Avatar carries both a Speech Object and the Text of it, only the Text is given, so that the words are not recognised a second time.",

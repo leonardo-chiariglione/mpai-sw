@@ -31,7 +31,7 @@ public static class AimProfiles
         if (!l3.TryGetProperty("SubAIMs", out var subs) || subs.ValueKind != System.Text.Json.JsonValueKind.Array) return null;
         foreach (var sub in subs.EnumerateArray())
         {
-            if (!sub.TryGetProperty("Identifier", out var identifier) || !identifier.TryGetProperty("AIMName", out var n) || n.GetString() is not { Length: > 0 } name) continue;
+            if (!sub.TryGetProperty("Identifier", out var identifier) || !identifier.TryGetProperty("AIMInstID", out var n) || n.GetString() is not { Length: > 0 } name) continue;
             if (store.FindByAimName(name) is not { } subId) continue;
             var subProfile = Of(store.GetOriginal(subId).RootElement);
             if (subProfile != profile) return $"{name} declares the {subProfile} Profile and its Composite AIM {aimName} the {profile} Profile: the Sub-AIMs of a Composite AIM declare its Profile (Zero Trust and Profiles 6.3).";

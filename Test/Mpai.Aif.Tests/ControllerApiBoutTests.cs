@@ -21,7 +21,7 @@ public sealed class ControllerApiBoutTests
         foreach (var file in Directory.EnumerateFiles(StorageTests.Amds, "*.json")) File.Copy(file, Path.Combine(amds, Path.GetFileName(file)));
         var metadata = JsonNode.Parse(File.ReadAllText(Path.Combine(amds, "1TST-RCA-V1.0-I01.json")))!.AsObject();
         metadata["Identifier"]!["ImplementationID"] = "TST-BOU-V1.0-I01";
-        metadata["Identifier"]!["AIMName"] = Module;
+        metadata["Identifier"]!["AIMInstID"] = Module;
         metadata["Header"] = "TST-BOU-V1.0";
         metadata.Remove("Record");
         foreach (var port in metadata["ExternalPorts"]!.AsArray())

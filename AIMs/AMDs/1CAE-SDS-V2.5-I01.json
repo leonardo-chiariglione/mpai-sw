@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-SDS-V2.5-I01", "AIMName": "1CAE-SDS-V2.5-I01"},
-  "Header":           "CAE-SDS-V2.5",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-SDS-V2.5-I01", "AIMInstID": "1CAE-SDS-V2.5-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAE-SDS-V2.5",
   "APIProfile":       "Basic",
   "Description":      "Speech Detection and Separation: finds the sound sources in the coefficients of the sound field, where they are and when they are active, and separates them, a channel in the transform domain for each.",
   "ExternalPorts":    [{"Name": "SHDCoefficients", "Direction": "Input", "DataType": "OSD-BAO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},

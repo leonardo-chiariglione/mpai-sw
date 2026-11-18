@@ -32,7 +32,7 @@ public class CaeUscV25ArpModuleTests : IDisposable
         foreach (var file in Directory.EnumerateFiles(Repository.Amds, "*.json")) File.Copy(file, Path.Combine(amds, Path.GetFileName(file)));
         var l3 = File.ReadAllText(Path.Combine(amds, Arp + ".json"));
         foreach (var aim in Aims)
-            l3 = System.Text.RegularExpressions.Regex.Replace(l3, "(\"AIMName\"\\s*:\\s*\"" + aim + "\"\\s*,\\s*\"Relation\"\\s*:\\s*)\"Internal\"", "$1\"External\"");
+            l3 = System.Text.RegularExpressions.Regex.Replace(l3, "(\"AIMInstID\"\\s*:\\s*\"" + aim + "\"\\s*,\\s*\"Relation\"\\s*:\\s*)\"Internal\"", "$1\"External\"");
         File.WriteAllText(Path.Combine(amds, Arp + ".json"), l3);
         var settings = Path.Combine(work, "aim-settings.json"); File.WriteAllText(settings, "{}");
         process = new HostProcess(amds: amds, provider: Path.Combine(AppContext.BaseDirectory, "Mpai.Cae.Usc.dll") + ":Mpai.Cae.Usc.UscProvider",

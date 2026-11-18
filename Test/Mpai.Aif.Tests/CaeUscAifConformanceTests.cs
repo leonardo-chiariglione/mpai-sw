@@ -88,7 +88,7 @@ public class CaeUscAifConformanceTests
             var edges = new Dictionary<string, HashSet<string>>();
             foreach (var c in topology.EnumerateArray())
             {
-                string From(string side) => c.GetProperty(side).GetProperty("AIMName").GetString() ?? "";
+                string From(string side) => c.GetProperty(side).GetProperty("AIMInstID").GetString() ?? "";
                 var (from, to) = (From("Output"), From("Input"));
                 if (from.Length == 0 || to.Length == 0) continue;               // an end at the boundary of the Module
                 if (!edges.TryGetValue(from, out var set)) edges[from] = set = [];
@@ -134,7 +134,7 @@ public class CaeUscAifConformanceTests
             }
         }
         var host = File.ReadAllText(Path.Combine(Repository.Root, "Apps", "CAE", "Support", "ModuleHost.cs"));
-        foreach (var forbidden in new[] { "SubAIMs", "\"Relation\"", "AIMName" })
+        foreach (var forbidden in new[] { "SubAIMs", "\"Relation\"", "AIMInstID" })
             if (host.Contains(forbidden)) problems.Add($"ModuleHost.cs reads or rewrites Metadata of the Module ({forbidden}) (UA-4).");
         Assert.True(problems.Count == 0, string.Join(Environment.NewLine, problems));
     }

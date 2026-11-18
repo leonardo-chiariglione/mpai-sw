@@ -1,5 +1,6 @@
-{ "Identifier":           {"ImplementerID": "1", "ImplementationID": "OSD-BVS-V1.5-I01", "AIMName": "1OSD-BVS-V1.5-I01"},
-  "Header":               "OSD-BVS-V1.5",
+{ "Identifier":           {"ImplementerID": "1", "ImplementationID": "OSD-BVS-V1.5-I01", "AIMInstID": "1OSD-BVS-V1.5-I01"},
+  "Header":               "AIF-AMM-V3.0",
+  "AIMType":              "OSD-BVS-V1.5",
 
   "APIProfile":           "Basic",
   "Description":          "Basic Visual Scene Description: describes the acquired video as a Basic Visual Scene - its Basic Visual Objects, each with its point of view. Front-end describer of MMC-HCI. (Front-end record: L3 from the L2; processor to be provided.)",

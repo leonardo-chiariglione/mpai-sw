@@ -23,7 +23,7 @@ public class VciTests
     private static JsonElement L2() => JsonDocument.Parse(File.ReadAllText(Path.Combine(Repository.Schemas, "MMC", "V2.5", "AIMs", "VoiceCommandInterface.json"))).RootElement.Clone();
 
     private static string End(JsonElement e) =>
-        $"{(e.TryGetProperty("AIMName", out var n) ? n.GetString() : "")}|{e.GetProperty("DataType").GetString()}|{(e.TryGetProperty("PortNumber", out var p) ? p.GetInt32() : 1)}";
+        $"{(e.TryGetProperty("AIMInstID", out var n) || e.TryGetProperty("AIMCode", out n) ? n.GetString() : "")}|{e.GetProperty("DataType").GetString()}|{(e.TryGetProperty("PortNumber", out var p) ? p.GetInt32() : 1)}";
 
     private static IEnumerable<string> Connections(JsonElement aim, Func<string, string> aimName) =>
         aim.GetProperty("Topology").EnumerateArray()
@@ -32,7 +32,7 @@ public class VciTests
 
     private static string Name(JsonElement end, Func<string, string> aimName)
     {
-        var name = end.TryGetProperty("AIMName", out var n) ? n.GetString() ?? "" : "";
+        var name = end.TryGetProperty("AIMInstID", out var n) || end.TryGetProperty("AIMCode", out n) ? n.GetString() ?? "" : "";      // an L3 names its AIM Instances (AIMInstID), an L2 its AIMs (AIMCode)
         return $"{(name.Length == 0 ? "" : aimName(name))}|{end.GetProperty("DataType").GetString()}|{(end.TryGetProperty("PortNumber", out var p) ? p.GetInt32() : 1)}";
     }
 
@@ -40,7 +40,7 @@ public class VciTests
     public void ItsL3IsItsL2sTopologyWithTheInstancesNamed()
     {
         var l2 = L2(); var l3 = L3("1MMC-VCI-V2.5-I01");
-        var instances = l3.GetProperty("SubAIMs").EnumerateArray().Select(s => s.GetProperty("Identifier").GetProperty("AIMName").GetString()!).ToList();
+        var instances = l3.GetProperty("SubAIMs").EnumerateArray().Select(s => s.GetProperty("Identifier").GetProperty("AIMInstID").GetString()!).ToList();
         string Instance(string l2Name) => instances.Single(i => i.StartsWith("1" + l2Name + "-I", StringComparison.Ordinal));
 
         // The L2 names four AIMs; the L3 names an instance of each, and no other.

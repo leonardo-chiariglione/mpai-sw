@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PGM-ASC-V1.0-I01",
-    "AIMName": "1PGM-ASC-V1.0-I01"
+    "AIMInstID": "1PGM-ASC-V1.0-I01"
   },
-  "Header": "PGM-ASC-V1.0",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PGM-ASC-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
   "Description": "A-User State Composition",

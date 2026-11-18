@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "AIH-NNM-V1.1-I02", "AIMName": "1AIH-NNM-V1.1-I02"},
-  "Header":           "AIH-NNM-V1.1",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "AIH-NNM-V1.1-I02", "AIMInstID": "1AIH-NNM-V1.1-I02"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "AIH-NNM-V1.1",
   "APIProfile":       "Secure",
   "Description":      "This AIM is a general Neural Network-based AIM: it processes AIH Data with the Neural Network Model it wraps - AIH Data in, the AIH Data resulting from the processing out - and gives that Model, trained on what it processed.",
   "InternalTypes":    [{"Name": "AIHData", "DataType": "AIH-AHD-V1.1"}, {"Name": "NNModel", "DataType": "AIP-MLO-V1.0"}],

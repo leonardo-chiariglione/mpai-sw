@@ -2,9 +2,10 @@
   "$comment":             "https://schemas.mpai.community/AIF/V3.0/data/AIMMetadata.json",
   "$id":                  "https://schemas.mpai.community/CAE3/V1.0/AIMs/PlaneWaveParameterInterpolation.json",
   "title":                "Plane Wave Parameter Interpolation V1.0",
-  "Header":               "CAE-PWI-V1.0",
+  "Header":               "AIF-AMM-V3.0",
+  "AIMType":              "CAE-PWI-V1.0",
 
-  "Identifier":           {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Identifier":           {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
 
   "APIProfile":           "Basic",
   "Description":          "Plane Wave Parameter Interpolation (CAE-PWI) of CAE-6DF V1.0: The PWI module performs spatial interpolation on parametric representations of a sound field, such as estimated Directions of Arrival (DoAs), source distances, and amplitudes, estimated at discrete, static physical microphone array positions by operating directly on these spatial metadata parameters rather than raw audio waveforms. This module enables the calculation of a spatially coherent, localized sound field representation at any arbitrary virtual listening coordinate within a 6DF environment.",

@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "NNW-WEX-V2.0-I01", "AIMName": "1NNW-WEX-V2.0-I01"},
-  "Header":           "NNW-WEX-V2.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "NNW-WEX-V2.0-I01", "AIMInstID": "1NNW-WEX-V2.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "NNW-WEX-V2.0",
   "APIProfile":       "Secure",
   "Description":      "Watermark Extraction with NCT, No-Constraint Traceability (Institut Mines-Telecom): the weights at the positions the Key gives are read; the Payload is read from them, and their Pearson correlation with the watermark it gives says whether the mark is present.",
   "InternalTypes":    [],

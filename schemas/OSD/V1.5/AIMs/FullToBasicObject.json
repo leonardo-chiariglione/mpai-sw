@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":           "OSD-FBO-V1.5",
+{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "OSD-FBO-V1.5",
 
   "APIProfile":       "Basic",
   "Description":      "Full to Basic Object: gives access to the Basic Objects that compose a Full Object of any medium (Speech, Audio, Visual, 3D Model, LiDAR, RADAR, Offline Map, Ultrasound, Multimodal, Text or generic Object). It outputs the Basic Objects of the Full Object sequentially, in order, as the AIMs that follow work on Basic Objects.",

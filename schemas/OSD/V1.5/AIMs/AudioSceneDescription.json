@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":           "OSD-ASD-V1.5",
+{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "OSD-ASD-V1.5",
 
   "APIProfile":       "Basic",
   "Description":      "Audio Scene Description: see https://mpai.community/standards/mpai-osd/v1-5/ai-modules/audio-scene-description/. The Audio Scene Description (OSD-ASD) AIM receives Audio Objects, the Descriptors of the Scene the Objects belong to, and their Space-Time information as inputs and produces the Descriptors of a Scene composed of Audio Objects and Scenes. The OSD‑ASD AIM may also produce an Alert conveying information on potential anomalies in the input Audio Model Objects:",

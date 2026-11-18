@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "HMC-SID-V2.2-I01",
-    "AIMName": "1HMC-SID-V2.2-I01"
+    "AIMInstID": "1HMC-SID-V2.2-I01"
   },
-  "Header": "HMC-SID-V2.2",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "HMC-SID-V2.2",
   "APIProfile": "Basic",
   "Description": "Multimodal Scene Integration and Description: takes the Avatar and the Scene conveyed by the Input Portable Avatar, places the Avatar in the Scene with an appropriate Spatial Attitude (a generic Scene if the Portable Avatar conveys none) and gives the Face, Body and other Visual Objects, the Visual Scene Descriptors, the Audio and Speech Objects and the Audio Scene Descriptors of the resulting Scene.",
   "InternalTypes": [],

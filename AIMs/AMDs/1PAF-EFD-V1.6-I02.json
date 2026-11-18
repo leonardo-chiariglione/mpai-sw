@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "PAF-EFD-V1.6-I02", "AIMName": "1PAF-EFD-V1.6-I02"},
-  "Header":           "PAF-EFD-V1.6",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "PAF-EFD-V1.6-I02", "AIMInstID": "1PAF-EFD-V1.6-I02"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "PAF-EFD-V1.6",
 
   "APIProfile":       "Basic",
   "Description":      "Entity Face Description, the instance that describes the expression of the face: gives the Face Descriptors Object of a Face Object (a picture of one face). The descriptors are the ten numbers that the HSEmotion model reads from the face: the probabilities of the eight emotions of AffectNet, then the valence and the arousal; the Qualifier of the Object names the format. PS-Face Interpretation turns them into the Face Personal Status. The instance I01 describes the identity of the face (ArcFace), not the expression.",

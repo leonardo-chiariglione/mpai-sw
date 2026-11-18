@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAV-SAG-V2.0-I01", "AIMName": "1CAV-SAG-V2.0-I01"},
-  "Header":           "CAV-SAG-V2.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAV-SAG-V2.0-I01", "AIMInstID": "1CAV-SAG-V2.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAV-SAG-V2.0",
   "APIProfile":       "Basic",
   "Description":      "Spatial Attitude Generation: the ego Spatial Attitude on a frame anchored to the first GNSS fix - east, north and up in metres - from the Spatial Attitude of the Motion Actuation Subsystem, given at its rate, corrected by GNSS through a complementary filter whose weight is a setting.",
   "InternalTypes":    [],

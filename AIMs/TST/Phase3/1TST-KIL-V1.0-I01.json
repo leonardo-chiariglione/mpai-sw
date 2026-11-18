@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-KIL-V1.0-I01", "AIMName": "1TST-KIL-V1.0-I01"},
-  "Header":           "TST-KIL-V1.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-KIL-V1.0-I01", "AIMInstID": "1TST-KIL-V1.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "TST-KIL-V1.0",
 
   "APIProfile":       "Basic",
   "Description":      "Test: asks the Controller to stop 1TST-UPP-V1.0-I01 (MPAI_AIFM_AIM_Stop), then gives its text back.",

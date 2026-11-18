@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "AIH-ARA-V1.1-I02", "AIMName": "1AIH-ARA-V1.1-I02"},
-  "Header":           "AIH-ARA-V1.1",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "AIH-ARA-V1.1-I02", "AIMInstID": "1AIH-ARA-V1.1-I02"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "AIH-ARA-V1.1",
   "APIProfile":       "Secure",
   "Description":      "This AIM checks whether AIH Data signal anomalies or risks.",
   "InternalTypes":    [{"Name": "AIHData", "DataType": "AIH-AHD-V1.1"}, {"Name": "ARAData", "DataType": "AIH-ARD-V1.1"}],

@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":           "PGM-BEA-V1.0",
+{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "PGM-BEA-V1.0",
 
   "APIProfile":       "Basic",
   "Description":      "The Behavioural and Expressive Analysis (PGM-BEA) AI Module derives the indicators carried by Entity actions and bodily expressions. For this purpose, it uses the bodily evidence of the Harmonised Multimodal Context. It produces the Behavioural and Expressive Indicators by",

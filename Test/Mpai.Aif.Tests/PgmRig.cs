@@ -82,7 +82,7 @@ internal sealed class PgmRig
         }
         var amd = JsonNode.Parse(File.ReadAllText(Path.Combine(Repository.Amds, Module + ".json")))!;
         foreach (var t in amd["Topology"]!.AsArray())
-            _topology.Add(((string)t!["Output"]!["AIMName"]!, (string)t["Output"]!["DataType"]!, (string)t["Input"]!["AIMName"]!));
+            _topology.Add(((string)t!["Output"]!["AIMInstID"]!, (string)t["Output"]!["DataType"]!, (string)t["Input"]!["AIMInstID"]!));
     }
 
     // ---- the router -----------------------------------------------------------------------------------------------------------------------------

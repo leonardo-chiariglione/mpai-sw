@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAV-FED-V2.0-I01", "AIMName": "1CAV-FED-V2.0-I01"},
-  "Header":           "CAV-FED-V2.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAV-FED-V2.0-I01", "AIMInstID": "1CAV-FED-V2.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAV-FED-V2.0",
   "APIProfile":       "Basic",
   "Description":      "Full Environment Description, Stage 1: the Basic Environment Objects of the ESS placed on the Offline Map - the CAV itself by map matching, each object on the segment and lane where it is - with the segments of the Route ahead: the Full Environment Descriptors V2.0, at the instant of the Basic Environment Descriptors they were made from.",
   "InternalTypes":    [],

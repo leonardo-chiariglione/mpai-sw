@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":           "PGM-VSD-V1.0",
+{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "PGM-VSD-V1.0",
 
   "APIProfile":       "Basic",
   "Description":      "The Visual Scene Description (PGM-VSD) AIM receives a Visual Object and produces the Visual Scene Descriptors describing it. In the PGM-AUA context, the AIM operates under the control of a Visual CXT Request issued by A-User Control (through the CXT-AUS Interface) and reports a Visual CXT Response on completion. The AIM references the Input and Output Data Types by name; their structure is specified by the respective Data Type definitions.",

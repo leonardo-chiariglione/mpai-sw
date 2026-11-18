@@ -22,7 +22,9 @@ public static class TopologyNormaliser
     public static JsonDocument Normalise(JsonElement amd)
     {
         var root = JsonNode.Parse(amd.GetRawText())!.AsObject();
-        var aim = (string?)root["Identifier"]?["AIMName"] ?? "";
+        // An L3 refers to AIM Instances by AIMInstID, an L2 to AIMs by AIMCode: the normalised ends keep the name of the document's kind.
+        var key = root["Identifier"]?["AIMInstID"] is not null ? "AIMInstID" : "AIMCode";
+        var aim = (string?)root["Identifier"]?[key] ?? "";
 
         var ports = new List<Port>();
         foreach (var p in root["ExternalPorts"]?.AsArray() ?? [])
@@ -42,7 +44,7 @@ public static class TopologyNormaliser
         {
             var lines = new JsonArray();
             foreach (var line in topology)
-                lines.Add(Line(aim, line!, ports, internals));
+                lines.Add(Line(aim, key, line!, ports, internals));
             root["Topology"] = lines;
         }
 
@@ -63,7 +65,7 @@ public static class TopologyNormaliser
             (IsBoundary ? "" : Aim + ".") + (Name.Length > 0 ? Name : DataType) + (Cited is int c ? ":" + c : "");
 
         public static End Read(JsonNode? end) => new(
-            (string?)end?["AIMName"] ?? "",
+            (string?)end?["AIMInstID"] ?? (string?)end?["AIMCode"] ?? "",
             (string?)end?["PortName"] ?? "",
             end?["DataType"] is JsonValue v && v.GetValueKind() == JsonValueKind.String ? (string?)v : null,
             IntOf(end?["PortNumber"]));
@@ -77,7 +79,7 @@ public static class TopologyNormaliser
         public bool Accepts(string dataType) => Types.Contains(dataType);
     }
 
-    private static JsonObject Line(string aim, JsonNode line, List<Port> ports,
+    private static JsonObject Line(string aim, string key, JsonNode line, List<Port> ports,
                                    Dictionary<string, (List<string> Types, int? Output)> internals)
     {
         var from = End.Read(line["Output"]);
@@ -98,16 +100,16 @@ public static class TopologyNormaliser
         var dataType = fromDecl.DataType;
         var output = fromDecl.Output ?? toDecl.Output;
 
-        var outputEnd = Typed(from, fromDecl, dataType);
+        var outputEnd = Typed(key, from, fromDecl, dataType);
         if (output is int n) outputEnd["Output"] = n;
-        return new JsonObject { ["Output"] = outputEnd, ["Input"] = Typed(to, toDecl, dataType) };
+        return new JsonObject { ["Output"] = outputEnd, ["Input"] = Typed(key, to, toDecl, dataType) };
     }
 
     // The boundary is numbered as the User Agent addresses it, by the ExternalPort's
     // own PortNumber (absent meaning 1); a Sub-AIM Port by the number the line cites.
-    private static JsonObject Typed(End end, Declared declared, string dataType)
+    private static JsonObject Typed(string key, End end, Declared declared, string dataType)
     {
-        var typed = new JsonObject { ["AIMName"] = end.Aim, ["DataType"] = dataType };
+        var typed = new JsonObject { [key] = end.Aim, ["DataType"] = dataType };
         var number = end.IsBoundary ? declared.PortNumber ?? 1 : end.Cited;
         if (number is int n) typed["PortNumber"] = n;
         return typed;

@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PGM-ATU-V1.0-I01",
-    "AIMName": "1PGM-ATU-V1.0-I01"
+    "AIMInstID": "1PGM-ATU-V1.0-I01"
   },
-  "Header": "PGM-ATU-V1.0",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PGM-ATU-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
   "Execution": "Continuous",
@@ -157,7 +158,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "PGM-AUC-V1.0-I01",
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "Relation": "Internal"
       }
     },
@@ -165,7 +166,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "PGM-CXT-V1.0-I01",
-        "AIMName": "1PGM-CXT-V1.0-I01",
+        "AIMInstID": "1PGM-CXT-V1.0-I01",
         "Relation": "Internal"
       }
     },
@@ -173,7 +174,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "PGM-PRC-V1.0-I01",
-        "AIMName": "1PGM-PRC-V1.0-I01",
+        "AIMInstID": "1PGM-PRC-V1.0-I01",
         "Relation": "Internal"
       }
     },
@@ -181,7 +182,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "PGM-BKN-V1.0-I01",
-        "AIMName": "1PGM-BKN-V1.0-I01",
+        "AIMInstID": "1PGM-BKN-V1.0-I01",
         "Relation": "Internal"
       }
     },
@@ -189,7 +190,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "PGM-DAC-V1.0-I01",
-        "AIMName": "1PGM-DAC-V1.0-I01",
+        "AIMInstID": "1PGM-DAC-V1.0-I01",
         "Relation": "Internal"
       }
     },
@@ -197,7 +198,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "PGM-USR-V1.0-I01",
-        "AIMName": "1PGM-USR-V1.0-I01",
+        "AIMInstID": "1PGM-USR-V1.0-I01",
         "Relation": "Internal"
       }
     },
@@ -205,7 +206,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "PGM-PAL-V1.0-I01",
-        "AIMName": "1PGM-PAL-V1.0-I01",
+        "AIMInstID": "1PGM-PAL-V1.0-I01",
         "Relation": "Internal"
       }
     },
@@ -213,7 +214,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "PGM-AUF-V1.0-I01",
-        "AIMName": "1PGM-AUF-V1.0-I01",
+        "AIMInstID": "1PGM-AUF-V1.0-I01",
         "Relation": "Internal"
       }
     }
@@ -221,561 +222,561 @@
   "Topology": [
     {
       "Output": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "PGM-HCM-V1.0"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-HCM-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "MMM-ACT-V2.2"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "MMM-ACT-V2.2"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "MMM-PAC-V2.2"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "MMM-PAC-V2.2"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-HCM-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "PGM-HCM-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "MMM-PAC-V2.2"
       },
       "Input": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "MMM-PAC-V2.2"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-CXT-V1.0-I01",
+        "AIMInstID": "1PGM-CXT-V1.0-I01",
         "DataType": "PGM-UCC-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "PGM-UCC-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-PRC-V1.0-I01",
+        "AIMInstID": "1PGM-PRC-V1.0-I01",
         "DataType": "PGM-UCR-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "PGM-UCR-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-BKN-V1.0-I01",
+        "AIMInstID": "1PGM-BKN-V1.0-I01",
         "DataType": "PGM-UCK-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "PGM-UCK-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-DAC-V1.0-I01",
+        "AIMInstID": "1PGM-DAC-V1.0-I01",
         "DataType": "PGM-UCD-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "PGM-UCD-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-USR-V1.0-I01",
+        "AIMInstID": "1PGM-USR-V1.0-I01",
         "DataType": "PGM-UCU-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "PGM-UCU-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-PAL-V1.0-I01",
+        "AIMInstID": "1PGM-PAL-V1.0-I01",
         "DataType": "PGM-UCP-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "PGM-UCP-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-AUF-V1.0-I01",
+        "AIMInstID": "1PGM-AUF-V1.0-I01",
         "DataType": "PGM-UCF-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "PGM-UCF-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BAO-V1.5"
       },
       "Input": {
-        "AIMName": "1PGM-CXT-V1.0-I01",
+        "AIMInstID": "1PGM-CXT-V1.0-I01",
         "DataType": "OSD-BAO-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BVO-V1.5"
       },
       "Input": {
-        "AIMName": "1PGM-CXT-V1.0-I01",
+        "AIMInstID": "1PGM-CXT-V1.0-I01",
         "DataType": "OSD-BVO-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "PGM-UCC-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-CXT-V1.0-I01",
+        "AIMInstID": "1PGM-CXT-V1.0-I01",
         "DataType": "PGM-UCC-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-DAC-V1.0-I01",
+        "AIMInstID": "1PGM-DAC-V1.0-I01",
         "DataType": "PGM-DOM-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-CXT-V1.0-I01",
+        "AIMInstID": "1PGM-CXT-V1.0-I01",
         "DataType": "PGM-DOM-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BTO-V1.5"
       },
       "Input": {
-        "AIMName": "1PGM-CXT-V1.0-I01",
+        "AIMInstID": "1PGM-CXT-V1.0-I01",
         "DataType": "OSD-BTO-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-CXT-V1.0-I01",
+        "AIMInstID": "1PGM-CXT-V1.0-I01",
         "DataType": "PGM-CXD-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-PRC-V1.0-I01",
+        "AIMInstID": "1PGM-PRC-V1.0-I01",
         "DataType": "PGM-CXD-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "PGM-UCR-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-PRC-V1.0-I01",
+        "AIMInstID": "1PGM-PRC-V1.0-I01",
         "DataType": "PGM-UCR-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-BKN-V1.0-I01",
+        "AIMInstID": "1PGM-BKN-V1.0-I01",
         "DataType": "PGM-KPR-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-PRC-V1.0-I01",
+        "AIMInstID": "1PGM-PRC-V1.0-I01",
         "DataType": "PGM-KPR-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "PGM-UCK-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-BKN-V1.0-I01",
+        "AIMInstID": "1PGM-BKN-V1.0-I01",
         "DataType": "PGM-UCK-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-PRC-V1.0-I01",
+        "AIMInstID": "1PGM-PRC-V1.0-I01",
         "DataType": "PGM-PCP-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-BKN-V1.0-I01",
+        "AIMInstID": "1PGM-BKN-V1.0-I01",
         "DataType": "PGM-PCP-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-PRC-V1.0-I01",
+        "AIMInstID": "1PGM-PRC-V1.0-I01",
         "DataType": "PGM-KPR-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-BKN-V1.0-I01",
+        "AIMInstID": "1PGM-BKN-V1.0-I01",
         "DataType": "PGM-KPR-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-DAC-V1.0-I01",
+        "AIMInstID": "1PGM-DAC-V1.0-I01",
         "DataType": "PGM-KDA-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-BKN-V1.0-I01",
+        "AIMInstID": "1PGM-BKN-V1.0-I01",
         "DataType": "PGM-KDA-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-USR-V1.0-I01",
+        "AIMInstID": "1PGM-USR-V1.0-I01",
         "DataType": "PGM-KUS-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-BKN-V1.0-I01",
+        "AIMInstID": "1PGM-BKN-V1.0-I01",
         "DataType": "PGM-KUS-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-PAL-V1.0-I01",
+        "AIMInstID": "1PGM-PAL-V1.0-I01",
         "DataType": "PGM-KPA-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-BKN-V1.0-I01",
+        "AIMInstID": "1PGM-BKN-V1.0-I01",
         "DataType": "PGM-KPA-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "PGM-UCD-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-DAC-V1.0-I01",
+        "AIMInstID": "1PGM-DAC-V1.0-I01",
         "DataType": "PGM-UCD-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-CXT-V1.0-I01",
+        "AIMInstID": "1PGM-CXT-V1.0-I01",
         "DataType": "PGM-DOM-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-DAC-V1.0-I01",
+        "AIMInstID": "1PGM-DAC-V1.0-I01",
         "DataType": "PGM-DOM-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-BKN-V1.0-I01",
+        "AIMInstID": "1PGM-BKN-V1.0-I01",
         "DataType": "PGM-KDA-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-DAC-V1.0-I01",
+        "AIMInstID": "1PGM-DAC-V1.0-I01",
         "DataType": "PGM-KDA-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "PGM-UCU-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-USR-V1.0-I01",
+        "AIMInstID": "1PGM-USR-V1.0-I01",
         "DataType": "PGM-UCU-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-BKN-V1.0-I01",
+        "AIMInstID": "1PGM-BKN-V1.0-I01",
         "DataType": "PGM-KUS-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-USR-V1.0-I01",
+        "AIMInstID": "1PGM-USR-V1.0-I01",
         "DataType": "PGM-KUS-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "PGM-UCP-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-PAL-V1.0-I01",
+        "AIMInstID": "1PGM-PAL-V1.0-I01",
         "DataType": "PGM-UCP-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-USR-V1.0-I01",
+        "AIMInstID": "1PGM-USR-V1.0-I01",
         "DataType": "MMC-EST-V2.5"
       },
       "Input": {
-        "AIMName": "1PGM-PAL-V1.0-I01",
+        "AIMInstID": "1PGM-PAL-V1.0-I01",
         "DataType": "MMC-EST-V2.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-BKN-V1.0-I01",
+        "AIMInstID": "1PGM-BKN-V1.0-I01",
         "DataType": "PGM-KPA-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-PAL-V1.0-I01",
+        "AIMInstID": "1PGM-PAL-V1.0-I01",
         "DataType": "PGM-KPA-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "PGM-UCF-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-AUF-V1.0-I01",
+        "AIMInstID": "1PGM-AUF-V1.0-I01",
         "DataType": "PGM-UCF-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-BKN-V1.0-I01",
+        "AIMInstID": "1PGM-BKN-V1.0-I01",
         "DataType": "PGM-FRS-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-AUF-V1.0-I01",
+        "AIMInstID": "1PGM-AUF-V1.0-I01",
         "DataType": "PGM-FRS-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-PAL-V1.0-I01",
+        "AIMInstID": "1PGM-PAL-V1.0-I01",
         "DataType": "MMC-EST-V2.5"
       },
       "Input": {
-        "AIMName": "1PGM-AUF-V1.0-I01",
+        "AIMInstID": "1PGM-AUF-V1.0-I01",
         "DataType": "MMC-EST-V2.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-AUF-V1.0-I01",
+        "AIMInstID": "1PGM-AUF-V1.0-I01",
         "DataType": "PAF-PAV-V1.6"
       },
       "Input": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "PAF-PAV-V1.6"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-AUF-V1.0-I01",
+        "AIMInstID": "1PGM-AUF-V1.0-I01",
         "DataType": "MMM-PAT-V2.2"
       },
       "Input": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "MMM-PAT-V2.2"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "PGM-UCS-V1.0"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-UCS-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-UCS-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "PGM-UCS-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BSO-V1.5"
       },
       "Input": {
-        "AIMName": "1PGM-CXT-V1.0-I01",
+        "AIMInstID": "1PGM-CXT-V1.0-I01",
         "DataType": "OSD-BSO-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-CXT-V1.0-I01",
+        "AIMInstID": "1PGM-CXT-V1.0-I01",
         "DataType": "PGM-IHI-V1.0"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-IHI-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-IHI-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-CXT-V1.0-I01",
+        "AIMInstID": "1PGM-CXT-V1.0-I01",
         "DataType": "PGM-IHI-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-PRC-V1.0-I01",
+        "AIMInstID": "1PGM-PRC-V1.0-I01",
         "DataType": "PGM-IHI-V1.0"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-IHI-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-IHI-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-PRC-V1.0-I01",
+        "AIMInstID": "1PGM-PRC-V1.0-I01",
         "DataType": "PGM-IHI-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-DAC-V1.0-I01",
+        "AIMInstID": "1PGM-DAC-V1.0-I01",
         "DataType": "PGM-IHI-V1.0"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-IHI-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-IHI-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-DAC-V1.0-I01",
+        "AIMInstID": "1PGM-DAC-V1.0-I01",
         "DataType": "PGM-IHI-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-USR-V1.0-I01",
+        "AIMInstID": "1PGM-USR-V1.0-I01",
         "DataType": "PGM-IHI-V1.0"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-IHI-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-IHI-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-USR-V1.0-I01",
+        "AIMInstID": "1PGM-USR-V1.0-I01",
         "DataType": "PGM-IHI-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-PAL-V1.0-I01",
+        "AIMInstID": "1PGM-PAL-V1.0-I01",
         "DataType": "PGM-IHI-V1.0"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-IHI-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PGM-IHI-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-PAL-V1.0-I01",
+        "AIMInstID": "1PGM-PAL-V1.0-I01",
         "DataType": "PGM-IHI-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-B3O-V1.5"
       },
       "Input": {
-        "AIMName": "1PGM-AUF-V1.0-I01",
+        "AIMInstID": "1PGM-AUF-V1.0-I01",
         "DataType": "OSD-B3O-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "AIP-MLO-V1.0"
       },
       "Input": {
-        "AIMName": "1PGM-AUF-V1.0-I01",
+        "AIMInstID": "1PGM-AUF-V1.0-I01",
         "DataType": "AIP-MLO-V1.0"
       }
     },
     {
       "Output": {
-        "AIMName": "1PGM-AUC-V1.0-I01",
+        "AIMInstID": "1PGM-AUC-V1.0-I01",
         "DataType": "PAF-PAV-V1.6"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "PAF-PAV-V1.6"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-IID-V1.5"
       },
       "Input": {
-        "AIMName": "1PGM-AUF-V1.0-I01",
+        "AIMInstID": "1PGM-AUF-V1.0-I01",
         "DataType": "OSD-IID-V1.5"
       }
     }

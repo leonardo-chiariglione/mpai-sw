@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PGM-EAM-V1.0-I01",
-    "AIMName": "1PGM-EAM-V1.0-I01"
+    "AIMInstID": "1PGM-EAM-V1.0-I01"
   },
-  "Header": "PGM-EAM-V1.0",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PGM-EAM-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
   "Description": "The Enhanced Audio Multiplexing (PGM-EAM) AI Module consolidates the perceptual and enriched per-object evidence of an audio scene into a single Enhanced Audio Scene Descriptors representation by",

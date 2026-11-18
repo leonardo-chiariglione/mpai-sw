@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":           "OSD-TVS-V1.5",
+{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "OSD-TVS-V1.5",
 
   "APIProfile":       "Basic",
   "Description":      "Television Splitting: see https://mpai.community/standards/mpai-osd/v1-5/ai-modules/television-splitting/. The Television Splitting (OSD-TVS) AIM receives a video file with associated auxiliary text and produces the audio and video file and the text:",

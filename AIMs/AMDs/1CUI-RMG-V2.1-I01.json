@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CUI-RMG-V2.1-I01", "AIMName": "1CUI-RMG-V2.1-I01"},
-  "Header":           "CUI-RMG-V2.1",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CUI-RMG-V2.1-I01", "AIMInstID": "1CUI-RMG-V2.1-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CUI-RMG-V2.1",
   "APIProfile":       "Basic",
   "Description":      "This AIM generates the Secondary Risk Matrix of CUI-CPP.",
   "InternalTypes":    [],

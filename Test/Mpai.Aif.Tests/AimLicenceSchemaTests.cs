@@ -53,7 +53,7 @@ public class AimLicenceSchemaTests
         licence["AIMLicenceTime"] = new JsonObject { ["Header"] = "OSD-TIM-V1.5", ["TimeID"] = "t", ["Data"] = "2026-10-18T10:00:00Z" };
         licence["AIM"] = new JsonObject
         {
-            ["AIMName"] = "1AIH-NNM-V1.1-I02", ["Versions"] = new JsonObject { ["From"] = "1.1", ["To"] = "1.9" },
+            ["AIMInstID"] = "1AIH-NNM-V1.1-I02", ["Versions"] = new JsonObject { ["From"] = "1.1", ["To"] = "1.9" },
             ["L3"] = new JsonObject { ["HashAlgorithm"] = "PTF-ALGO-HASH-SHA256", ["Hash"] = new string('A', 64) }
         };
         licence["ParentLicence"] = new JsonObject { ["ImplementerID"] = "1", ["HashAlgorithm"] = "PTF-ALGO-HASH-SHA256", ["OfferHash"] = new string('C', 64) };   // the Implementer's offer it is under

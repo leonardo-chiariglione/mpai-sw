@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PGM-AOG-V1.0-I01",
-    "AIMName": "1PGM-AOG-V1.0-I01"
+    "AIMInstID": "1PGM-AOG-V1.0-I01"
   },
-  "Header": "PGM-AOG-V1.0",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PGM-AOG-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
   "Description": "The Animation Object Generation (PGM-AOG) AIM is a Sub-AIM of A-User Formation (PGM-AUF). It generates the animation of the Persona of the A-User: from the Communicative Functions, each with the Behaviour and the times given by Behaviour Planning, and from an Action of MMM-TEC V2.2 that goes with the text (for instance MM-Animate) it produces a Face Animation Object (Port Number 1) or a Body Animation Object (Port Number 2), Animation Objects (PAF-AMO) whose Animation Qualifier names the content format of the animation, which it gives to Entity Face Description and Entity Body Description. It is driven by the AUC-AUF Request and reports with an AUC-AUF Response.",

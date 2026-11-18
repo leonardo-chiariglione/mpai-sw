@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAV-AMM-V2.0-I01", "AIMName": "1CAV-AMM-V2.0-I01"},
-  "Header":           "CAV-AMM-V2.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAV-AMM-V2.0-I01", "AIMInstID": "1CAV-AMM-V2.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAV-AMM-V2.0",
   "APIProfile":       "Basic",
   "Description":      "AMS Memory, Stage 1: every decision recorded - Route, Path, Trajectory, Alert, AMS-MAS Message - and given as AMS Data.",
   "InternalTypes":    [],

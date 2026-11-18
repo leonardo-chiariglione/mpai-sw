@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-DSC-V1.0-I01", "AIMName": "1TST-DSC-V1.0-I01"},
-  "Header":           "TST-DSC-V1.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-DSC-V1.0-I01", "AIMInstID": "1TST-DSC-V1.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "TST-DSC-V1.0",
 
   "APIProfile":       "Basic",
   "Description":      "Test describer: its text, with the last accumulated value it received on its optional Port 2. A feedback input keeps only the latest value (Depth 1, DropOldest): one that Blocks would stall the loop when inputs come faster than it turns.",

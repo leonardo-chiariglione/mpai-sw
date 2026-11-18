@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PGM-ASR-V1.0-I01",
-    "AIMName": "1PGM-ASR-V1.0-I01"
+    "AIMInstID": "1PGM-ASR-V1.0-I01"
   },
-  "Header": "PGM-ASR-V1.0",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PGM-ASR-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
   "Description": "The Automatic Speech Recognition (PGM-ASR) AIM extracts the text conveyed by an utterance and derives the paralinguistic features of the speech signal. The input speech may be accompanied by an auxiliary text, the identifier of the speaker, the Speech Overlap data type, and the time indicating the portion of the input speech that should be recognised. Operation is governed by the User CXT Request, which specifies scope, depth, and policy constraints. Processing outcome is reported via the User CXT Response. Domain knowledge and interaction history may be queried by issuing User Domain and User",

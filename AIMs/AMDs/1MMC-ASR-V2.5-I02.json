@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "MMC-ASR-V2.5-I02",
-    "AIMName": "1MMC-ASR-V2.5-I02"
+    "AIMInstID": "1MMC-ASR-V2.5-I02"
   },
-  "Header": "MMC-ASR-V2.5",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "MMC-ASR-V2.5",
   "APIProfile": "Basic",
   "Description": "Automatic Speech Recognition: receives a Basic Speech Object and its Speech Time and Speech arrives on one of two Ports and the text leaves on the matching one: Port 1 is a question about an image, Port 2 a reply to something the User Agent asked. The Port the speech arrives on says which it is, so nothing downstream has to infer it from what happens to be missing. Instance for Television Media Analysis: the speech to recognise at Port 3, the Auxiliary Text taken as the initial prompt, the Speaker ID and the Speech Overlap noted.",
   "ExternalPorts": [

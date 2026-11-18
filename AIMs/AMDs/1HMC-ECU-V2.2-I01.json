@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "HMC-ECU-V2.2-I01",
-    "AIMName": "1HMC-ECU-V2.2-I01"
+    "AIMInstID": "1HMC-ECU-V2.2-I01"
   },
-  "Header": "HMC-ECU-V2.2",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "HMC-ECU-V2.2",
   "APIProfile": "Basic",
   "Description": "Entity and Context Understanding: Automatic Speech Recognition recognises the Speech Object; Visual Instance Identification gives the Identifiers of the Visual Instances, the Entity ID among them, and passes the Visual Scene Descriptors on;  Audio Instance Identification gives the Identifier of the Audio Instance, both from the Scene Descriptors; Natural Language Understanding produces the Text Descriptors and the Refined Text; Personal Status Extraction gives the Personal Status of the Entity from the Face, Body, Speech and Text Objects. Multimodal Scene Multiplexing combines the Visual and the Audio Scene Descriptors into the Multimodal Scene Descriptors.",
   "InternalTypes": [
@@ -168,7 +169,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "MMC-ASR-V2.5-I02",
-        "AIMName": "1MMC-ASR-V2.5-I02",
+        "AIMInstID": "1MMC-ASR-V2.5-I02",
         "Relation": "Internal"
       }
     },
@@ -176,7 +177,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "CVE-VII-V1.0-I01",
-        "AIMName": "1CVE-VII-V1.0-I01",
+        "AIMInstID": "1CVE-VII-V1.0-I01",
         "Relation": "Internal"
       }
     },
@@ -184,7 +185,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "CAE-AII-V2.5-I01",
-        "AIMName": "1CAE-AII-V2.5-I01",
+        "AIMInstID": "1CAE-AII-V2.5-I01",
         "Relation": "Internal"
       }
     },
@@ -192,7 +193,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "MMC-NLU-V2.5-I01",
-        "AIMName": "1MMC-NLU-V2.5-I01",
+        "AIMInstID": "1MMC-NLU-V2.5-I01",
         "Relation": "Internal"
       }
     },
@@ -200,7 +201,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "MMC-PSE-V2.5-I02",
-        "AIMName": "1MMC-PSE-V2.5-I02",
+        "AIMInstID": "1MMC-PSE-V2.5-I02",
         "Relation": "Internal"
       }
     },
@@ -208,7 +209,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "OSD-MSM-V1.5-I01",
-        "AIMName": "1OSD-MSM-V1.5-I01",
+        "AIMInstID": "1OSD-MSM-V1.5-I01",
         "Relation": "Internal"
       }
     }
@@ -216,233 +217,233 @@
   "Topology": [
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BSO-V1.5"
       },
       "Input": {
-        "AIMName": "1MMC-ASR-V2.5-I02",
+        "AIMInstID": "1MMC-ASR-V2.5-I02",
         "DataType": "OSD-BSO-V1.5",
         "PortNumber": 3
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BSO-V1.5"
       },
       "Input": {
-        "AIMName": "1MMC-PSE-V2.5-I02",
+        "AIMInstID": "1MMC-PSE-V2.5-I02",
         "DataType": "OSD-BSO-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BVO-V1.5",
         "PortNumber": 1
       },
       "Input": {
-        "AIMName": "1MMC-PSE-V2.5-I02",
+        "AIMInstID": "1MMC-PSE-V2.5-I02",
         "DataType": "OSD-BVO-V1.5",
         "PortNumber": 1
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BVO-V1.5",
         "PortNumber": 2
       },
       "Input": {
-        "AIMName": "1MMC-PSE-V2.5-I02",
+        "AIMInstID": "1MMC-PSE-V2.5-I02",
         "DataType": "OSD-BVO-V1.5",
         "PortNumber": 2
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BVO-V1.5",
         "PortNumber": 2
       },
       "Input": {
-        "AIMName": "1CVE-VII-V1.0-I01",
+        "AIMInstID": "1CVE-VII-V1.0-I01",
         "DataType": "OSD-BVO-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BVO-V1.5",
         "PortNumber": 3
       },
       "Input": {
-        "AIMName": "1CVE-VII-V1.0-I01",
+        "AIMInstID": "1CVE-VII-V1.0-I01",
         "DataType": "OSD-BVO-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BVS-V1.5"
       },
       "Input": {
-        "AIMName": "1CVE-VII-V1.0-I01",
+        "AIMInstID": "1CVE-VII-V1.0-I01",
         "DataType": "OSD-BVS-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1CVE-VII-V1.0-I01",
+        "AIMInstID": "1CVE-VII-V1.0-I01",
         "DataType": "OSD-BVS-V1.5"
       },
       "Input": {
-        "AIMName": "1OSD-MSM-V1.5-I01",
+        "AIMInstID": "1OSD-MSM-V1.5-I01",
         "DataType": "OSD-BVS-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1CAE-AII-V2.5-I01",
+        "AIMInstID": "1CAE-AII-V2.5-I01",
         "DataType": "OSD-BAS-V1.5"
       },
       "Input": {
-        "AIMName": "1OSD-MSM-V1.5-I01",
+        "AIMInstID": "1OSD-MSM-V1.5-I01",
         "DataType": "OSD-BAS-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1OSD-MSM-V1.5-I01",
+        "AIMInstID": "1OSD-MSM-V1.5-I01",
         "DataType": "OSD-BMS-V1.5"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BMS-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BAS-V1.5"
       },
       "Input": {
-        "AIMName": "1CAE-AII-V2.5-I01",
+        "AIMInstID": "1CAE-AII-V2.5-I01",
         "DataType": "OSD-BAS-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BAO-V1.5"
       },
       "Input": {
-        "AIMName": "1CAE-AII-V2.5-I01",
+        "AIMInstID": "1CAE-AII-V2.5-I01",
         "DataType": "OSD-BAO-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-SEL-V1.5"
       },
       "Input": {
-        "AIMName": "1MMC-NLU-V2.5-I01",
+        "AIMInstID": "1MMC-NLU-V2.5-I01",
         "DataType": "OSD-SEL-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BTO-V1.5"
       },
       "Input": {
-        "AIMName": "1MMC-NLU-V2.5-I01",
+        "AIMInstID": "1MMC-NLU-V2.5-I01",
         "DataType": "OSD-BTO-V1.5",
         "PortNumber": 1
       }
     },
     {
       "Output": {
-        "AIMName": "1MMC-ASR-V2.5-I02",
+        "AIMInstID": "1MMC-ASR-V2.5-I02",
         "DataType": "OSD-BTO-V1.5",
         "PortNumber": 1
       },
       "Input": {
-        "AIMName": "1MMC-NLU-V2.5-I01",
+        "AIMInstID": "1MMC-NLU-V2.5-I01",
         "DataType": "OSD-BTO-V1.5",
         "PortNumber": 2
       }
     },
     {
       "Output": {
-        "AIMName": "1MMC-NLU-V2.5-I01",
+        "AIMInstID": "1MMC-NLU-V2.5-I01",
         "DataType": "MMC-TDO-V2.5"
       },
       "Input": {
-        "AIMName": "1MMC-PSE-V2.5-I02",
+        "AIMInstID": "1MMC-PSE-V2.5-I02",
         "DataType": "MMC-TDO-V2.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1MMC-NLU-V2.5-I01",
+        "AIMInstID": "1MMC-NLU-V2.5-I01",
         "DataType": "MMC-TDO-V2.5"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "MMC-TDO-V2.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1MMC-NLU-V2.5-I01",
+        "AIMInstID": "1MMC-NLU-V2.5-I01",
         "DataType": "OSD-BTO-V1.5"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BTO-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1MMC-PSE-V2.5-I02",
+        "AIMInstID": "1MMC-PSE-V2.5-I02",
         "DataType": "MMC-EPS-V2.5"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "MMC-EPS-V2.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1CVE-VII-V1.0-I01",
+        "AIMInstID": "1CVE-VII-V1.0-I01",
         "DataType": "OSD-IID-V1.5"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-IID-V1.5",
         "PortNumber": 1
       }
     },
     {
       "Output": {
-        "AIMName": "1CVE-VII-V1.0-I01",
+        "AIMInstID": "1CVE-VII-V1.0-I01",
         "DataType": "OSD-IID-V1.5"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-IID-V1.5",
         "PortNumber": 3
       }
     },
     {
       "Output": {
-        "AIMName": "1CAE-AII-V2.5-I01",
+        "AIMInstID": "1CAE-AII-V2.5-I01",
         "DataType": "OSD-IID-V1.5"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-IID-V1.5",
         "PortNumber": 2
       }

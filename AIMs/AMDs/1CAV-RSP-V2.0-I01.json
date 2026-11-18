@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAV-RSP-V2.0-I01", "AIMName": "1CAV-RSP-V2.0-I01"},
-  "Header":           "CAV-RSP-V2.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAV-RSP-V2.0-I01", "AIMInstID": "1CAV-RSP-V2.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAV-RSP-V2.0",
   "APIProfile":       "Basic",
   "Description":      "Route Selection Planning, Stage 1: from where the CAV is on the Offline Map and the Destination an AMS-HCI Message gives, the Routes proposed to HCI - the one of least time (A*) and an alternative - in an AMS-HCI Message; the one HCI selects, on the Route Command Execute, given to Path Selection Planning as a Route Response; its state - Executing, Suspended, Stopped, Arrived - told to HCI; a new one on a Route Request.",
   "InternalTypes":    [],

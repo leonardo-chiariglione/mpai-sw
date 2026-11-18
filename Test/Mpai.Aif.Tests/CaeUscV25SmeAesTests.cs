@@ -33,7 +33,7 @@ public class CaeUscV25SmeAesTests
             foreach (var file in Directory.EnumerateFiles(Repository.Amds, "*.json")) File.Copy(file, Path.Combine(amds, Path.GetFileName(file)));
             var l3 = File.ReadAllText(Path.Combine(amds, module + ".json"));
             foreach (var aim in aims)
-                l3 = System.Text.RegularExpressions.Regex.Replace(l3, "(\"AIMName\"\\s*:\\s*\"" + aim + "\"\\s*,\\s*\"Relation\"\\s*:\\s*)\"Internal\"", "$1\"External\"");
+                l3 = System.Text.RegularExpressions.Regex.Replace(l3, "(\"AIMInstID\"\\s*:\\s*\"" + aim + "\"\\s*,\\s*\"Relation\"\\s*:\\s*)\"Internal\"", "$1\"External\"");
             File.WriteAllText(Path.Combine(amds, module + ".json"), l3);
             var settings = Path.Combine(work, "aim-settings.json"); File.WriteAllText(settings, "{}");
             process = new HostProcess(amds: amds, provider: Path.Combine(AppContext.BaseDirectory, "Mpai.Cae.Usc.dll") + ":Mpai.Cae.Usc.UscProvider",
@@ -97,12 +97,12 @@ public class CaeUscV25SmeAesTests
         // The L3s: each Module's SubAIMs are among those of Emotion Enhanced Speech, and every Port of each is a Port of the Module of the same Data Type.
         JsonNode Read(string aim) => JsonNode.Parse(File.ReadAllText(Path.Combine(Repository.Amds, aim + ".json")))!;
         var ees = Read("1CAE-EES-V2.5-I01");
-        var eesAims = ees["SubAIMs"]!.AsArray().Select(s => (string)s!["Identifier"]!["AIMName"]!).ToHashSet();
+        var eesAims = ees["SubAIMs"]!.AsArray().Select(s => (string)s!["Identifier"]!["AIMInstID"]!).ToHashSet();
         foreach (var (module, expect) in new[] { ("1CAE-SME-V2.5-I01", new[] { "1CAE-SFA-V2.5-I01", "1CAE-PEI-V2.5-I01" }),
                                                  ("1CAE-AES-V2.5-I01", new[] { "1CAE-SFB-V2.5-I01", "1CAE-EFP-V2.5-I01", "1CAE-NEI-V2.5-I01" }) })
         {
             var l3 = Read(module);
-            var aims = l3["SubAIMs"]!.AsArray().Select(s => (string)s!["Identifier"]!["AIMName"]!).ToArray();
+            var aims = l3["SubAIMs"]!.AsArray().Select(s => (string)s!["Identifier"]!["AIMInstID"]!).ToArray();
             Assert.Equal(expect, aims);
             Assert.All(aims, a => Assert.Contains(a, eesAims));
             var types = ees["ExternalPorts"]!.AsArray().Select(p => (string)p!["DataType"]!).ToHashSet();

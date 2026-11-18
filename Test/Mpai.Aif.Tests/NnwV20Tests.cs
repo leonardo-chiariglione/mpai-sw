@@ -96,12 +96,12 @@ public class NnwV20Tests
         foreach (var file in Ports.Keys)
         {
             var doc = JsonDocument.Parse(File.ReadAllText(Path.Combine(Folder, "AIMs", file + ".json")));
-            var header = doc.RootElement.GetProperty("Header").GetString()!;
+            var header = doc.RootElement.GetProperty("AIMType").GetString()!;
             Assert.Matches(@"^NNW-[A-Z]{3}-V2\.0$", header);
             headers[header] = doc.RootElement.Clone();
         }
         foreach (var (header, l2) in headers)
             foreach (var sub in l2.GetProperty("SubAIMs").EnumerateArray())
-                Assert.True(headers.ContainsKey(sub.GetProperty("Header").GetString()!), header + " names a SubAIM that is not an AIM of NNW1 V2.0: " + sub.GetProperty("Header").GetString());
+                Assert.True(headers.ContainsKey(sub.GetProperty("AIMType").GetString()!), header + " names a SubAIM that is not an AIM of NNW1 V2.0: " + sub.GetProperty("AIMType").GetString());
     }
 }

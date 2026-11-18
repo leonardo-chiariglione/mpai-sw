@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAV-BED-V2.0-I01", "AIMName": "1CAV-BED-V2.0-I01"},
-  "Header":           "CAV-BED-V2.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAV-BED-V2.0-I01", "AIMInstID": "1CAV-BED-V2.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAV-BED-V2.0",
   "APIProfile":       "Basic",
   "Description":      "Basic Environment Description, Stage 1: one Environment Sensing Technology, the visual. Each object of the Basic Visual Scene Descriptors associated with the object of the prior descriptors nearest to where that one was going, within a gate; its velocity estimated from one instant to the next; its existence confidence raised by each association and lowered by each miss; an object missed too long dropped. The Basic Environment Descriptors on the ego frame, returned as the prior.",
   "InternalTypes":    [],

@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PGM-AMP-V1.0-I01",
-    "AIMName": "1PGM-AMP-V1.0-I01"
+    "AIMInstID": "1PGM-AMP-V1.0-I01"
   },
-  "Header": "PGM-AMP-V1.0",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PGM-AMP-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
   "Description": "The Audio Motion and Proximity (PGM-AMP) AI Module analyses the temporal and spatial dynamics of Audio Objects in an audio scene by",

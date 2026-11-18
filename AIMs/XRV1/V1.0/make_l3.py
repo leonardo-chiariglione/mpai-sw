@@ -32,8 +32,9 @@ for acr, (l2file, folder, slug) in AIMS.items():
     l2 = json.load(open(os.path.join(SCHEMAS, l2file), encoding="utf-8"))
     name = f"1XRV-{acr}-V1.0-I01"
     ports = ",\n                       ".join(port_line(p) for p in l2["ExternalPorts"])
-    text = f'''{{ "Identifier":       {{"ImplementerID": "1", "ImplementationID": "XRV-{acr}-V1.0-I01", "AIMName": "{name}"}},
-  "Header":           "XRV-{acr}-V1.0",
+    text = f'''{{ "Identifier":       {{"ImplementerID": "1", "ImplementationID": "XRV-{acr}-V1.0-I01", "AIMInstID": "{name}"}},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "XRV-{acr}-V1.0",
   "APIProfile":       "Basic",
   "Description":      {json.dumps(l2["Description"])},
   "ExternalPorts":    [{ports}],

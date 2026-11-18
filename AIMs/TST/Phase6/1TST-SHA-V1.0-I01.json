@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-SHA-V1.0-I01", "AIMName": "1TST-SHA-V1.0-I01"},
-  "Header":           "TST-SHA-V1.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-SHA-V1.0-I01", "AIMInstID": "1TST-SHA-V1.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "TST-SHA-V1.0",
 
   "APIProfile":       "Basic",
   "OnDegraded":       "Continue",
@@ -10,10 +11,10 @@
   "ExternalPorts":    [{"Name": "Write",   "Direction": "Input",  "DataType": "TST-TXT-V1.0", "Technology": "Software", "Protocol": "", "IsRemote": false},
                        {"Name": "Written", "Direction": "Output", "DataType": "TST-TXT-V1.0", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
-  "SubAIMs":          [{ "Identifier": { "ImplementerID": "1", "ImplementationID": "TST-SWR-V1.0-I01", "AIMName": "1TST-SWR-V1.0-I01", "Relation": "Internal" } }],
+  "SubAIMs":          [{ "Identifier": { "ImplementerID": "1", "ImplementationID": "TST-SWR-V1.0-I01", "AIMInstID": "1TST-SWR-V1.0-I01", "Relation": "Internal" } }],
 
-  "Topology":         [{ "Output": { "AIMName": "",                  "PortName": "Write"   }, "Input": { "AIMName": "1TST-SWR-V1.0-I01", "PortName": "Write"   } },
-                       { "Output": { "AIMName": "1TST-SWR-V1.0-I01", "PortName": "Written" }, "Input": { "AIMName": "",                  "PortName": "Written" } }],
+  "Topology":         [{ "Output": { "AIMInstID": "",                  "PortName": "Write"   }, "Input": { "AIMInstID": "1TST-SWR-V1.0-I01", "PortName": "Write"   } },
+                       { "Output": { "AIMInstID": "1TST-SWR-V1.0-I01", "PortName": "Written" }, "Input": { "AIMInstID": "",                  "PortName": "Written" } }],
 
   "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/Test/Mpai.Aif.Tests/StorageTests.cs",
                         "MASPort":           443,

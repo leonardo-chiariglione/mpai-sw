@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":           "OSD-BUS-V1.5",
+{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "OSD-BUS-V1.5",
 
   "APIProfile":       "Basic",
   "Description":      "Basic Ultrasound Scene Description: describes the acquired BasicUltrasoundObject as BasicUltrasoundSceneDescriptors. It raises an Alert when what it describes warrants one, without waiting for integration. Two of its inputs are optional, so that the same AIM serves applications that have something to connect to them and applications that do not: an application holding an ego Spatial Attitude receives descriptors already expressed in that frame, and one that maintains a running environment description returns it as a prior. Both are wired in EnvironmentSensingSubsystem.json and neither is wired in MMC-HCI.",

@@ -1,5 +1,6 @@
-{ "Identifier":           {"ImplementerID": "1", "ImplementationID": "MMC-JSI-V2.5-I01", "AIMName": "1MMC-JSI-V2.5-I01"},
-  "Header":               "MMC-JSI-V2.5",
+{ "Identifier":           {"ImplementerID": "1", "ImplementationID": "MMC-JSI-V2.5-I01", "AIMInstID": "1MMC-JSI-V2.5-I01"},
+  "Header":               "AIF-AMM-V3.0",
+  "AIMType":              "MMC-JSI-V2.5",
 
   "APIProfile":           "Basic",
   "Description":          "JSON Interface with no application: the entries of its Access that make it an interface to one application - the schema of the commands, the schema of the responses and the Application Context - are left to be filled. Without them it sends no command and says so.",

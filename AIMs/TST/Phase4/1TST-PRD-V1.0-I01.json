@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-PRD-V1.0-I01", "AIMName": "1TST-PRD-V1.0-I01"},
-  "Header":           "TST-PRD-V1.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-PRD-V1.0-I01", "AIMInstID": "1TST-PRD-V1.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "TST-PRD-V1.0",
 
   "APIProfile":       "Basic",
   "Description":      "Test reader of a payload: gives its length and releases it.",

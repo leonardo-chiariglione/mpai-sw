@@ -63,7 +63,7 @@ public sealed class WebStore
         {
             isApp = true;
             foreach (var s in subs.EnumerateArray())
-                if (s.TryGetProperty("Identifier", out var i) && i.TryGetProperty("AIMName", out var n) && n.GetString() is { Length: > 0 } part)
+                if (s.TryGetProperty("Identifier", out var i) && i.TryGetProperty("AIMInstID", out var n) && n.GetString() is { Length: > 0 } part)
                     parts.Add(part);
         }
         var implementer = l3.TryGetProperty("Identifier", out var ident) && ident.TryGetProperty("ImplementerID", out var im)

@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-NCM-V2.5-I01", "AIMName": "1CAE-NCM-V2.5-I01"},
-  "Header":           "CAE-NCM-V2.5",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-NCM-V2.5-I01", "AIMInstID": "1CAE-NCM-V2.5-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAE-NCM-V2.5",
   "APIProfile":       "Basic",
   "Description":      "Noise Cancellation Module: takes away from the sources the noise measured where no source is active; a passthrough where there is none to measure.",
   "ExternalPorts":    [{"Name": "SHDCoefficients", "Direction": "Input", "DataType": "OSD-BAO-V1.5", "PortNumber": 1, "Technology": "Software", "Protocol": "", "IsRemote": false},

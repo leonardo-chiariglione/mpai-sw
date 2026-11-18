@@ -59,7 +59,7 @@ public sealed class ModelAimPublisher
         request.Headers.Add("MPAI-Signature", _key!.Sign(l3));
         using var answer = _service!.SendAsync(request).GetAwaiter().GetResult();
         var body = answer.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-        if (answer.StatusCode != System.Net.HttpStatusCode.Created) throw new InvalidOperationException($"The Store did not publish {l3["Identifier"]!["AIMName"]}: {body}");
+        if (answer.StatusCode != System.Net.HttpStatusCode.Created) throw new InvalidOperationException($"The Store did not publish {l3["Identifier"]!["AIMInstID"]}: {body}");
         return body;
     }
 
@@ -96,8 +96,8 @@ public sealed class ModelAimPublisher
 
         var l3 = new JsonObject
         {
-            ["Identifier"] = new JsonObject { ["ImplementerID"] = implementerId, ["ImplementationID"] = implementation, ["AIMName"] = aim },
-            ["Header"] = Type, ["APIProfile"] = ApiProfile,
+            ["Identifier"] = new JsonObject { ["ImplementerID"] = implementerId, ["ImplementationID"] = implementation, ["AIMInstID"] = aim },
+            ["Header"] = "AIF-AMM-V3.0", ["AIMType"] = Type, ["APIProfile"] = ApiProfile,
             ["Description"] = $"This AIM wraps the Neural Network Model {model["MLModelObjectID"]} and processes AIH Data with it: AIH Data in, the AIH Data resulting from the processing out.",
             ["InternalTypes"] = new JsonArray(new JsonObject { ["Name"] = "AIHData", ["DataType"] = AihJson.AihData }, new JsonObject { ["Name"] = "NNModel", ["DataType"] = "AIP-MLO-V1.0" }),
             ["ExternalPorts"] = new JsonArray(
@@ -155,21 +155,21 @@ public sealed class ModelAimPublisher
         {
             var id = l3["Identifier"]!;
             id["ImplementerID"] = _implementerId;
-            id["AIMName"] = _implementerId + (string)id["ImplementationID"]!;
+            id["AIMInstID"] = _implementerId + (string)id["ImplementationID"]!;
         }
-        var name = (string)l3["Identifier"]!["AIMName"]!;
+        var name = (string)l3["Identifier"]!["AIMInstID"]!;
         var sub = (JsonArray)l3["SubAIMs"]!;
         // Its Relation is that of the AIMs the Front End has: the model AIM executes where they do, with the Controller or apart from it.
         var relation = (string?)sub[0]!["Identifier"]!["Relation"] ?? "Internal";
         sub.Add(new JsonObject { ["Identifier"] = new JsonObject
-            { ["ImplementerID"] = (string)l3["Identifier"]!["ImplementerID"]!, ["ImplementationID"] = modelAim[(modelAim.IndexOf("AIH", StringComparison.Ordinal))..], ["AIMName"] = modelAim, ["Relation"] = relation } });
-        var hdp = ((JsonArray)l3["SubAIMs"]!).Select(s => (string)s!["Identifier"]!["AIMName"]!).First(n => n.Contains("AIH-HDP-V1.1", StringComparison.Ordinal));
+            { ["ImplementerID"] = (string)l3["Identifier"]!["ImplementerID"]!, ["ImplementationID"] = modelAim[(modelAim.IndexOf("AIH", StringComparison.Ordinal))..], ["AIMInstID"] = modelAim, ["Relation"] = relation } });
+        var hdp = ((JsonArray)l3["SubAIMs"]!).Select(s => (string)s!["Identifier"]!["AIMInstID"]!).First(n => n.Contains("AIH-HDP-V1.1", StringComparison.Ordinal));
         var topology = (JsonArray)l3["Topology"]!;
-        topology.Add(new JsonObject { ["Output"] = new JsonObject { ["AIMName"] = hdp, ["DataType"] = AihJson.AihData }, ["Input"] = new JsonObject { ["AIMName"] = modelAim, ["DataType"] = AihJson.AihData } });
+        topology.Add(new JsonObject { ["Output"] = new JsonObject { ["AIMInstID"] = hdp, ["DataType"] = AihJson.AihData }, ["Input"] = new JsonObject { ["AIMInstID"] = modelAim, ["DataType"] = AihJson.AihData } });
         // The AIH Data resulting from the processing goes back to AIH Data Processing on its Input AIH Data 2, which keeps it (the L2 HealthFrontEnd.json says the same).
-        topology.Add(new JsonObject { ["Output"] = new JsonObject { ["AIMName"] = modelAim, ["DataType"] = AihJson.AihData }, ["Input"] = new JsonObject { ["AIMName"] = hdp, ["DataType"] = AihJson.AihData, ["PortNumber"] = 2 } });
+        topology.Add(new JsonObject { ["Output"] = new JsonObject { ["AIMInstID"] = modelAim, ["DataType"] = AihJson.AihData }, ["Input"] = new JsonObject { ["AIMInstID"] = hdp, ["DataType"] = AihJson.AihData, ["PortNumber"] = 2 } });
         // The model it holds, trained, goes to AIH Data Processing, which returns it in the answer to a Federated Learn request (L2 HealthFrontEnd.json).
-        topology.Add(new JsonObject { ["Output"] = new JsonObject { ["AIMName"] = modelAim, ["DataType"] = "AIP-MLO-V1.0" }, ["Input"] = new JsonObject { ["AIMName"] = hdp, ["DataType"] = "AIP-MLO-V1.0" } });
+        topology.Add(new JsonObject { ["Output"] = new JsonObject { ["AIMInstID"] = modelAim, ["DataType"] = "AIP-MLO-V1.0" }, ["Input"] = new JsonObject { ["AIMInstID"] = hdp, ["DataType"] = "AIP-MLO-V1.0" } });
         var implementation = l3["Implementations"]![0]!;
         // The next version after the one the Store has (the base's, the first time).
         var held = _service is not null ? Text($"MPAI/Store/L3/{name}") : _store.Exists(name) ? _store.Retrieve(name) : null;
@@ -188,7 +188,7 @@ public sealed class ModelAimPublisher
             File.WriteAllText(Path.Combine(_folder, "versions", $"{name}.{current}.json"), _store.Retrieve(name));
         }
         // The Front End is submitted with its Sub-AIMs: their Metadata is in the package of the Front End (and with the Controllers that run it), not in this Store.
-        var withIt = (l3["SubAIMs"] as JsonArray ?? []).Select(x => (string?)x?["Identifier"]?["AIMName"]).OfType<string>().ToList();
+        var withIt = (l3["SubAIMs"] as JsonArray ?? []).Select(x => (string?)x?["Identifier"]?["AIMInstID"]).OfType<string>().ToList();
         var published = _store.Publish(l3.ToJsonString(), replace: true, submittedWith: withIt);
         if (!published.WasPublished) throw new InvalidOperationException($"The Store did not publish the new {name}: {string.Join("; ", published.Errors)}");
         return (string)implementation["Version"]!;

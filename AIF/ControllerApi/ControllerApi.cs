@@ -203,7 +203,7 @@ public sealed partial class ControllerApi : IControllerApi, IDisposable
             using var document = System.Text.Json.JsonDocument.Parse(System.IO.File.ReadAllText(path));
             if (document.RootElement.TryGetProperty("SubAIMs", out var subs) && subs.ValueKind == System.Text.Json.JsonValueKind.Array)
                 foreach (var sub in subs.EnumerateArray())
-                    if (sub.TryGetProperty("Identifier", out var i) && i.TryGetProperty("AIMName", out var n) && n.GetString() is { Length: > 0 } name) Resolve(name);
+                    if (sub.TryGetProperty("Identifier", out var i) && i.TryGetProperty("AIMInstID", out var n) && n.GetString() is { Length: > 0 } name) Resolve(name);
         }
         try
         {

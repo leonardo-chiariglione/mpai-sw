@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-PEX-V1.0-I01", "AIMName": "1TST-PEX-V1.0-I01"},
-  "Header":           "TST-PEX-V1.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-PEX-V1.0-I01", "AIMInstID": "1TST-PEX-V1.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "TST-PEX-V1.0",
 
   "APIProfile":       "Basic",
   "Description":      "Test Module, refused: a ticker at a Period in an exchange.",
@@ -8,9 +9,9 @@
 
   "ExternalPorts":    [{"Name": "Ticks", "Direction": "Output", "DataType": "TST-TXT-V1.0", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
-  "SubAIMs":          [{ "Identifier": { "ImplementerID": "1", "ImplementationID": "TST-TIK-V1.0-I01", "AIMName": "1TST-TIK-V1.0-I01", "Relation": "Internal" } }],
+  "SubAIMs":          [{ "Identifier": { "ImplementerID": "1", "ImplementationID": "TST-TIK-V1.0-I01", "AIMInstID": "1TST-TIK-V1.0-I01", "Relation": "Internal" } }],
 
-  "Topology":         [{ "Output": { "AIMName": "1TST-TIK-V1.0-I01", "PortName": "Ticks" }, "Input": { "AIMName": "", "PortName": "Ticks" } }],
+  "Topology":         [{ "Output": { "AIMInstID": "1TST-TIK-V1.0-I01", "PortName": "Ticks" }, "Input": { "AIMInstID": "", "PortName": "Ticks" } }],
 
   "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/Test/Mpai.Aif.Tests/ContinuousTests.cs",
                         "MASPort":           443,

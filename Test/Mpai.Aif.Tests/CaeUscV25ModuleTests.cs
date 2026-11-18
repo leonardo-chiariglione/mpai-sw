@@ -29,7 +29,7 @@ public class CaeUscV25ModuleTests : IDisposable
         foreach (var file in Directory.EnumerateFiles(Repository.Amds, "*.json")) File.Copy(file, Path.Combine(amds, Path.GetFileName(file)));
         var l3 = File.ReadAllText(Path.Combine(amds, Srs + ".json"));
         foreach (var aim in Aims)
-            l3 = System.Text.RegularExpressions.Regex.Replace(l3, "(\"AIMName\"\\s*:\\s*\"" + aim + "\"\\s*,\\s*\"Relation\"\\s*:\\s*)\"Internal\"", "$1\"External\"");
+            l3 = System.Text.RegularExpressions.Regex.Replace(l3, "(\"AIMInstID\"\\s*:\\s*\"" + aim + "\"\\s*,\\s*\"Relation\"\\s*:\\s*)\"Internal\"", "$1\"External\"");
         File.WriteAllText(Path.Combine(amds, Srs + ".json"), l3);
         var settings = Path.Combine(work, "aim-settings.json");
         File.WriteAllText(settings, new JsonObject { ["1MMC-TTS-V2.5-I01"] = new JsonObject { ["Tts"] = "stand-in" } }.ToJsonString());

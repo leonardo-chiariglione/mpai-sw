@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PGM-FRD-V1.0-I01",
-    "AIMName": "1PGM-FRD-V1.0-I01"
+    "AIMInstID": "1PGM-FRD-V1.0-I01"
   },
-  "Header": "PGM-FRD-V1.0",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PGM-FRD-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
   "Description": "The Final Response Demultiplexing (PGM-FRD) AIM is a Sub-AIM of A-User Formation (PGM-AUF). It takes apart the Final Response produced by Basic Knowledge: the Text, which goes to Text-To-Speech and to Portable Avatar Multiplexing; the Communicative Functions, which go to Behaviour Planning; the Actions, which go with the text and go to Animation Object Generation; and the Process Actions, more remote from the text, which A-User Formation gives to A-User Control unchanged. It is driven by the AUC-AUF Request and reports with an AUC-AUF Response.",

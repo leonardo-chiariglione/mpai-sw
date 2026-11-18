@@ -1,5 +1,6 @@
-{ "Identifier":           {"ImplementerID": "1", "ImplementationID": "MMC-SSE-V2.5-I01", "AIMName": "1MMC-SSE-V2.5-I01"},
-  "Header":               "MMC-SSE-V2.5",
+{ "Identifier":           {"ImplementerID": "1", "ImplementationID": "MMC-SSE-V2.5-I01", "AIMInstID": "1MMC-SSE-V2.5-I01"},
+  "Header":               "AIF-AMM-V3.0",
+  "AIMType":              "MMC-SSE-V2.5",
 
   "APIProfile":           "Basic",
   "Description":          "Speech Scene Editing. One Speech Scene is open at a time: a Speech Scene arriving is opened, and the first Object added to no open Scene creates one. The User Command places Speech Objects - named as the User names them - (AddedObjects), moves them, changes where they are, takes them out and sets where the Scene is heard from (UserPoV). Every edit is a new version in Shared Storage; a member is held by its identifier and read from Shared Storage when the Scene is output. Outputs: the open Speech Scene, and the User Command, with its response (UserCommandRS) saying how each action was executed.",

@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-BRB-V1.0-I01", "AIMName": "1TST-BRB-V1.0-I01"},
-  "Header":           "TST-BRB-V1.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-BRB-V1.0-I01", "AIMInstID": "1TST-BRB-V1.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "TST-BRB-V1.0",
 
   "APIProfile":       "Basic",
   "Description":      "Test reader on the Bus: what it reads on the Bus, it gives out.",

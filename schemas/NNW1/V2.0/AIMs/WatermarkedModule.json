@@ -3,8 +3,9 @@
   "$id":                  "https://schemas.mpai.community/NNW1/V2.0/AIMs/WatermarkedModule.json",
   "title":                "Watermarked Module V2.0",
 
-  "Identifier":           {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":               "NNW-WMM-V2.0",
+  "Identifier":           {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":               "AIF-AMM-V3.0",
+  "AIMType":              "NNW-WMM-V2.0",
 
   "APIProfile":           "Basic",
   "Description":          "Watermarked Module: the Module that has the watermarked parameters; it can be any AIM that produces an inference. It gives the inference from the testing dataset.",

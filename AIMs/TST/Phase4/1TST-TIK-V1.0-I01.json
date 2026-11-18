@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-TIK-V1.0-I01", "AIMName": "1TST-TIK-V1.0-I01"},
-  "Header":           "TST-TIK-V1.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-TIK-V1.0-I01", "AIMInstID": "1TST-TIK-V1.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "TST-TIK-V1.0",
 
   "APIProfile":       "Basic",
   "Period":           50,

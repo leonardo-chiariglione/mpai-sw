@@ -3,8 +3,9 @@
   "$id":                  "https://schemas.mpai.community/PAF/V1.6/AIMs/PortableAvatarMultiplexing.json",
   "title":                "Portable Avatar Multiplexing V1.6",
 
-  "Identifier":           {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":               "PAF-PMX-V1.6",
+  "Identifier":           {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":               "AIF-AMM-V3.0",
+  "AIMType":              "PAF-PMX-V1.6",
 
   "APIProfile":           "Basic",
   "Description":          "This AIM provides a Portable Avatar from the input components. The View Selector (the View element of a Selector: Avatar or Scene) and the Point of View say from where and what the Portable Avatar is to be rendered; the Scene may be given as Basic Multimodal or Basic Visual Scene Descriptors.",

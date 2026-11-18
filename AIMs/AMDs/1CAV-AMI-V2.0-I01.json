@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAV-AMI-V2.0-I01", "AIMName": "1CAV-AMI-V2.0-I01"},
-  "Header":           "CAV-AMI-V2.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAV-AMI-V2.0-I01", "AIMInstID": "1CAV-AMI-V2.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAV-AMI-V2.0",
   "APIProfile":       "Basic",
   "Description":      "AMS-MAS Message Interpretation, Stage 1: from the Trajectory of each AMS-MAS Message and the Spatial Attitude of the CAV it carries - the AMS's, the commands of the mechanical subsystems - a Motor Command or a Brake Command, never both, and a Wheel Command following the Trajectory; an Emergency Brake Command when the Trajectory asks an emergency deceleration.",
   "InternalTypes":    [],

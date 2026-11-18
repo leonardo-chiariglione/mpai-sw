@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-SPL-V1.0-I01", "AIMName": "1TST-SPL-V1.0-I01"},
-  "Header":           "TST-SPL-V1.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-SPL-V1.0-I01", "AIMInstID": "1TST-SPL-V1.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "TST-SPL-V1.0",
 
   "APIProfile":       "Basic",
   "Description":      "Test: gives its text on two outputs of one Data Type, 'A:' and 'B:' followed by the text.",

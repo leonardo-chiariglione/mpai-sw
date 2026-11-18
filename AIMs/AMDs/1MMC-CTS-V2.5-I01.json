@@ -1,5 +1,6 @@
-{ "Identifier":           {"ImplementerID": "1", "ImplementationID": "MMC-CTS-V2.5-I01", "AIMName": "1MMC-CTS-V2.5-I01"},
-  "Header":               "MMC-CTS-V2.5",
+{ "Identifier":           {"ImplementerID": "1", "ImplementationID": "MMC-CTS-V2.5-I01", "AIMInstID": "1MMC-CTS-V2.5-I01"},
+  "Header":               "AIF-AMM-V3.0",
+  "AIMType":              "MMC-CTS-V2.5",
 
   "APIProfile":           "Basic",
   "Description":          "Column Text Selection. Receives the lines of a page as a Text Object (each line a Basic Text Object with its box, in the pixels of the page) and, when the person has pointed, the Point at the top of a column; produces the text of that column as a Basic Text Object: the lines under the point that overlap it horizontally, down to the column's end (a wide gap, a much taller line, or no line left), a word hyphenated across lines joined. With no Point, the first column under the headline.",

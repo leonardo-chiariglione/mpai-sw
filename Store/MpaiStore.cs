@@ -229,7 +229,7 @@ public sealed class MpaiStore
         using (document)
         {
             var root = document.RootElement;
-            var aimName = root.TryGetProperty("Identifier", out var identifier) ? Text(identifier, "AIMName") : "";
+            var aimName = root.TryGetProperty("Identifier", out var identifier) ? Text(identifier, "AIMInstID") : "";
             if (aimName.Length == 0)
                 return StoreResult.Rejected("", new[] { "Identifier.AIMName is missing: without it the Store cannot say what the L3 is." });
 
@@ -244,7 +244,7 @@ public sealed class MpaiStore
             if (root.TryGetProperty("SubAIMs", out var subAims) && subAims.ValueKind == JsonValueKind.Array)
                 foreach (var subAim in subAims.EnumerateArray())
                     if (subAim.TryGetProperty("Identifier", out var subIdentifier) &&
-                        Text(subIdentifier, "AIMName") is { Length: > 0 } subName && subName != aimName && !Exists(subName) && submittedWith?.Contains(subName) != true)
+                        Text(subIdentifier, "AIMInstID") is { Length: > 0 } subName && subName != aimName && !Exists(subName) && submittedWith?.Contains(subName) != true)
                         errors.Add($"SubAIM {subName} is in neither the submission nor the Store: without it the Composite AIM could not be built.");
 
             return errors.Count == 0
@@ -275,7 +275,7 @@ public sealed class MpaiStore
             var candidate =
                 Text(
                     identifier,
-                    "AIMName");
+                    "AIMInstID");
 
             if (candidate != aimName)
             {
@@ -327,7 +327,7 @@ public sealed class MpaiStore
             AIMName =
                 Text(
                     identifier,
-                    "AIMName")
+                    "AIMInstID")
         };
     }
 

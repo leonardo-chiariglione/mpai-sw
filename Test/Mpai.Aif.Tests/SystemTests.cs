@@ -25,7 +25,7 @@ public class SystemTests
         foreach (var file in MetadataTests.L3Files())
         {
             var l3 = MetadataTests.TryParse(file);
-            var name = l3?["Identifier"]?["AIMName"]?.GetValue<string>();
+            var name = l3?["Identifier"]?["AIMInstID"]?.GetValue<string>();
             if (l3 is null || name is null) continue;
 
             var loop = FindLoop(Edges(l3));
@@ -54,8 +54,8 @@ public class SystemTests
         var l2s = Directory.EnumerateFiles(Repository.Schemas, "*.json", SearchOption.AllDirectories)
                            .Where(f => Path.GetFileName(Path.GetDirectoryName(f)) == "AIMs")
                            .Select(MetadataTests.TryParse)
-                           .Where(n => n?["Header"] is not null)
-                           .ToDictionary(n => n!["Header"]!.GetValue<string>(), n => n!);
+                           .Where(n => n?["AIMType"] is not null)
+                           .ToDictionary(n => n!["AIMType"]!.GetValue<string>(), n => n!);
         // An AIM has code if a plugin or a provider creates it (CodeIndex).
         var code = new CodeIndex(Repository.Root);
 
@@ -72,7 +72,7 @@ public class SystemTests
             if (l2s.TryGetValue(standard, out var l2))
             {
                 var subs = (l2["SubAIMs"]?.AsArray() ?? new JsonArray())
-                           .Select(s => s?["Header"]?.GetValue<string>() ?? "").Where(s => s.Length > 0).ToList();   // an L2 Sub-AIM is its Header
+                           .Select(s => s?["AIMType"]?.GetValue<string>() ?? "").Where(s => s.Length > 0).ToList();   // an L2 Sub-AIM is its Header
                 var withCode = subs.Where(code.HasCode).ToList();
                 parts.Add($"L2 {standard} present; code for {withCode.Count} of {subs.Count} Sub-AIMs" +
                           (withCode.Count > 0 ? $" ({string.Join(", ", withCode)})" : ""));
@@ -128,7 +128,7 @@ public class SystemTests
                 : [p.GetProperty("DataType").GetString() ?? ""],
             Number: p.TryGetProperty("PortNumber", out var n) && n.ValueKind == JsonValueKind.Number ? n.GetInt32() : 1)).ToList();
         var subs = amd.TryGetProperty("SubAIMs", out var s) && s.ValueKind == JsonValueKind.Array
-            ? s.EnumerateArray().Select(x => (x.TryGetProperty("Header", out var h) && h.ValueKind == JsonValueKind.String ? h.GetString() : x.GetProperty("Identifier").GetProperty("AIMName").GetString()) ?? "").ToList()   // an L2 Sub-AIM is its Header
+            ? s.EnumerateArray().Select(x => (x.TryGetProperty("AIMType", out var h) && h.ValueKind == JsonValueKind.String ? h.GetString() : x.GetProperty("Identifier").GetProperty("AIMInstID").GetString()) ?? "").ToList()   // an L2 Sub-AIM is its Header
             : [];
 
         if (subs.Count == 0)
@@ -141,7 +141,7 @@ public class SystemTests
 
         var ends = amd.GetProperty("Topology").EnumerateArray()
                       .SelectMany(l => new[] { (Side: "Output", End: l.GetProperty("Output")), (Side: "Input", End: l.GetProperty("Input")) })
-                      .Where(e => (e.End.GetProperty("AIMName").GetString() ?? "") == "")
+                      .Where(e => (e.End.GetProperty("AIMInstID").GetString() ?? "") == "")
                       .Select(e => (e.Side, DataType: e.End.GetProperty("DataType").GetString() ?? "",
                                     Number: e.End.TryGetProperty("PortNumber", out var pn) && pn.ValueKind == JsonValueKind.Number ? pn.GetInt32() : 1))
                       .ToList();
@@ -155,7 +155,7 @@ public class SystemTests
         // Sub-AIM's Output Port, its Input end an Input Port; no Port Number cited, any.
         var subEnds = amd.GetProperty("Topology").EnumerateArray()
                          .SelectMany(l => new[] { (Direction: "Output", End: l.GetProperty("Output")), (Direction: "Input", End: l.GetProperty("Input")) })
-                         .Select(e => (Aim: e.End.GetProperty("AIMName").GetString() ?? "", e.Direction,
+                         .Select(e => (Aim: e.End.GetProperty("AIMInstID").GetString() ?? "", e.Direction,
                                        DataType: e.End.GetProperty("DataType").GetString() ?? "",
                                        Number: e.End.TryGetProperty("PortNumber", out var pn) && pn.ValueKind == JsonValueKind.Number ? pn.GetInt32() : (int?)null))
                          .ToList();
@@ -259,8 +259,8 @@ public class SystemTests
         var edges = new Dictionary<string, HashSet<string>>();
         foreach (var connection in l3["Topology"]?.AsArray() ?? new JsonArray())
         {
-            var from = connection?["Output"]?["AIMName"]?.GetValue<string>() ?? "";
-            var to   = connection?["Input"]?["AIMName"]?.GetValue<string>() ?? "";
+            var from = connection?["Output"]?["AIMInstID"]?.GetValue<string>() ?? "";
+            var to   = connection?["Input"]?["AIMInstID"]?.GetValue<string>() ?? "";
             if (from.Length == 0 || to.Length == 0 || from == to) continue;   // the boundary, or within one AIM
             if (!edges.TryGetValue(from, out var set)) edges[from] = set = new HashSet<string>();
             set.Add(to);

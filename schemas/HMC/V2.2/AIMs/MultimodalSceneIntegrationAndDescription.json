@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":           "HMC-SID-V2.2",
+{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "HMC-SID-V2.2",
 
   "APIProfile":       "Basic",
   "Description":      "Multimodal Scene Integration and Description: takes the Avatar and the Scene conveyed by the Input Portable Avatar, places the Avatar in the Scene with an appropriate Spatial Attitude (a generic Scene if the Portable Avatar conveys none) and gives the Face, Body and other Visual Objects, the Visual Scene Descriptors, the Audio and Speech Objects and the Audio Scene Descriptors of the resulting Scene.",

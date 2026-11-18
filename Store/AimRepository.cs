@@ -179,7 +179,7 @@ public sealed class AimRepository
     // checked as the host's - a host of the licensee's or of another party's; then it is kept, and the AIM can be built. Returns the fingerprints of the files it holds.
     public IReadOnlyDictionary<string, string> Accept(JsonObject package, Func<string, string, VerifyResult>? verify = null)
     {
-        var aim = (string)JsonNode.Parse((string)package["L3"]!)!["Identifier"]!["AIMName"]!;
+        var aim = (string)JsonNode.Parse((string)package["L3"]!)!["Identifier"]!["AIMInstID"]!;
         // What it holds already - the same version, the same AIM Licence - is not obtained again.
         if (Holds(aim) && File.Exists(L3Of(aim)) && VersionOf(aim) == (string?)package["Version"] && File.Exists(LicenceFileOf(aim)) == ((string?)package["Licence"] is not null) &&
             (package["Licence"] is null || File.ReadAllText(LicenceFileOf(aim)) == (string)package["Licence"]!))

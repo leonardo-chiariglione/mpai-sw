@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-ACC-V1.0-I01", "AIMName": "1TST-ACC-V1.0-I01"},
-  "Header":           "TST-ACC-V1.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-ACC-V1.0-I01", "AIMInstID": "1TST-ACC-V1.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "TST-ACC-V1.0",
 
   "APIProfile":       "Basic",
   "Description":      "Test accumulator: counts what it received and gives the count with the text.",

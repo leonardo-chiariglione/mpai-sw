@@ -3,8 +3,9 @@
   "$id":                  "https://schemas.mpai.community/NNW1/V2.0/AIMs/WithInferenceRobustness.json",
   "title":                "With Inference Robustness V2.0",
 
-  "Identifier":           {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":               "NNW-WIR-V2.0",
+  "Identifier":           {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":               "AIF-AMM-V3.0",
+  "AIMType":              "NNW-WIR-V2.0",
 
   "APIProfile":           "Basic",
   "Description":          "With Inference Robustness: the Module that evaluates the robustness of a watermark when the payload is retrieved from the inference: it modifies the watermarked parameters, has the modified Module infer from the testing dataset, decodes the payload from the inference and compares it with the original payload.",
@@ -17,19 +18,19 @@
                           {"Name": "RetrievedPayload", "Direction": "Output", "DataType": "NNW-PLD-V2.0", "Technology": "Software", "Protocol": "", "IsRemote": false},
                           {"Name": "CountError", "Direction": "Output", "DataType": "NNW-CER-V2.0", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
-  "SubAIMs":              [{"Header": "NNW-MFM-V2.0", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": ""}},
-                          {"Header": "NNW-MDM-V2.0", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": ""}},
-                          {"Header": "NNW-WWD-V2.0", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": ""}},
-                          {"Header": "NNW-CMP-V2.0", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": ""}}],
+  "SubAIMs":              [{"AIMType": "NNW-MFM-V2.0", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": ""}},
+                          {"AIMType": "NNW-MDM-V2.0", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": ""}},
+                          {"AIMType": "NNW-WWD-V2.0", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": ""}},
+                          {"AIMType": "NNW-CMP-V2.0", "Identifier": {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": ""}}],
 
-  "Topology":             [{"Output": {"AIMName": "", "DataType": "NNW-PLD-V2.0"}, "Input": {"AIMName": "NNW-CMP-V2.0", "DataType": "NNW-PLD-V2.0", "PortNumber": 1}},
-                          {"Output": {"AIMName": "", "DataType": "NNW-DST-V2.0"}, "Input": {"AIMName": "NNW-MDM-V2.0", "DataType": "NNW-DST-V2.0"}},
-                          {"Output": {"AIMName": "", "DataType": "NNW-PRM-V2.0"}, "Input": {"AIMName": "NNW-MFM-V2.0", "DataType": "NNW-PRM-V2.0"}},
-                          {"Output": {"AIMName": "NNW-MFM-V2.0", "DataType": "NNW-PRM-V2.0"}, "Input": {"AIMName": "NNW-MDM-V2.0", "DataType": "NNW-PRM-V2.0"}},
-                          {"Output": {"AIMName": "NNW-MDM-V2.0", "DataType": "NNW-INF-V2.0"}, "Input": {"AIMName": "NNW-WWD-V2.0", "DataType": "NNW-INF-V2.0"}},
-                          {"Output": {"AIMName": "NNW-WWD-V2.0", "DataType": "NNW-PLD-V2.0"}, "Input": {"AIMName": "NNW-CMP-V2.0", "DataType": "NNW-PLD-V2.0", "PortNumber": 2}},
-                          {"Output": {"AIMName": "NNW-WWD-V2.0", "DataType": "NNW-PLD-V2.0"}, "Input": {"AIMName": "", "DataType": "NNW-PLD-V2.0"}},
-                          {"Output": {"AIMName": "NNW-CMP-V2.0", "DataType": "NNW-CER-V2.0"}, "Input": {"AIMName": "", "DataType": "NNW-CER-V2.0"}}],
+  "Topology":             [{"Output": {"AIMCode": "", "DataType": "NNW-PLD-V2.0"}, "Input": {"AIMCode": "NNW-CMP-V2.0", "DataType": "NNW-PLD-V2.0", "PortNumber": 1}},
+                          {"Output": {"AIMCode": "", "DataType": "NNW-DST-V2.0"}, "Input": {"AIMCode": "NNW-MDM-V2.0", "DataType": "NNW-DST-V2.0"}},
+                          {"Output": {"AIMCode": "", "DataType": "NNW-PRM-V2.0"}, "Input": {"AIMCode": "NNW-MFM-V2.0", "DataType": "NNW-PRM-V2.0"}},
+                          {"Output": {"AIMCode": "NNW-MFM-V2.0", "DataType": "NNW-PRM-V2.0"}, "Input": {"AIMCode": "NNW-MDM-V2.0", "DataType": "NNW-PRM-V2.0"}},
+                          {"Output": {"AIMCode": "NNW-MDM-V2.0", "DataType": "NNW-INF-V2.0"}, "Input": {"AIMCode": "NNW-WWD-V2.0", "DataType": "NNW-INF-V2.0"}},
+                          {"Output": {"AIMCode": "NNW-WWD-V2.0", "DataType": "NNW-PLD-V2.0"}, "Input": {"AIMCode": "NNW-CMP-V2.0", "DataType": "NNW-PLD-V2.0", "PortNumber": 2}},
+                          {"Output": {"AIMCode": "NNW-WWD-V2.0", "DataType": "NNW-PLD-V2.0"}, "Input": {"AIMCode": "", "DataType": "NNW-PLD-V2.0"}},
+                          {"Output": {"AIMCode": "NNW-CMP-V2.0", "DataType": "NNW-CER-V2.0"}, "Input": {"AIMCode": "", "DataType": "NNW-CER-V2.0"}}],
 
   "AIMLicence":          "/* AIM Licence offered by the Implementer (AIF-LIC-V3.0): Grant, Term, Updates, Payment, TermsURI - or omit it if the AIM needs no AIM Licence */",
 

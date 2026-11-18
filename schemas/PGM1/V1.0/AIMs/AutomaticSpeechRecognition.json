@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":           "PGM-ASR-V1.0",
+{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "PGM-ASR-V1.0",
 
   "APIProfile":       "Basic",
   "Description":      "The Automatic Speech Recognition (PGM-ASR) AIM extracts the text conveyed by an utterance and derives the paralinguistic features of the speech signal. The input speech may be accompanied by an auxiliary text, the identifier of the speaker, the Speech Overlap data type, and the time indicating the portion of the input speech that should be recognised. Operation is governed by the User CXT Request, which specifies scope, depth, and policy constraints. Processing outcome is reported via the User CXT Response. Domain knowledge and interaction history may be queried by issuing User Domain and User",

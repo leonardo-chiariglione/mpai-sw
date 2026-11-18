@@ -1,5 +1,6 @@
-{ "Identifier":       { "ImplementerID": "1", "ImplementationID": "MMC-SPE-V2.5-I01", "AIMName": "1MMC-SPE-V2.5-I01" },
-  "Header":           "MMC-SPE-V2.5",
+{ "Identifier":       { "ImplementerID": "1", "ImplementationID": "MMC-SPE-V2.5-I01", "AIMInstID": "1MMC-SPE-V2.5-I01" },
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "MMC-SPE-V2.5",
   "APIProfile":"Basic","Description":"Speech Personal Status Extraction.",
   "ExternalPorts":[{"Name": "BasicSpeechObject",         "Direction": "Input",  "DataType": ["OSD-BSO-V1.5", "OSD-SPO-V1.5"], "Technology": "Software", "Protocol": "", "IsRemote": false},
                    {"Name": "SpeechPersonalStatus", "Direction": "Output", "DataType": "MMC-SPS-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],

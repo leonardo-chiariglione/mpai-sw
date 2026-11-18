@@ -159,7 +159,7 @@ public sealed class PackageCheck
                 try
                 {
                     using var doc = JsonDocument.Parse(File.ReadAllText(file));
-                    if (doc.RootElement.TryGetProperty("Identifier", out var i) && i.TryGetProperty("AIMName", out var n) && n.GetString() is { Length: > 0 } id)
+                    if (doc.RootElement.TryGetProperty("Identifier", out var i) && i.TryGetProperty("AIMInstID", out var n) && n.GetString() is { Length: > 0 } id)
                         ids.Add(id);
                 }
                 catch { /* not an L3 */ }

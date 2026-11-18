@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PGM-LPA-V1.0-I01",
-    "AIMName": "1PGM-LPA-V1.0-I01"
+    "AIMInstID": "1PGM-LPA-V1.0-I01"
   },
-  "Header": "PGM-LPA-V1.0",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PGM-LPA-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
   "Description": "The Linguistic-Paralinguistic Analysis (PGM-LPA) AI Module derives, from the utterances of the Harmonised Multimodal Context, the evidence carried by the utterance and by the manner in which it was said, by",

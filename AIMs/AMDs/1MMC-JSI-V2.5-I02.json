@@ -1,5 +1,6 @@
-{ "Identifier":           {"ImplementerID": "1", "ImplementationID": "MMC-JSI-V2.5-I02", "AIMName": "1MMC-JSI-V2.5-I02"},
-  "Header":               "MMC-JSI-V2.5",
+{ "Identifier":           {"ImplementerID": "1", "ImplementationID": "MMC-JSI-V2.5-I02", "AIMInstID": "1MMC-JSI-V2.5-I02"},
+  "Header":               "AIF-AMM-V3.0",
+  "AIMType":              "MMC-JSI-V2.5",
 
   "APIProfile":           "Basic",
   "Description":          "JSON Interface for Audio Scene Management (CAE-ASM): what the person says becomes a User Command request (CAE-UCM, UserCommandRQ) and the User Command response (UserCommandRS) becomes the Response Hint. The application is the entries of its Access, the Application Context: the schema of the User Command (both the commands and the responses), and the Application Context of Audio Scene Management, which gives the frame and the units of the numbers (metres, x to the right of the user, y ahead, z up; degrees; LUFS), the parts of the command a person's words can use, and examples. The state of the scene (its objects and where they are) is what the responses that list the scene tell it. The editing AIMs all answer every command: Responders says how many, so that their answers are one response. Positions, orientations and loudness are absolute numbers; a request that needs a number it does not give is not turned into a command, and the Response Hint asks for the number.",

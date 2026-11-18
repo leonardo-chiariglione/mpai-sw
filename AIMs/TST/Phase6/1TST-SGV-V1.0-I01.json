@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-SGV-V1.0-I01", "AIMName": "1TST-SGV-V1.0-I01"},
-  "Header":           "TST-SGV-V1.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-SGV-V1.0-I01", "AIMInstID": "1TST-SGV-V1.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "TST-SGV-V1.0",
 
   "APIProfile":       "Basic",
   "Description":      "Test: the central control of a Module's storage; sets the general rules its text states.",

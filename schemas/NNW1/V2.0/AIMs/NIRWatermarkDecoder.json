@@ -3,8 +3,9 @@
   "$id":                  "https://schemas.mpai.community/NNW1/V2.0/AIMs/NIRWatermarkDecoder.json",
   "title":                "NIR Watermark Decoder V2.0",
 
-  "Identifier":           {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":               "NNW-NWD-V2.0",
+  "Identifier":           {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":               "AIF-AMM-V3.0",
+  "AIMType":              "NNW-NWD-V2.0",
 
   "APIProfile":           "Basic",
   "Description":          "NIR Watermark Decoder: retrieves the payload inserted in the parameters of a Module (No Inference Robustness) and gives the retrieved payload.",

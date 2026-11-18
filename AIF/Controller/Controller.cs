@@ -146,7 +146,7 @@ public sealed class Controller
 
         var node = new DescriptorNode
         {
-            AIMName          = identifierJson.GetProperty("AIMName").GetString()          ?? string.Empty,
+            AIMName          = identifierJson.GetProperty("AIMInstID").GetString()          ?? string.Empty,
             ImplementerID    = identifierJson.GetProperty("ImplementerID").GetString()    ?? string.Empty,
             ImplementationID = identifierJson.GetProperty("ImplementationID").GetString() ?? string.Empty
         };
@@ -256,7 +256,7 @@ public sealed class Controller
             {
                 var subId = new Identifier
                 {
-                    AIMName          = subAim.GetProperty("Identifier").GetProperty("AIMName").GetString()          ?? string.Empty,
+                    AIMName          = subAim.GetProperty("Identifier").GetProperty("AIMInstID").GetString()          ?? string.Empty,
                     ImplementerID    = subAim.GetProperty("Identifier").GetProperty("ImplementerID").GetString()    ?? string.Empty,
                     ImplementationID = subAim.GetProperty("Identifier").GetProperty("ImplementationID").GetString() ?? string.Empty
                 };
@@ -388,7 +388,7 @@ public sealed class Controller
         public bool IsBoundary => string.IsNullOrEmpty(Aim);
 
         public static Side Read(JsonElement side) => new(
-            side.TryGetProperty("AIMName", out var a) ? (a.GetString() ?? string.Empty) : string.Empty,
+            side.TryGetProperty("AIMInstID", out var a) ? (a.GetString() ?? string.Empty) : string.Empty,
             side.TryGetProperty("DataType", out var d) && d.ValueKind == JsonValueKind.String
                 ? d.GetString() ?? string.Empty
                 : throw new InvalidOperationException("A Topology end states no DataType: the L3 was not normalised at import."),

@@ -38,7 +38,7 @@ public class AihFirstSliceTests : IDisposable
     private static string Apart(string l3, IEnumerable<string> aims)
     {
         foreach (var aim in aims)
-            l3 = System.Text.RegularExpressions.Regex.Replace(l3, "(\"AIMName\"\\s*:\\s*\"" + aim + "\"\\s*,\\s*\"Relation\"\\s*:\\s*)\"Internal\"", "$1\"External\"");
+            l3 = System.Text.RegularExpressions.Regex.Replace(l3, "(\"AIMInstID\"\\s*:\\s*\"" + aim + "\"\\s*,\\s*\"Relation\"\\s*:\\s*)\"Internal\"", "$1\"External\"");
         return l3;
     }
 

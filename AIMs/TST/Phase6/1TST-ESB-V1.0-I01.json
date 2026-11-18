@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-ESB-V1.0-I01", "AIMName": "1TST-ESB-V1.0-I01"},
-  "Header":           "TST-ESB-V1.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-ESB-V1.0-I01", "AIMInstID": "1TST-ESB-V1.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "TST-ESB-V1.0",
 
   "APIProfile":       "Basic",
   "Execution":        "Continuous",
@@ -15,14 +16,14 @@
                        {"Name": "FullEnvironmentDescriptors", "Direction": "Input",  "DataType": "CAV-FED-V2.0", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
                        {"Name": "Counts",                     "Direction": "Output", "DataType": "TST-TXT-V1.0",                     "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
-  "SubAIMs":          [{ "Identifier": { "ImplementerID": "1", "ImplementationID": "TST-SNK-V1.0-I01", "AIMName": "1TST-SNK-V1.0-I01", "Relation": "Internal" } }],
+  "SubAIMs":          [{ "Identifier": { "ImplementerID": "1", "ImplementationID": "TST-SNK-V1.0-I01", "AIMInstID": "1TST-SNK-V1.0-I01", "Relation": "Internal" } }],
 
-  "Topology":         [{ "Output": { "AIMName": "",                  "PortName": "BasicVisualObject"          }, "Input": { "AIMName": "1TST-SNK-V1.0-I01", "PortName": "BasicVisualObject"          } },
-                       { "Output": { "AIMName": "",                  "PortName": "SpatialAttitude"            }, "Input": { "AIMName": "1TST-SNK-V1.0-I01", "PortName": "SpatialAttitude"            } },
-                       { "Output": { "AIMName": "",                  "PortName": "GNSSObject"                 }, "Input": { "AIMName": "1TST-SNK-V1.0-I01", "PortName": "GNSSObject"                 } },
-                       { "Output": { "AIMName": "",                  "PortName": "WeatherData"                }, "Input": { "AIMName": "1TST-SNK-V1.0-I01", "PortName": "WeatherData"                } },
-                       { "Output": { "AIMName": "",                  "PortName": "FullEnvironmentDescriptors" }, "Input": { "AIMName": "1TST-SNK-V1.0-I01", "PortName": "FullEnvironmentDescriptors" } },
-                       { "Output": { "AIMName": "1TST-SNK-V1.0-I01", "PortName": "Counts"                     }, "Input": { "AIMName": "",                  "PortName": "Counts"                     } }],
+  "Topology":         [{ "Output": { "AIMInstID": "",                  "PortName": "BasicVisualObject"          }, "Input": { "AIMInstID": "1TST-SNK-V1.0-I01", "PortName": "BasicVisualObject"          } },
+                       { "Output": { "AIMInstID": "",                  "PortName": "SpatialAttitude"            }, "Input": { "AIMInstID": "1TST-SNK-V1.0-I01", "PortName": "SpatialAttitude"            } },
+                       { "Output": { "AIMInstID": "",                  "PortName": "GNSSObject"                 }, "Input": { "AIMInstID": "1TST-SNK-V1.0-I01", "PortName": "GNSSObject"                 } },
+                       { "Output": { "AIMInstID": "",                  "PortName": "WeatherData"                }, "Input": { "AIMInstID": "1TST-SNK-V1.0-I01", "PortName": "WeatherData"                } },
+                       { "Output": { "AIMInstID": "",                  "PortName": "FullEnvironmentDescriptors" }, "Input": { "AIMInstID": "1TST-SNK-V1.0-I01", "PortName": "FullEnvironmentDescriptors" } },
+                       { "Output": { "AIMInstID": "1TST-SNK-V1.0-I01", "PortName": "Counts"                     }, "Input": { "AIMInstID": "",                  "PortName": "Counts"                     } }],
 
   "Implementations":  [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/Test/Mpai.Aif.Tests/StorageTests.cs",
                         "MASPort":           443,

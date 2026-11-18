@@ -58,14 +58,14 @@ public sealed class AmdStore
             if (!document.RootElement.TryGetProperty("Identifier", out var identifierJson))
                 continue;
 
-            if (!identifierJson.TryGetProperty("AIMName", out _))
+            if (!identifierJson.TryGetProperty("AIMInstID", out _))
                 continue;
 
             var identifier = new Identifier
             {
                 ImplementerID    = identifierJson.TryGetProperty("ImplementerID", out var imp)    ? imp.GetString()  ?? string.Empty : string.Empty,
                 ImplementationID = identifierJson.TryGetProperty("ImplementationID", out var impl) ? impl.GetString() ?? string.Empty : string.Empty,
-                AIMName          = identifierJson.GetProperty("AIMName").GetString()               ?? string.Empty
+                AIMName          = identifierJson.GetProperty("AIMInstID").GetString()               ?? string.Empty
             };
 
             amdDocuments[identifier] = document;

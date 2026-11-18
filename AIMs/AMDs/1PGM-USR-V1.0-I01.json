@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PGM-USR-V1.0-I01",
-    "AIMName": "1PGM-USR-V1.0-I01"
+    "AIMInstID": "1PGM-USR-V1.0-I01"
   },
-  "Header": "PGM-USR-V1.0",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PGM-USR-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
   "Description": "The User State Refinement (PGM-USR) AIM improves the A-User's understanding of the evolving User State. It refines the baseline User State produced by Context Description into an authoritative, up-to-date User State (represented by an Entity State) that it passes to Personality Alignment. It refines the Engagement (level and mode) and the Entity State. User State Refinement operates through one operative interface and one semantic interface:",

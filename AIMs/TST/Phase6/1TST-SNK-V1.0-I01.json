@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-SNK-V1.0-I01", "AIMName": "1TST-SNK-V1.0-I01"},
-  "Header":           "TST-SNK-V1.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-SNK-V1.0-I01", "AIMInstID": "1TST-SNK-V1.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "TST-SNK-V1.0",
 
   "APIProfile":       "Basic",
   "Description":      "Test: counts what arrives on each input of the boundary of ESS Stage 1, and gives the counts.",

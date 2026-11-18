@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "OSD-MED-V1.5-I01",
-    "AIMName": "1OSD-MED-V1.5-I01"
+    "AIMInstID": "1OSD-MED-V1.5-I01"
   },
-  "Header": "OSD-MED-V1.5",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "OSD-MED-V1.5",
   "APIProfile": "Basic",
   "Description": "Multimodal Event Description. Collects the Basic Multimodal Scene Descriptors into the Multimodal Event Descriptors.",
   "InternalTypes": [],

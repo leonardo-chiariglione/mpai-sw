@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PGM-CXT-V1.0-I01",
-    "AIMName": "1PGM-CXT-V1.0-I01"
+    "AIMInstID": "1PGM-CXT-V1.0-I01"
   },
-  "Header": "PGM-CXT-V1.0",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PGM-CXT-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
   "Description": "The Context Description (PGM-CXT) AIM is the A-User's perceptual front end to the spatial environment, integrating in a single Composite AIM the active capture of a multimodal scene and its interpretative enrichment. It receives raw Audio and Visual Objects, captures and structures the scene without LLM involvement and without MCP interactions, and then applies modality-specific analysis (audio and visual), cross-modal alignment, and optional domain knowledge to produce Enhanced Audio Scene Descriptors and Enhanced Visual Scene Descriptors together with an interpreted description of the User S",

@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "OSD-MSM-V1.5-I01",
-    "AIMName": "1OSD-MSM-V1.5-I01"
+    "AIMInstID": "1OSD-MSM-V1.5-I01"
   },
-  "Header": "OSD-MSM-V1.5",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "OSD-MSM-V1.5",
   "APIProfile": "Basic",
   "Description": "Multimodal Scene Multiplexing. Puts the Scenes of speech and of pictures, the Text and the Instance Identifier in a Basic Multimodal Scene.",
   "InternalTypes": [],

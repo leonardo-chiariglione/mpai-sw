@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "OSD-BSS-V1.5-I01",
-    "AIMName": "1OSD-BSS-V1.5-I01"
+    "AIMInstID": "1OSD-BSS-V1.5-I01"
   },
-  "Header": "OSD-BSS-V1.5",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "OSD-BSS-V1.5",
   "APIProfile": "Basic",
   "Description": "Basic Speech Scene Description. Describes each Basic Speech Object as the one Object of a Scene.",
   "InternalTypes": [],

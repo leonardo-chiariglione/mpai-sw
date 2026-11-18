@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PGM-FSM-V1.0-I01",
-    "AIMName": "1PGM-FSM-V1.0-I01"
+    "AIMInstID": "1PGM-FSM-V1.0-I01"
   },
-  "Header": "PGM-FSM-V1.0",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PGM-FSM-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
   "Description": "AUF Status Multiplexing",

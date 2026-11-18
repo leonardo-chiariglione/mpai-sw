@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "OSD-BVS-V1.5-I02", "AIMName": "1OSD-BVS-V1.5-I02"},
-  "Header":           "OSD-BVS-V1.5",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "OSD-BVS-V1.5-I02", "AIMInstID": "1OSD-BVS-V1.5-I02"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "OSD-BVS-V1.5",
   "APIProfile":       "Basic",
   "Description":      "Basic Visual Scene Description for the Environment Sensing Subsystem: the road users in each camera frame, by YOLOX, one per object whatever class the detector also gave it, each located on the road from the camera's model and given as a Basic Visual Object with its class and its Space-Time relative to the ego; an Alert when one in the ego's lane is nearer than a distance, or will be reached within a time at the closing speed the prior gives. Every frame is described: a frame that arrives while another is being described waits (Block), so that the CAV decides on all it sees (M3233).",
   "InternalTypes":    [],

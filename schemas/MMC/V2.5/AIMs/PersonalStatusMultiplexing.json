@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":            "MMC-PMX-V2.5",
+{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":            "AIF-AMM-V3.0",
+  "AIMType":           "MMC-PMX-V2.5",
 
   "APIProfile":       "Basic",
   "Description":      "This AIM assembles the per-modality Personal Statuses - Text, Speech, Face, and Body - into a single Entity Personal Status. It combines; it does not compute. Each modality input is optional, but at least one shall be present; the Entity Personal Status carries whichever modalities are supplied.",

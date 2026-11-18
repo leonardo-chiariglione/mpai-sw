@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":           "PGM-AUC-V1.0",
+{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "PGM-AUC-V1.0",
 
   "APIProfile":       "Basic",
   "Description":      "The A-User Control (PGM-AUC) AIM serves as the central coordinator for Action execution, AIM orchestration, and system traceability. It governs the lifecycle of the A-User and orchestrates its interactions with the responsible human, the M-Instance, and the Processes and Items with which the A-User interacts. A-User Control holds goal authority but not necessarily epistemic capability: it carries the objectives given to it by the responsible human or by specification, and it asserts those objectives authoritatively. It it does not itself understand the environment or the User because that unde",

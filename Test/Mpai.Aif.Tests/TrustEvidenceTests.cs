@@ -37,7 +37,7 @@ public class TrustEvidenceTests
             var real = ImplementationFingerprints.OfImplementation(TestBinary);
             foreach (var file in Directory.EnumerateFiles(copy, "*.json"))
             {
-                var aim = (string?)JsonNode.Parse(File.ReadAllText(file))?["Identifier"]?["AIMName"];
+                var aim = (string?)JsonNode.Parse(File.ReadAllText(file))?["Identifier"]?["AIMInstID"];
                 if (aim is not null) fingerprints.Approve(aim, "Mpai.Aif.Tests", fingerprintFor?.Invoke(aim) ?? real, DateTimeOffset.UtcNow);
             }
         }

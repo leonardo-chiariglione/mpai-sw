@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-PAP-V2.5-I01", "AIMName": "1CAE-PAP-V2.5-I01"},
-  "Header":           "CAE-PAP-V2.5",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-PAP-V2.5-I01", "AIMInstID": "1CAE-PAP-V2.5-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAE-PAP-V2.5",
   "APIProfile":       "Basic",
   "Description":      "Packaging for Audio Preservation: produces the Preservation Master Files and the Access Copy Files.",
   "ExternalPorts":    [{"Name": "PreservationAudioFile", "Direction": "Input", "IsOptional": true, "DataType": "OSD-BAO-V1.5", "PortNumber": 1, "Technology": "Software", "Protocol": "", "IsRemote": false},

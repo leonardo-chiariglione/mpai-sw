@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":           "CAV-SAG-V2.0",
+{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAV-SAG-V2.0",
   "APIProfile":       "Basic",
   "Description":      "Spatial Attitude Generation: produces the ego Spatial Attitude of the CAV - position, orientation, their velocities and accelerations, with their accuracies - on one frame of reference, from the Spatial Attitude the Motion Actuation Subsystem estimates from odometry and inertial sensors, corrected by GNSS where a GNSS Object is available.",
   "InternalTypes":    [],

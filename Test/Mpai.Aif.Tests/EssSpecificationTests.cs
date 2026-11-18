@@ -49,7 +49,7 @@ public class EssSpecificationTests
             try
             {
                 var o = JsonNode.Parse(File.ReadAllText(file))?.AsObject();
-                var header = (string?)o?["Header"];
+                var header = (string?)o?["AIMType"];
                 if (header is not null) found.TryAdd(header, o!);
             }
             catch (JsonException) { }
@@ -88,7 +88,7 @@ public class EssSpecificationTests
             foreach (var p in composite["ExternalPorts"]!.AsArray().Concat(composite["InternalTypes"]?.AsArray() ?? []))
                 labels[(string)p!["Name"]!] = Types(p["DataType"]).ToList();
 
-            var subs = composite["SubAIMs"]!.AsArray().Select(s => (string)s!["Header"]!).ToList();   // in an L2, a Sub-AIM is its Header
+            var subs = composite["SubAIMs"]!.AsArray().Select(s => (string)s!["AIMType"]!).ToList();   // in an L2, a Sub-AIM is its AIMType
             foreach (var s in subs.Where(s => !l2s.ContainsKey(s))) problems.Add($"{s} has no L2");
 
             var fed = new HashSet<(string Aim, string Type)>();
@@ -96,7 +96,7 @@ public class EssSpecificationTests
             {
                 foreach (var (end, direction) in new[] { (line!["Output"]!, "Output"), (line["Input"]!, "Input") })
                 {
-                    var aim = (string)end["AIMName"]!;
+                    var aim = (string)end["AIMCode"]!;
                     var label = (string)end["PortName"]!;
                     // An end that states its Data Type is read by it, not by its name.
                     var stated = (string?)end["DataType"];
@@ -126,7 +126,7 @@ public class EssSpecificationTests
                 foreach (var p in l2s[s]["ExternalPorts"]!.AsArray().Where(p => (string)p!["Direction"]! == "Input" && p["IsOptional"]?.GetValue<bool>() != true))
                     if (!Types(p!["DataType"]).Any(t => fed.Contains((s, t)))) problems.Add($"{s}'s required {(string)p["Name"]!} is not fed");
 
-            result[(string)composite["Header"]!] = problems.Count == 0 ? "wired" : string.Join("; ", problems.Distinct());
+            result[(string)composite["AIMType"]!] = problems.Count == 0 ? "wired" : string.Join("; ", problems.Distinct());
         }
         Expected.Match("ess-v2-wiring.json", result);
     }

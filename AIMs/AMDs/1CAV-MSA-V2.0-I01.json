@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAV-MSA-V2.0-I01", "AIMName": "1CAV-MSA-V2.0-I01"},
-  "Header":           "CAV-MSA-V2.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAV-MSA-V2.0-I01", "AIMInstID": "1CAV-MSA-V2.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAV-MSA-V2.0",
   "APIProfile":       "Basic",
   "Description":      "MAS Spatial Attitude Generation, Stage 1: the Spatial Attitude of the CAV from its Spatial Data - position and heading by dead reckoning from the odometer and the gyroscope's yaw rate, from the heading the CAV had at Start (a setting), velocity from the speedometer, acceleration from the accelerometer, pitch from the inclinometer - each with an accuracy that grows with the distance travelled.",
   "InternalTypes":    [],

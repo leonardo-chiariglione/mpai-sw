@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":           "PGM-CDM-V1.0",
+{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "PGM-CDM-V1.0",
 
   "APIProfile":       "Basic",
   "Description":      "The Context Description Multiplexing (PGM-CDM) AIM is a Sub-AIM of Context Description. It multiplexes the per-modality results into the aggregated Context Descriptors (to be delivered to Prompt Creation), Domain Request, Interaction History Request and AUC-CXT Response. [Template: to be completed.] The Context Description Multiplexing AIM:",

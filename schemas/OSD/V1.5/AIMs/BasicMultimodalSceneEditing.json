@@ -6,8 +6,9 @@
 
   "title":            "Basic Multimodal Scene Editing V1.5",
 
-  "Header":           "OSD-BME-V1.5",
-  "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "OSD-BME-V1.5",
+  "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
 
   "APIProfile":       "Basic",
   "Description":      "Basic Multimodal Scene Editing: Basic Scenes and Basic Objects of at least two media - Audio, Visual, Speech, LiDAR, 3D Model, RADAR, Ultrasound, Offline Map - composed into a Basic Multimodal Scene (a voice over music is a BMS of a BAS and a BSS, or of a BAO and a BSO). It is Multimodal Scene Editing (OSD-MSE) working on the Basic Scenes and Basic Objects: each of its two Scene Ports takes a Basic Scene of any medium, each of its two Object Ports a Basic Object of any medium, and the User Command (with the User PoV, optional) places, moves, changes and removes them in the one open Basic Multimodal Scene; the User Command with its response leaves on the second output.",

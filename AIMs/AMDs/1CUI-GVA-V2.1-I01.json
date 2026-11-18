@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CUI-GVA-V2.1-I01", "AIMName": "1CUI-GVA-V2.1-I01"},
-  "Header":           "CUI-GVA-V2.1",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CUI-GVA-V2.1-I01", "AIMInstID": "1CUI-GVA-V2.1-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CUI-GVA-V2.1",
   "APIProfile":       "Basic",
   "Description":      "This AIM computes the Governance Descriptors of CUI-CPP from the Governance Statements of the company. At publication time it is a pass-through AIM: the Governance Statements have the format of the Governance Descriptors.",
   "InternalTypes":    [],

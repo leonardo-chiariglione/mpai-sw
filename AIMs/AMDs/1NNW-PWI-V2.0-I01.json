@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "NNW-PWI-V2.0-I01", "AIMName": "1NNW-PWI-V2.0-I01"},
-  "Header":           "NNW-PWI-V2.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "NNW-PWI-V2.0-I01", "AIMInstID": "1NNW-PWI-V2.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "NNW-PWI-V2.0",
   "APIProfile":       "Secure",
   "Description":      "Post-Training Watermark Insertion with NCT, No-Constraint Traceability (Institut Mines-Telecom): the weights of the ONNX files of the model at secret positions, chosen by the Key, are replaced by values that carry the Payload. The model is not trained again.",
   "InternalTypes":    [],

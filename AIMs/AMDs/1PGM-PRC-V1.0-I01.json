@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PGM-PRC-V1.0-I01",
-    "AIMName": "1PGM-PRC-V1.0-I01"
+    "AIMInstID": "1PGM-PRC-V1.0-I01"
   },
-  "Header": "PGM-PRC-V1.0",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PGM-PRC-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
   "Description": "Prompt Creation",

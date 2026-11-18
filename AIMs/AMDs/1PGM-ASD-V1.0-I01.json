@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PGM-ASD-V1.0-I01",
-    "AIMName": "1PGM-ASD-V1.0-I01"
+    "AIMInstID": "1PGM-ASD-V1.0-I01"
   },
-  "Header": "PGM-ASD-V1.0",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PGM-ASD-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
   "Description": "The Audio Scene Description (PGM-ASD) AIM receives an Audio Object and produces the Audio Scene Descriptors describing it. In the PGM-AUA context, the AIM operates under the control of an Audio CXT Request issued by A-User Control (through the CXT-AUS Interface) and reports an Audio CXT Response on completion. The AIM references the Input and Output Data Types by name; their structure is specified by the respective Data Type definitions.",

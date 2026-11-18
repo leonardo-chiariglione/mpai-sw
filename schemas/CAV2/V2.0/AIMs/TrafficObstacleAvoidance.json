@@ -3,9 +3,10 @@
   "$id": "https://schemas.mpai.community/CAV2/V2.0/AIMs/TrafficObstacleAvoidance.json",
   "title": "Traffic Obstacle Avoidance V2.0",
 
-  "Identifier":   { "ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */" },
+  "Identifier":   { "ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */" },
 
-  "Header":       "CAV-TOA-V2.0",
+  "Header":       "AIF-AMM-V3.0",
+  "AIMType":      "CAV-TOA-V2.0",
 
   "APIProfile":   "Basic",
   "Description":  "This AIM refines the Trajectory received using Alert and Road State.",

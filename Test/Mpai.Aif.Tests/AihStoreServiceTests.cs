@@ -26,7 +26,7 @@ public class AihStoreServiceTests
         var package = new Uri(Path.Combine(store.Packages, "mpai") + Path.DirectorySeparatorChar).AbsoluteUri;
         foreach (var sub in hfe["SubAIMs"]!.AsArray())
         {
-            var name = (string)sub!["Identifier"]!["AIMName"]!;
+            var name = (string)sub!["Identifier"]!["AIMInstID"]!;
             var l3 = JsonNode.Parse(File.ReadAllText(Path.Combine(Repository.Amds, name + ".json")))!;
             foreach (var impl in l3["Implementations"]!.AsArray()) impl!["ImplementationURI"] = package;
             var answer = await StoreTests.Submit(store.Http, l3, null, StoreTests.Admin);

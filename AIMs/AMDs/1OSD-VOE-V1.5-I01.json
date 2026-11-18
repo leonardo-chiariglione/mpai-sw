@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "OSD-VOE-V1.5-I01",
-    "AIMName": "1OSD-VOE-V1.5-I01"
+    "AIMInstID": "1OSD-VOE-V1.5-I01"
   },
-  "Header": "OSD-VOE-V1.5",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "OSD-VOE-V1.5",
   "APIProfile": "Basic",
   "Description": "Visual Object Extraction: from the Visual Objects of a Visual Scene takes the Target Visual Object that a Point of View crosses in the Visual Scene Geometry.",
   "InternalTypes": [],

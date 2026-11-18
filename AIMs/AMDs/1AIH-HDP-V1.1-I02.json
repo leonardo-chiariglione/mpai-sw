@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "AIH-HDP-V1.1-I02", "AIMName": "1AIH-HDP-V1.1-I02"},
-  "Header":           "AIH-HDP-V1.1",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "AIH-HDP-V1.1-I02", "AIMInstID": "1AIH-HDP-V1.1-I02"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "AIH-HDP-V1.1",
   "APIProfile":       "Secure",
   "Description":      "This AIM performs one or more processing functions on AIH Data.",
   "InternalTypes":    [{"Name": "LicenceConfirm", "DataType": "AIH-LCF-V1.1"},

@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CUI-CDP-V2.1-I01", "AIMName": "1CUI-CDP-V2.1-I01"},
-  "Header":           "CUI-CDP-V2.1",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CUI-CDP-V2.1-I01", "AIMInstID": "1CUI-CDP-V2.1-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CUI-CDP-V2.1",
   "APIProfile":       "Basic",
   "Description":      "This AIM computes the Primary Default Descriptors of CUI-CAP.",
   "InternalTypes":    [],

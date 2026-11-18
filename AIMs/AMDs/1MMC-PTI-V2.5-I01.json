@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "MMC-PTI-V2.5-I01", "AIMName": "1MMC-PTI-V2.5-I01"},
-  "Header":           "MMC-PTI-V2.5",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "MMC-PTI-V2.5-I01", "AIMInstID": "1MMC-PTI-V2.5-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "MMC-PTI-V2.5",
 
   "APIProfile":       "Basic",
   "Description":      "PS-Text Interpretation: gives the Text Personal Status from the Text Descriptors Object of a text (the 28 GoEmotions scores of Entity Text Description). Each label of GoEmotions is mapped to a label of the Emotion, Cognitive State or Social Attitude vocabulary; the label of each Factor with the highest score is given, with the score as Degree, if the score reaches 0.25. Desire, gratitude and neutral have no label in the vocabulary and are not given.",

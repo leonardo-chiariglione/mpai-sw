@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":           "PGM-BPL-V1.0",
+{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "PGM-BPL-V1.0",
 
   "APIProfile":       "Basic",
   "Description":      "The Behaviour Planning (PGM-BPL) AIM is a Sub-AIM of A-User Formation (PGM-AUF). It receives the Communicative Functions of the Final Response and, for each function that carries no Behaviour, chooses the Behaviour that realises it on the Persona of the A-User, from the closed list of its Function and among the Behaviours of the Avatar Model; for a function that carries a Behaviour it checks that the Persona can perform it. It times every Behaviour on the words of its Anchor, aligning the Text with the Machine Speech, and gives the Communicative Functions, each with its Behaviour and its times, to Animation Object Generation. It is driven by the AUC-AUF Request and reports, in its AUC-AUF Response, for each function, Realised, Modified or Not Realised with the reason.",

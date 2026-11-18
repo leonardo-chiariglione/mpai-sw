@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-EFP-V2.5-I01", "AIMName": "1CAE-EFP-V2.5-I01"},
-  "Header":           "CAE-EFP-V2.5",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-EFP-V2.5-I01", "AIMInstID": "1CAE-EFP-V2.5-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAE-EFP-V2.5",
   "APIProfile":       "Basic",
   "Description":      "Emotion Feature Production: produces the Neural Speech Features of speech with an Emotion, in a language, from those of the Emotionless Speech.",
   "ExternalPorts":    [{"Name": "EmotionlessSpeechFeatures", "Direction": "Input", "DataType": "MMC-SDO-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false},

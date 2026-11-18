@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "XRV-PTI-V1.0-I02", "AIMName": "1XRV-PTI-V1.0-I02"},
-  "Header":           "XRV-PTI-V1.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "XRV-PTI-V1.0-I02", "AIMInstID": "1XRV-PTI-V1.0-I02"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "XRV-PTI-V1.0",
   "APIProfile":       "Basic",
   "Description":      "The Participant Status Interpretation (XRV-PTI) AIM interprets the RE Participant Descriptors and VE Participant Descriptors to produce the RE and VE Participant Status as required to determine if the Script's Cue Point Conditions of the current Cue Point ID are met.",
   "ExternalPorts":    [{"Name": "REParticipantDescriptors", "Direction": "Input", "DataType": "XRV-RTD-V1.0", "IsOptional": true, "Overflow": "DropOldest", "Technology": "Software", "Protocol": "", "IsRemote": false},

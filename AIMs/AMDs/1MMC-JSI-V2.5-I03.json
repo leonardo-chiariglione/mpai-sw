@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "MMC-JSI-V2.5-I03",
-    "AIMName": "1MMC-JSI-V2.5-I03"
+    "AIMInstID": "1MMC-JSI-V2.5-I03"
   },
-  "Header": "MMC-JSI-V2.5",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "MMC-JSI-V2.5",
   "APIProfile": "Basic",
   "Description": "JSON Interface for the Secretary of a meeting in the Metaverse (MMM). DRAFT. What a participant says to the Secretary becomes a User Command request (MMM-UCM, UserCommandRQ) - a summary in a language, written or spoken, the hand, the microphone, the screen, closing the meeting, going back to the meeting - and the User Command response (UserCommandRS) becomes the Response Hint, which the Secretary says in a few words. The application is the entries of its Access: the schema of the User Command (commands and responses) and the Application Context of the Secretary.",
   "InternalTypes": [],

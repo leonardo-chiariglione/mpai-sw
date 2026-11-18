@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAV-PSP-V2.0-I01", "AIMName": "1CAV-PSP-V2.0-I01"},
-  "Header":           "CAV-PSP-V2.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAV-PSP-V2.0-I01", "AIMInstID": "1CAV-PSP-V2.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAV-PSP-V2.0",
   "APIProfile":       "Basic",
   "Description":      "Path Selection Planning, Stage 1: from the Route, the Path - the centreline of the CAV's lane along each segment and through each junction - given to Motion Selection Planning as a Path Response.",
   "InternalTypes":    [],

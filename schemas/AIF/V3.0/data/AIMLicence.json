@@ -16,8 +16,8 @@
     "TermsURI":           { "type": "string", "format": "uri", "description": "Where the terms of the AIM Licence are published in the MPAI Store. Required in an offer." },
 
     "AIM":                { "description": "What an issued AIM Licence is for: the AIM Instance Metadata it names - and so the Implementations the MPAI Store approved for it and the data of Access its SHA-256 pin. Issued only (an offer is in the Metadata of the AIM it is for).",
-                            "type": "object", "required": [ "AIMName", "L3" ], "additionalProperties": false, "properties": {
-      "AIMName":          { "type": "string", "minLength": 1, "description": "The AIM Instance identifier (e.g. 1AIH-NNM-V1.1-I02)." },
+                            "type": "object", "required": [ "AIMInstID", "L3" ], "additionalProperties": false, "properties": {
+      "AIMInstID":        { "type": "string", "minLength": 1, "description": "The AIM Instance ID of the L3 (e.g. 1AIH-NNM-V1.1-I02)." },
       "Versions":         { "description": "The versions of the AIM, as the MPAI Store numbers them, that the AIM Licence covers. Omitted: the version it was issued for.",
                             "type": "object", "additionalProperties": false, "properties": {
         "From":           { "type": "string", "minLength": 1 },

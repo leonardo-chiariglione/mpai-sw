@@ -36,12 +36,12 @@ public class AsmOnAnAimHostTests
         var l3 = JsonNode.Parse(File.ReadAllText(l3Path))!;
         const string Vci = "1MMC-VCI-V2.5-I01";
         var subs = l3["SubAIMs"]!.AsArray();
-        foreach (var s in subs.Where(s => (string?)s!["Identifier"]!["AIMName"] == Vci).ToList()) subs.Remove(s);
+        foreach (var s in subs.Where(s => (string?)s!["Identifier"]!["AIMInstID"] == Vci).ToList()) subs.Remove(s);
         var topology = l3["Topology"]!.AsArray();
-        foreach (var e in topology.Where(e => (string?)e!["Output"]!["AIMName"] == Vci || (string?)e["Input"]!["AIMName"] == Vci).ToList()) topology.Remove(e);
+        foreach (var e in topology.Where(e => (string?)e!["Output"]!["AIMInstID"] == Vci || (string?)e["Input"]!["AIMInstID"] == Vci).ToList()) topology.Remove(e);
         var ports = l3["ExternalPorts"]!.AsArray();
         foreach (var port in ports.Where(p => (string?)p!["DataType"] == "OSD-BSO-V1.5" || (string?)p["DataType"] == "OSD-BTO-V1.5").ToList()) ports.Remove(port);
-        foreach (var s in subs.Where(s => Placed.Contains((string?)s!["Identifier"]!["AIMName"]))) s["Identifier"]!["Relation"] = "External";
+        foreach (var s in subs.Where(s => Placed.Contains((string?)s!["Identifier"]!["AIMInstID"]))) s["Identifier"]!["Relation"] = "External";
         File.WriteAllText(l3Path, l3.ToJsonString());
         return folder;
     }

@@ -73,8 +73,8 @@ public class TsdStdTests
         var std = JsonNode.Parse(File.ReadAllText(Path.Combine(Repository.Amds, "1MMC-STD-V2.5-I01.json")))!;
         var inputs = std["ExternalPorts"]!.AsArray().Where(p => p!["Direction"]!.GetValue<string>() == "Input").Select(p => p!["Name"]!.GetValue<string>()).ToArray();
         Assert.Equal(new[] { "InputSpeech", "LanguageSelector", "InputText", "TextSpeechSelector", "DescriptorSelector" }, inputs);
-        Assert.Contains(std["Topology"]!.AsArray(), t => t!["Output"]!["AIMName"]!.GetValue<string>() == "" && t["Output"]!["PortNumber"]?.GetValue<int>() == 3
-            && t["Input"]!["AIMName"]!.GetValue<string>() == "1MMC-TSD-V2.5-I01" && t["Input"]!["DataType"]!.GetValue<string>() == "OSD-SEL-V1.5");
+        Assert.Contains(std["Topology"]!.AsArray(), t => t!["Output"]!["AIMInstID"]!.GetValue<string>() == "" && t["Output"]!["PortNumber"]?.GetValue<int>() == 3
+            && t["Input"]!["AIMInstID"]!.GetValue<string>() == "1MMC-TSD-V2.5-I01" && t["Input"]!["DataType"]!.GetValue<string>() == "OSD-SEL-V1.5");
     }
 
     // ---- the voice -----------------------------------------------------------------------------------------------------------------------------------

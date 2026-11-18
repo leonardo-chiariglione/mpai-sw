@@ -3,18 +3,20 @@
   "title":                "AIM Metadata V3.0",
   "type":                 "object",
   "additionalProperties": false,
-  "required":             [ "Header", "Identifier", "APIProfile", "Description", "ExternalPorts", "Implementations" ],
+  "required":             [ "Header", "AIMType", "Identifier", "APIProfile", "Description", "ExternalPorts", "Implementations" ],
 
-  "$comment":             "An AIM is Basic or Composite. SubAIMs and Topology are required together and only for a Composite AIM (see dependentRequired). A Port is addressed by its Data Type and, where an AIM has more than one Port of the same Direction and Data Type, by a PortNumber; names are labels for people and are never used for addressing. Constrained fields admit a /* ... */ placeholder so that one file serves as both Implementer template and validated instance.",
+  "$comment":             "An AIM is Basic or Composite. SubAIMs and Topology are required together and only for a Composite AIM (see dependentRequired). A Port is addressed by its Data Type and, where an AIM has more than one Port of the same Direction and Data Type, by a PortNumber; names are labels for people and are never used for addressing. Constrained fields admit a /* ... */ placeholder so that one file serves as both Implementer template and validated instance. An L2 refers to AIMs by AIMCode, an L3 to AIM Instances by AIMInstID, never both in one file: the Identifier decides (if/then/else).",
 
   "properties":           {
+
+    "Header":             { "type": "string", "const": "AIF-AMM-V3.0" },
 
     "$schema":            { "type": "string", "format": "uri", "description": "Permitted so an instance may declare the schema it validates against." },
     "$id":                { "type": "string", "format": "uri", "description": "Canonical URI of this AIM's Metadata." },
     "$comment":           { "type": "string" },
     "title":              { "type": "string" },
 
-    "Header":             { "$ref": "#/$defs/MPAIIdentifier",
+    "AIMType":            { "$ref": "#/$defs/MPAIIdentifier",
                             "description": "The AIM Type this Metadata describes, in STANDARD-TYPE-Vn.m form, e.g. MMC-AMQ-V2.5. In an L2 it is the L2's own AIM Type; in an L3 it is the AIM Type of the L2 the L3 implements, and names the L2 the L3 is checked against." },
 
     "Identifier":         { "$ref": "#/$defs/Identifier" },
@@ -58,11 +60,11 @@
     "SubAIMs":            { "type": "array", "description": "Present only for a Composite AIM.",
                             "items": { "type": "object", "additionalProperties": false,
                             "required": [ "Identifier" ], "properties": {
-      "Header":           { "$ref": "#/$defs/MPAIIdentifier", "description": "The AIM Type of the SubAIM (e.g. MMC-AMQ-V2.5). In an L2, which is the standard and is not executed, it is what the Topology refers to; in an L3 it equals the Header of the L3 of the SubAIM." },
+      "AIMType":          { "$ref": "#/$defs/MPAIIdentifier", "description": "The AIM Type of the SubAIM (e.g. MMC-AMQ-V2.5). In an L2, which is the standard and is not executed, it is what the Topology refers to; in an L3 it equals the AIMType of the L3 of the SubAIM." },
       "Identifier":       { "$ref": "#/$defs/Identifier" },
-      "AIMNumber":        { "type": "integer", "minimum": 1, "description": "1-based ordinal distinguishing SubAIMs that share an AIMName; omitted when the AIMName occurs once (implicitly 1). Referenced by PortID.AIMNumber." } } } },
+      "AIMNumber":        { "type": "integer", "minimum": 1, "description": "1-based ordinal distinguishing SubAIMs that share an AIMCode (L2) or AIMInstID (L3); omitted when it occurs once (implicitly 1). Referenced by PortID.AIMNumber." } } } },
 
-    "Topology":           { "type": "array", "description": "Connections between Ports. Output is the source: the Port from which the upstream AIM sends. Input is the destination: the Port at which the downstream AIM receives. Where Output or Input names this Composite AIM's own boundary (AIMName empty), it is an Input or an Output ExternalPort respectively.",
+    "Topology":           { "type": "array", "description": "Connections between Ports. Output is the source: the Port from which the upstream AIM sends. Input is the destination: the Port at which the downstream AIM receives. Where Output or Input names this Composite AIM's own boundary (AIMCode or AIMInstID empty), it is an Input or an Output ExternalPort respectively.",
                             "items": { "type": "object", "additionalProperties": false,
                             "required": [ "Input", "Output" ], "properties": {
       "Input":            { "$ref": "#/$defs/PortID" },
@@ -150,6 +152,12 @@
 
   "dependentRequired":    { "SubAIMs": [ "Topology" ], "Topology": [ "SubAIMs" ] },
 
+  "if":                   { "properties": { "Identifier": { "required": [ "AIMInstID" ] } } },
+  "then":                 { "properties": { "SubAIMs":  { "items": { "properties": { "Identifier": { "required": [ "AIMInstID" ] } } } },
+                                            "Topology": { "items": { "properties": { "Input": { "required": [ "AIMInstID" ] }, "Output": { "required": [ "AIMInstID" ] } } } } } },
+  "else":                 { "properties": { "SubAIMs":  { "items": { "properties": { "Identifier": { "required": [ "AIMCode" ] } } } },
+                                            "Topology": { "items": { "properties": { "Input": { "required": [ "AIMCode" ] }, "Output": { "required": [ "AIMCode" ] } } } } } },
+
   "dependentSchemas":     { "Execution":  { "required": [ "SubAIMs" ], "properties": { "SubAIMs": { "minItems": 1 } } },
                             "OnDegraded": { "required": [ "SubAIMs" ], "properties": { "SubAIMs": { "minItems": 1 } } } },
 
@@ -176,10 +184,12 @@
     "MPAIIdentifier":     { "type": "string", "pattern": "^[A-Z0-9]{3}-[A-Z0-9]{3}-V[0-9]+\\.[0-9]+$",
                             "description": "The MPAI three-three-version identifier, e.g. OSD-SPO-V1.5." },
 
-    "Identifier":         { "type": "object", "$anchor": "identifier", "additionalProperties": false, "required": [ "ImplementerID", "ImplementationID", "AIMName" ], "properties": {
+    "Identifier":         { "type": "object", "$anchor": "identifier", "additionalProperties": false, "required": [ "ImplementerID", "ImplementationID" ],
+                            "oneOf": [ { "required": [ "AIMCode" ] }, { "required": [ "AIMInstID" ] } ], "properties": {
       "ImplementerID":    { "type": "string", "description": "String assigned by IIDRA" },
       "ImplementationID": { "type": "string", "description": "String assigned by Implementer" },
-      "AIMName":          { "type": "string", "description": "The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them." },
+      "AIMCode":          { "type": "string", "description": "In an L2: the coded reference to the AIM, a /* ... */ placeholder for the AIMInstID the Implementer gives in the L3." },
+      "AIMInstID":        { "type": "string", "description": "In an L3: the coded reference to the AIM Instance, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them, e.g. 1MMC-AMQ-V2.5-I01." },
       "Relation":         { "description": "How the SubAIM is deployed relative to the machine provisioned for the AIM Instance described by THIS AIM Metadata schema instance. Empty in an L2 instance means the default Internal, to be fixed at L3. See $defs/Relation for the individual definitions.",
                             "anyOf": [ { "$ref": "#/$defs/Relation" }, { "const": "" }, { "$dynamicRef": "#placeholder" } ] },
       "Host":             { "type": "string", "description": "Service instance address; REQUIRED when Relation is Private or Public, otherwise omitted." } } },
@@ -238,14 +248,16 @@
     "PortID":             { "type": "object", "additionalProperties": false,
                             "description": "One end of a Topology connection. A Port is addressed by the AIM Instance holding it, its Data Type and, where that AIM has more than one Port of the same Direction and Data Type, its PortNumber. Names are labels for people and never address: nothing guarantees that a sending and a receiving Port bear the same name. PortName is a label of THIS Composite AIM, which maps it to a Data Type through its own ExternalPorts (for its boundary) or InternalTypes (for a flow between its SubAIMs); the name a SubAIM gives its own Port is never read. DataType may be stated instead of, or besides, the label.",
                             "$comment": "A Composite AIM ASSIGNS PortNumbers to its OWN ExternalPorts (its boundary) when it has two or more of the same Direction and Data Type; it CITES - never assigns - a SubAIM's PortNumber, which is fixed by that SubAIM's own declaration. Every Topology end referencing a Port from a group of two or more of the same Direction and Data Type SHALL cite that Port's PortNumber. That every label is declared by the Composite AIM is not enforceable by JSON Schema and is checked by the Controller, which refuses to load a Topology using an undeclared label.",
-                            "required": [ "AIMName" ],
+                            "oneOf": [ { "required": [ "AIMCode" ] }, { "required": [ "AIMInstID" ] } ],
                             "anyOf": [ { "required": [ "PortName" ] }, { "required": [ "DataType" ] } ],
                             "properties": {
-      "AIMName":          { "description": "The AIM Instance of the SubAIM holding this Port, or the empty string to denote this Composite AIM's own boundary, that is one of its ExternalPorts.",
+      "AIMCode":          { "description": "In an L2: the coded reference to the AIM holding this Port, i.e. the AIM Type of the SubAIM, or the empty string to denote this Composite AIM's own boundary, that is one of its ExternalPorts.",
                             "anyOf": [ { "const": "" },
-                                       { "$ref": "https://schemas.mpai.community/AIF/V3.0/data/AIMInstance.json#/$defs/AIMType" },
+                                       { "$ref": "https://schemas.mpai.community/AIF/V3.0/data/AIMInstance.json#/$defs/AIMType" } ] },
+      "AIMInstID":        { "description": "In an L3: the coded reference to the AIM Instance holding this Port, i.e. the AIM Instance ID of the SubAIM, or the empty string to denote this Composite AIM's own boundary, that is one of its ExternalPorts.",
+                            "anyOf": [ { "const": "" },
                                        { "$ref": "https://schemas.mpai.community/AIF/V3.0/data/AIMInstance.json#/$defs/AIMInstanceIdentifier" } ] },
-      "AIMNumber":        { "type": "integer", "minimum": 1, "description": "Selects which SubAIM is meant when several share an AIMName; omitted => 1." },
+      "AIMNumber":        { "type": "integer", "minimum": 1, "description": "Selects which SubAIM is meant when several share an AIMCode (L2) or AIMInstID (L3); omitted => 1." },
       "PortName":         { "type": "string", "description": "A label of this Composite AIM: the Name of one of its ExternalPorts or InternalTypes, which gives the Data Type." },
       "DataType":         { "$ref": "#/$defs/DataTypeOrSet", "description": "The Data Type the Port carries, where the end states it rather than, or besides, a label." },
       "PortNumber":       { "type": "integer", "minimum": 1, "description": "Selects which Port is meant when the AIM has more than one of the same Direction and Data Type; omitted => 1." } } },

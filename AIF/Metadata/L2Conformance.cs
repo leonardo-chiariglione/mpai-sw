@@ -38,8 +38,8 @@ public sealed class L2Conformance
             try
             {
                 var l2 = JsonDocument.Parse(File.ReadAllText(file)).RootElement.Clone();
-                // An L2 is known by its Header, the AIM Type; its Identifier is that of L1 (ImplementerID, ImplementationID and AIMName still to be filled in).
-                if (l2.TryGetProperty("Header", out var h) && h.ValueKind == JsonValueKind.String && h.GetString() is { Length: > 0 } name)
+                // An L2 is known by its AIMType; its Identifier is that of L1 (ImplementerID, ImplementationID and AIMCode still to be filled in).
+                if (l2.TryGetProperty("AIMType", out var h) && h.ValueKind == JsonValueKind.String && h.GetString() is { Length: > 0 } name)
                     l2s[name] = l2;
             }
             catch { /* not an L2 */ }
@@ -48,12 +48,12 @@ public sealed class L2Conformance
 
     public int Count => l2s.Count;
 
-    // The AIM Type an L3 implements: its Header, else its AIMName without the
+    // The AIM Type an L3 implements: its AIMType, else its AIMInstID without the
     // ImplementerID and the Instance number.
     public static string TypeOf(JsonElement l3) =>
-        l3.TryGetProperty("Header", out var h) && h.GetString() is { Length: > 0 } header
+        l3.TryGetProperty("AIMType", out var h) && h.GetString() is { Length: > 0 } header
             ? header
-            : TypeOf(l3.GetProperty("Identifier").GetProperty("AIMName").GetString() ?? "");
+            : TypeOf(l3.GetProperty("Identifier").GetProperty("AIMInstID").GetString() ?? "");
 
     public static string TypeOf(string instance) =>
         Regex.Replace(Regex.Replace(instance, @"^[0-9A-Za-z]*?(?=[A-Z]{3}-[A-Z]{3}-V)", ""), @"-I[0-9]+$", "");
@@ -66,11 +66,11 @@ public sealed class L2Conformance
             return [$"No L2 of {type}: an L3 is validated against its L2, and there is none."];
 
         var found = new List<string>();
-        // The Header names the type: the L3's is its L2's.
-        var header2 = l2.TryGetProperty("Header", out var h2) && h2.ValueKind == JsonValueKind.String ? h2.GetString() : null;
-        var header3 = l3.TryGetProperty("Header", out var h3) && h3.ValueKind == JsonValueKind.String ? h3.GetString() : null;
+        // AIMType names the type: the L3's is its L2's.
+        var header2 = l2.TryGetProperty("AIMType", out var h2) && h2.ValueKind == JsonValueKind.String ? h2.GetString() : null;
+        var header3 = l3.TryGetProperty("AIMType", out var h3) && h3.ValueKind == JsonValueKind.String ? h3.GetString() : null;
         if (header2 is not null && header3 != header2)
-            found.Add(header3 is null ? $"The L3 has no Header; its L2's is {header2}." : $"Header {header3}: its L2's is {header2}.");
+            found.Add(header3 is null ? $"The L3 has no AIMType; its L2's is {header2}." : $"AIMType {header3}: its L2's is {header2}.");
         var p2 = Ports(l2); var p3 = Ports(l3);
         var used = new HashSet<int>();
         foreach (var x in p3)
@@ -246,7 +246,7 @@ public sealed class L2Conformance
     private static (string Aim, string Label) End(JsonElement line, string side)
     {
         if (!line.TryGetProperty(side, out var end)) return ("", "");
-        return (end.TryGetProperty("AIMName", out var a) ? a.GetString() ?? "" : "",
+        return (end.TryGetProperty("AIMInstID", out var a) || end.TryGetProperty("AIMCode", out a) ? a.GetString() ?? "" : "",   // an L3 end, else an L2 end
                 end.TryGetProperty("PortName", out var p) ? p.GetString() ?? "" : "");
     }
 
@@ -280,10 +280,10 @@ public sealed class L2Conformance
         if (!aim.TryGetProperty("SubAIMs", out var subs) || subs.ValueKind != JsonValueKind.Array) yield break;
         foreach (var s in subs.EnumerateArray())
         {
-            // In an L2 a Sub-AIM is its Header, the AIM Type (its Identifier is that of L1, still to be filled in); in an L3 it is its AIMName.
-            if (s.TryGetProperty("Header", out var h) && h.ValueKind == JsonValueKind.String && h.GetString() is { Length: > 0 } type)
+            // In an L2 a Sub-AIM is its AIMType (its Identifier is that of L1, still to be filled in); in an L3 it is its AIMInstID.
+            if (s.TryGetProperty("AIMType", out var h) && h.ValueKind == JsonValueKind.String && h.GetString() is { Length: > 0 } type)
                 yield return type;
-            else if (s.TryGetProperty("Identifier", out var i) && i.TryGetProperty("AIMName", out var n) && n.GetString() is { Length: > 0 } name)
+            else if (s.TryGetProperty("Identifier", out var i) && (i.TryGetProperty("AIMInstID", out var n) || i.TryGetProperty("AIMCode", out n)) && n.GetString() is { Length: > 0 } name)
                 yield return name;
         }
     }

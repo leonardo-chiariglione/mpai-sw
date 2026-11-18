@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PGM-CDM-V1.0-I01",
-    "AIMName": "1PGM-CDM-V1.0-I01"
+    "AIMInstID": "1PGM-CDM-V1.0-I01"
   },
-  "Header": "PGM-CDM-V1.0",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PGM-CDM-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
   "Description": "The Context Description Multiplexing (PGM-CDM) AIM is a Sub-AIM of Context Description. It multiplexes the per-modality results into the aggregated Context Descriptors (to be delivered to Prompt Creation), Domain Request, Interaction History Request and AUC-CXT Response. [Template: to be completed.] The Context Description Multiplexing AIM:",

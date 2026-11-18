@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "MMC-SCM-V2.5-I01", "AIMName": "1MMC-SCM-V2.5-I01"},
-  "Header":           "MMC-SCM-V2.5",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "MMC-SCM-V2.5-I01", "AIMInstID": "1MMC-SCM-V2.5-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "MMC-SCM-V2.5",
 
   "APIProfile":       "Basic",
   "Description":      "Summary Creation Module: adds what an entity said - one line: the Entity ID, the Emotion of the Personal Status it said it with, its Refined Text - to the Summary it was given back edited, and gives the Summary. The Meaning (Text Descriptors) is taken but not yet used. It runs when it has the Entity ID, the Refined Text, the Meaning and the Personal Status of an utterance; the Edited Summary is taken where present (there is none before the first utterance). It keeps nothing: the Summary goes round through Entity Dialogue Processing.",

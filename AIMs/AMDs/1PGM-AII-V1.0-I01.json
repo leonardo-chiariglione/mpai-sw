@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PGM-AII-V1.0-I01",
-    "AIMName": "1PGM-AII-V1.0-I01"
+    "AIMInstID": "1PGM-AII-V1.0-I01"
   },
-  "Header": "PGM-AII-V1.0",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PGM-AII-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
   "Description": "The Audio Instance Identification (PGM-AII) AIM is a Sub-AIM of Audio Scene Enhancement (PGM-ASE). It identifies the Audio Objects of the scene and assigns them Audio Object Types, using classification models, domain knowledge, and Interaction History. It is the PGM-AUA counterpart of Audio Object Identification (CAE-AOI) of CAE-USC V2.5, which receives Audio Objects and their Audio Scene Geometry and produces the Audio Instance Identifiers. Each Sub-AIM of Audio Scene Enhancement independently generates a Audio CXT Response, a Audio Domain Request and a Audio Interaction History Request. Enha",

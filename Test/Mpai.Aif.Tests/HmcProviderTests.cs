@@ -18,7 +18,7 @@ public class HmcProviderTests
     private static IEnumerable<string> Leaves(string aimName)
     {
         var l3 = JsonNode.Parse(File.ReadAllText(Path.Combine(Repository.Amds, aimName + ".json")))!;
-        var subs = l3["SubAIMs"]?.AsArray().Select(s => s!["Identifier"]!["AIMName"]!.GetValue<string>()).ToArray() ?? [];
+        var subs = l3["SubAIMs"]?.AsArray().Select(s => s!["Identifier"]!["AIMInstID"]!.GetValue<string>()).ToArray() ?? [];
         if (subs.Length == 0) return [aimName];
         return subs.SelectMany(Leaves);
     }

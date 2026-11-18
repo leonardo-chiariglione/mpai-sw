@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-AST-V2.5-I01", "AIMName": "1CAE-AST-V2.5-I01"},
-  "Header":           "CAE-AST-V2.5",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-AST-V2.5-I01", "AIMInstID": "1CAE-AST-V2.5-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAE-AST-V2.5",
   "APIProfile":       "Basic",
   "Description":      "Audio Synthesis Transform: the Enhanced Audio Object in the transform domain in; the Enhanced Audio Objects in the time domain, a file for each source, out.",
   "ExternalPorts":    [{"Name": "EnhancedAudioObject", "Direction": "Input", "DataType": "OSD-BAO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},

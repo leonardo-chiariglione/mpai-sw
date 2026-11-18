@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "PAF-EBD-V1.6-I01", "AIMName": "1PAF-EBD-V1.6-I01"},
-  "Header":           "PAF-EBD-V1.6",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "PAF-EBD-V1.6-I01", "AIMInstID": "1PAF-EBD-V1.6-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "PAF-EBD-V1.6",
 
   "APIProfile":       "Basic",
   "Description":      "Entity Body Description: gives the Body Descriptors Object of a Body Object (a picture of one body). The descriptors are the 33 keypoints of the body that BlazePose finds (MediaPipe Pose), each x, y, z and visibility: 132 numbers; the Qualifier of the Object names the format. The picture is put in the 256x256 square of the model with its proportions kept; there is no search for the body in a wider picture and no rotation of the body to the vertical. PS-Body Interpretation turns the keypoints into the Body Personal Status.",

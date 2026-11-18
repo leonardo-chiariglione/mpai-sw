@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "PAF-GBD-V1.6-I01", "AIMName": "1PAF-GBD-V1.6-I01"},
-  "Header":           "PAF-GBD-V1.6",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "PAF-GBD-V1.6-I01", "AIMInstID": "1PAF-GBD-V1.6-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "PAF-GBD-V1.6",
 
   "APIProfile":       "Basic",
   "Description":      "Generative Body Description: produces the Machine Body Descriptors - the body animation of a Portable Avatar, as BVH - from the Text and the Machine Speech, and optionally a Body Personal Status for expression; when the Body Personal Status is absent the body moves with a neutral posture.",

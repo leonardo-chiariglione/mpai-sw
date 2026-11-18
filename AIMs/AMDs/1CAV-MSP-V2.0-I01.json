@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAV-MSP-V2.0-I01", "AIMName": "1CAV-MSP-V2.0-I01"},
-  "Header":           "CAV-MSP-V2.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAV-MSP-V2.0-I01", "AIMInstID": "1CAV-MSP-V2.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAV-MSP-V2.0",
   "APIProfile":       "Basic",
   "Description":      "Motion Selection Planning, Stage 1: from the Path and the Full Environment Descriptors, the Trajectory of the next 6 s at 0.1 s: along the Path, within the speed limit, following the object ahead in the CAV's lane by the Intelligent Driver Model, stopping where the Path ends.",
   "InternalTypes":    [],

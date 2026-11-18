@@ -145,7 +145,7 @@ public class XrvLtpTests
             foreach (var file in Directory.EnumerateFiles(amds, "1XRV-*.json"))
             {
                 var l3 = JsonNode.Parse(File.ReadAllText(file))!;
-                var aim = (string)l3["Identifier"]!["AIMName"]!;
+                var aim = (string)l3["Identifier"]!["AIMInstID"]!;
                 if (!provider.CanCreate(aim)) continue;                                                    // the Composite AIM: its Sub-AIMs are measured
                 var binary = (string)l3["Implementations"]![0]!["BinaryName"]!;
                 fingerprints.Approve(aim, binary, AIF.Store.ImplementationFingerprints.OfImplementation(provider.ImplementationOf(aim)!), DateTimeOffset.UtcNow);

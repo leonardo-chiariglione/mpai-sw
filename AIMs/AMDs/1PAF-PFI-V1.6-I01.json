@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "PAF-PFI-V1.6-I01", "AIMName": "1PAF-PFI-V1.6-I01"},
-  "Header":           "PAF-PFI-V1.6",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "PAF-PFI-V1.6-I01", "AIMInstID": "1PAF-PFI-V1.6-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "PAF-PFI-V1.6",
 
   "APIProfile":       "Basic",
   "Description":      "PS-Face Interpretation: gives the Face Personal Status from the Face Descriptors Object of a face (the HSEmotion probabilities, valence and arousal of the instance I02 of Entity Face Description). The interpretation is that of PAF-FPE: the most probable emotion of AffectNet is mapped to an Emotion of the vocabulary (Surprise to the Cognitive State Surprise), with its probability as Degree. A Face Descriptors Object of another format (an identity embedding) is refused.",

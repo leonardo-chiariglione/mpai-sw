@@ -189,7 +189,7 @@ public class AsmVciIntegrationTests
     public void TheVoiceCommandInterfaceIsInsideTheModuleAndTheAmiAndTheAjiAreGone()
     {
         var l2 = JsonNode.Parse(File.ReadAllText(Path.Combine(Repository.Schemas, "CAE3", "V1.0", "AIMs", "AudioSceneManager.json")))!;
-        var names = l2["SubAIMs"]!.AsArray().Select(s => (string)s!["Header"]!).ToList();
+        var names = l2["SubAIMs"]!.AsArray().Select(s => (string)s!["AIMType"]!).ToList();
         Assert.Contains("MMC-VCI-V2.5", names);
         Assert.DoesNotContain("CAE-AMI-V1.0", names);
         var text = l2.ToJsonString();
@@ -201,7 +201,7 @@ public class AsmVciIntegrationTests
         // The command of the Voice Command Interface goes to the five editing AIMs; their five responses come back to it, and go out at the Ports of the Composite.
         var topology = l2["Topology"]!.AsArray();
         int From(string aim, string dataType, string toAim) =>
-            topology.Count(e => (string)e!["Output"]!["AIMName"]! == aim && (string)e["Output"]!["DataType"]! == dataType && (string)e["Input"]!["AIMName"]! == toAim);
+            topology.Count(e => (string)e!["Output"]!["AIMCode"]! == aim && (string)e["Output"]!["DataType"]! == dataType && (string)e["Input"]!["AIMCode"]! == toAim);      // an L2: AIMCode
         foreach (var editor in new[] { "CAE-AOE-V1.0", "CAE-ASE-V1.0", "MMC-SOE-V2.5", "MMC-SSE-V2.5", "OSD-MSE-V1.5" })
         {
             Assert.Equal(1, From("MMC-VCI-V2.5", "CAE-UCM-V1.0", editor));

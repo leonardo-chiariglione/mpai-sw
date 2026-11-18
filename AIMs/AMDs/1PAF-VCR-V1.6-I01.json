@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "PAF-VCR-V1.6-I01", "AIMName": "1PAF-VCR-V1.6-I01"},
-  "Header":           "PAF-VCR-V1.6",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "PAF-VCR-V1.6-I01", "AIMInstID": "1PAF-VCR-V1.6-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "PAF-VCR-V1.6",
   "APIProfile":       "Basic",
   "Description":      "Videoconference Client Receiver of the Avatar-Based Videoconference, running continuously: it holds the state of each avatar by its ID, merges into it every Portable Avatar it receives, places the avatar in the Multimodal Scene Descriptors at its Spatial Attitude, adds its speech to its mouth, shows a default avatar where the Portable Avatar has never carried a model, and gives out the Multimodal Scene Descriptors and the Portable Avatars. The Point of View and the Text go through.",
   "InternalTypes":    [],

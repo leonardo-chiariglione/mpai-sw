@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "MMC-ETD-V2.5-I01", "AIMName": "1MMC-ETD-V2.5-I01"},
-  "Header":           "MMC-ETD-V2.5",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "MMC-ETD-V2.5-I01", "AIMInstID": "1MMC-ETD-V2.5-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "MMC-ETD-V2.5",
 
   "APIProfile":       "Basic",
   "Description":      "Entity Text Description: gives the Text Descriptors Object of a Text Object. The descriptors are the 28 scores of a GoEmotions classifier (RoBERTa-base, 28 emotion labels, each score the probability that the text expresses that label), 28 numbers in the order of the labels of GoEmotions; the Qualifier of the Object names the format (GoEmotions Scores (RoBERTa-base, 28-d)). PS-Text Interpretation turns them into the Text Personal Status.",

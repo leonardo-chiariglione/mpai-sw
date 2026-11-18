@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PGM-AUC-V1.0-I01",
-    "AIMName": "1PGM-AUC-V1.0-I01"
+    "AIMInstID": "1PGM-AUC-V1.0-I01"
   },
-  "Header": "PGM-AUC-V1.0",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PGM-AUC-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
   "Description": "The A-User Control (PGM-AUC) AIM serves as the central coordinator for Action execution, AIM orchestration, and system traceability. It governs the lifecycle of the A-User and orchestrates its interactions with the responsible human, the M-Instance, and the Processes and Items with which the A-User interacts. A-User Control holds goal authority but not necessarily epistemic capability: it carries the objectives given to it by the responsible human or by specification, and it asserts those objectives authoritatively. It it does not itself understand the environment or the User because that unde",

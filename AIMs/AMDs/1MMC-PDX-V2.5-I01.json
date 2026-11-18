@@ -1,5 +1,6 @@
-{ "Identifier":       { "ImplementerID": "1", "ImplementationID": "MMC-PDX-V2.5-I01", "AIMName": "1MMC-PDX-V2.5-I01" },
-  "Header":           "MMC-PDX-V2.5",
+{ "Identifier":       { "ImplementerID": "1", "ImplementationID": "MMC-PDX-V2.5-I01", "AIMInstID": "1MMC-PDX-V2.5-I01" },
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "MMC-PDX-V2.5",
 
   "APIProfile":       "Basic",
   "Description":      "Personal Status De-multiplexing: the inverse of Personal Status Multiplexing. Splits one Entity Personal Status (the machine's) into the per-modality Personal Statuses - Text, Speech, Face, and Body - for the Response and Scene Rendering composite. It de-multiplexes; it does not compute.",

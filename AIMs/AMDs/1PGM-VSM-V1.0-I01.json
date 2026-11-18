@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PGM-VSM-V1.0-I01",
-    "AIMName": "1PGM-VSM-V1.0-I01"
+    "AIMInstID": "1PGM-VSM-V1.0-I01"
   },
-  "Header": "PGM-VSM-V1.0",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PGM-VSM-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
   "Description": "The Visual Salience Mapping (PGM-VSM) AIM is a Sub-AIM of Visual Scene Enhancement (PGM-VSE). It determines the relative perceptual importance of Visual Objects with respect to user interaction and context, and produces the Salient Object Matrix. Each Sub-AIM of Visual Scene Enhancement independently generates a Visual CXT Response, a Visual Domain Request and a Visual Interaction History Request. Visual Enhancement Multiplexing multiplexes them into the corresponding external output signals of Visual Scene Enhancement. [High-level specification derived from the Visual Scene Enhancement page. ",

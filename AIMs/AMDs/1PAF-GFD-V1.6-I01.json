@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "PAF-GFD-V1.6-I01", "AIMName": "1PAF-GFD-V1.6-I01"},
-  "Header":           "PAF-GFD-V1.6",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "PAF-GFD-V1.6-I01", "AIMInstID": "1PAF-GFD-V1.6-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "PAF-GFD-V1.6",
 
   "APIProfile":       "Basic",
   "Description":      "Generative Face Description: produces the Machine Face Descriptors from the Text and the Machine Speech, and optionally a Face Personal Status for expression; when the Face Personal Status is absent the face carries visemes with a neutral expression.",

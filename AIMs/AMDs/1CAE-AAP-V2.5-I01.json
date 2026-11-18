@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-AAP-V2.5-I01", "AIMName": "1CAE-AAP-V2.5-I01"},
-  "Header":           "CAE-AAP-V2.5",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-AAP-V2.5-I01", "AIMInstID": "1CAE-AAP-V2.5-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAE-AAP-V2.5",
   "APIProfile":       "Basic",
   "Description":      "Audio Analysis for Preservation: calculates the offset between the Preservation Audio File and the audio of the Preservation Audio-Visual File, detects the irregularities of the audio and merges them with those of the Video Analysis.",
   "ExternalPorts":    [{"Name": "PreservationAudioFile", "Direction": "Input", "IsOptional": true, "DataType": "OSD-BAO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},

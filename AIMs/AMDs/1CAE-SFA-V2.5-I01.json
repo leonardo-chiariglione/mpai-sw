@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-SFA-V2.5-I01", "AIMName": "1CAE-SFA-V2.5-I01"},
-  "Header":           "CAE-SFA-V2.5",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-SFA-V2.5-I01", "AIMInstID": "1CAE-SFA-V2.5-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAE-SFA-V2.5",
   "APIProfile":       "Basic",
   "Description":      "Speech Feature Analysis 1: measures the prosodic features (pitch, level, speaking rate) of a Model Utterance.",
   "ExternalPorts":    [{"Name": "ModeSelector", "Direction": "Input", "DataType": "OSD-SEL-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},

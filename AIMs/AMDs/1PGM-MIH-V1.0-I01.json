@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PGM-MIH-V1.0-I01",
-    "AIMName": "1PGM-MIH-V1.0-I01"
+    "AIMInstID": "1PGM-MIH-V1.0-I01"
   },
-  "Header": "PGM-MIH-V1.0",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PGM-MIH-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
   "Description": "The Multimodal Input Harmonisation (PGM-MIH) AI Module assembles the audio, visual, textual, and paralinguistic evidence available about a scene into a single Harmonised Multimodal Context, in which each item of evidence is placed on a common time base and attributed to the User that produced it, by",

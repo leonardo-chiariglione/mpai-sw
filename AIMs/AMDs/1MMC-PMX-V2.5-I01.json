@@ -1,5 +1,6 @@
-{ "Identifier": { "ImplementerID": "1", "ImplementationID": "MMC-PMX-V2.5-I01", "AIMName": "1MMC-PMX-V2.5-I01" },
-  "Header":     "MMC-PMX-V2.5",
+{ "Identifier": { "ImplementerID": "1", "ImplementationID": "MMC-PMX-V2.5-I01", "AIMInstID": "1MMC-PMX-V2.5-I01" },
+  "Header":     "AIF-AMM-V3.0",
+  "AIMType":    "MMC-PMX-V2.5",
   "APIProfile":"Basic","Description":"Personal Status Multiplexing.",
   "ExternalPorts":[{"Name": "TextPersonalStatus",    "Direction": "Input",  "DataType": "MMC-TPS-V2.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
                    {"Name": "SpeechPersonalStatus",  "Direction": "Input",  "DataType": "MMC-SPS-V2.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},

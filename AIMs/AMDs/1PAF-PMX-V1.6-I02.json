@@ -1,5 +1,6 @@
-﻿{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "PAF-PMX-V1.6-I02", "AIMName": "1PAF-PMX-V1.6-I02"},
-  "Header":           "PAF-PMX-V1.6",
+﻿{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "PAF-PMX-V1.6-I02", "AIMInstID": "1PAF-PMX-V1.6-I02"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "PAF-PMX-V1.6",
 
   "APIProfile":       "Basic",
   "Description":      "Portable Avatar Multiplexing: puts what it is given into one Portable Avatar - the Avatar ID, the Avatar Model, the Language Selector, the Speech and Text Objects, the Speech Model, the Face and Body Descriptors Objects, the Personal Status, the Audio-Visual Scene and its Space-Time, the Spatial Attitude - starting, where one is given, from an Input Portable Avatar. It runs continuously, on its own Ports: whatever arrives is put into an update of the avatar at once, under the Avatar ID it holds - the Avatar Model once, then only what changes - and what arrives before the ID waits for it.",

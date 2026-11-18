@@ -3,8 +3,9 @@
   "$id":              "https://schemas.mpai.community/AIH1/V1.1/AIMs/NeuralNetworkModel.json",
   "title":            "Neural Network Model V1.1",
 
-  "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":           "AIH-NNM-V1.1",
+  "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "AIH-NNM-V1.1",
 
   "APIProfile":       "Basic",
   "Description":      "This AIM wraps a Neural Network Model and processes AIH Data with it: it takes AIH Data and gives the AIH Data resulting from the processing. The Neural Network Model learns as the AIM processes AIH Data. The AIM is what is exchanged: the Health Back End uploads it to the MPAI Store, the Health Front Ends download it, and a Health Front End returns it with the Neural Network Model trained; the AIM gives the Neural Network Model it holds for that. It may take a Neural Network Model to wrap or to update.",

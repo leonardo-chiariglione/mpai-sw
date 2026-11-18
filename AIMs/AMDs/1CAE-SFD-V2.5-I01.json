@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-SFD-V2.5-I01", "AIMName": "1CAE-SFD-V2.5-I01"},
-  "Header":           "CAE-SFD-V2.5",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-SFD-V2.5-I01", "AIMInstID": "1CAE-SFD-V2.5-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAE-SFD-V2.5",
   "APIProfile":       "Basic",
   "Description":      "Sound Field Description: the Audio Object in the transform domain, with the Microphone Array Geometry in its Qualifier, in; the Spherical Harmonic Decomposition Coefficients of the sound field out.",
   "ExternalPorts":    [{"Name": "TransformMultichannelAudio", "Direction": "Input", "DataType": "OSD-BAO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},

@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAV-TOA-V2.0-I01", "AIMName": "1CAV-TOA-V2.0-I01"},
-  "Header":           "CAV-TOA-V2.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAV-TOA-V2.0-I01", "AIMInstID": "1CAV-TOA-V2.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAV-TOA-V2.0",
   "APIProfile":       "Basic",
   "Description":      "Traffic Obstacle Avoidance, Stage 1: the Trajectory refined when an Alert comes or the Full Environment Descriptors show an object it would reach too soon - a stronger deceleration, up to 6 m/s2 - and given to the Motion Actuation Subsystem in an AMS-MAS Message. With the MAS's answer: no faster than the friction of its Road State lets the CAV stop behind the object ahead, and the Trajectory on the MAS's frame.",
   "InternalTypes":    [],

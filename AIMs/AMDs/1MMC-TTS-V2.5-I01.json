@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "MMC-TTS-V2.5-I01", "AIMName": "1MMC-TTS-V2.5-I01"},
-  "Header":           "MMC-TTS-V2.5",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "MMC-TTS-V2.5-I01", "AIMInstID": "1MMC-TTS-V2.5-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "MMC-TTS-V2.5",
 
   "APIProfile":       "Basic",
   "Description":      "Text to Speech: converts a Text Object into a Speech Object. Optionally rendered with a Speech Personal Status so the Machine Speech carries emotion; when the Speech Personal Status is absent the speech is neutral.",

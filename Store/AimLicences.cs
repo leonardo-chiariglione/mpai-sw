@@ -40,7 +40,7 @@ public static class AimLicences
         licence["AIMLicenceTime"] = new JsonObject { ["Header"] = "OSD-TIM-V1.5", ["TimeID"] = id + "-t", ["Data"] = Text(now) };
         licence["AIM"] = new JsonObject
         {
-            ["AIMName"] = aimName, ["Versions"] = new JsonObject { ["From"] = version },
+            ["AIMInstID"] = aimName, ["Versions"] = new JsonObject { ["From"] = version },
             ["L3"] = new JsonObject { ["HashAlgorithm"] = Sha256, ["Hash"] = L3Hash(l3Json) }
         };
         licence["Licensor"] = new JsonObject { ["LicensorID"] = issuer.StoreId };       // the MPAI Store grants; the Implementer's relation to it is outside the AIM Licence
@@ -90,7 +90,7 @@ public static class AimLicences
         if ((string?)licence["Header"] != Header) found.Add($"Header {licence["Header"]}: not {Header}.");
         var outcome = PtfSignature.Verify(licence, storeKey);
         if (outcome != PtfSignature.Outcome.Valid) found.Add($"the signature is not the MPAI Store's ({outcome}).");
-        if ((string?)licence["AIM"]?["AIMName"] != aimName) found.Add($"it is for {licence["AIM"]?["AIMName"]}, not {aimName}.");
+        if ((string?)licence["AIM"]?["AIMInstID"] != aimName) found.Add($"it is for {licence["AIM"]?["AIMInstID"]}, not {aimName}.");
 
         // It is a sublicence: it is under the Implementer's offer in the Metadata the Controller holds (the Implementer, and the hash of the offer).
         if (licence["ParentLicence"] is not JsonObject parent) found.Add("it names no Implementer's offer it is under (ParentLicence).");

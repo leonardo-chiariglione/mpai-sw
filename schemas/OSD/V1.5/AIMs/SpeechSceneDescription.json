@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":           "OSD-SSD-V1.5",
+{ "Identifier":       {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "OSD-SSD-V1.5",
 
   "APIProfile":       "Basic",
   "Description":      "Speech Scene Description: see https://mpai.community/standards/mpai-osd/v1-5/ai-modules/speech-scene-description/. The Speech Scene Description (OSD‑SSD) AIM receives Speech Objects and their Space-Time information as inputs and produces the Descriptors of a Scene composed of Speech Objects and Speech Scenes. The OSD‑SSD AIM may also produce an Alert conveying information on potential anomalies in the input Speech Objects:",

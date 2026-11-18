@@ -23,11 +23,11 @@ def instance(header):
 
 
 def end(e, direction):
-    aim = e["AIMName"]
+    aim = e["AIMCode"]
     # a boundary Port seen from inside: its Direction is the other one (an Input of the Composite is an Output of the Topology)
     want = direction if aim else ("Input" if direction == "Output" else "Output")
     port = PORTS[aim][(e["PortName"], want)]
-    out = {"AIMName": instance(aim), "DataType": port["DataType"]}
+    out = {"AIMInstID": instance(aim), "DataType": port["DataType"]}
     if "PortNumber" in port:
         out["PortNumber"] = port["PortNumber"]
     return out
@@ -49,12 +49,13 @@ def compact(o):
 ports = ",\n                       ".join(port_line(p) for p in L2["ExternalPorts"])
 internal = ",\n                       ".join(compact(t) for t in L2["InternalTypes"])
 subs = ",\n                       ".join(
-    '{ "Identifier": { "ImplementerID": "1", "ImplementationID": "%s-I01", "AIMName": "%s", "Relation": "Internal" } }' % (s["Header"], instance(s["Header"]))
+    '{ "Identifier": { "ImplementerID": "1", "ImplementationID": "%s-I01", "AIMInstID": "%s", "Relation": "Internal" } }' % (s["AIMType"], instance(s["AIMType"]))
     for s in L2["SubAIMs"])
 topology = ",\n                       ".join(compact({"Output": end(t["Output"], "Output"), "Input": end(t["Input"], "Input")}) for t in L2["Topology"])
 
-text = f'''{{ "Identifier":       {{"ImplementerID": "1", "ImplementationID": "XRV-LTP-V1.0-I01", "AIMName": "1XRV-LTP-V1.0-I01"}},
-  "Header":           "XRV-LTP-V1.0",
+text = f'''{{ "Identifier":       {{"ImplementerID": "1", "ImplementationID": "XRV-LTP-V1.0-I01", "AIMInstID": "1XRV-LTP-V1.0-I01"}},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "XRV-LTP-V1.0",
   "APIProfile":       "Basic",
   "Execution":        {json.dumps(L2["Execution"])},
   "OnDegraded":       {json.dumps(L2["OnDegraded"])},

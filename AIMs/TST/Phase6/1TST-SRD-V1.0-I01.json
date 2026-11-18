@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-SRD-V1.0-I01", "AIMName": "1TST-SRD-V1.0-I01"},
-  "Header":           "TST-SRD-V1.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-SRD-V1.0-I01", "AIMInstID": "1TST-SRD-V1.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "TST-SRD-V1.0",
 
   "APIProfile":       "Basic",
   "Description":      "Test: reads from storage the key its text names, and gives back what it read or why it could not.",

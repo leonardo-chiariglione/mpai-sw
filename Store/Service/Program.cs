@@ -71,7 +71,7 @@ app.MapPost("/MPAI/Store/L3", async (HttpRequest request) =>
         var l3 = document.RootElement;
         var l3Node = JsonNode.Parse(text)!.AsObject();
         if (l3.ValueKind != JsonValueKind.Object || !l3.TryGetProperty("Identifier", out var identifier) ||
-            !identifier.TryGetProperty("AIMName", out var nameElement) || nameElement.GetString() is not { Length: > 0 } id)
+            !identifier.TryGetProperty("AIMInstID", out var nameElement) || nameElement.GetString() is not { Length: > 0 } id)
             return Results.BadRequest(new { refused = "An L3 needs Identifier.AIMName: without it the Store cannot say what it is." });
         if (id.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || id.Contains(".."))
             return Results.BadRequest(new { refused = $"'{id}' cannot name an L3 in the Store." });
@@ -129,7 +129,7 @@ app.MapPost("/MPAI/Store/L3", async (HttpRequest request) =>
         var missing = new List<string>();
         if (l3.TryGetProperty("SubAIMs", out var subs) && subs.ValueKind == JsonValueKind.Array)
             foreach (var sub in subs.EnumerateArray())
-                if (sub.TryGetProperty("Identifier", out var si) && si.TryGetProperty("AIMName", out var sn) &&
+                if (sub.TryGetProperty("Identifier", out var si) && si.TryGetProperty("AIMInstID", out var sn) &&
                     sn.GetString() is { Length: > 0 } subId && subId != id &&
                     !bundled.Contains(subId) && repository.Text(subId, null) is null)
                     missing.Add(subId);

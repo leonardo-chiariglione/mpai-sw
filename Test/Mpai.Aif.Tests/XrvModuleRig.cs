@@ -83,7 +83,7 @@ public sealed class XrvModuleRig : IDisposable
 
     private static JsonObject End(string aim, string dataType, int? number = null)
     {
-        var e = new JsonObject { ["AIMName"] = aim, ["DataType"] = dataType };
+        var e = new JsonObject { ["AIMInstID"] = aim, ["DataType"] = dataType };
         if (number is { } n) e["PortNumber"] = n;
         return e;
     }
@@ -92,7 +92,7 @@ public sealed class XrvModuleRig : IDisposable
 
     private static JsonObject Wrapper(string name, JsonArray ports, JsonArray subs, JsonArray topology) => new()
     {
-        ["Identifier"] = new JsonObject { ["ImplementerID"] = "1", ["ImplementationID"] = name[1..], ["AIMName"] = name },
+        ["Identifier"] = new JsonObject { ["ImplementerID"] = "1", ["ImplementationID"] = name[1..], ["AIMInstID"] = name },
         ["Header"] = "TST-XRM-V1.0", ["APIProfile"] = "Basic", ["Execution"] = "Continuous",
         ["Description"] = "A TEST Module of the XRV-LTP Cue engine (not the Live Theatrical Performance): Action Generation and the Performance, Participant and Operator Status Interpretation AIMs.",
         ["ExternalPorts"] = ports, ["SubAIMs"] = subs, ["Topology"] = topology,
@@ -102,7 +102,7 @@ public sealed class XrvModuleRig : IDisposable
         ["Documentation"] = new JsonArray(new JsonObject { ["Type"] = "Specification", ["URI"] = "https://mpai.community/standards/mpai-xrv/ltp/v1-0/" })
     };
 
-    private static JsonObject Sub(string aim) => new() { ["Identifier"] = new JsonObject { ["ImplementerID"] = "1", ["ImplementationID"] = aim[1..], ["AIMName"] = aim, ["Relation"] = "Internal" } };
+    private static JsonObject Sub(string aim) => new() { ["Identifier"] = new JsonObject { ["ImplementerID"] = "1", ["ImplementationID"] = aim[1..], ["AIMInstID"] = aim, ["Relation"] = "Internal" } };
 
     public static JsonObject ModuleL3()
     {

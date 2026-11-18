@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PGM-ENG-V1.0-I01",
-    "AIMName": "1PGM-ENG-V1.0-I01"
+    "AIMInstID": "1PGM-ENG-V1.0-I01"
   },
-  "Header": "PGM-ENG-V1.0",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PGM-ENG-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
   "Description": "Engagement Recalibration",

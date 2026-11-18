@@ -78,7 +78,7 @@ public static class StoreL3Source
                 using var doc = JsonDocument.Parse(text!);
                 if (doc.RootElement.TryGetProperty("SubAIMs", out var subs) && subs.ValueKind == JsonValueKind.Array)
                     foreach (var s in subs.EnumerateArray())
-                        if (s.TryGetProperty("Identifier", out var i) && i.TryGetProperty("AIMName", out var n) &&
+                        if (s.TryGetProperty("Identifier", out var i) && i.TryGetProperty("AIMInstID", out var n) &&
                             n.GetString() is { Length: > 0 } sub && sub != id)
                             queue.Enqueue(sub);
             }

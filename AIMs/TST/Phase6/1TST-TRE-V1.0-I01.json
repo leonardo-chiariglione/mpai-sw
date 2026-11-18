@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-TRE-V1.0-I01", "AIMName": "1TST-TRE-V1.0-I01"},
-  "Header":           "TST-TRE-V1.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-TRE-V1.0-I01", "AIMInstID": "1TST-TRE-V1.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "TST-TRE-V1.0",
 
   "APIProfile":       "Basic",
   "Description":      "Test: gives back on each of its three Output Ports what arrives on the Input Port of the same number, a payload as a payload.",

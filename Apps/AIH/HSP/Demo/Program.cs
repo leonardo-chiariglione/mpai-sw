@@ -176,7 +176,7 @@ internal static class Program
                                                   : Apart(File.ReadAllText(Path.Combine(Root, "AIMs", "AMDs", Hfe + ".json")), FrontEndAims);
     private static string Apart(string text, IEnumerable<string> aims)
     {
-        foreach (var aim in aims) text = Regex.Replace(text, "(\"AIMName\"\\s*:\\s*\"" + aim + "\"\\s*,\\s*\"Relation\"\\s*:\\s*)\"Internal\"", "$1\"External\"");
+        foreach (var aim in aims) text = Regex.Replace(text, "(\"AIMInstID\"\\s*:\\s*\"" + aim + "\"\\s*,\\s*\"Relation\"\\s*:\\s*)\"Internal\"", "$1\"External\"");
         return text;
     }
 
@@ -294,7 +294,7 @@ internal static class Program
         var amds = Path.Combine(folder, "amds"); Directory.CreateDirectory(amds);
         foreach (var file in Directory.EnumerateFiles(Path.Combine(Root, "AIMs", "AMDs"), "*.json")) File.Copy(file, Path.Combine(amds, Path.GetFileName(file)));
         var text = File.ReadAllText(Path.Combine(amds, composite + ".json"));
-        foreach (var aim in aims) text = Regex.Replace(text, "(\"AIMName\"\\s*:\\s*\"" + aim + "\"\\s*,\\s*\"Relation\"\\s*:\\s*)\"Internal\"", "$1\"External\"");
+        foreach (var aim in aims) text = Regex.Replace(text, "(\"AIMInstID\"\\s*:\\s*\"" + aim + "\"\\s*,\\s*\"Relation\"\\s*:\\s*)\"Internal\"", "$1\"External\"");
         File.WriteAllText(Path.Combine(amds, composite + ".json"), text);
 
         // A FRONT END'S CONTROLLER FOLLOWS THE MPAI STORE: it holds the Metadata of its own (a repository), obtains a newer Front End and the AIM it names when its Module starts,

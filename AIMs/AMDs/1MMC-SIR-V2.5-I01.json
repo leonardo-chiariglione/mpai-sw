@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "MMC-SIR-V2.5-I01", "AIMName": "1MMC-SIR-V2.5-I01"},
-  "Header":           "MMC-SIR-V2.5",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "MMC-SIR-V2.5-I01", "AIMInstID": "1MMC-SIR-V2.5-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "MMC-SIR-V2.5",
 
   "APIProfile":       "Basic",
   "Description":      "Speaker Identity Recognition: receives a Basic Speech Object, which carries the time it was acquired, and, optionally, the Basic Audio Scene Descriptors of the scene it was isolated from; matches the speaker against the Subject Gallery held in Shared Storage; and returns the speaker identity as an Instance Identifier - the coarse \"speech\" layer when nobody matches, so that an identity is always returned for the speech received. The audio counterpart of Face Identity Recognition.",

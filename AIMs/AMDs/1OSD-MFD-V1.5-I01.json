@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "OSD-MFD-V1.5-I01",
-    "AIMName": "1OSD-MFD-V1.5-I01"
+    "AIMInstID": "1OSD-MFD-V1.5-I01"
   },
-  "Header": "OSD-MFD-V1.5",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "OSD-MFD-V1.5",
   "APIProfile": "Basic",
   "Description": "Multimodal Frontend Description: from the Basic Audio, LiDAR and Visual Objects of the real world gives the Speech, Audio, Face, Body and other Visual Objects, typed, the aligned Audio and Visual Scene Descriptors. Basic Audio, LiDAR and Visual Scene Description give the Basic Scene Descriptors of each medium, Multimodal Alignment aligns them, Audio Scene Object Identification gives the Speech and the Audio Objects of the aligned Audio Scene, and Visual Scene Object Identification gives the Face, Body and other Visual Objects of the aligned Visual Scene.",
   "InternalTypes": [],
@@ -98,7 +99,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "OSD-BAS-V1.5-I01",
-        "AIMName": "1OSD-BAS-V1.5-I01",
+        "AIMInstID": "1OSD-BAS-V1.5-I01",
         "Relation": "Internal"
       }
     },
@@ -106,7 +107,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "OSD-BLS-V1.5-I01",
-        "AIMName": "1OSD-BLS-V1.5-I01",
+        "AIMInstID": "1OSD-BLS-V1.5-I01",
         "Relation": "Internal"
       }
     },
@@ -114,7 +115,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "OSD-BVS-V1.5-I01",
-        "AIMName": "1OSD-BVS-V1.5-I01",
+        "AIMInstID": "1OSD-BVS-V1.5-I01",
         "Relation": "Internal"
       }
     },
@@ -122,7 +123,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "OSD-MAL-V1.5-I01",
-        "AIMName": "1OSD-MAL-V1.5-I01",
+        "AIMInstID": "1OSD-MAL-V1.5-I01",
         "Relation": "Internal"
       }
     },
@@ -130,7 +131,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "CAE-ASI-V2.5-I01",
-        "AIMName": "1CAE-ASI-V2.5-I01",
+        "AIMInstID": "1CAE-ASI-V2.5-I01",
         "Relation": "Internal"
       }
     },
@@ -138,7 +139,7 @@
       "Identifier": {
         "ImplementerID": "1",
         "ImplementationID": "CVE-VSI-V1.0-I01",
-        "AIMName": "1CVE-VSI-V1.0-I01",
+        "AIMInstID": "1CVE-VSI-V1.0-I01",
         "Relation": "Internal"
       }
     }
@@ -146,156 +147,156 @@
   "Topology": [
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BAO-V1.5"
       },
       "Input": {
-        "AIMName": "1OSD-BAS-V1.5-I01",
+        "AIMInstID": "1OSD-BAS-V1.5-I01",
         "DataType": "OSD-BAO-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BLO-V1.5"
       },
       "Input": {
-        "AIMName": "1OSD-BLS-V1.5-I01",
+        "AIMInstID": "1OSD-BLS-V1.5-I01",
         "DataType": "OSD-BLO-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BVO-V1.5"
       },
       "Input": {
-        "AIMName": "1OSD-BVS-V1.5-I01",
+        "AIMInstID": "1OSD-BVS-V1.5-I01",
         "DataType": "OSD-BVO-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1OSD-BAS-V1.5-I01",
+        "AIMInstID": "1OSD-BAS-V1.5-I01",
         "DataType": "OSD-BAS-V1.5"
       },
       "Input": {
-        "AIMName": "1OSD-MAL-V1.5-I01",
+        "AIMInstID": "1OSD-MAL-V1.5-I01",
         "DataType": "OSD-BAS-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1OSD-BLS-V1.5-I01",
+        "AIMInstID": "1OSD-BLS-V1.5-I01",
         "DataType": "OSD-BLS-V1.5"
       },
       "Input": {
-        "AIMName": "1OSD-MAL-V1.5-I01",
+        "AIMInstID": "1OSD-MAL-V1.5-I01",
         "DataType": "OSD-BLS-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1OSD-BVS-V1.5-I01",
+        "AIMInstID": "1OSD-BVS-V1.5-I01",
         "DataType": "OSD-BVS-V1.5"
       },
       "Input": {
-        "AIMName": "1OSD-MAL-V1.5-I01",
-        "DataType": "OSD-BVS-V1.5"
-      }
-    },
-    {
-      "Output": {
-        "AIMName": "1OSD-MAL-V1.5-I01",
-        "DataType": "OSD-BAS-V1.5"
-      },
-      "Input": {
-        "AIMName": "1CAE-ASI-V2.5-I01",
-        "DataType": "OSD-BAS-V1.5"
-      }
-    },
-    {
-      "Output": {
-        "AIMName": "1OSD-MAL-V1.5-I01",
-        "DataType": "OSD-BVS-V1.5"
-      },
-      "Input": {
-        "AIMName": "1CVE-VSI-V1.0-I01",
+        "AIMInstID": "1OSD-MAL-V1.5-I01",
         "DataType": "OSD-BVS-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1OSD-MAL-V1.5-I01",
+        "AIMInstID": "1OSD-MAL-V1.5-I01",
         "DataType": "OSD-BAS-V1.5"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "1CAE-ASI-V2.5-I01",
         "DataType": "OSD-BAS-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1OSD-MAL-V1.5-I01",
+        "AIMInstID": "1OSD-MAL-V1.5-I01",
         "DataType": "OSD-BVS-V1.5"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "1CVE-VSI-V1.0-I01",
         "DataType": "OSD-BVS-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1CAE-ASI-V2.5-I01",
+        "AIMInstID": "1OSD-MAL-V1.5-I01",
+        "DataType": "OSD-BAS-V1.5"
+      },
+      "Input": {
+        "AIMInstID": "",
+        "DataType": "OSD-BAS-V1.5"
+      }
+    },
+    {
+      "Output": {
+        "AIMInstID": "1OSD-MAL-V1.5-I01",
+        "DataType": "OSD-BVS-V1.5"
+      },
+      "Input": {
+        "AIMInstID": "",
+        "DataType": "OSD-BVS-V1.5"
+      }
+    },
+    {
+      "Output": {
+        "AIMInstID": "1CAE-ASI-V2.5-I01",
         "DataType": "OSD-BSO-V1.5"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BSO-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1CAE-ASI-V2.5-I01",
+        "AIMInstID": "1CAE-ASI-V2.5-I01",
         "DataType": "OSD-BAO-V1.5"
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BAO-V1.5"
       }
     },
     {
       "Output": {
-        "AIMName": "1CVE-VSI-V1.0-I01",
+        "AIMInstID": "1CVE-VSI-V1.0-I01",
         "DataType": "OSD-BVO-V1.5",
         "PortNumber": 1
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BVO-V1.5",
         "PortNumber": 1
       }
     },
     {
       "Output": {
-        "AIMName": "1CVE-VSI-V1.0-I01",
+        "AIMInstID": "1CVE-VSI-V1.0-I01",
         "DataType": "OSD-BVO-V1.5",
         "PortNumber": 2
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BVO-V1.5",
         "PortNumber": 2
       }
     },
     {
       "Output": {
-        "AIMName": "1CVE-VSI-V1.0-I01",
+        "AIMInstID": "1CVE-VSI-V1.0-I01",
         "DataType": "OSD-BVO-V1.5",
         "PortNumber": 3
       },
       "Input": {
-        "AIMName": "",
+        "AIMInstID": "",
         "DataType": "OSD-BVO-V1.5",
         "PortNumber": 3
       }

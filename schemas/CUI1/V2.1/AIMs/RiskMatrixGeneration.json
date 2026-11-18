@@ -3,9 +3,10 @@
   "$id": "https://schemas.mpai.community/CUI1/V2.1/AIMs/RiskMatrixGeneration.json",
   "title": "Risk Matrix Generation V2.1",
 
-  "Identifier":   { "ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */" },
+  "Identifier":   { "ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */" },
 
-  "Header":       "CUI-RMG-V2.1",
+  "Header":       "AIF-AMM-V3.0",
+  "AIMType":      "CUI-RMG-V2.1",
 
   "APIProfile":   "Basic",
   "Description":  "This AIM generates the Secondary Risk Matrix of CUI-CPP.",

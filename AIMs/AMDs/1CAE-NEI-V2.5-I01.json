@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-NEI-V2.5-I01", "AIMName": "1CAE-NEI-V2.5-I01"},
-  "Header":           "CAE-NEI-V2.5",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-NEI-V2.5-I01", "AIMInstID": "1CAE-NEI-V2.5-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAE-NEI-V2.5",
   "APIProfile":       "Basic",
   "Description":      "Neural Emotion Insertion: moves the Emotionless Speech to the Neural Speech Features.",
   "ExternalPorts":    [{"Name": "EmotionlessSpeech", "Direction": "Input", "DataType": "OSD-BSO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},

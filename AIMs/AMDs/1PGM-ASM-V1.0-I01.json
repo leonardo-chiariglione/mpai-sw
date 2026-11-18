@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "PGM-ASM-V1.0-I01",
-    "AIMName": "1PGM-ASM-V1.0-I01"
+    "AIMInstID": "1PGM-ASM-V1.0-I01"
   },
-  "Header": "PGM-ASM-V1.0",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "PGM-ASM-V1.0",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
   "Description": "The Audio Salience Mapping (PGM-ASM) AI Module determines the perceptual importance of audio objects within a scene by",

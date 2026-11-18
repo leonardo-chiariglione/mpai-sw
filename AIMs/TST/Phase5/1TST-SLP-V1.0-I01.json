@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-SLP-V1.0-I01", "AIMName": "1TST-SLP-V1.0-I01"},
-  "Header":           "TST-SLP-V1.0",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "TST-SLP-V1.0-I01", "AIMInstID": "1TST-SLP-V1.0-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "TST-SLP-V1.0",
 
   "APIProfile":       "Basic",
   "Description":      "Test: waits 300 ms, honouring Pause and Stop, then gives its text back.",

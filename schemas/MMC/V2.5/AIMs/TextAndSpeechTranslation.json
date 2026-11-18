@@ -3,8 +3,9 @@
   "$id":                  "https://schemas.mpai.community/MMC/V2.5/AIMs/TextAndSpeechTranslation.json",
   "title":                "Text and Speech Translation V2.5",
 
-  "Identifier":           {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
-  "Header":               "MMC-TST-V2.5",
+  "Identifier":           {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
+  "Header":               "AIF-AMM-V3.0",
+  "AIMType":              "MMC-TST-V2.5",
 
   "APIProfile":           "Basic",
   "Description":          "Text and Speech Translation. Accepts a Speech Object or a Text Object, translates into the language named by the Language Selector, and produces the translated Text Object and Speech Object. Acquisition and delivery are NOT SubAIMs of this Composite AIM: they interact with the user directly, and therefore belong to the User Agent, travelling with it when the User Agent becomes a Remote Client Application. Speech Object Acquisition and Speech Object Delivery remain AIMs in their own right where they capture from or deliver to a source outside the AIF.",
@@ -20,18 +21,18 @@
                            {"Name": "OutputText",       "Direction": "Output", "DataType": ["OSD-BTO-V1.5", "OSD-TXO-V1.5"],                     "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "OutputSpeech",     "Direction": "Output", "DataType": ["OSD-BSO-V1.5", "OSD-SPO-V1.5"],                     "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
-  "SubAIMs":              [{ "Header": "MMC-ASR-V2.5", "Identifier": { "ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */" } },
-                           { "Header": "MMC-TTT-V2.5", "Identifier": { "ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */" } },
-                           { "Header": "MMC-TTS-V2.5", "Identifier": { "ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMName": "/* The name of the AIM, given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */" } }],
+  "SubAIMs":              [{ "AIMType": "MMC-ASR-V2.5", "Identifier": { "ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */" } },
+                           { "AIMType": "MMC-TTT-V2.5", "Identifier": { "ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */" } },
+                           { "AIMType": "MMC-TTS-V2.5", "Identifier": { "ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */" } }],
 
-  "Topology":             [{"Output": {"AIMName": "", "DataType": "OSD-BSO-V1.5"}, "Input": {"AIMName": "MMC-ASR-V2.5", "DataType": "OSD-BSO-V1.5", "PortNumber": 1}},
-                          {"Output": {"AIMName": "MMC-ASR-V2.5", "DataType": "OSD-BTO-V1.5", "PortNumber": 1}, "Input": {"AIMName": "MMC-TTT-V2.5", "DataType": "OSD-BTO-V1.5", "PortNumber": 2}},
-                          {"Output": {"AIMName": "", "DataType": "OSD-BTO-V1.5"}, "Input": {"AIMName": "MMC-TTT-V2.5", "DataType": "OSD-BTO-V1.5", "PortNumber": 1}},
-                          {"Output": {"AIMName": "", "DataType": "OSD-SEL-V1.5", "PortNumber": 1}, "Input": {"AIMName": "MMC-TTT-V2.5", "DataType": "OSD-SEL-V1.5", "PortNumber": 1}},
-                          {"Output": {"AIMName": "", "DataType": "OSD-SEL-V1.5", "PortNumber": 2}, "Input": {"AIMName": "MMC-TTT-V2.5", "DataType": "OSD-SEL-V1.5", "PortNumber": 2}},
-                          {"Output": {"AIMName": "MMC-TTT-V2.5", "DataType": "OSD-BTO-V1.5"}, "Input": {"AIMName": "MMC-TTS-V2.5", "DataType": "OSD-BTO-V1.5"}},
-                          {"Output": {"AIMName": "MMC-TTT-V2.5", "DataType": "OSD-BTO-V1.5"}, "Input": {"AIMName": "", "DataType": "OSD-BTO-V1.5"}},
-                          {"Output": {"AIMName": "MMC-TTS-V2.5", "DataType": "OSD-BSO-V1.5"}, "Input": {"AIMName": "", "DataType": "OSD-BSO-V1.5"}}],
+  "Topology":             [{"Output": {"AIMCode": "", "DataType": "OSD-BSO-V1.5"}, "Input": {"AIMCode": "MMC-ASR-V2.5", "DataType": "OSD-BSO-V1.5", "PortNumber": 1}},
+                          {"Output": {"AIMCode": "MMC-ASR-V2.5", "DataType": "OSD-BTO-V1.5", "PortNumber": 1}, "Input": {"AIMCode": "MMC-TTT-V2.5", "DataType": "OSD-BTO-V1.5", "PortNumber": 2}},
+                          {"Output": {"AIMCode": "", "DataType": "OSD-BTO-V1.5"}, "Input": {"AIMCode": "MMC-TTT-V2.5", "DataType": "OSD-BTO-V1.5", "PortNumber": 1}},
+                          {"Output": {"AIMCode": "", "DataType": "OSD-SEL-V1.5", "PortNumber": 1}, "Input": {"AIMCode": "MMC-TTT-V2.5", "DataType": "OSD-SEL-V1.5", "PortNumber": 1}},
+                          {"Output": {"AIMCode": "", "DataType": "OSD-SEL-V1.5", "PortNumber": 2}, "Input": {"AIMCode": "MMC-TTT-V2.5", "DataType": "OSD-SEL-V1.5", "PortNumber": 2}},
+                          {"Output": {"AIMCode": "MMC-TTT-V2.5", "DataType": "OSD-BTO-V1.5"}, "Input": {"AIMCode": "MMC-TTS-V2.5", "DataType": "OSD-BTO-V1.5"}},
+                          {"Output": {"AIMCode": "MMC-TTT-V2.5", "DataType": "OSD-BTO-V1.5"}, "Input": {"AIMCode": "", "DataType": "OSD-BTO-V1.5"}},
+                          {"Output": {"AIMCode": "MMC-TTS-V2.5", "DataType": "OSD-BSO-V1.5"}, "Input": {"AIMCode": "", "DataType": "OSD-BSO-V1.5"}}],
 
   "AIMLicence":          "/* AIM Licence offered by the Implementer (AIF-LIC-V3.0): Grant, Term, Updates, Payment, TermsURI - or omit it if the AIM needs no AIM Licence */",
 

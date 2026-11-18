@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-SFT-V2.5-I01", "AIMName": "1CAE-SFT-V2.5-I01"},
-  "Header":           "CAE-SFT-V2.5",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "CAE-SFT-V2.5-I01", "AIMInstID": "1CAE-SFT-V2.5-I01"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "CAE-SFT-V2.5",
   "APIProfile":       "Basic",
   "Description":      "Short-Time Fourier Transform: the Audio Object of the microphone array (with its geometry) in the transform domain - the spectrum of each channel for each block.",
   "ExternalPorts":    [{"Name": "AudioObject", "Direction": "Input", "DataType": "OSD-BAO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},

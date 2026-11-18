@@ -2,9 +2,10 @@
   "Identifier": {
     "ImplementerID": "1",
     "ImplementationID": "OSD-FBO-V1.5-I01",
-    "AIMName": "1OSD-FBO-V1.5-I01"
+    "AIMInstID": "1OSD-FBO-V1.5-I01"
   },
-  "Header": "OSD-FBO-V1.5",
+  "Header": "AIF-AMM-V3.0",
+  "AIMType": "OSD-FBO-V1.5",
   "APIProfile": "Basic",
   "Description": "Full to Basic Object. Gives the Basic Speech Objects of a Speech Object, one by one, in order.",
   "InternalTypes": [],

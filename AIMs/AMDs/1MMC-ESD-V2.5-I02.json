@@ -1,5 +1,6 @@
-{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "MMC-ESD-V2.5-I02", "AIMName": "1MMC-ESD-V2.5-I02"},
-  "Header":           "MMC-ESD-V2.5",
+{ "Identifier":       {"ImplementerID": "1", "ImplementationID": "MMC-ESD-V2.5-I02", "AIMInstID": "1MMC-ESD-V2.5-I02"},
+  "Header":           "AIF-AMM-V3.0",
+  "AIMType":          "MMC-ESD-V2.5",
 
   "APIProfile":       "Basic",
   "Description":      "Entity Speech Description: computes the Speech Descriptors of an Entity from its Speech Object. This instance gives the tone-colour embedding of the voice (OpenVoice V2, 256 numbers) in a Speech Descriptors Object whose Qualifier says so: the descriptors that Text-to-Speech with Descriptors speaks with. The ECAPA-TDNN speaker embedding, for recognising a speaker, is the first instance.",
