@@ -53,7 +53,10 @@ public sealed class SummaryDataItem
 // larger to set up and to fill at every request - and unloads a model 5 minutes after
 // its last use, so the first turn after a pause loads it again. The context is
 // therefore stated (always the same: a different one reloads the model), and the
-// model kept loaded.
+// model kept loaded - for 30 minutes after its last use, not for as long as Ollama
+// runs: a model kept forever held the 4 GB card, and the model of another App could
+// not load (2026-11-18). And when its model is not loaded, the client frees the card
+// first: the other models are unloaded (Ollama loads them again when they are asked).
 public sealed class OllamaClient : IDisposable
 {
     private readonly HttpClient _http;
@@ -64,7 +67,7 @@ public sealed class OllamaClient : IDisposable
     // context: tokens of prompt and answer. keepAliveSeconds: how long the model stays
     // loaded after a request; negative, for as long as Ollama runs.
     public OllamaClient(string model = "llama3.1", string baseUrl = "http://127.0.0.1:11434",
-                        int context = 4096, int keepAliveSeconds = -1)
+                        int context = 4096, int keepAliveSeconds = 1800)
     {
         _model = model;
         _context = context;
@@ -122,6 +125,7 @@ public sealed class OllamaClient : IDisposable
     private async Task<string> PostAsync(Func<string, object> build)
     {
         await ProvideAsync().ConfigureAwait(false);
+        await FreeTheCardAsync().ConfigureAwait(false);
         var json = JsonSerializer.Serialize(build(_model));
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var response = await _http.PostAsync("/api/chat", content).ConfigureAwait(false);
@@ -134,6 +138,68 @@ public sealed class OllamaClient : IDisposable
             msg.TryGetProperty("content", out var contentEl))
             return contentEl.GetString() ?? "";
         return "";
+    }
+
+    // THE CARD IS SHARED (2026-11-18). A model that is not loaded is loaded beside the others when it fits on the card; when it does not, the others are unloaded first (Ollama
+    // loads them again when they are asked for): on the 4 GB card the request otherwise waited for ever. Whether it fits: the card's memory (nvidia-smi), less what the loaded models
+    // take of it, against the size of this model and its context. A card that cannot be measured is taken as full.
+    private async Task FreeTheCardAsync()
+    {
+        try
+        {
+            using var ps = await _http.GetAsync("/api/ps").ConfigureAwait(false);
+            if (!ps.IsSuccessStatusCode) return;
+            using var doc = JsonDocument.Parse(await ps.Content.ReadAsStringAsync().ConfigureAwait(false));
+            var loaded = doc.RootElement.TryGetProperty("models", out var models)
+                ? models.EnumerateArray().Select(m => (Name: m.GetProperty("name").GetString() ?? "", Vram: m.TryGetProperty("size_vram", out var v) && v.TryGetInt64(out var b) ? b : 0L))
+                        .Where(m => m.Name.Length > 0).ToList() : [];
+            bool Same(string n) => n == _model || n == _model + ":latest";
+            if (loaded.Count == 0 || loaded.Any(m => Same(m.Name))) return;
+            if (Card.Value is long card && await SizeAsync().ConfigureAwait(false) is long size && card - loaded.Sum(m => m.Vram) >= size + ContextBytes) return;   // it fits beside them
+            foreach (var other in loaded)
+                using (await _http.PostAsync("/api/generate", new StringContent(JsonSerializer.Serialize(new { model = other.Name, keep_alive = 0 }), Encoding.UTF8, "application/json")).ConfigureAwait(false)) { }
+        }
+        catch (Exception e) when (e is HttpRequestException or JsonException or TaskCanceledException or InvalidOperationException) { }      // Ollama answers the request itself, or says why it cannot
+    }
+
+    private const long ContextBytes = 600L << 20;          // the context and the working memory of a model beside its weights, about 0.6 GB at 4096 tokens
+
+    // The size of this model's weights, as Ollama lists it.
+    private async Task<long?> SizeAsync()
+    {
+        using var tags = await _http.GetAsync("/api/tags").ConfigureAwait(false);
+        if (!tags.IsSuccessStatusCode) return null;
+        using var doc = JsonDocument.Parse(await tags.Content.ReadAsStringAsync().ConfigureAwait(false));
+        if (!doc.RootElement.TryGetProperty("models", out var models)) return null;
+        foreach (var m in models.EnumerateArray())
+            if ((m.GetProperty("name").GetString() is { } n) && (n == _model || n == _model + ":latest") && m.TryGetProperty("size", out var s) && s.TryGetInt64(out var bytes)) return bytes;
+        return null;
+    }
+
+    // The memory of the graphics card, in bytes, once (nvidia-smi); null where it cannot be read.
+    private static readonly Lazy<long?> Card = new(() =>
+    {
+        try
+        {
+            using var p = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("nvidia-smi", "--query-gpu=memory.total --format=csv,noheader,nounits")
+                                                           { RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true });
+            if (p is null) return null;
+            var text = p.StandardOutput.ReadToEnd(); p.WaitForExit(5000);
+            return long.TryParse(text.Split('\n')[0].Trim(), out var mib) ? mib << 20 : null;
+        }
+        catch (Exception) { return null; }
+    });
+
+    // ONE MODEL, ONE NAME (2026-11-18). Llama 3.2 with 3 billion parameters was loaded twice on the card: as the model created from Access (mpai-..., the weights the L3s of
+    // the dialogue declare) and as "llama3.2:3b", the same weights Ollama downloads under its own name. Ollama keeps a copy for each name, and two did not fit. Whoever asks for
+    // "llama3.2:3b" is therefore given the model created from Access, when Ollama has it: one copy serves every App. LlamaWeights is the llm-weights of 1MMC-EDP-V2.5-I01.
+    public const string LlamaWeights = "https://registry.ollama.ai/v2/library/llama3.2/blobs/sha256:dde5aa3fc5ffc17176b5e8bdc82f587b24b2678c6c66101bf7da77af9f7ccdff";
+    public static string? OneNameOf(string model) => model is "llama3.2:3b" or "llama3.2" or "llama3.2:latest" ? ModelNameOf(LlamaWeights) : null;
+
+    private async Task<bool> HasAsync(string model)
+    {
+        try { using var show = await _http.PostAsync("/api/show", new StringContent(JsonSerializer.Serialize(new { model }), Encoding.UTF8, "application/json")).ConfigureAwait(false); return show.IsSuccessStatusCode; }
+        catch (Exception e) when (e is HttpRequestException or TaskCanceledException) { return false; }
     }
 
     // ---- THE MODEL FROM ACCESS ---------------------------------------------------------------------------------------------
@@ -159,12 +225,13 @@ public sealed class OllamaClient : IDisposable
 
     private async Task ProvideAsync()
     {
-        if (_access is null || _provided) return;
+        if (_provided) return;
         await _providing.WaitAsync().ConfigureAwait(false);
         try
         {
             if (_provided) return;
-            _model = await CreateFromAccessAsync(_access).ConfigureAwait(false);
+            if (_access is not null) _model = await CreateFromAccessAsync(_access).ConfigureAwait(false);
+            else if (OneNameOf(_model) is { } one && await HasAsync(one).ConfigureAwait(false)) _model = one;      // one name for Llama 3.2 3B
             _provided = true;
         }
         finally { _providing.Release(); }

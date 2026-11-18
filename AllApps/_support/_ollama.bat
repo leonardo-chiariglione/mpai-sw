@@ -6,7 +6,8 @@ powershell -NoProfile -Command "if ((Get-NetTCPConnection -LocalPort 11434 -Stat
 if %errorlevel%==0 goto ready
 echo Starting Ollama...
 set OLLAMA_MODELS=%MPAI_ROOT%\Support\Ollama\models
-set OLLAMA_KEEP_ALIVE=-1
+rem A model stays loaded 30 minutes after its last use, not for ever: on the 4 GB card a model kept for ever stopped the model of another App from loading (2026-11-18).
+set OLLAMA_KEEP_ALIVE=30m
 start "Ollama" /min "%MPAI_ROOT%\Support\Ollama\bin\ollama.exe" serve
 :wait
 powershell -NoProfile -Command "Start-Sleep 2; if ((Get-NetTCPConnection -LocalPort 11434 -State Listen -ErrorAction SilentlyContinue)) { exit 0 } else { exit 1 }"

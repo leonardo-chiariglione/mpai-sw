@@ -176,9 +176,14 @@ public sealed class EdpAimProcessor : IAimProcessor
         // Status ONLY when a Personal Status was provided as input. With no EPS in
         // (e.g. anonymous dialogue), we neither ask the LLM for affect nor emit a
         // machine EPS - the avatar renders neutrally.
+        // THE DATE AND THE TIME (2026-11-18): the language model has no clock; asked what day it was, it made one up ("the first day of the month") and kept to it.
+        // It is told them, as a person would be, and told not to invent what it does not know.
+        var now = DateTime.Now;
+        string today = $"Today is {now.ToString("dddd d MMMM yyyy", System.Globalization.CultureInfo.GetCultureInfo("en-GB"))} and the time is {now:HH:mm}. " +
+                       "If you do not know something, say that you do not know: never make up facts. ";
         string system = affect
             ? $"You are {_persona}, a courteous conversational machine holding a face-to-face " +
-              "conversation with a person. Reply naturally and briefly to what the person said. " +
+              "conversation with a person. Reply naturally and briefly to what the person said. " + today +
               "Adapt your TONE to be appropriate and empathetic to how the person seems to feel, " +
               "but NEVER mention, describe, name, or refer to their emotion, mood, feelings, or " +
               "personal status - just respond naturally to what they say. " +
@@ -190,7 +195,7 @@ public sealed class EdpAimProcessor : IAimProcessor
               "\"summary\" (a one-sentence updated running summary). " +
               "Output ONLY the JSON object and nothing else - no code fences, no prose before or after."
             : $"You are {_persona}, a courteous conversational machine holding a face-to-face " +
-              "conversation with a person. Reply naturally and briefly to what the person said. " +
+              "conversation with a person. Reply naturally and briefly to what the person said. " + today +
               "Return ONLY your spoken reply as plain text - no JSON, no labels, no commentary.";
 
         var prompt = new StringBuilder();
