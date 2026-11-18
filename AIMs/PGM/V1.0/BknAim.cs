@@ -143,24 +143,40 @@ public sealed class BknAim : PgmAim
         var failure = "";
         try
         {
+            // FIRST, IS THE COMMAND CONDITIONAL? One small question of its own (N-37, 2026-11-17): asked together with the actions, a small model (llama3.2:3b) often wrote a
+            // conditional reply but did the action at once, or the reverse. The answer decides what the model is asked next.
+            if (held is null)
+            {
+                // The model copies the words of the condition ("if somebody knocks"), or nothing: asked so, llama3.2:3b was right on 20 of 20 wordings, against 18 of 20 asked for
+                // a true/false (Night\n37\classify.py). It sometimes copies the words of an example instead of the human's: the event is then said from the sound.
+                var c = JsonNode.Parse(await _model.AnswerAsync(ConditionSystem, said, ConditionSchema)) as JsonObject;
+                if (((string?)c?["condition"])?.Trim().TrimEnd('.', ',') is { Length: > 0 } words)
+                {
+                    conditionSound = (string?)c!["sound"] is "Bell" or "Knock" ? (string)c["sound"]! : "None";
+                    var bare = System.Text.RegularExpressions.Regex.Replace(words, @"^(if|when|whenever|as soon as|once)\s+", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                    conditionEvent = said.Contains(words, StringComparison.OrdinalIgnoreCase) && bare.Length > 0 ? bare
+                                   : conditionSound == "Bell" ? "the bell rings" : conditionSound == "Knock" ? "somebody knocks" : bare.Length > 0 ? bare : "the event";
+                }
+            }
             var system =
                 "You are the A-User, an autonomous assistant of a responsible human in a metaverse building. " +
                 "'reply' is what you say aloud to the human: one or two short natural sentences, never a command name. " +
-                "If the human asks you to change an item of the building (for instance to open the doors or to switch on the lamp), add one entry to worldActions: verb 'Property Change', target the item, " +
-                "property and value from this list: " + string.Join("; ", ItemProperties.Vocabulary.Select(v => $"{v.Key} ({string.Join(", ", v.Value)})")) + ". " +
+                "If the human asks you to change an item of the building (for instance to open the doors, to let somebody in - which is opening the door -, or to switch on the lamp), add one entry to worldActions: verb 'Property Change', target the item, " +
+                "and change: what you do to it, one of: " + string.Join(", ", ItemProperties.Changes.Keys) + ". " +
                 "If you need to go somewhere in the building yourself, put the place in personaMoves (for instance 'doors'). Otherwise leave the lists empty. " +
                 (places.Length > 0 ? "The places you can go to are: " + string.Join(", ", places) + "; to act on an item, first go to the place next to it. " : "") +
-                (held is null
-                    ? "If the command is to be done only when something happens ('if', 'when', 'as soon as'), set condition.conditional to true, condition.event to what must happen, " +
-                      "in the human's words, and condition.sound to the sound it is (Bell for a bell or a doorbell, Knock for a knock, else None); then do nothing now: worldActions and " +
-                      "personaMoves stay empty, and 'reply' tells the human, in one sentence, what you will do and when. Otherwise condition.conditional is false. "
-                    : "The human gave you this command earlier, to be done when something happened, and it has happened now (" + held[ConditionHeld.Length..].Trim() + "). " +
-                      "Do now everything the command asks, in order. " +
+                (conditionEvent is not null
+                    ? "The command is to be done only later, when this happens: " + conditionEvent + ". Do nothing now: worldActions and personaMoves stay empty, and 'reply' tells " +
+                      "the human, in one sentence, what you will do and that you will do it when " + conditionEvent + " (for instance 'I will open the door when " + conditionEvent + ".'). "
+                    : (held is null ? "Do now what the command asks. "
+                       : "The human gave you this command earlier, to be done when something happened, and it has happened now (" + held[ConditionHeld.Length..].Trim() + "). " +
+                         "Do now everything the command asks, in order. ") +
                       (places.Length > 0 ? "You are not next to the items: whenever you change an item, personaMoves must name the place next to it. " : "") +
-                      "Opening or closing is OpenState (Open, Closed); LockState is only for locking or unlocking. " +
-                      "Example: the command was 'when somebody knocks, open the window and say hi', and somebody knocked: worldActions [{\"verb\":\"Property Change\",\"target\":\"window\"," +
-                      "\"property\":\"OpenState\",\"value\":\"Open\"}], personaMoves [the place next to the window], reply \"Hi!\". " +
-                      "'reply' is only what you say now to whoever is there (for instance a short greeting), not to the human. ");
+                      "To let somebody in, the change is 'open'; 'unlock' and 'lock' only when the human says unlock or lock. " +
+                      (held is null ? ""
+                       : "Example: the command was 'when somebody knocks, open the window and say hi', and somebody knocked: worldActions [{\"verb\":\"Property Change\",\"target\":\"window\"," +
+                         "\"change\":\"open\"}], personaMoves [the place next to the window], reply \"Hi!\". " +
+                         "'reply' is only what you say now to whoever is there (for instance a short greeting), not to the human. "));
             if (level >= 1)
                 system +=
                     "While you speak, your body can express communicative functions. In 'functions' list the ones that suit your reply (usually one to three): " +
@@ -171,26 +187,28 @@ public sealed class BknAim : PgmAim
                     (level >= 2 ? "'behaviour' is the movement that realises the function, chosen among those allowed for it: " +
                         string.Join("; ", functions.Select(f => $"{f}: {string.Join(", ", Communicative.BehavioursOf[f].Where(b => personaBehaviours.Length == 0 || personaBehaviours.Contains(b)))}")) + ". " : "");
             system +=
-                "Example. Human: 'please close the window'. You: {\"reply\":\"Closing the window now.\",\"worldActions\":[{\"verb\":\"Property Change\",\"target\":\"window\",\"property\":\"OpenState\",\"value\":\"Closed\"}],\"personaMoves\":[]" +
+                "Example. Human: 'please close the window'. You: {\"reply\":\"Closing the window now.\",\"worldActions\":[{\"verb\":\"Property Change\",\"target\":\"window\",\"change\":\"close\"}],\"personaMoves\":[]" +
                 (level >= 1 ? ",\"functions\":[{\"function\":\"Deictic\",\"words\":\"the window\",\"target\":\"window\",\"intensity\":0.6,\"required\":true" + (level >= 2 ? ",\"behaviour\":\"Point\"" : "") + "}]" : "") + "}. " +
                 "Example. Human: 'how are you'. You: {\"reply\":\"I am fine, thank you.\",\"worldActions\":[],\"personaMoves\":[]" +
                 (level >= 1 ? ",\"functions\":[{\"function\":\"Affirmation\",\"words\":\"fine\",\"target\":\"User\",\"intensity\":0.4,\"required\":false" + (level >= 2 ? ",\"behaviour\":\"Smile\"" : "") + "}]" : "") + "}.";
-            var raw = await _model.AnswerAsync(system, said, Schema(allowed, level, functions, items.Concat(places).ToArray(), personaBehaviours, held is null, items, places));
+            var raw = await _model.AnswerAsync(system, said, Schema(allowed, level, functions, items.Concat(places).ToArray(), personaBehaviours, false, items, places));
             var json = JsonNode.Parse(raw) as JsonObject ?? throw new InvalidOperationException("the model did not give a JSON object");
             reply = (string?)json["reply"] ?? "";
             foreach (var a in json["worldActions"] as JsonArray ?? [])
-                if (a is JsonObject o && (string?)o["verb"] is { } v && allowed.Contains(v) && Known((string?)o["target"], items) is { Length: > 0 } t
-                    && (string?)o["property"] is { } pn && ItemProperties.Vocabulary.TryGetValue(pn, out var values) && (string?)o["value"] is { } pv && values.Contains(pv))
-                    worldActions.Add((v, t, pn, pv));
+                if (a is JsonObject o && (string?)o["verb"] is { } v && allowed.Contains(v) && Known((string?)o["target"], items) is { Length: > 0 } t)
+                {
+                    // the change the model chose ("open"), as the Item Property and its value (OpenState Open); a model that gives the property and the value is also understood
+                    if ((string?)o["change"] is { } ch && ItemProperties.Changes.TryGetValue(ch.Trim().ToLowerInvariant(), out var pc)) worldActions.Add((v, t, pc.Name, pc.Value));
+                    else if ((string?)o["property"] is { } pn && ItemProperties.Vocabulary.TryGetValue(pn, out var values) && (string?)o["value"] is { } pv && values.Contains(pv))
+                        worldActions.Add((v, t, pn, pv));
+                }
             foreach (var g in json["personaMoves"] as JsonArray ?? [])
                 if (Known((string?)g, places) is { Length: > 0 } name) moves.Add(name);
             if (level >= 1) produced = Functions(json["functions"] as JsonArray, reply, level, functions, items, places);
-            if (held is null && json["condition"] is JsonObject cond && (bool?)cond["conditional"] == true)
-            {
-                conditionEvent = (string?)cond["event"] is { Length: > 0 } ev ? ev : "the event";
-                conditionSound = (string?)cond["sound"] ?? "None";
-                worldActions.Clear(); moves.Clear();
-            }
+            if (conditionEvent is not null) { worldActions.Clear(); moves.Clear(); }
+            // An Item changed with no walk, when the PC Prompt gives one place only: the Persona goes there first (the prompt asks it; llama3.2:3b sometimes forgot, and the
+            // door opened by itself while the Persona stood across the room - N-37, 2026-11-17).
+            else if (worldActions.Count > 0 && moves.Count == 0 && places.Length == 1) moves.Add(places[0]);
         }
         catch (Exception e)
         {
@@ -264,8 +282,9 @@ public sealed class BknAim : PgmAim
         }
         // A CONDITION THAT HELD, AND PROCESS ACTIONS: the words are said to whoever is there when the Process Actions are done (the greeting when the door is open). This Final
         // Response carries the Actions and the Process Actions; the Text and its Communicative Functions wait for the continuation Request that reports them done.
+        // The same for a command done at once (N-37, 2026-11-17): "The door is now open" is said when the door is open, not as the Persona starts walking to it.
         _wordsToCome = null;
-        if (held is not null && pas.Count > 0 && reply.Length > 0)
+        if (pas.Count > 0 && reply.Length > 0)
         {
             _wordsToCome = new JsonObject { ["Text"] = fr["Text"]!.DeepClone() };
             if (levelProduced > 0) { _wordsToCome["FunctionLevel"] = levelProduced; _wordsToCome["CommunicativeFunctions"] = produced.DeepClone(); }
@@ -334,6 +353,26 @@ public sealed class BknAim : PgmAim
     // The Constraints of a Goal that carry a Condition (M3313: Event, Persistence; the Goal of PGM-UCK V1.0 has no Condition element, so they are Constraints).
     public const string ConditionPrefix = "Condition: ", AudioEventPrefix = "Audio Event: ", ConditionHeld = "Condition held: ";
 
+    // The question whether a command is conditional, and its schema (the property "condition" at the top level tells it from the main answer).
+    private const string ConditionSystem =
+        "Read the human's command. Some commands are to be done only when something happens first: they contain a condition such as 'if somebody knocks', " +
+        "'when someone rings', 'as soon as the bell rings', 'whenever there is a knock', 'when they ring'. Others are to be done now. " +
+        "First copy into 'condition' the words of the command that say what must happen first (for instance 'if somebody knocks'), or '' if there are none. " +
+        "Then 'sound': Bell if the condition is a bell, a doorbell or somebody ringing; Knock if it is a knock or somebody knocking; None if there is no condition. " +
+        "Examples. 'Open the door if somebody knocks': {\"condition\":\"if somebody knocks\",\"sound\":\"Knock\"}. " +
+        "'When someone rings, say hi': {\"condition\":\"when someone rings\",\"sound\":\"Bell\"}. " +
+        "'Open the door': {\"condition\":\"\",\"sound\":\"None\"}. " +
+        "'Open the door and greet whoever is there': {\"condition\":\"\",\"sound\":\"None\"}.";
+    private static readonly JsonObject ConditionSchema = new()
+    {
+        ["type"] = "object", ["additionalProperties"] = false, ["required"] = new JsonArray("condition", "sound"),
+        ["properties"] = new JsonObject
+        {
+            ["condition"] = new JsonObject { ["type"] = "string" },
+            ["sound"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray("Bell", "Knock", "None") }
+        }
+    };
+
     // A name the model gave, as the PC Prompt writes it (the model may write "door" for "Door"); when the PC Prompt gives no list, the name as it is.
     private static string? Known(string? name, string[] names) =>
         name is null || names.Length == 0 ? name : names.FirstOrDefault(n => string.Equals(n, name.Trim(), StringComparison.OrdinalIgnoreCase));
@@ -350,14 +389,14 @@ public sealed class BknAim : PgmAim
                 ["items"] = new JsonObject
                 {
                     ["type"] = "object",
-                    ["required"] = new JsonArray("verb", "target", "property", "value"),
+                    ["required"] = new JsonArray("verb", "target", "change"),
                     ["properties"] = new JsonObject
                     {
                         ["verb"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray(allowed.Where(a => a is not "MM-Animate" and not "MM-Move").Select(a => (JsonNode)a).ToArray()) },
                         // the target: one of the Items of the PC Prompt when it gives them
                         ["target"] = items is { Length: > 0 } ? new JsonObject { ["type"] = "string", ["enum"] = new JsonArray(items.Select(i => (JsonNode)i).ToArray()) } : new JsonObject { ["type"] = "string" },
-                        ["property"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray(ItemProperties.Vocabulary.Keys.Select(k => (JsonNode)k).ToArray()) },
-                        ["value"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray(ItemProperties.Vocabulary.Values.SelectMany(v => v).Distinct().Select(v => (JsonNode)v).ToArray()) }
+                        // what is done to it, in plain words (a small model chose LockState Unlocked for "let them in"; it chooses "open"): mapped to the Item Property and its value
+                        ["change"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray(ItemProperties.Changes.Keys.Select(k => (JsonNode)k).ToArray()) }
                     }
                 }
             },
@@ -418,5 +457,13 @@ public static class ItemProperties
         ["OpenState"] = ["Open", "Closed"],
         ["LockState"] = ["Locked", "Unlocked"],
         ["PowerState"] = ["On", "Off"]
+    };
+
+    // The same, as what is done to an Item in plain words (what the language model of Basic Knowledge chooses): the Item Property and its value.
+    public static readonly IReadOnlyDictionary<string, (string Name, string Value)> Changes = new Dictionary<string, (string, string)>
+    {
+        ["open"] = ("OpenState", "Open"), ["close"] = ("OpenState", "Closed"),
+        ["lock"] = ("LockState", "Locked"), ["unlock"] = ("LockState", "Unlocked"),
+        ["switch on"] = ("PowerState", "On"), ["switch off"] = ("PowerState", "Off")
     };
 }

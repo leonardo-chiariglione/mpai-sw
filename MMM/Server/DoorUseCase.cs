@@ -38,7 +38,7 @@ public sealed class DoorUseCase
     private static readonly string[] ModuleAims =
     [
         "1PGM-AUC-V1.0-I01", "1PGM-CXT-V1.0-I01", "1PGM-PRC-V1.0-I01", "1PGM-BKN-V1.0-I01", "1PGM-DAC-V1.0-I01", "1PGM-USR-V1.0-I01", "1PGM-PAL-V1.0-I01", "1PGM-AUF-V1.0-I01",
-        "1PAF-PDX-V1.6-I01", Module, "1PGM-PSD-V1.0-I01", "1PGM-FRD-V1.0-I01", "1PGM-BPL-V1.0-I01", "1PGM-AOG-V1.0-I01", "1PGM-EFD-V1.0-I01", "1PGM-EBD-V1.0-I01"
+        "1PAF-PDX-V1.6-I01", Module, "1PGM-PSD-V1.0-I01", "1PGM-FRD-V1.0-I01", "1PGM-BPL-V1.0-I01", "1PGM-AOG-V1.0-I01", "1PGM-EFD-V1.0-I01", "1PGM-EBD-V1.0-I01", "1PGM-ASD-V1.0-I01"
     ];
 
     private static string MI = "MI1";
@@ -56,7 +56,8 @@ public sealed class DoorUseCase
     private readonly SemaphoreSlim toModule = new(1, 1);
     private readonly ConcurrentDictionary<string, JsonObject> avatars = new(StringComparer.Ordinal);   // the Portable Avatars of the Module, by ID: the Streams its MM-Animates name
     private int sounds, commands;
-    private string? pending, lastCommand;   // the page shows the last command accepted until the Module requests a Process Action
+    private string? pending, lastCommand;   // the page shows the last command accepted until the Module requests a Property Change
+    private int acceptedOf;                 // the command (its number) whose first acceptance was seen
 
     public DoorUseCase(MInstance m, HttpClient http, SummaryServices voice, WhisperAsr? whisper, string repo, string llm)
     {
@@ -73,15 +74,26 @@ public sealed class DoorUseCase
         m.AddLocation(Hall, owner: Host, isPublic: true, x: VisitorIn[0], y: VisitorIn[1], size: 1, at: Room);       // where a visitor stands, inside
         m.AddLocation(Porch, isPublic: true, x: OutsideDoor[0] - StreetCentre[0], y: OutsideDoor[1] - StreetCentre[1], size: 1, at: Street);   // outside the door
         m.AddLocation(Human, universe: true);
+        PlaceItems(m);
+        m.AddUser(Host, "human1");
+        m.AddUser(Visitor, "human2");
+    }
+
+    // The Items as the scene starts: the door closed, each Persona at its place. Called again for a new scene (the M-Instance as it was set up, not a Process Action).
+    private static void PlaceItems(MInstance m)
+    {
         // The door is the Host's: an Item (a 3D Model Object) in the south wall, with its Item Properties.
         m.AddItem(Door, "OSD-3DO-V1.5", Host, Room, DoorAt[0], DoorAt[1], yaw: 0, kind: "Door", ("OpenState", JsonValue.Create("Closed")), ("LockState", JsonValue.Create("Unlocked")));
         m.AddItem(HostPersona, "OSD-3DO-V1.5", Host, Room, HostStart[0], HostStart[1], yaw: 160);
         m.AddItem(VisitorPersona, "OSD-3DO-V1.5", Visitor, Street, VisitorStart[0] - StreetCentre[0], VisitorStart[1] - StreetCentre[1], yaw: 0);
-        m.AddUser(Host, "human1");
-        m.AddUser(Visitor, "human2");
         m.SetModel(HostPersona, "Persona1.glb");
         m.SetModel(VisitorPersona, "Persona2.glb");
+        // A table with two stools in the middle of the room, between the Host's Persona and the door: its walk goes round it (the M-Instance computes the way).
+        m.AddItem(Table, "OSD-3DO-V1.5", Host, Room, TableAt[0], TableAt[1], yaw: 0, kind: "Table");
+        m.SetFootprint(Table, 1.8, 0.7);
     }
+    public const string Table = "Table";
+    private static readonly double[] TableAt = [0.8, -0.4];
 
     // dotnet run --project MMM/Server -- [url] --door [--llm llama3.2:3b]: the M-Instance of the door, its page at <url>/viewer/door.html.
     public static async Task<int> RunAsync(MInstance m, string url, string repo, string[] args)
@@ -98,7 +110,20 @@ public sealed class DoorUseCase
         app.MapPost("/door/command", async (HttpContext ctx) => { var text = await new StreamReader(ctx.Request.Body).ReadToEndAsync(); await door.CommandAsync(text); return Results.Ok(); });
         app.MapPost("/door/speak", async (HttpContext ctx) => { using var ms = new MemoryStream(); await ctx.Request.Body.CopyToAsync(ms); return Results.Text(await door.SpokenAsync(ms.ToArray())); });
         app.MapPost("/door/visitor", (string? sound) => { _ = Task.Run(() => door.VisitAsync(sound ?? "bell")); return Results.Ok(); });
-        app.MapGet("/door/log", () => Results.Json(new { log = door.Log, pending = door.pending, walkSpeed = WalkSpeed, asr = whisper.Available }));
+        app.MapGet("/door/log", () => Results.Json(new
+        {
+            log = door.Log, pending = door.pending, walkSpeed = WalkSpeed, asr = whisper.Available && door.asrReady,
+            ready = door.Ready, readiness = door.Readiness, scene = door.scene, resetting = door.resetting
+        }));
+        // The Face and Body Descriptors of a Portable Avatar that animates a Persona (the Stream of an MM-Animate), as the page renders it: their Data, the timed Behaviours.
+        app.MapGet("/door/avatar/{id}", (string id) =>
+        {
+            if (m.Get(id)?.Body is not { } b) return Results.NotFound();
+            var pav = b["ItemValueOrRef"]?[0] as JsonObject ?? b;
+            static string[] Data(JsonNode? o, string key) => (o?[key] as JsonArray ?? []).Select(d => (string?)d?["Data"]).Where(d => d is not null).Select(d => d!).ToArray();
+            return Results.Json(new { body = Data(pav["BodyDescriptorsObject"], "BodyDescriptorsData"), face = Data(pav["FaceDescriptorsObject"], "FaceDescriptorsData") });
+        });
+        app.MapPost("/door/reset",async () => { await door.ResetAsync(); return Results.Ok(); });   // "New scene": the door closed, the Personae at their places, the Module started again
         app.MapGet("/door/status", () => Results.Json(door.ModuleStatus()));   // the AIMs of the A-User Module, as the Controller reports them
         app.MapGet("/door/sound/{id}", (string id) => m.Get(id) is { } it && it.Body is { } body && PcmOf(body) is { } pcm ? Results.Bytes(Wav(pcm), "audio/wav") : Results.NotFound());
         await app.StartAsync();
@@ -146,7 +171,8 @@ public sealed class DoorUseCase
             ["1PGM-AUF-V1.0-I01"] = new JsonObject { ["Avatar.Id"] = HostPersona, [BknAim.PersonaSetting] = HostPersona }
         };
         File.WriteAllText(Path.Combine(folder, "settings.json"), settings.ToJsonString());
-        var model = new OllamaModel(llm);
+        // The language model stays loaded for the whole demonstration (Ollama unloads an idle model after 5 minutes: the next command would wait for it to load again).
+        model = new OllamaModel(llm) { KeepAlive = "3h" };
         api = new ControllerApi(folder, Path.Combine(folder, "settings.json"), store => provider = new Provider(store, model, new Voice(voice)));
         var started = api.StartFlow(Module, out moduleId);
         Say("Controller", $"the A-User Module {Module} started: {started} (Basic Knowledge with {llm})");
@@ -154,6 +180,77 @@ public sealed class DoorUseCase
         foreach (var type in new[] { "PGM-HCM-V1.0", "MMM-ACT-V2.2", "MMM-PAC-V2.2", "PAF-PAV-V1.6" })
             _ = Task.Run(() => ReadLoopAsync(type));
         _ = Task.Run(ListenAsync);
+        _ = Task.Run(WarmUpAsync);
+    }
+
+    private OllamaModel model = null!;
+
+    // READY WHEN THE PAGE OPENS (N-37 1): the language model, the voice and Whisper are loaded before the first command; the page says when the A-User is ready.
+    private volatile bool llmReady, voiceReady;
+    internal volatile bool asrReady;
+    private volatile string? warmUpProblem;
+    public bool Ready => llmReady && voiceReady && (whisper is null || asrReady);
+    public string Readiness => Ready ? "The A-User is ready." + (whisper is null ? " (No speech recognition on this machine: write the command.)" : "")
+        : "The A-User is getting ready: " + string.Join(", ", new[] { llmReady ? null : $"the language model ({llm})", voiceReady ? null : "the voice", whisper is null || asrReady ? null : "the speech recognition" }.Where(x => x is not null))
+          + (warmUpProblem is null ? "..." : " - " + warmUpProblem);
+
+    private async Task WarmUpAsync()
+    {
+        var t = DateTime.Now;
+        var llmTask = Task.Run(async () =>
+        {
+            for (var i = 0; i < 30 && !llmReady; i++)
+                try { await model.AnswerAsync("Answer in JSON.", "Say ready.", new JsonObject { ["type"] = "object" }); llmReady = true; Say("User Agent", $"the language model {llm} is loaded ({(DateTime.Now - t).TotalSeconds:0.0} s)"); }
+                catch (Exception e) { warmUpProblem = "the language model does not answer (is Ollama running?): " + e.Message; await Task.Delay(2000); }
+        });
+        var voiceTask = Task.Run(async () =>
+        {
+            try { await voice.SynthesiseAsync("Ready.", "en"); voiceReady = true; Say("User Agent", $"the voice is loaded ({(DateTime.Now - t).TotalSeconds:0.0} s)"); }
+            catch (Exception e) { warmUpProblem = "the voice: " + e.Message; }
+        });
+        var asrTask = Task.Run(async () =>
+        {
+            if (whisper is null) return;
+            using var probe = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
+            var up = false;
+            for (var i = 0; i < 120 && !up; i++)
+            {
+                try { using var r = await probe.GetAsync("http://127.0.0.1:18179/"); up = true; }
+                catch { await Task.Delay(500); }
+            }
+            if (up) { await whisper.RecognizeAsync(new byte[16000]); asrReady = true; Say("User Agent", $"the speech recognition is loaded ({(DateTime.Now - t).TotalSeconds:0.0} s)"); }
+            else warmUpProblem = "the speech recognition (Whisper) did not start";
+        });
+        await Task.WhenAll(llmTask, voiceTask, asrTask);
+        if (Ready) { warmUpProblem = null; Say("User Agent", "the A-User is ready: give the command"); }
+    }
+
+    // ---------------------------------------------------------------- a new scene (N-37 2)
+    // The door closed, the Personae back at their places, the A-User Module stopped and started again on the Controller (nothing pending), without restarting the server.
+    internal volatile int scene;
+    internal volatile bool resetting;
+    private readonly SemaphoreSlim resetOne = new(1, 1);
+    public async Task ResetAsync()
+    {
+        await resetOne.WaitAsync();
+        try
+        {
+            resetting = true;
+            Interlocked.Increment(ref visit);                 // the Visitor stops waiting at the door
+            await toModule.WaitAsync();
+            try
+            {
+                api.StopFlow(moduleId);
+                avatars.Clear(); pending = null; lastCommand = null;
+                foreach (var (id, _) in m.List("OSD-AUO-V1.5")) m.Remove(id);   // the sounds of the last scene
+                PlaceItems(m);
+                var started = api.StartFlow(Module, out moduleId);
+                scene++;
+                Say("M-Instance", $"New scene: the door closed, the Personae at their places; the A-User Module started again: {started}");
+            }
+            finally { toModule.Release(); }
+        }
+        finally { resetting = false; resetOne.Release(); }
     }
 
     // The Module's provider: the PGM-AUA AIMs, with the language model, the voice, and PAF-PDX.
@@ -246,6 +343,7 @@ public sealed class DoorUseCase
         while (true)
         {
             var read = await Task.Run(() => api.OutputRead(moduleId, type, 1, 1000));
+            if (read.Error != AifError.OK && read.Error != AifError.Timeout) { await Task.Delay(200); continue; }   // the Module is starting again (a new scene)
             if (read.Error != AifError.OK || read.Json is null) continue;
             try { await OnOutputAsync(type, JsonNode.Parse(read.Json)!.AsObject()); }
             catch (Exception e) { Say("User Agent", $"{type}: {e.Message}"); }
@@ -258,7 +356,8 @@ public sealed class DoorUseCase
         {
             case "PGM-HCM-V1.0":
                 Say("A-User Control", $"Human Command Response: {data["ExecutionResult"]}");
-                if ((string?)data["ExecutionResult"] == "accepted") pending = lastCommand;
+                // the first acceptance of a command makes it pending (A-User Control answers again as it goes on: those leave it as it is)
+                if ((string?)data["ExecutionResult"] == "accepted" && acceptedOf != commands) { acceptedOf = commands; pending = lastCommand; }
                 break;
             case "MMM-ACT-V2.2":
                 Say("A-User Control", $"Action: {data["Action"]}");
@@ -269,6 +368,10 @@ public sealed class DoorUseCase
             case "PAF-PAV-V1.6":
                 avatars[(string?)data["PortableAvatarID"] ?? ""] = data;
                 Say("A-User Formation", $"Portable Avatar {data["PortableAvatarID"]}{(data["SPOOrSPOID"] is null ? " (motion)" : " (speech)")}");
+                // The words of a speech, for the log and the page's speech bubble: from the report of A-User Formation (the Controller's report of the Module, as /door/status).
+                if (data["SPOOrSPOID"] is not null && (provider?.Made.GetValueOrDefault("1PGM-AUF-V1.0-I01") as AufAim)?.Trace.LastOrDefault() is { } formed
+                    && formed.IndexOf("speech \"", StringComparison.Ordinal) is var q and >= 0 && formed.IndexOf('"', q + 8) is var e and > 0)
+                    Say("A-User", $"says \"{formed[(q + 8)..e]}\"");
                 break;
         }
     }
@@ -277,7 +380,8 @@ public sealed class DoorUseCase
     private async Task PerformAsync(JsonObject pac)
     {
         var kind = (string?)pac["DescrMetadata"] ?? "";
-        pending = null;
+        var sceneOf = scene;   // a Response that comes after a new scene started is not written to the new Module
+        if (kind == "Property Change") pending = null;   // the command is being done (its first words - "I will open the door when..." - leave it pending)
         var rq = pac["RQ-Complements"] as JsonArray ?? [];
         string? Of(string key) => rq.OfType<JsonObject>().Select(o => (string?)o[key]).FirstOrDefault(v => v is not null);
         var with = rq.OfType<JsonObject>().Select(o => o["Item"]).OfType<JsonObject>().Select(i => (JsonNode)i.DeepClone()).ToArray();
@@ -304,6 +408,7 @@ public sealed class DoorUseCase
                 return;
         }
         var ok = r.Http is >= 200 and < 300;
+        if (sceneOf != scene) return;
         var rs = new JsonObject
         {
             ["Header"] = "MMM-PAC-V2.2", ["MInstanceID"] = MI, ["ProcessActionID"] = (string?)pac["ProcessActionID"] ?? "", ["ProcessActionTime"] = PgmAim.Time(),
@@ -357,6 +462,7 @@ public sealed class DoorUseCase
         var me = Interlocked.Increment(ref visit);   // a new visit (the Visitor rings after knocking) ends the wait of the earlier one
         // To the door, from the street.
         Say("Visitor", $"MM-Animate of {VisitorPersona} At the Porch: {await WalkAsync(visitor, VisitorPersona, Porch)}");
+        if (me != visit) return;   // a new scene started during the walk
         // The bell: the sound of the bell at the door, an Audio Object MM-Added in the room (the bell rings inside).
         var id = $"Sound-{++sounds}";
         var pcm = sound == "knock" ? Knock() : Bell();
@@ -388,6 +494,7 @@ public sealed class DoorUseCase
         }
         if (!opened) { if (me == visit) Say("Visitor", "nobody opened the door: the Visitor waits outside"); return; }
         await Task.Delay(4000);
+        if (me != visit) return;   // a new scene started meanwhile: the Visitor is back in the street
         Say("Visitor", $"MM-Animate of {VisitorPersona} At the Hall, inside: {await WalkAsync(visitor, VisitorPersona, Hall)}");
     }
 

@@ -161,7 +161,8 @@ public sealed class AucAim : PgmAim
             {
                 // The Portable Avatar of a formation with Process Actions is the Stream of the MM-Animate among them (the walk). When the Condition of a pending goal held,
                 // what the A-User says comes after the Process Actions: Basic Knowledge is asked for it when they are done (a continuation Request).
-                _formingMotion = actionsToCome; _actionsArrived = false; _speakAfter = actionsToCome && _conditionHeld; _conditionHeld = false;
+                // (N-37, 2026-11-17: also for a command done at once - the words when the Process Actions are done, as Basic Knowledge now holds them for every command with Process Actions)
+                _formingMotion = actionsToCome; _actionsArrived = false; _speakAfter = actionsToCome; _conditionHeld = false;
                 if (_speakAfter) _bknHeldId = Auc.IdOf(bkn);
                 Trace.Add($"concluded: actions {actionsToCome}, words after them {_speakAfter}");
                 if (bkn["Conclusion"]?["FinalResponseID"] is not null)

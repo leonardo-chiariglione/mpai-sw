@@ -1,9 +1,55 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text.Json.Nodes;
+using System.Threading.Tasks;
+
+using AIF.Controller;
 
 namespace Mpai.Pgm;
+
+// PGM-ASD-V1.0 - Audio Scene Description, a Sub-AIM of Context Description. From an Audio Object (a Basic Audio Object, OSD-BAO) it gives the Audio Scene Descriptors
+// (Basic Audio Scene Descriptors, OSD-BAS-V1.5): the scene of the one Audio Object, its Audio Qualifier SubTypes SoundEffects. The spectral classifier of AudioEvents is inside it.
+// WHAT THE SOUND IS (a Bell, a Knock): the published schemas have no element for the class of an Audio Event - the Audio Event Descriptors (OSD-AEV) carry only a set of Audio
+// Scene Descriptors, the Audio Qualifier only SubTypes (Speech, Music, SoundEffects, Noise, Mixed). It is written in the Descriptive Metadata of the Audio Scene Descriptors,
+// "Audio Event: Bell; why", as the only place the schemas leave (a proposal for an element is in MKG\pending-changes.md).
+public sealed class AsdAim : PgmAim
+{
+    private readonly string _audio, _request, _scene, _response;
+
+    public AsdAim(string instanceId, AimPortReader ports) : base(instanceId, ports)
+    {
+        _audio = In("OSD-BAO-V1.5"); _request = In(Auc.Cxt); _scene = Out("OSD-BAS-V1.5"); _response = Out(Auc.Cxt);
+    }
+
+    public override Task<Message> ProcessAsync(Message message)
+    {
+        var outputs = new List<(string, JsonNode?)>();
+        if (Read(message, _audio) is { } audio && AudioEvents.PcmOf(audio) is { } pcm)
+        {
+            var (cls, why) = AudioEvents.Classify(pcm);
+            var id = (string?)audio["BasicAudioObjectID"] ?? NewId("bao");
+            var member = (JsonObject)audio.DeepClone();
+            outputs.Add((_scene, new JsonObject
+            {
+                ["Header"] = "OSD-BAS-V1.5", ["MInstanceID"] = (string?)audio["MInstanceID"] ?? "MI1", ["BasicAudioSceneDescriptorsID"] = NewId("bas"),
+                ["BASSpaceTime"] = new JsonObject { ["Header"] = "OSD-SPT-V1.5", ["SpaceTimeID"] = NewId("spt") },
+                ["UserPoV"] = new JsonObject { ["Header"] = "OSD-OPV-V1.5", ["PointOfViewID"] = NewId("pov"), ["CartPosition"] = new JsonArray(0.0, 0.0, 0.0), ["Orientation"] = new JsonArray(0.0, 0.0, 0.0) },
+                ["AudioObjectCount"] = 1,
+                ["BasicAudioSceneDescriptorsData"] = new JsonArray(new JsonObject { ["AObjectIDOrAObject"] = new JsonArray(member) }),
+                ["DescrMetadata"] = $"{BknAim.AudioEventPrefix}{cls}; {id}: {why}"
+            }));
+        }
+        if (Read(message, _request) is { } rq && Auc.IsRequest(rq))
+        {
+            var rs = Auc.Make(Auc.Cxt, Auc.Response, Session.Of(rq), Auc.IdOf(rq));
+            rs["Outcome"] = "achieved";
+            outputs.Add((_response, rs));
+        }
+        return Task.FromResult(Give(message, outputs));
+    }
+}
 
 // THE AUDIO EVENTS Context Description recognises in a Basic Audio Object (OSD-BAO-V1.5) whose data is 16 kHz, 16 bit, mono PCM: a Bell, a Knock, Silence or Other.
 // A bell is tonal - a few strong partials, the rest of the spectrum quiet (low spectral flatness) - its strongest partial between 400 and 3000 Hz, and it dies away slowly after
@@ -42,6 +88,15 @@ public static class AudioEvents
         if (flat < 0.05 && peak is > 400 and < 3000 && rings >= 0.5) return (Bell, why);
         if (rings < 0.3) return (Knock, why);
         return (Other, why);
+    }
+
+    // The Audio Event an Audio Scene Description gave, from its Descriptive Metadata ("Audio Event: Bell; ..."): see AsdAim.
+    public static (string Class, string Why)? EventOf(JsonObject? bas)
+    {
+        if ((string?)bas?["DescrMetadata"] is not { } d || !d.StartsWith(BknAim.AudioEventPrefix, StringComparison.Ordinal)) return null;
+        var rest = d[BknAim.AudioEventPrefix.Length..];
+        var cut = rest.IndexOf(';');
+        return cut < 0 ? (rest.Trim(), "") : (rest[..cut].Trim(), rest[(cut + 1)..].Trim());
     }
 
     private static void Fft(Complex[] a)

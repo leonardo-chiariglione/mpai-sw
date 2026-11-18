@@ -29,6 +29,9 @@ public sealed class OllamaModel : ILanguageModel
 
     public string Model => _model;
 
+    // How long Ollama keeps the model loaded after an answer (its "keep_alive", e.g. "30m"); null: Ollama's default (5 minutes). A demonstration that waits between commands sets it.
+    public string? KeepAlive { get; init; }
+
     public static OllamaModel From(IReadOnlyDictionary<string, string> settings) =>
         new(settings.TryGetValue(ModelSetting, out var m) && m.Length > 0 ? m : throw new InvalidOperationException($"BKN needs the setting '{ModelSetting}'."),
             settings.TryGetValue(UrlSetting, out var u) && u.Length > 0 ? u : "http://localhost:11434");
@@ -45,6 +48,7 @@ public sealed class OllamaModel : ILanguageModel
                 new JsonObject { ["role"] = "system", ["content"] = system },
                 new JsonObject { ["role"] = "user", ["content"] = user })
         };
+        if (KeepAlive is not null) body["keep_alive"] = KeepAlive;
         using var response = await Http.PostAsync(_url + "/api/chat", new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json"));
         var text = await response.Content.ReadAsStringAsync();
         if (!response.IsSuccessStatusCode) throw new InvalidOperationException($"Ollama answered {(int)response.StatusCode}: {text}");

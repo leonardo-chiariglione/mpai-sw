@@ -24,6 +24,10 @@ public sealed class CxtAim : PgmAim
     // What it heard last (for a report): the Audio Event, the Basic Audio Object, why.
     public (string Class, string AudioID, string Why)? LastAudioEvent { get; private set; }
 
+    // The Sub-AIM Audio Scene Description (PGM-ASD), built from its own Metadata by the provider, and the Audio Scene Descriptors it gave last.
+    public AsdAim? Asd { get; init; }
+    public JsonObject? LastAudioScene { get; private set; }
+
     public CxtAim(string instanceId, AimPortReader ports, ISpeechRecogniser? recogniser = null) : base(instanceId, ports)
     {
         _recogniser = recogniser;
@@ -41,7 +45,14 @@ public sealed class CxtAim : PgmAim
         }
         if (Read(message, _audio) is { } audio && AudioEvents.PcmOf(audio) is { } pcm)
         {
+            // The Audio Event, from the Audio Scene Descriptors of the Sub-AIM Audio Scene Description (PGM-ASD) when the composite has it; else from the classifier directly.
             var (cls, why) = AudioEvents.Classify(pcm);
+            if (Asd is not null)
+            {
+                var asd = await Asd.ProcessAsync(new Message { Ports = new Dictionary<string, string> { [Asd.InputKey("OSD-BAO-V1.5")] = audio.ToJsonString() } });
+                LastAudioScene = Read(asd, Asd.OutputKey("OSD-BAS-V1.5"));
+                if (AudioEvents.EventOf(LastAudioScene) is { } e) (cls, why) = e;
+            }
             var id = (string?)audio["BasicAudioObjectID"] ?? NewId("bao");
             LastAudioEvent = (cls, id, why);
             if (_watch is { } watch && WatchedEvent(watch) == cls)

@@ -45,6 +45,8 @@ public sealed class MInstance
         public string? Kind { get; set; }            // what the viewer draws it as, when its Data Type does not say (a Door is a 3D Model Object, as a Persona is)
         public double[]? WalkFrom, WalkTo;           // a walk its Animation Stream makes (MM-Animate At an M-Location): from and to, metres in the M-Environment
         public long WalkStart, WalkEnd, AnimatedUntil;   // when the walk starts and ends, and when the animation is over (Unix milliseconds)
+        public double[][]? WalkPath;                 // the walk's way when it goes round an obstacle: from, the corners it turns at, to (metres in the M-Environment)
+        public double[]? Footprint;                  // an Item a walk goes round (a table): its width east-west and its depth north-south, metres
     }
 
     public sealed class Process
@@ -225,6 +227,12 @@ public sealed class MInstance
 
     // ---------------------------------------------------------------- reading
     public Item? Get(string id) { lock (gate) return items.GetValueOrDefault(id); }
+
+    // An Item that a walk goes round (a table, a piece of furniture): its footprint, width east-west and depth north-south, metres, centred on the Item.
+    public void SetFootprint(string id, double width, double depth) { lock (gate) if (items.TryGetValue(id, out var it)) it.Footprint = [width, depth]; }
+
+    // An Item taken away by whoever runs the M-Instance (not a Process Action): a demonstration that starts its scene again removes what the last scene added.
+    public bool Remove(string id) { lock (gate) return items.Remove(id); }
 
     public IReadOnlyList<Activity> ActivityData { get { lock (gate) return activity.ToList(); } }
 
@@ -423,20 +431,23 @@ public sealed class MInstance
                 {
                     var w = Where(i);
                     var clock = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    double? walkingYaw = null;
                     if (i.WalkFrom is { } wf && i.WalkTo is { } wt && clock < i.WalkEnd)
                     {
                         var f = Math.Clamp((clock - i.WalkStart) / (double)Math.Max(1, i.WalkEnd - i.WalkStart), 0, 1);
-                        w = [wf[0] + (wt[0] - wf[0]) * f, wf[1] + (wt[1] - wf[1]) * f];
+                        if (i.WalkPath is { } path) (w, walkingYaw) = AlongPath(path, f);   // round an obstacle: along the way, facing where it goes
+                        else w = [wf[0] + (wt[0] - wf[0]) * f, wf[1] + (wt[1] - wf[1]) * f];
                     }
                     var o = new JsonObject
                     {
                         ["ID"] = i.ID, ["Kind"] = i.Kind ?? (i.DataType == "MMM-LOC" ? "Location" : i.DataType == "OSD-3DO-V1.5" ? "Persona" : i.DataType == "OSD-BSO-V1.5" ? "Speech" : i.DataType == ScreenHeader ? "Screen" : i.DataType == "OSD-AUO-V1.5" ? "Audio" : "Item"),
                         ["At"] = i.Location, ["X"] = w[0] + (Spot(i) is null ? side.GetValueOrDefault(i.ID) : 0), ["Y"] = w[1], ["Z"] = 0.0,    // east, north, up: metres
-                        ["Yaw"] = YawOf(i), ["Depth"] = DepthOf(i),
+                        ["Yaw"] = walkingYaw ?? YawOf(i), ["Depth"] = DepthOf(i),
                         ["Perceptible"] = i.Perceptible, ["Owner"] = i.Owner, ["Public"] = i.Public
                     };
                     if (i.DataType == "MMM-LOC") o["Size"] = i.Size;
                     if (i.Model is not null) o["Model"] = i.Model;
+                    if (i.Footprint is { } fp) o["Footprint"] = new JsonArray(fp[0], fp[1]);   // an obstacle: width east-west, depth north-south
                     if (i.Properties.Count > 0) o["Properties"] = new JsonObject(i.Properties.Select(p => KeyValuePair.Create(p.Key, p.Value?.DeepClone())));
                     if (i.Animation is not null) o["Animation"] = i.Animation;
                     if (i.Animation is not null) o["Animating"] = clock < i.AnimatedUntil;   // its Stream is still playing (walking, speaking)
@@ -745,11 +756,15 @@ public sealed class MInstance
             if (!items.TryGetValue(c.At, out var place) || place.DataType != "MMM-LOC") return Fail(404, service, "IncID", $"no M-Location {c.At}");
             if (!MayEnter(source, "MM-Animate", c.Nil!, c.At)) return Fail(403, service, "InsRights", $"{source} may not take {c.Nil} to {c.At}");
             var from = PlaceOf(it); var to = PlaceOf(place);
-            var dx = to[0] - from[0]; var dy = to[1] - from[1];
-            var seconds = Math.Sqrt(dx * dx + dy * dy) / WalkSpeed;
-            it.WalkFrom = from; it.WalkTo = to; it.WalkStart = now; it.WalkEnd = now + (long)(seconds * 1000);
+            // THE WAY: straight, or round the Items that have a footprint (furniture), turning at their corners; at the speed the Stream gives, if it gives one.
+            var obstacles = items.Values.Where(o => o.Footprint is not null && o.ID != it.ID).Select(o => (At: PlaceOf(o), Size: o.Footprint!)).ToList();
+            var path = Route(from, to, obstacles);
+            var length = Enumerable.Range(1, path.Count - 1).Sum(k => Math.Sqrt(Math.Pow(path[k][0] - path[k - 1][0], 2) + Math.Pow(path[k][1] - path[k - 1][1], 2)));
+            var seconds = length / (SpeedOf(avatar) ?? WalkSpeed);
+            it.WalkFrom = from; it.WalkTo = to; it.WalkPath = path.Count > 2 ? path.ToArray() : null; it.WalkStart = now; it.WalkEnd = now + (long)(seconds * 1000);
             it.Location = c.At;
-            var yaw = Math.Abs(dx) + Math.Abs(dy) > 1e-6 ? Math.Atan2(-dx, dy) * 180 / Math.PI : YawOf(it) ?? 0;   // facing the way it walked (zero north, positive west)
+            var dx = to[0] - path[^2][0]; var dy = to[1] - path[^2][1];
+            var yaw = Math.Abs(dx) + Math.Abs(dy) > 1e-6 ? Math.Atan2(-dx, dy) * 180 / Math.PI : YawOf(it) ?? 0;   // facing the way it walked its last stretch (zero north, positive west)
             it.SpatialAttitude = new JsonObject
             {
                 ["Position"] = new JsonObject { ["CartPosition"] = new JsonArray(0.0, 0.0, 0.0) },
@@ -765,6 +780,76 @@ public sealed class MInstance
 
     // The speed of a walk an Animation Stream makes, metres a second.
     public const double WalkSpeed = 1.0;
+
+    // The speed a Stream gives its walk: a Portable Avatar whose Body Descriptors say "speed 1.4 m/s". None: WalkSpeed.
+    private static double? SpeedOf(JsonObject? avatar)
+    {
+        foreach (var d in avatar?["BodyDescriptorsObject"]?["BodyDescriptorsData"] as JsonArray ?? [])
+            if ((string?)d?["Data"] is { } text && System.Text.RegularExpressions.Regex.Match(text, @"speed\s+([0-9]+(?:\.[0-9]+)?)\s*m/s") is { Success: true } m)
+                return Math.Clamp(double.Parse(m.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture), 0.2, 3.0);
+        return null;
+    }
+
+    // THE WAY ROUND OBSTACLES: the shortest way from one place to another that does not cross an obstacle's footprint grown by the half-width of a walker (Clearance):
+    // the corners of the grown footprints are the places where the way may turn (a visibility graph, then Dijkstra). No obstacle in the way: the straight line.
+    public const double Clearance = 0.35;
+    public static List<double[]> Route(double[] from, double[] to, IReadOnlyList<(double[] At, double[] Size)> obstacles)
+    {
+        var boxes = obstacles.Select(o => (X0: o.At[0] - o.Size[0] / 2 - Clearance, X1: o.At[0] + o.Size[0] / 2 + Clearance, Y0: o.At[1] - o.Size[1] / 2 - Clearance, Y1: o.At[1] + o.Size[1] / 2 + Clearance))
+                             .Where(b => !Inside(b, from) && !Inside(b, to)).ToList();   // a walk that starts or ends by an obstacle is not stopped by it
+        static bool Inside((double X0, double X1, double Y0, double Y1) b, double[] p) => p[0] > b.X0 && p[0] < b.X1 && p[1] > b.Y0 && p[1] < b.Y1;
+        // Does the segment a-b pass through the inside of a box? (Liang-Barsky clipping against the box shrunk a little, so that walking along its side is allowed.)
+        static bool Crosses((double X0, double X1, double Y0, double Y1) b, double[] a, double[] e)
+        {
+            const double Eps = 1e-3;
+            double t0 = 0, t1 = 1, dx = e[0] - a[0], dy = e[1] - a[1];
+            foreach (var (p, q) in new[] { (-dx, a[0] - (b.X0 + Eps)), (dx, (b.X1 - Eps) - a[0]), (-dy, a[1] - (b.Y0 + Eps)), (dy, (b.Y1 - Eps) - a[1]) })
+            {
+                if (Math.Abs(p) < 1e-12) { if (q < 0) return false; continue; }
+                var r = q / p;
+                if (p < 0) { if (r > t1) return false; if (r > t0) t0 = r; } else { if (r < t0) return false; if (r < t1) t1 = r; }
+            }
+            return t1 - t0 > 1e-9;
+        }
+        bool Free(double[] a, double[] e) => boxes.All(b => !Crosses(b, a, e));
+        if (Free(from, to)) return [from, to];
+        var nodes = new List<double[]> { from, to };
+        foreach (var b in boxes) nodes.AddRange([[b.X0 - 0.01, b.Y0 - 0.01], [b.X1 + 0.01, b.Y0 - 0.01], [b.X1 + 0.01, b.Y1 + 0.01], [b.X0 - 0.01, b.Y1 + 0.01]]);
+        nodes = nodes.Where((p, k) => k < 2 || boxes.All(b => !Inside(b, p))).ToList();
+        double D(double[] a, double[] e) => Math.Sqrt((a[0] - e[0]) * (a[0] - e[0]) + (a[1] - e[1]) * (a[1] - e[1]));
+        var dist = Enumerable.Repeat(double.MaxValue, nodes.Count).ToArray(); var prev = Enumerable.Repeat(-1, nodes.Count).ToArray(); var done = new bool[nodes.Count];
+        dist[0] = 0;
+        for (var round = 0; round < nodes.Count; round++)
+        {
+            var u = -1; for (var k = 0; k < nodes.Count; k++) if (!done[k] && dist[k] < double.MaxValue && (u < 0 || dist[k] < dist[u])) u = k;
+            if (u < 0 || u == 1) break;
+            done[u] = true;
+            for (var v = 0; v < nodes.Count; v++)
+                if (!done[v] && v != u && Free(nodes[u], nodes[v]) && dist[u] + D(nodes[u], nodes[v]) < dist[v]) { dist[v] = dist[u] + D(nodes[u], nodes[v]); prev[v] = u; }
+        }
+        if (prev[1] < 0) return [from, to];   // no way round: straight, as before
+        var way = new List<double[]>(); for (var k = 1; k >= 0; k = prev[k]) way.Insert(0, nodes[k]);
+        return way;
+    }
+
+    // Where a walk along a way is at a fraction of its length, and the yaw it faces there (zero north, positive west).
+    private static (double[] At, double Yaw) AlongPath(double[][] path, double fraction)
+    {
+        var lengths = Enumerable.Range(1, path.Length - 1).Select(k => Math.Sqrt(Math.Pow(path[k][0] - path[k - 1][0], 2) + Math.Pow(path[k][1] - path[k - 1][1], 2))).ToArray();
+        var left = fraction * lengths.Sum();
+        for (var k = 0; k < lengths.Length; k++)
+        {
+            var (a, b) = (path[k], path[k + 1]);
+            var yaw = Math.Atan2(-(b[0] - a[0]), b[1] - a[1]) * 180 / Math.PI;
+            if (left <= lengths[k] || k == lengths.Length - 1)
+            {
+                var f = lengths[k] < 1e-9 ? 1 : Math.Clamp(left / lengths[k], 0, 1);
+                return ([a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f], yaw);
+            }
+            left -= lengths[k];
+        }
+        return (path[^1], 0);
+    }
 
     // Where an Item is now, in metres in the M-Environment (the centre of an M-Location).
     private double[] PlaceOf(Item it)
