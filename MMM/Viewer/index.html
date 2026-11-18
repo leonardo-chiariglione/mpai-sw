@@ -867,12 +867,20 @@ function watchScreen(id, own = false) {          // the shared screen of the roo
 async function meetingOver() {
   if (client.leaving) return; client.leaving = true;
   stopShare(); watchScreen(null);
-  const x = 13.5, y = 0;
+  // Each in its own place in front of the doors (2026-11-18): all at one point, a participant's eyes were inside the head of another.
+  let h = 0; for (const c of client.name) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  const x = 13.5 + (h % 3) * 1.2, y = ((h >>> 2) % 9 - 4) * 1.1;
   const mv = await act('locate/mm-move', client.name, { Nil: client.persona, From: client.loc, To: 'MVS', With: [spatial('SA-' + client.name + '-Out', x, y, 270)] });
   client.leaving = false;
   if (mv.http !== 200) return;
   Object.assign(client, { loc: 'MVS', at: 'MVS', ox: 0, oy: 0, x, y, yaw: 270, seated: false, seatInfo: null, sent: '' });
   for (const d of doors) { d.open = false; d.leaf.visible = true; }
+  // Nothing of the meeting stays on the page: the Secretary, her answers, the hands, the buttons of the room.
+  client.dialogue = false; client.summary?.stop();
+  for (const id of ['secHelp', 'summary']) document.getElementById(id).hidden = true;
+  document.getElementById('handsList').replaceChildren();
+  document.querySelectorAll('#bar .roomOnly').forEach(e => e.remove());
+  client.status = `${client.name}: in MVS`;
   client.notice = 'The meeting is over: your rights to the MPAI building are withdrawn.';
 }
 async function standUp() {
