@@ -14,7 +14,7 @@ public sealed class Lane
     public string? Left { get; set; }            // the lane to the left, same direction (a lane change is allowed)
     public string? Right { get; set; }           // the lane to the right, same direction
     public string? Oncoming { get; set; }        // the lane to the left, other direction (it may be used to pass)
-    public bool YieldAtEnd { get; init; }        // a road user at the end of this lane gives way (a roundabout entry, a minor road)
+    public bool YieldAtEnd { get; set; }         // a road user at the end of this lane gives way (a roundabout entry, a minor road); set by the map or by the traffic rules (TrafficRules, TrafficRuleBook.ApplyTo)
     public override string ToString() => Id;
 }
 

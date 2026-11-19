@@ -1,0 +1,7 @@
+{
+  "Jurisdiction": { "Code": "LHT", "Name": "A Contracting Party where traffic keeps to the left (the Convention alone, no domestic values)", "ConventionParty": true, "BasedOn": "RHT" },
+  "Parameters": {
+    "TrafficSide":                         { "Value": "Left",          "Source": "Domestic",   "Reference": "Article 10, paragraph 1" },
+    "UnsignedIntersectionPriority":        { "Value": "NoGeneralRule", "Source": "Domestic",   "Reference": "Article 18, paragraph 4 (b): free to regulate the right of way; without a domestic rule, only signs give priority" }
+  }
+}

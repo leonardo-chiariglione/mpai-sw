@@ -1,0 +1,23 @@
+{
+  "Jurisdiction": { "Code": "RHT", "Name": "A Contracting Party where traffic keeps to the right (the Convention alone, no domestic values)", "ConventionParty": true },
+  "Parameters": {
+    "TrafficSide":                         { "Value": "Right",     "Source": "Domestic",   "Reference": "Article 10, paragraph 1" },
+    "UnsignedIntersectionPriority":        { "Value": "FromRight", "Source": "Convention", "Reference": "Article 18, paragraph 4 (a)" },
+    "SpeedLimits":                         { "Value": null, "Unit": "km/h", "Source": "Unset", "Reference": "Article 13, paragraph 5: domestic" },
+    "MinimumSpeeds":                       { "Value": null, "Unit": "km/h", "Source": "Unset", "Reference": "Article 13, paragraph 5: domestic" },
+    "MinimumTimeGap":                      { "Value": null, "Unit": "s",    "Source": "Unset", "Reference": "Article 13, paragraph 3: 'sufficient distance', no figure" },
+    "OvertakingLateralClearance":          { "Value": null, "Unit": "m",    "Source": "Unset", "Reference": "Article 11, paragraph 4: 'sufficiently wide berth', no figure" },
+    "NoOvertakingBeforePedestrianCrossing":{ "Value": null, "Unit": "m",    "Source": "Unset", "Reference": "Article 11, paragraph 9: domestic option" },
+    "StopForPedestriansOnCrossing":        { "Value": false,               "Source": "Convention", "Reference": "Article 21, paragraph 1 (b): stop 'if necessary'; paragraph 3 lets a Party require it always" },
+    "PedestriansPriorityNearIntersection": { "Value": false,               "Source": "Convention", "Reference": "Article 21, paragraph 3: domestic option" },
+    "PassingOnTrafficSideAllowed":         { "Value": false,               "Source": "Convention", "Reference": "Article 11, paragraph 11: domestic option" },
+    "CyclistsAbreastAllowed":              { "Value": false,               "Source": "Convention", "Reference": "Article 27, paragraph 1: domestic option" },
+    "HeavyVehicleMass":                    { "Value": 3500, "Unit": "kg",  "Source": "Convention", "Reference": "Article 13, paragraph 4" },
+    "HeavyVehicleLength":                  { "Value": 10,   "Unit": "m",   "Source": "Convention", "Reference": "Article 13, paragraph 4" },
+    "NoParkingBeforeIntersection":         { "Value": null, "Unit": "m",   "Source": "Unset", "Reference": "Article 23, paragraph 3 (c)(i): 'within the distances prescribed by domestic legislation'" },
+    "NarrowLaneBesideMarking":             { "Value": 3,    "Unit": "m",   "Source": "Convention", "Reference": "Article 23, paragraph 3 (b)(iii)" },
+    "MotorwayMinimumDesignSpeed":          { "Value": null, "Unit": "km/h","Source": "Unset", "Reference": "Article 25, paragraph 1 (a): domestic" },
+    "LoadProjectionMarked":                { "Value": 1.0,  "Unit": "m",   "Source": "Convention", "Reference": "Article 30, paragraph 4 (a)" },
+    "LoadLateralProjectionMarked":         { "Value": 0.40, "Unit": "m",   "Source": "Convention", "Reference": "Article 30, paragraph 4 (b)" }
+  }
+}

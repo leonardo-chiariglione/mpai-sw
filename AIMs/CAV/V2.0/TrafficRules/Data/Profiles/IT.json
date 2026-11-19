@@ -1,0 +1,7 @@
+{
+  "Jurisdiction": { "Code": "IT", "Name": "Italy", "ConventionParty": true, "BasedOn": "RHT", "DomesticLaw": "Codice della Strada (D.Lgs. 285/1992)" },
+  "Parameters": {
+    "SpeedLimits":                  { "Value": { "BuiltUp": 50, "Rural": 90, "Expressway": 110, "Motorway": 130 }, "Unit": "km/h", "Source": "Domestic", "Reference": "Codice della Strada, art. 142", "Verified": false },
+    "StopForPedestriansOnCrossing": { "Value": true, "Source": "Domestic", "Reference": "Codice della Strada, art. 191", "Verified": false }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "Jurisdiction": { "Code": "GB", "Name": "United Kingdom", "ConventionParty": true, "BasedOn": "LHT", "DomesticLaw": "Road Traffic Regulation Act 1984; The Highway Code" },
+  "Parameters": {
+    "SpeedLimits": { "Value": { "BuiltUp": 30, "Rural": 60, "Expressway": 70, "Motorway": 70 }, "Unit": "mph", "Source": "Domestic", "Reference": "national speed limits for cars (The Highway Code, rule 124)", "Verified": false }
+  }
+}

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- THE TRAFFIC RULES OF THE CAV (2026-11-19): the rules of the road of the Convention on Road Traffic (Vienna, 1968, Chapter II and Article 34 bis), the
+       parameters each Contracting Party sets (Data\Profiles), and the road signs and signals (Data\Signs-1968.json), composed into one Traffic Rules
+       (CAV-TRR-V2.0) for the jurisdiction where the CAV drives, and applied to the road map the driving core uses. -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Driving\Mpai.Cav.Driving.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Data\**\*.json" CopyToOutputDirectory="PreserveNewest" Link="TrafficRules\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+</Project>

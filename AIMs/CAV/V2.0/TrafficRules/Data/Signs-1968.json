@@ -1,0 +1,1604 @@
+{
+ "Source": {
+  "Instrument": "Convention on Road Signs and Signals",
+  "Done": "Vienna, 1968-11-08",
+  "Text": "the signs as listed in M2430 (Vienna Convention on Road Signs and Signals, 2024-09-26), from https://unece.org/DAM/trans/conventn/Conv_road_signs_2006v_EN.pdf; the official sign numbers (A,1a ...) are not given here, only the categories of the Convention",
+  "Categories": {
+   "A": "Danger warning signs",
+   "B": "Priority signs",
+   "C": "Prohibitory or restrictive signs",
+   "D": "Mandatory signs",
+   "E": "Special regulation signs",
+   "F": "Information, facilities or service signs",
+   "G": "Direction, position or indication signs",
+   "H": "Additional panels",
+   "Lights": "Traffic light signals",
+   "Markings": "Road markings",
+   "Works": "Signs for road works",
+   "LevelCrossing": "Level-crossing signals"
+  }
+ },
+ "Signs": [
+  {
+   "SignID": "A-Left-Bend",
+   "Name": "Left bend",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Right-Bend",
+   "Name": "Right bend",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Two-Or-More-Bends-The-First-To-The-Left",
+   "Name": "Two or more bends, the first to the left",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Two-Or-More-Bends-The-First-To-The-Right",
+   "Name": "Two or more bends, the first to the right",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Dangerous-Descent",
+   "Name": "Dangerous descent",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Steep-Ascent",
+   "Name": "Steep ascent",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Carriageway-Narrows",
+   "Name": "Carriageway narrows",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Swing-Bridge",
+   "Name": "Swing bridge",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Road-Leads-On-To-Quay-Or-River-Bank",
+   "Name": "Road leads on to quay or river bank",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Uneven-Road",
+   "Name": "Uneven road",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Dangerous-Shoulders",
+   "Name": "Dangerous shoulders",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Slippery-Road",
+   "Name": "Slippery road",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Loose-Gravel",
+   "Name": "Loose gravel",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Falling-Rocks",
+   "Name": "Falling rocks",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Pedestrian-Crossing-Ahead",
+   "Name": "Pedestrian crossing ahead",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-21-1b"
+   }
+  },
+  {
+   "SignID": "A-Children",
+   "Name": "Children",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Cyclists-Entering-Or-Crossing",
+   "Name": "Cyclists entering or crossing",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Cattle-Or-Other-Animals-Crossing",
+   "Name": "Cattle or other animals crossing",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Road-Works",
+   "Name": "Road works",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Light-Signals",
+   "Name": "Light signals",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Intersection-With-General-Priority-Rule",
+   "Name": "Intersection with general priority rule",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-18-4"
+   }
+  },
+  {
+   "SignID": "A-Intersection-Whose-Users-Must-Give-Way",
+   "Name": "Intersection whose users must give way",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Roundabout-Ahead",
+   "Name": "Roundabout ahead",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Intersection-With-Light-Signal",
+   "Name": "Intersection with light signal",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Two-Way-Traffic",
+   "Name": "Two-way traffic",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Traffic-Congestion",
+   "Name": "Traffic congestion",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Level-Crossing-With-Gates",
+   "Name": "Level-crossing with gates",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-19"
+   }
+  },
+  {
+   "SignID": "A-Other-Level-Crossing",
+   "Name": "Other level-crossing",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-19"
+   }
+  },
+  {
+   "SignID": "A-Intersection-With-A-Tramway-Line",
+   "Name": "Intersection with a tramway line",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-18-7"
+   }
+  },
+  {
+   "SignID": "A-Airfield",
+   "Name": "Airfield",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Cross-Wind",
+   "Name": "Cross-wind",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "A-Other-Dangers",
+   "Name": "Other dangers",
+   "Category": "A",
+   "Group": "Danger warning signs",
+   "Effect": {
+    "Behaviour": "Caution",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "B-Give-Way",
+   "Name": "GIVE WAY",
+   "Category": "B",
+   "Group": "Priority signs",
+   "Effect": {
+    "Behaviour": "GiveWay",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "B-Stop",
+   "Name": "STOP",
+   "Category": "B",
+   "Group": "Priority signs",
+   "Effect": {
+    "Behaviour": "StopAndGiveWay",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "B-Priority-Road",
+   "Name": "PRIORITY ROAD",
+   "Category": "B",
+   "Group": "Priority signs",
+   "Effect": {
+    "Behaviour": "HasPriority",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "B-End-Of-Priority",
+   "Name": "END OF PRIORITY",
+   "Category": "B",
+   "Group": "Priority signs",
+   "Effect": {
+    "Behaviour": "EndOfPriority",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "B-Priority-For-Oncoming-Traffic",
+   "Name": "Priority for oncoming traffic",
+   "Category": "B",
+   "Group": "Priority signs",
+   "Effect": {
+    "Behaviour": "GiveWayToOncoming",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "B-Priority-Over-Oncoming-Traffic",
+   "Name": "Priority over oncoming traffic",
+   "Category": "B",
+   "Group": "Priority signs",
+   "Effect": {
+    "Behaviour": "PriorityOverOncoming",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-No-Entry",
+   "Name": "NO ENTRY",
+   "Category": "C",
+   "Group": "Prohibition and restriction of entry",
+   "Effect": {
+    "Behaviour": "NoEntry",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-Closed-To-All-Vehicles-In-Both-Directions",
+   "Name": "CLOSED TO ALL VEHICLES IN BOTH DIRECTIONS",
+   "Category": "C",
+   "Group": "Prohibition and restriction of entry",
+   "Effect": {
+    "Behaviour": "NoEntry",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-No-Entry-For-Any-Power-Driven-Vehicle-Except-Two-Wheeled-Motor-Cycles-Without-Side-Car",
+   "Name": "NO ENTRY FOR ANY POWER DRIVEN VEHICLE EXCEPT TWO-WHEELED MOTOR CYCLES WITHOUT SIDE-CAR",
+   "Category": "C",
+   "Group": "Prohibition and restriction of entry",
+   "Effect": {
+    "Behaviour": "NoEntry",
+    "AppliesToCategory": "as the sign names",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-No-Entry-For-Motor-Cycles",
+   "Name": "NO ENTRY FOR MOTOR CYCLES",
+   "Category": "C",
+   "Group": "Prohibition and restriction of entry",
+   "Effect": {
+    "Behaviour": "NoEntry",
+    "AppliesToCategory": "as the sign names",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-No-Entry-For-Cycles",
+   "Name": "NO ENTRY FOR CYCLES",
+   "Category": "C",
+   "Group": "Prohibition and restriction of entry",
+   "Effect": {
+    "Behaviour": "NoEntry",
+    "AppliesToCategory": "as the sign names",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-No-Entry-For-Mopeds",
+   "Name": "NO ENTRY FOR MOPEDS",
+   "Category": "C",
+   "Group": "Prohibition and restriction of entry",
+   "Effect": {
+    "Behaviour": "NoEntry",
+    "AppliesToCategory": "as the sign names",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-No-Entry-For-Goods-Vehicles",
+   "Name": "NO ENTRY FOR GOODS VEHICLES",
+   "Category": "C",
+   "Group": "Prohibition and restriction of entry",
+   "Effect": {
+    "Behaviour": "NoEntry",
+    "AppliesToCategory": "as the sign names",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-No-Entry-For-Any-Power-Driven-Vehicle-Drawing-A-Trailer-Other-Than-A-Semi-Trailer-Or-A-Single-Axle-Trailer",
+   "Name": "NO ENTRY FOR ANY POWER DRIVEN VEHICLE DRAWING A TRAILER OTHER THAN A SEMI-TRAILER OR A SINGLE AXLE TRAILER",
+   "Category": "C",
+   "Group": "Prohibition and restriction of entry",
+   "Effect": {
+    "Behaviour": "NoEntry",
+    "AppliesToCategory": "as the sign names",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-No-Entry-For-Any-Power-Driven-Vehicle-Drawing-A-Trailer",
+   "Name": "NO ENTRY FOR ANY POWER-DRIVEN VEHICLE DRAWING A TRAILER",
+   "Category": "C",
+   "Group": "Prohibition and restriction of entry",
+   "Effect": {
+    "Behaviour": "NoEntry",
+    "AppliesToCategory": "as the sign names",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-No-Entry-For-Vehicles-Carrying-Dangerous-Goods-For-Which-Special-Sign-Plating-Is-Prescribed",
+   "Name": "NO ENTRY FOR VEHICLES CARRYING DANGEROUS GOODS FOR WHICH SPECIAL SIGN PLATING IS PRESCRIBED",
+   "Category": "C",
+   "Group": "Prohibition and restriction of entry",
+   "Effect": {
+    "Behaviour": "NoEntry",
+    "AppliesToCategory": "as the sign names",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-No-Entry-For-Pedestrians",
+   "Name": "NO ENTRY FOR PEDESTRIANS",
+   "Category": "C",
+   "Group": "Prohibition and restriction of entry",
+   "Effect": {
+    "Behaviour": "NoEntry",
+    "AppliesToCategory": "as the sign names",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-No-Entry-For-Animal-Drawn-Vehicles",
+   "Name": "NO ENTRY FOR ANIMAL-DRAWN VEHICLES",
+   "Category": "C",
+   "Group": "Prohibition and restriction of entry",
+   "Effect": {
+    "Behaviour": "NoEntry",
+    "AppliesToCategory": "as the sign names",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-No-Entry-For-Handcarts",
+   "Name": "NO ENTRY FOR HANDCARTS",
+   "Category": "C",
+   "Group": "Prohibition and restriction of entry",
+   "Effect": {
+    "Behaviour": "NoEntry",
+    "AppliesToCategory": "as the sign names",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-No-Entry-For-Power-Driven-Agricultural-Vehicles",
+   "Name": "NO ENTRY FOR POWER DRIVEN AGRICULTURAL VEHICLES",
+   "Category": "C",
+   "Group": "Prohibition and restriction of entry",
+   "Effect": {
+    "Behaviour": "NoEntry",
+    "AppliesToCategory": "as the sign names",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-No-Entry-For-Power-Driven-Vehicles",
+   "Name": "NO ENTRY FOR POWER DRIVEN VEHICLES",
+   "Category": "C",
+   "Group": "Prohibition and restriction of entry",
+   "Effect": {
+    "Behaviour": "NoEntry",
+    "AppliesToCategory": "as the sign names",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-No-Entry-For-Power-Driven-Vehicles-Or-Animal-Drawn-Vehicles",
+   "Name": "NO ENTRY FOR POWER DRIVEN VEHICLES OR ANIMAL-DRAWN VEHICLES",
+   "Category": "C",
+   "Group": "Prohibition and restriction of entry",
+   "Effect": {
+    "Behaviour": "NoEntry",
+    "AppliesToCategory": "as the sign names",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-No-Entry-For-Vehicles-Having-An-Overall-Width-Exceeding-Metres",
+   "Name": "NO ENTRY FOR VEHICLES HAVING AN OVERALL WIDTH EXCEEDING ... METRES",
+   "Category": "C",
+   "Group": "Prohibition and restriction of entry",
+   "Effect": {
+    "Behaviour": "NoEntry",
+    "AppliesToCategory": "as the sign names",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-No-Entry-For-Vehicles-Having-An-Overall-Height-Exceeding-Metres",
+   "Name": "NO ENTRY FOR VEHICLES HAVING AN OVERALL HEIGHT EXCEEDING ... METRES",
+   "Category": "C",
+   "Group": "Prohibition and restriction of entry",
+   "Effect": {
+    "Behaviour": "NoEntry",
+    "AppliesToCategory": "as the sign names",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-No-Entry-For-Vehicles-Exceeding-Tonnes-Laden-Mass",
+   "Name": "NO ENTRY FOR VEHICLES EXCEEDING ... TONNES LADEN MASS",
+   "Category": "C",
+   "Group": "Prohibition and restriction of entry",
+   "Effect": {
+    "Behaviour": "NoEntry",
+    "AppliesToCategory": "as the sign names",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-No-Entry-For-Vehicles-Having-A-Mass-Exceeding-Tonnes-On-One-Axle",
+   "Name": "NO ENTRY FOR VEHICLES HAVING A MASS EXCEEDING ... TONNES ON ONE AXLE",
+   "Category": "C",
+   "Group": "Prohibition and restriction of entry",
+   "Effect": {
+    "Behaviour": "NoEntry",
+    "AppliesToCategory": "as the sign names",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-No-Entry-For-Vehicles-Or-Combinations-Of-Vehicles-Exceeding-Metres-In-Length",
+   "Name": "NO ENTRY FOR VEHICLES OR COMBINATIONS OF VEHICLES EXCEEDING ... METRES IN LENGTH",
+   "Category": "C",
+   "Group": "Prohibition and restriction of entry",
+   "Effect": {
+    "Behaviour": "NoEntry",
+    "AppliesToCategory": "as the sign names",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-Driving-Of-Vehicles-Less-Than-Metres-Apart-Prohibited",
+   "Name": "DRIVING OF VEHICLES LESS THAN ... METRES APART PROHIBITED",
+   "Category": "C",
+   "Group": "Distance between vehicles",
+   "Effect": {
+    "Behaviour": "MinimumDistance",
+    "Value": "from the sign",
+    "Unit": "m",
+    "Rule": "VC68-13-3"
+   }
+  },
+  {
+   "SignID": "C-No-Left-Turn",
+   "Name": "NO LEFT TURN",
+   "Category": "C",
+   "Group": "Prohibition of turning",
+   "Effect": {
+    "Behaviour": "NoTurn",
+    "Side": "Left",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-No-Right-Turn",
+   "Name": "NO RIGHT TURN",
+   "Category": "C",
+   "Group": "Prohibition of turning",
+   "Effect": {
+    "Behaviour": "NoTurn",
+    "Side": "Right",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-No-U-Turns",
+   "Name": "NO U-TURNS",
+   "Category": "C",
+   "Group": "Prohibition of U-turns",
+   "Effect": {
+    "Behaviour": "NoUTurn",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-Overtaking-Prohibited",
+   "Name": "OVERTAKING PROHIBITED",
+   "Category": "C",
+   "Group": "Prohibition of overtaking",
+   "Effect": {
+    "Behaviour": "NoOvertaking",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-Overtaking-By-Goods-Vehicles-Prohibited",
+   "Name": "OVERTAKING BY GOODS VEHICLES PROHIBITED",
+   "Category": "C",
+   "Group": "Prohibition of overtaking",
+   "Effect": {
+    "Behaviour": "NoOvertaking",
+    "AppliesToCategory": "goods vehicles",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-Maximum-Speed-Limited-To-The-Figure-Indicated",
+   "Name": "MAXIMUM SPEED LIMITED TO THE FIGURE INDICATED",
+   "Category": "C",
+   "Group": "Speed limit",
+   "Effect": {
+    "Behaviour": "SpeedLimit",
+    "Value": "from the sign",
+    "Unit": "the unit of the jurisdiction",
+    "Rule": "VC68-13-5"
+   }
+  },
+  {
+   "SignID": "C-Use-Of-Audible-Warning-Devices-Prohibited",
+   "Name": "USE OF AUDIBLE WARNING DEVICES PROHIBITED",
+   "Category": "C",
+   "Group": "Prohibition of the use of audible warning devices",
+   "Effect": {
+    "Behaviour": "NoAudibleWarning",
+    "Rule": "VC68-28"
+   }
+  },
+  {
+   "SignID": "C-Passing-Without-Stopping-Prohibited",
+   "Name": "PASSING WITHOUT STOPPING PROHIBITED",
+   "Category": "C",
+   "Group": "Prohibition of passing without stopping",
+   "Effect": {
+    "Behaviour": "StopAndGiveWay",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-End-Of-All-Local-Prohibitions-Imposed-On-Moving-Vehicles",
+   "Name": "END OF ALL LOCAL PROHIBITIONS IMPOSED ON MOVING VEHICLES",
+   "Category": "C",
+   "Group": "End of prohibition or restriction",
+   "Effect": {
+    "Behaviour": "EndOfLocalProhibitions",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-End-Of-Speed-Limit",
+   "Name": "END OF SPEED LIMIT",
+   "Category": "C",
+   "Group": "End of prohibition or restriction",
+   "Effect": {
+    "Behaviour": "EndOfSpeedLimit",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-End-Of-Prohibition-Of-Overtaking",
+   "Name": "END OF PROHIBITION OF OVERTAKING",
+   "Category": "C",
+   "Group": "End of prohibition or restriction",
+   "Effect": {
+    "Behaviour": "EndOfNoOvertaking",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-End-Of-Prohibition-Of-Overtaking-For-Goods-Vehicles",
+   "Name": "END OF PROHIBITION OF OVERTAKING FOR GOODS VEHICLES",
+   "Category": "C",
+   "Group": "End of prohibition or restriction",
+   "Effect": {
+    "Behaviour": "EndOfNoOvertaking",
+    "AppliesToCategory": "goods vehicles",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "C-Parking-Prohibited",
+   "Name": "PARKING PROHIBITED",
+   "Category": "C",
+   "Group": "Prohibition or restriction of standing and parking",
+   "Effect": {
+    "Behaviour": "NoParking",
+    "Rule": "VC68-23-3"
+   }
+  },
+  {
+   "SignID": "C-Standing-And-Parking-Prohibited",
+   "Name": "STANDING AND PARKING PROHIBITED",
+   "Category": "C",
+   "Group": "Prohibition or restriction of standing and parking",
+   "Effect": {
+    "Behaviour": "NoStanding",
+    "Rule": "VC68-23-3"
+   }
+  },
+  {
+   "SignID": "C-Alternate-Parking",
+   "Name": "ALTERNATE PARKING",
+   "Category": "C",
+   "Group": "Prohibition or restriction of standing and parking",
+   "Effect": {
+    "Behaviour": "AlternateParking",
+    "Rule": "VC68-23-3"
+   }
+  },
+  {
+   "SignID": "D-Direction-To-Be-Followed",
+   "Name": "DIRECTION TO BE FOLLOWED",
+   "Category": "D",
+   "Group": "Mandatory signs",
+   "Effect": {
+    "Behaviour": "MandatoryDirection",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "D-Pass-This-Side",
+   "Name": "PASS THIS SIDE",
+   "Category": "D",
+   "Group": "Mandatory signs",
+   "Effect": {
+    "Behaviour": "PassThisSide",
+    "Rule": "VC68-22"
+   }
+  },
+  {
+   "SignID": "D-Compulsory-Roundabout",
+   "Name": "COMPULSORY ROUNDABOUT",
+   "Category": "D",
+   "Group": "Mandatory signs",
+   "Effect": {
+    "Behaviour": "MandatoryDirection",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "D-Compulsory-Cycle-Track",
+   "Name": "COMPULSORY CYCLE TRACK",
+   "Category": "D",
+   "Group": "Mandatory signs",
+   "Effect": {
+    "Behaviour": "ReservedTrack",
+    "AppliesToCategory": "cycles",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "D-Compulsory-Footpath",
+   "Name": "COMPULSORY FOOTPATH",
+   "Category": "D",
+   "Group": "Mandatory signs",
+   "Effect": {
+    "Behaviour": "ReservedTrack",
+    "AppliesToCategory": "pedestrians",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "D-Compulsory-Track-For-Riders-On-Horseback",
+   "Name": "COMPULSORY TRACK FOR RIDERS ON HORSEBACK",
+   "Category": "D",
+   "Group": "Mandatory signs",
+   "Effect": {
+    "Behaviour": "ReservedTrack",
+    "AppliesToCategory": "riders",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "D-Compulsory-Minimum-Speed",
+   "Name": "COMPULSORY MINIMUM SPEED",
+   "Category": "D",
+   "Group": "Mandatory signs",
+   "Effect": {
+    "Behaviour": "MinimumSpeed",
+    "Value": "from the sign",
+    "Rule": "VC68-13-5"
+   }
+  },
+  {
+   "SignID": "D-End-Of-Compulsory-Minimum-Speed",
+   "Name": "END OF COMPULSORY MINIMUM SPEED",
+   "Category": "D",
+   "Group": "Mandatory signs",
+   "Effect": {
+    "Behaviour": "EndOfMinimumSpeed",
+    "Rule": "VC68-13-5"
+   }
+  },
+  {
+   "SignID": "D-Snow-Chains-Compulsory",
+   "Name": "SNOW CHAINS COMPULSORY",
+   "Category": "D",
+   "Group": "Mandatory signs",
+   "Effect": {
+    "Behaviour": "Equipment",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "D-Compulsory-Direction-For-Vehicles-Carrying-Dangerous-Goods",
+   "Name": "Compulsory direction for vehicles carrying dangerous goods",
+   "Category": "D",
+   "Group": "Mandatory signs",
+   "Effect": {
+    "Behaviour": "MandatoryDirection",
+    "AppliesToCategory": "dangerous goods",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "E-Compulsory-Minimum-Speed-Applying-To-Different-Lanes",
+   "Name": "COMPULSORY MINIMUM SPEED APPLYING TO DIFFERENT LANES",
+   "Category": "E",
+   "Group": "Special regulation signs",
+   "Effect": {
+    "Behaviour": "MinimumSpeedPerLane",
+    "Rule": "VC68-13-5"
+   }
+  },
+  {
+   "SignID": "E-Compulsory-Minimum-Speed-Applying-To-One-Lane",
+   "Name": "COMPULSORY MINIMUM SPEED APPLYING TO ONE LANE",
+   "Category": "E",
+   "Group": "Special regulation signs",
+   "Effect": {
+    "Behaviour": "MinimumSpeedPerLane",
+    "Rule": "VC68-13-5"
+   }
+  },
+  {
+   "SignID": "E-Speed-Limits-Applying-To-Different-Lanes",
+   "Name": "SPEED LIMITS APPLYING TO DIFFERENT LANES",
+   "Category": "E",
+   "Group": "Special regulation signs",
+   "Effect": {
+    "Behaviour": "SpeedLimitPerLane",
+    "Rule": "VC68-13-5"
+   }
+  },
+  {
+   "SignID": "E-Lane-Reserved-For-Buses",
+   "Name": "Lane reserved for buses",
+   "Category": "E",
+   "Group": "Special regulation signs",
+   "Effect": {
+    "Behaviour": "ReservedLane",
+    "AppliesToCategory": "buses",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "E-One-Way",
+   "Name": "ONE-WAY",
+   "Category": "E",
+   "Group": "Special regulation signs",
+   "Effect": {
+    "Behaviour": "OneWay",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "E-Preselection",
+   "Name": "Preselection",
+   "Category": "E",
+   "Group": "Special regulation signs",
+   "Effect": {
+    "Behaviour": "LanePreselection",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "E-Motorway",
+   "Name": "MOTORWAY",
+   "Category": "E",
+   "Group": "Special regulation signs",
+   "Effect": {
+    "Behaviour": "MotorwayStart",
+    "Rule": "VC68-25-1"
+   }
+  },
+  {
+   "SignID": "E-End-Of-Motorway",
+   "Name": "END OF MOTORWAY",
+   "Category": "E",
+   "Group": "Special regulation signs",
+   "Effect": {
+    "Behaviour": "MotorwayEnd",
+    "Rule": "VC68-25-1"
+   }
+  },
+  {
+   "SignID": "E-Road-For-Motor-Vehicles",
+   "Name": "ROAD FOR MOTOR VEHICLES",
+   "Category": "E",
+   "Group": "Special regulation signs",
+   "Effect": {
+    "Behaviour": "MotorwayStart",
+    "Rule": "VC68-25-1"
+   }
+  },
+  {
+   "SignID": "E-End-Of-Road-For-Motor-Vehicles",
+   "Name": "END OF ROAD FOR MOTOR VEHICLES",
+   "Category": "E",
+   "Group": "Special regulation signs",
+   "Effect": {
+    "Behaviour": "MotorwayEnd",
+    "Rule": "VC68-25-1"
+   }
+  },
+  {
+   "SignID": "E-Beginning-Of-A-Built-Up-Area",
+   "Name": "Beginning of a built-up area",
+   "Category": "E",
+   "Group": "Special regulation signs",
+   "Effect": {
+    "Behaviour": "BuiltUpAreaStart",
+    "Rule": "VC68-13-5"
+   }
+  },
+  {
+   "SignID": "E-End-Of-A-Built-Up-Area",
+   "Name": "End of a built-up area",
+   "Category": "E",
+   "Group": "Special regulation signs",
+   "Effect": {
+    "Behaviour": "BuiltUpAreaEnd",
+    "Rule": "VC68-13-5"
+   }
+  },
+  {
+   "SignID": "E-Zone",
+   "Name": "ZONE",
+   "Category": "E",
+   "Group": "Special regulation signs"
+  },
+  {
+   "SignID": "E-Zone-In-Which-Parking-Is-Prohibited",
+   "Name": "Zone in which parking is prohibited",
+   "Category": "E",
+   "Group": "Special regulation signs",
+   "Effect": {
+    "Behaviour": "NoParking",
+    "Zonal": true,
+    "Rule": "VC68-23-3"
+   }
+  },
+  {
+   "SignID": "E-Zone-In-Which-Parking-Is-Prohibited-At-Certain-Times",
+   "Name": "Zone in which parking is prohibited at certain times",
+   "Category": "E",
+   "Group": "Special regulation signs",
+   "Effect": {
+    "Behaviour": "NoParking",
+    "Zonal": true,
+    "Rule": "VC68-23-3"
+   }
+  },
+  {
+   "SignID": "E-Parking-Zone",
+   "Name": "Parking zone",
+   "Category": "E",
+   "Group": "Special regulation signs"
+  },
+  {
+   "SignID": "E-Maximum-Speed-Zone",
+   "Name": "Maximum speed zone",
+   "Category": "E",
+   "Group": "Special regulation signs",
+   "Effect": {
+    "Behaviour": "SpeedLimit",
+    "Zonal": true,
+    "Value": "from the sign",
+    "Rule": "VC68-13-5"
+   }
+  },
+  {
+   "SignID": "E-End-Of-Zone-In-Which-Parking-Is-Prohibited",
+   "Name": "End of zone in which parking is prohibited",
+   "Category": "E",
+   "Group": "Special regulation signs"
+  },
+  {
+   "SignID": "E-End-Of-Zone-In-Which-Parking-Is-Prohibited-At-Certain-Times",
+   "Name": "End of zone in which parking is prohibited at certain times",
+   "Category": "E",
+   "Group": "Special regulation signs"
+  },
+  {
+   "SignID": "E-End-Of-Parking-Zone",
+   "Name": "End of parking zone",
+   "Category": "E",
+   "Group": "Special regulation signs"
+  },
+  {
+   "SignID": "E-End-Of-Maximum-Speed-Zone",
+   "Name": "End of maximum speed zone",
+   "Category": "E",
+   "Group": "Special regulation signs",
+   "Effect": {
+    "Behaviour": "EndOfSpeedLimit",
+    "Zonal": true,
+    "Rule": "VC68-13-5"
+   }
+  },
+  {
+   "SignID": "E-Tunnel",
+   "Name": "TUNNEL",
+   "Category": "E",
+   "Group": "Special regulation signs",
+   "Effect": {
+    "Behaviour": "TunnelStart",
+    "Rule": "VC68-32"
+   }
+  },
+  {
+   "SignID": "E-End-Of-Tunnel",
+   "Name": "END OF TUNNEL",
+   "Category": "E",
+   "Group": "Special regulation signs"
+  },
+  {
+   "SignID": "E-Pedestrian-Crossing",
+   "Name": "PEDESTRIAN CROSSING",
+   "Category": "E",
+   "Group": "Special regulation signs",
+   "Effect": {
+    "Behaviour": "PedestrianCrossing",
+    "Rule": "VC68-21-1b"
+   }
+  },
+  {
+   "SignID": "E-Hospital",
+   "Name": "HOSPITAL",
+   "Category": "E",
+   "Group": "Special regulation signs"
+  },
+  {
+   "SignID": "E-Parking",
+   "Name": "PARKING",
+   "Category": "E",
+   "Group": "Special regulation signs"
+  },
+  {
+   "SignID": "E-Bus-Stop",
+   "Name": "BUS STOP",
+   "Category": "E",
+   "Group": "Special regulation signs",
+   "Effect": {
+    "Behaviour": "BusStop",
+    "Rule": "VC68-21-2"
+   }
+  },
+  {
+   "SignID": "E-Tramway-Stop",
+   "Name": "TRAMWAY STOP",
+   "Category": "E",
+   "Group": "Special regulation signs",
+   "Effect": {
+    "Behaviour": "TramStop",
+    "Rule": "VC68-21-2"
+   }
+  },
+  {
+   "SignID": "E-Emergency-Stopping-Place",
+   "Name": "EMERGENCY STOPPING PLACE",
+   "Category": "E",
+   "Group": "Special regulation signs"
+  },
+  {
+   "SignID": "F-First-Aid-Station",
+   "Name": "FIRST-AID STATION",
+   "Category": "F",
+   "Group": "Information, facilities or service signs"
+  },
+  {
+   "SignID": "F-Breakdown-Service",
+   "Name": "BREAKDOWN SERVICE",
+   "Category": "F",
+   "Group": "Information, facilities or service signs"
+  },
+  {
+   "SignID": "F-Telephone",
+   "Name": "TELEPHONE",
+   "Category": "F",
+   "Group": "Information, facilities or service signs"
+  },
+  {
+   "SignID": "F-Filling-Station",
+   "Name": "FILLING STATION",
+   "Category": "F",
+   "Group": "Information, facilities or service signs"
+  },
+  {
+   "SignID": "F-Hotel-Or-Motel",
+   "Name": "HOTEL or MOTEL",
+   "Category": "F",
+   "Group": "Information, facilities or service signs"
+  },
+  {
+   "SignID": "F-Restaurant",
+   "Name": "RESTAURANT",
+   "Category": "F",
+   "Group": "Information, facilities or service signs"
+  },
+  {
+   "SignID": "F-Refreshments-Or-Cafeteria",
+   "Name": "REFRESHMENTS OR CAFETERIA",
+   "Category": "F",
+   "Group": "Information, facilities or service signs"
+  },
+  {
+   "SignID": "F-Picnic-Site",
+   "Name": "PICNIC SITE",
+   "Category": "F",
+   "Group": "Information, facilities or service signs"
+  },
+  {
+   "SignID": "F-Starting-Point-For-Walks",
+   "Name": "STARTING-POINT FOR WALKS",
+   "Category": "F",
+   "Group": "Information, facilities or service signs"
+  },
+  {
+   "SignID": "F-Camping-Site",
+   "Name": "CAMPING SITE",
+   "Category": "F",
+   "Group": "Information, facilities or service signs"
+  },
+  {
+   "SignID": "F-Caravan-Site",
+   "Name": "CARAVAN SITE",
+   "Category": "F",
+   "Group": "Information, facilities or service signs"
+  },
+  {
+   "SignID": "F-Camping-And-Caravan-Site",
+   "Name": "CAMPING AND CARAVAN SITE",
+   "Category": "F",
+   "Group": "Information, facilities or service signs"
+  },
+  {
+   "SignID": "F-Youth-Hostel",
+   "Name": "YOUTH HOSTEL",
+   "Category": "F",
+   "Group": "Information, facilities or service signs"
+  },
+  {
+   "SignID": "F-Emergency-Telephone",
+   "Name": "EMERGENCY TELEPHONE",
+   "Category": "F",
+   "Group": "Information, facilities or service signs"
+  },
+  {
+   "SignID": "F-Extinguisher",
+   "Name": "EXTINGUISHER",
+   "Category": "F",
+   "Group": "Information, facilities or service signs"
+  },
+  {
+   "SignID": "G-Advance-Direction-Sign",
+   "Name": "Advance direction sign",
+   "Category": "G",
+   "Group": "Direction, position or indication signs"
+  },
+  {
+   "SignID": "G-No-Through-Road",
+   "Name": "NO THROUGH ROAD",
+   "Category": "G",
+   "Group": "Direction, position or indication signs"
+  },
+  {
+   "SignID": "G-Direction-Sign",
+   "Name": "Direction sign",
+   "Category": "G",
+   "Group": "Direction, position or indication signs"
+  },
+  {
+   "SignID": "G-Road-Identification-Sign",
+   "Name": "Road identification sign",
+   "Category": "G",
+   "Group": "Direction, position or indication signs"
+  },
+  {
+   "SignID": "G-Place-Identification-Sign",
+   "Name": "Place identification sign",
+   "Category": "G",
+   "Group": "Direction, position or indication signs"
+  },
+  {
+   "SignID": "G-Confirmatory-Sign",
+   "Name": "Confirmatory sign",
+   "Category": "G",
+   "Group": "Direction, position or indication signs"
+  },
+  {
+   "SignID": "G-Number-And-Direction-Of-Traffic-Lanes",
+   "Name": "Number and direction of traffic lanes",
+   "Category": "G",
+   "Group": "Direction, position or indication signs"
+  },
+  {
+   "SignID": "G-Closure-Of-A-Traffic-Lane",
+   "Name": "Closure of a traffic lane",
+   "Category": "G",
+   "Group": "Direction, position or indication signs",
+   "Effect": {
+    "Behaviour": "LaneClosed",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "G-General-Speed-Limits",
+   "Name": "GENERAL SPEED LIMITS",
+   "Category": "G",
+   "Group": "Direction, position or indication signs",
+   "Effect": {
+    "Behaviour": "InformsSpeedLimits",
+    "Rule": "VC68-13-5"
+   }
+  },
+  {
+   "SignID": "G-Road-Open-Or-Closed",
+   "Name": "ROAD OPEN OR CLOSED",
+   "Category": "G",
+   "Group": "Direction, position or indication signs",
+   "Effect": {
+    "Behaviour": "RoadOpenOrClosed",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "G-Chains-Or-Snow-Tyres-Recommended",
+   "Name": "CHAINS OR SNOW TYRES RECOMMENDED",
+   "Category": "G",
+   "Group": "Direction, position or indication signs"
+  },
+  {
+   "SignID": "G-Open-As-Far-As",
+   "Name": "OPEN AS FAR AS",
+   "Category": "G",
+   "Group": "Direction, position or indication signs"
+  },
+  {
+   "SignID": "G-Advisory-Speed",
+   "Name": "ADVISORY SPEED",
+   "Category": "G",
+   "Group": "Direction, position or indication signs",
+   "Effect": {
+    "Behaviour": "AdvisorySpeed",
+    "Rule": "VC68-13-1"
+   }
+  },
+  {
+   "SignID": "G-Advised-Itinerary-For-Heavy-Vehicles",
+   "Name": "ADVISED ITINERARY FOR HEAVY VEHICLES",
+   "Category": "G",
+   "Group": "Direction, position or indication signs"
+  },
+  {
+   "SignID": "G-Escape-Lane",
+   "Name": "ESCAPE LANE",
+   "Category": "G",
+   "Group": "Direction, position or indication signs"
+  },
+  {
+   "SignID": "G-Pedestrian-Overpass-Or-Underpass",
+   "Name": "Pedestrian overpass or underpass",
+   "Category": "G",
+   "Group": "Direction, position or indication signs"
+  },
+  {
+   "SignID": "G-Exit-From-A-Motorway",
+   "Name": "Exit from a motorway",
+   "Category": "G",
+   "Group": "Direction, position or indication signs"
+  },
+  {
+   "SignID": "G-Emergency-Exit",
+   "Name": "Emergency exit",
+   "Category": "G",
+   "Group": "Direction, position or indication signs"
+  },
+  {
+   "SignID": "H-Additional-Panel",
+   "Name": "Additional panel",
+   "Category": "H",
+   "Group": "Additional panels",
+   "Effect": {
+    "Behaviour": "QualifiesSign"
+   }
+  },
+  {
+   "SignID": "Lights-Green",
+   "Name": "Green",
+   "Category": "Lights",
+   "Group": "Traffic light signals for vehicular traffic",
+   "Effect": {
+    "Behaviour": "Proceed",
+    "Rule": "VC68-5-2"
+   }
+  },
+  {
+   "SignID": "Lights-Amber",
+   "Name": "Amber",
+   "Category": "Lights",
+   "Group": "Traffic light signals for vehicular traffic",
+   "Effect": {
+    "Behaviour": "StopUnlessUnsafe",
+    "Rule": "VC68-5-2"
+   }
+  },
+  {
+   "SignID": "Lights-Red",
+   "Name": "Red",
+   "Category": "Lights",
+   "Group": "Traffic light signals for vehicular traffic",
+   "Effect": {
+    "Behaviour": "Stop",
+    "Rule": "VC68-5-2"
+   }
+  },
+  {
+   "SignID": "Lights-Arrows",
+   "Name": "Arrows",
+   "Category": "Lights",
+   "Group": "Traffic light signals for vehicular traffic",
+   "Effect": {
+    "Behaviour": "ProceedInDirection",
+    "Rule": "VC68-5-2"
+   }
+  },
+  {
+   "SignID": "Lights-Lights-Placed-On-Lanes",
+   "Name": "Lights placed on lanes",
+   "Category": "Lights",
+   "Group": "Traffic light signals for vehicular traffic",
+   "Effect": {
+    "Behaviour": "LaneOpenOrClosed",
+    "Rule": "VC68-5-2"
+   }
+  },
+  {
+   "SignID": "Lights-Red-Flashing-Light-Or-Two-Red-Lights-Flashing-Alternately",
+   "Name": "Red flashing light, or two red lights flashing alternately",
+   "Category": "Lights",
+   "Group": "Traffic light signals for vehicular traffic",
+   "Effect": {
+    "Behaviour": "Stop",
+    "Rule": "VC68-19"
+   }
+  },
+  {
+   "SignID": "Lights-Amber-Flashing-Light-Or-Two-Amber-Lights-Flashing-Alternately",
+   "Name": "Amber flashing light, or two amber lights flashing alternately",
+   "Category": "Lights",
+   "Group": "Traffic light signals for vehicular traffic",
+   "Effect": {
+    "Behaviour": "ProceedWithCaution",
+    "Rule": "VC68-5-2"
+   }
+  },
+  {
+   "SignID": "Markings-Single-Continuous-Line",
+   "Name": "Single continuous line",
+   "Category": "Markings",
+   "Group": "Road markings",
+   "Effect": {
+    "Behaviour": "NoCrossingLine",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "Markings-Double-Continuous-Line",
+   "Name": "Double continuous line",
+   "Category": "Markings",
+   "Group": "Road markings",
+   "Effect": {
+    "Behaviour": "NoCrossingLine",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "Markings-Broken-Line",
+   "Name": "Broken line",
+   "Category": "Markings",
+   "Group": "Road markings",
+   "Effect": {
+    "Behaviour": "MayCrossLine",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "Markings-Double-Broken-Line",
+   "Name": "Double broken line",
+   "Category": "Markings",
+   "Group": "Road markings",
+   "Effect": {
+    "Behaviour": "ReversibleLaneLine",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "Markings-Zigzag-Line",
+   "Name": "Zigzag line",
+   "Category": "Markings",
+   "Group": "Road markings",
+   "Effect": {
+    "Behaviour": "NoParking",
+    "Rule": "VC68-23-3"
+   }
+  },
+  {
+   "SignID": "Markings-Stop-Line",
+   "Name": "Stop line",
+   "Category": "Markings",
+   "Group": "Road markings",
+   "Effect": {
+    "Behaviour": "StopHere",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "Markings-Give-Way-Line",
+   "Name": "Give way line",
+   "Category": "Markings",
+   "Group": "Road markings",
+   "Effect": {
+    "Behaviour": "GiveWayHere",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "Markings-Arrow",
+   "Name": "Arrow",
+   "Category": "Markings",
+   "Group": "Road markings",
+   "Effect": {
+    "Behaviour": "ProceedInDirection",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "Markings-Parallel-Stripes",
+   "Name": "Parallel stripes",
+   "Category": "Markings",
+   "Group": "Road markings",
+   "Effect": {
+    "Behaviour": "PedestrianCrossing",
+    "Rule": "VC68-21-1b"
+   }
+  },
+  {
+   "SignID": "Markings-Oblique-Stripes",
+   "Name": "Oblique stripes",
+   "Category": "Markings",
+   "Group": "Road markings",
+   "Effect": {
+    "Behaviour": "NoDriving",
+    "Rule": "VC68-5-1"
+   }
+  },
+  {
+   "SignID": "Markings-Inscriptions",
+   "Name": "Inscriptions",
+   "Category": "Markings",
+   "Group": "Road markings"
+  },
+  {
+   "SignID": "Works-Barrier-Painted-With-Alternate-Coloured-Stripes",
+   "Name": "Barrier painted with alternate-coloured stripes",
+   "Category": "Works",
+   "Group": "Signs for road works",
+   "Effect": {
+    "Behaviour": "RoadWorks",
+    "Rule": "VC68-34-4"
+   }
+  },
+  {
+   "SignID": "Works-Lights-Or-Devices-Marking-Road-Works",
+   "Name": "Lights or devices marking road works",
+   "Category": "Works",
+   "Group": "Signs for road works",
+   "Effect": {
+    "Behaviour": "RoadWorks",
+    "Rule": "VC68-34-4"
+   }
+  },
+  {
+   "SignID": "LevelCrossing-Red-Flashing-Light-At-A-Level-Crossing",
+   "Name": "Red flashing light at a level-crossing",
+   "Category": "LevelCrossing",
+   "Group": "Level-crossing signals",
+   "Effect": {
+    "Behaviour": "Stop",
+    "Rule": "VC68-19"
+   }
+  },
+  {
+   "SignID": "LevelCrossing-Sound-Signal-At-A-Level-Crossing",
+   "Name": "Sound signal at a level-crossing",
+   "Category": "LevelCrossing",
+   "Group": "Level-crossing signals",
+   "Effect": {
+    "Behaviour": "Stop",
+    "Rule": "VC68-19"
+   }
+  }
+ ]
+}
