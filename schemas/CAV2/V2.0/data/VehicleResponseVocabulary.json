@@ -13,7 +13,9 @@
     "CAVID":                        { "type": "string", "description": "Identifier of the CAV whose responses are described." },
     "Surface":                      { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/SurfaceResponse" },
                                       "description": "What the CAV did on each type of road surface it was measured on." },
-    "DescrMetadata":                { "type": "string", "maxLength": 2048, "description": "Human-readable descriptive metadata of the Vehicle Response Vocabulary (plain text, max 2048 characters)." } },
+    "DataXMData":                   { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json",
+                                      "description": "MPAI-PTF Data Exchange Metadata providing provenance, authorisation, legal, security, and confidence information associated with this Vehicle Response Vocabulary instance in a trusted data exchange context." },
+    "DescrMetadata":               { "type": "string", "maxLength": 2048, "description": "Human-readable descriptive metadata of the Vehicle Response Vocabulary (plain text, max 2048 characters)." } },
 
   "$defs":                          {
 
