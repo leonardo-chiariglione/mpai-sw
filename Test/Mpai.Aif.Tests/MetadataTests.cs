@@ -47,9 +47,18 @@ public class MetadataTests
     {
         var schema = AimMetadataSchema.Load(Repository.Schemas);
 
+        // Only the latest version of a standard (the author, 2026-11-19: "as we have MAS V1.1 that is the schema that you should use"): a published version kept
+        // beside a newer one (MAS V1.0) keeps its own Header and is not an L2 of AIF V3.0.
+        static Version? VersionOf(string dir) => Path.GetFileName(dir) is { Length: > 1 } v && v[0] == 'V' && Version.TryParse(v[1..], out var x) ? x : null;
+        var latest = Directory.EnumerateDirectories(Repository.Schemas, "AIMs", SearchOption.AllDirectories)
+            .Select(Path.GetDirectoryName).OfType<string>()
+            .GroupBy(d => Path.GetDirectoryName(d)!, StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.OrderByDescending(d => VersionOf(d) ?? new Version(0, 0)).First())
+            .Select(d => Path.Combine(d, "AIMs")).ToHashSet(StringComparer.OrdinalIgnoreCase);
+
         var result = new Dictionary<string, string>();
         foreach (var file in Directory.EnumerateFiles(Repository.Schemas, "*.json", SearchOption.AllDirectories)
-                                      .Where(f => Path.GetFileName(Path.GetDirectoryName(f)) == "AIMs")
+                                      .Where(f => Path.GetFileName(Path.GetDirectoryName(f)) == "AIMs" && latest.Contains(Path.GetDirectoryName(f)!))
                                       .Order(StringComparer.Ordinal))
         {
             var name = Path.GetRelativePath(Repository.Schemas, file).Replace(Path.DirectorySeparatorChar, '/');
@@ -79,7 +88,7 @@ public class MetadataTests
         var conformance = new L2Conformance(Repository.Schemas, FindL3);
 
         var result = new Dictionary<string, string>();
-        foreach (var file in L3Files())
+        foreach (var file in LatestL3Files())
         {
             using var doc = JsonDocument.Parse(File.ReadAllText(file));
             var found = conformance.Check(doc.RootElement);
@@ -479,6 +488,16 @@ public class MetadataTests
 
     internal static IEnumerable<string> L3Files() =>
         Directory.EnumerateFiles(Repository.Amds, "*.json").OrderBy(f => f, StringComparer.Ordinal);
+
+    // The L3s of the latest version of each AIM: of 1MAS-APP-V1.0-I01 and 1MAS-APP-V1.1-I01 only the V1.1 one (the author, 2026-11-19: "as we have MAS V1.1 that is
+    // the schema that you should use"); the L3 of a published version kept beside a newer one has an L2 that is not in the AIF V3.0 format.
+    internal static IEnumerable<string> LatestL3Files()
+    {
+        var name = new System.Text.RegularExpressions.Regex(@"^(?<aim>.+)-V(?<v>[0-9]+(\.[0-9]+)*)-(?<inst>I[0-9]+)$");
+        return L3Files().GroupBy(f => name.Match(Path.GetFileNameWithoutExtension(f)) is { Success: true } m ? m.Groups["aim"].Value + "|" + m.Groups["inst"].Value : f)
+            .Select(g => g.OrderByDescending(f => name.Match(Path.GetFileNameWithoutExtension(f)) is { Success: true } m ? Version.Parse(m.Groups["v"].Value) : new Version(0, 0)).First())
+            .OrderBy(f => f, StringComparer.Ordinal);
+    }
 
     internal static JsonNode? TryParse(string file)
     {

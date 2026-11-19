@@ -8,7 +8,7 @@
   "AIMType": "MMC-CPS-V2.5",
   "APIProfile": "Basic",
   "OnDegraded": "Continue",
-  "Description": "Conversation with Personal Status: a conversation with a machine that takes the personal status of the person into account. The Multimodal Frontend Description gives what the microphone and the camera deliver as Speech, Face, Body and other Visual Objects and the Visual Scene Descriptors; Visual Instance Identification gives the Identifiers of the Visual Instances; Automatic Speech Recognition gives the Recognised Text; Natural Language Understanding understands the Text with the Identifiers; Personal Status Extraction gives the Personal Status of the person from the Face, Body, Speech and Text; Entity Dialogue Processing gives the Machine Text and the Machine Personal Status; Portable Avatar Multiplexing gives the Portable Avatar.",
+  "Description": "Conversation with Personal Status: a conversation with a machine that takes the personal status of the person into account. The Multimodal Frontend Description gives what the microphone and the camera deliver as Speech, Face, Body and other Visual Objects and the Visual Scene Descriptors; Entity Body Description gives the Body Descriptors of the Body Object; Visual Object Identification gives the Instance ID of the Visual Object the person indicates from the Body Descriptors, the Visual Objects and the Visual Scene Descriptors; Automatic Speech Recognition gives the Recognised Text; Natural Language Understanding understands the Input Text and the Recognised Text with the Instance ID and gives the Text Descriptors and the Refined Text; Personal Status Extraction gives the Personal Status of the person from the Face, Body and Speech Objects and the Text Descriptors; Entity Dialogue Processing gives the Machine Text and the Machine Personal Status; Portable Avatar Multiplexing gives the Portable Avatar.",
   "InternalTypes": [
     {
       "Name": "RecognisedText",
@@ -100,8 +100,16 @@
     {
       "Identifier": {
         "ImplementerID": "1",
-        "ImplementationID": "CVE-VII-V1.0-I01",
-        "AIMInstID": "1CVE-VII-V1.0-I01",
+        "ImplementationID": "PAF-EBD-V1.6-I01",
+        "AIMInstID": "1PAF-EBD-V1.6-I01",
+        "Relation": "Internal"
+      }
+    },
+    {
+      "Identifier": {
+        "ImplementerID": "1",
+        "ImplementationID": "CVE-VOI-V1.0-I01",
+        "AIMInstID": "1CVE-VOI-V1.0-I01",
         "Relation": "Internal"
       }
     },
@@ -219,8 +227,18 @@
         "PortNumber": 2
       },
       "Input": {
-        "AIMInstID": "1CVE-VII-V1.0-I01",
+        "AIMInstID": "1PAF-EBD-V1.6-I01",
         "DataType": "OSD-BVO-V1.5"
+      }
+    },
+    {
+      "Output": {
+        "AIMInstID": "1PAF-EBD-V1.6-I01",
+        "DataType": "PAF-BDO-V1.6"
+      },
+      "Input": {
+        "AIMInstID": "1CVE-VOI-V1.0-I01",
+        "DataType": "PAF-BDO-V1.6"
       }
     },
     {
@@ -230,7 +248,7 @@
         "PortNumber": 3
       },
       "Input": {
-        "AIMInstID": "1CVE-VII-V1.0-I01",
+        "AIMInstID": "1CVE-VOI-V1.0-I01",
         "DataType": "OSD-BVO-V1.5"
       }
     },
@@ -240,7 +258,7 @@
         "DataType": "OSD-BVS-V1.5"
       },
       "Input": {
-        "AIMInstID": "1CVE-VII-V1.0-I01",
+        "AIMInstID": "1CVE-VOI-V1.0-I01",
         "DataType": "OSD-BVS-V1.5"
       }
     },
@@ -280,7 +298,7 @@
     },
     {
       "Output": {
-        "AIMInstID": "1CVE-VII-V1.0-I01",
+        "AIMInstID": "1CVE-VOI-V1.0-I01",
         "DataType": "OSD-IID-V1.5"
       },
       "Input": {
@@ -306,6 +324,16 @@
         "DataType": "MMC-TDO-V2.5"
       },
       "Input": {
+        "AIMInstID": "1MMC-PSE-V2.5-I02",
+        "DataType": "MMC-TDO-V2.5"
+      }
+    },
+    {
+      "Output": {
+        "AIMInstID": "1MMC-NLU-V2.5-I01",
+        "DataType": "MMC-TDO-V2.5"
+      },
+      "Input": {
         "AIMInstID": "1MMC-EDP-V2.5-I01",
         "DataType": "MMC-TDO-V2.5"
       }
@@ -319,6 +347,17 @@
         "AIMInstID": "1MMC-EDP-V2.5-I01",
         "DataType": "OSD-IID-V1.5",
         "PortNumber": 2
+      }
+    },
+    {
+      "Output": {
+        "AIMInstID": "1MMC-NLU-V2.5-I01",
+        "DataType": "OSD-BTO-V1.5"
+      },
+      "Input": {
+        "AIMInstID": "1MMC-EDP-V2.5-I01",
+        "DataType": "OSD-BTO-V1.5",
+        "PortNumber": 3
       }
     },
     {

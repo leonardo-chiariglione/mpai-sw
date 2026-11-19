@@ -7,7 +7,7 @@
   "Header": "AIF-AMM-V3.0",
   "AIMType": "HMC-ECU-V2.2",
   "APIProfile": "Basic",
-  "Description": "Entity and Context Understanding: Automatic Speech Recognition recognises the Speech Object; Visual Instance Identification gives the Identifiers of the Visual Instances, the Entity ID among them, and passes the Visual Scene Descriptors on;  Audio Instance Identification gives the Identifier of the Audio Instance, both from the Scene Descriptors; Natural Language Understanding produces the Text Descriptors and the Refined Text; Personal Status Extraction gives the Personal Status of the Entity from the Face, Body, Speech and Text Objects. Multimodal Scene Multiplexing combines the Visual and the Audio Scene Descriptors into the Multimodal Scene Descriptors.",
+  "Description": "Entity and Context Understanding: Automatic Speech Recognition recognises the Speech Object; Natural Language Understanding produces the Text Descriptors and the Refined Text; Personal Status Extraction gives the Personal Status of the Entity from the Face, Body, Speech and Text Objects; Entity Body Description gives the Body Descriptors of the Body Object; Visual Object Identification gives the Visual Instance ID and the Entity ID from the Body Descriptors, the Visual Objects and the Visual Scene Descriptors; Audio Instance Identification gives the Audio Instance ID from the Audio Objects and the Audio Scene Descriptors; Multimodal Scene Multiplexing combines the Visual and the Audio Scene Descriptors into the Multimodal Scene Descriptors.",
   "InternalTypes": [
     {
       "Name": "RecognisedText",
@@ -176,8 +176,16 @@
     {
       "Identifier": {
         "ImplementerID": "1",
-        "ImplementationID": "CVE-VII-V1.0-I01",
-        "AIMInstID": "1CVE-VII-V1.0-I01",
+        "ImplementationID": "PAF-EBD-V1.6-I01",
+        "AIMInstID": "1PAF-EBD-V1.6-I01",
+        "Relation": "Internal"
+      }
+    },
+    {
+      "Identifier": {
+        "ImplementerID": "1",
+        "ImplementationID": "CVE-VOI-V1.0-I01",
+        "AIMInstID": "1CVE-VOI-V1.0-I01",
         "Relation": "Internal"
       }
     },
@@ -267,8 +275,18 @@
         "PortNumber": 2
       },
       "Input": {
-        "AIMInstID": "1CVE-VII-V1.0-I01",
+        "AIMInstID": "1PAF-EBD-V1.6-I01",
         "DataType": "OSD-BVO-V1.5"
+      }
+    },
+    {
+      "Output": {
+        "AIMInstID": "1PAF-EBD-V1.6-I01",
+        "DataType": "PAF-BDO-V1.6"
+      },
+      "Input": {
+        "AIMInstID": "1CVE-VOI-V1.0-I01",
+        "DataType": "PAF-BDO-V1.6"
       }
     },
     {
@@ -278,7 +296,7 @@
         "PortNumber": 3
       },
       "Input": {
-        "AIMInstID": "1CVE-VII-V1.0-I01",
+        "AIMInstID": "1CVE-VOI-V1.0-I01",
         "DataType": "OSD-BVO-V1.5"
       }
     },
@@ -288,13 +306,13 @@
         "DataType": "OSD-BVS-V1.5"
       },
       "Input": {
-        "AIMInstID": "1CVE-VII-V1.0-I01",
+        "AIMInstID": "1CVE-VOI-V1.0-I01",
         "DataType": "OSD-BVS-V1.5"
       }
     },
     {
       "Output": {
-        "AIMInstID": "1CVE-VII-V1.0-I01",
+        "AIMInstID": "",
         "DataType": "OSD-BVS-V1.5"
       },
       "Input": {
@@ -417,7 +435,7 @@
     },
     {
       "Output": {
-        "AIMInstID": "1CVE-VII-V1.0-I01",
+        "AIMInstID": "1CVE-VOI-V1.0-I01",
         "DataType": "OSD-IID-V1.5"
       },
       "Input": {
@@ -428,7 +446,7 @@
     },
     {
       "Output": {
-        "AIMInstID": "1CVE-VII-V1.0-I01",
+        "AIMInstID": "1CVE-VOI-V1.0-I01",
         "DataType": "OSD-IID-V1.5"
       },
       "Input": {

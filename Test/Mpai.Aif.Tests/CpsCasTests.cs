@@ -43,14 +43,21 @@ public class CpsCasTests
         static string[] Subs(string name) => JsonNode.Parse(File.ReadAllText(Path.Combine(Repository.Amds, name + ".json")))!["SubAIMs"]!.AsArray()
             .Select(s => System.Text.RegularExpressions.Regex.Replace(s!["Identifier"]!["ImplementationID"]!.GetValue<string>(), @"-V\d.*$", "")).ToArray();
 
-        // Conversation with Personal Status is made around the Multimodal Frontend Description: every one of its Sub-AIMs has code.
-        Assert.Equal(new[] { "OSD-MFD", "CVE-VII", "MMC-ASR", "MMC-NLU", "MMC-PSE", "MMC-EDP", "PAF-PMX" }, Subs("1MMC-CPS-V2.5-I01"));
-
-        // Conversation About a Scene still has two Sub-AIMs with no code, and says so.
-        var cas = JsonNode.Parse(File.ReadAllText(Path.Combine(Repository.Amds, "1MMC-CAS-V2.5-I01.json")))!;
-        Assert.Equal(new[] { "MMC-ASR", "MMC-NLU", "MMC-PSE", "MMC-EDP", "PAF-PMX" }, Subs("1MMC-CAS-V2.5-I01"));
-        var description = cas["Description"]!.GetValue<string>();
-        Assert.Contains("OSD-BMS-V1.5", description); Assert.Contains("CVE-DVI-V1.0", description); Assert.Contains("have no code", description);
+        // Conversation with Personal Status and Conversation About a Scene have the same front end (decks of 2026-11-15): the Multimodal Frontend Description, then
+        // Entity Body Description and Visual Object Identification (they replace Visual Instance Identification); every AIM under them has code.
+        string[] front = ["OSD-MFD", "PAF-EBD", "CVE-VOI", "MMC-ASR", "MMC-NLU", "MMC-PSE", "MMC-EDP", "PAF-PMX"];
+        Assert.Equal(front, Subs("1MMC-CPS-V2.5-I01"));
+        Assert.Equal(front, Subs("1MMC-CAS-V2.5-I01"));
+        void Leaves(string inst)
+        {
+            var l3 = JsonNode.Parse(File.ReadAllText(Path.Combine(Repository.Amds, inst + ".json")))!;
+            var subs = l3["SubAIMs"]?.AsArray().Select(s => s!["Identifier"]!["AIMInstID"]!.GetValue<string>()).ToList() ?? [];
+            if (subs.Count > 0) { foreach (var s in subs) Leaves(s); return; }
+            var uri = l3["Implementations"]?[0]?["ImplementationURI"]?.GetValue<string>() ?? "";
+            var folder = uri.Contains("/tree/main/") ? uri[(uri.IndexOf("/tree/main/") + 11)..] : "";
+            Assert.True(folder.Length > 0 && Directory.Exists(Path.Combine(Repository.Root, folder)), $"{inst} has no code");
+        }
+        Leaves("1MMC-CPS-V2.5-I01"); Leaves("1MMC-CAS-V2.5-I01");
     }
 
     [SkippableFact, Trait("Group", "Slow")]

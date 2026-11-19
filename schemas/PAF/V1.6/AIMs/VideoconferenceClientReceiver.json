@@ -8,7 +8,6 @@
   "AIMType":              "PAF-VCR-V1.6",
 
   "APIProfile":           "Basic",
-  "Execution":            "Continuous",
   "Description":          "Videoconference Client Receiver (slide 23 of the PAF Reference Models): receives the Portable Avatars the server sends and gives, of the avatars of the meeting, the Portable Avatars and the Multimodal Scene Descriptors that place them. The Point of View and the Text go through.",
 
   "InternalTypes":        [],
