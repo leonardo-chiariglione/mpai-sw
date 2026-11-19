@@ -23,16 +23,23 @@ public sealed class SummaryServices(string root, string model = "llama3.1") : ID
     // English summary of a piece of the minutes (or of the summaries of pieces).
     // 2026-11-12: asked for "the decisions taken and the actions agreed", at Ollama's default temperature, the model made them up (an approved project, actions for
     // the speaker) where nobody had decided anything. Now it reports what was said, a decision or an action only when stated, and runs at temperature 0.
+    // 2026-11-19: with llama3.2:3b, "write what was said, naming who said it" gave the minutes back nearly line by line. Now a fixed form: what was discussed, condensed, then
+    // the decisions, the actions and the open points apart.
     public Task<string> SummariseAsync(string minutes) => llm.Value.ChatAsync(
         "You summarise the minutes of a meeting, in English. Each line of the minutes is one thing a person said, with the speaker's name at the start. " +
         "Some lines may be noise that the speech recognition turned into words; leave out a line that makes no sense. " +
-        "Write what was actually said, in a few short sentences, naming who said it. Report a decision only if somebody clearly stated it was decided, and an action only if " +
-        "somebody clearly agreed to do it, with who is to do it. If there is no clear decision or action, write \"No decisions or actions were recorded.\" " +
-        "Never invent topics, projects, decisions, actions or names; do not guess what was meant. Answer with the summary only, as plain text, with no introduction.",
+        "Do NOT repeat the lines one by one: condense them. Write exactly these four parts, as plain text:\n" +
+        "Discussed: two to four short sentences, in your own words, on what the meeting talked about and who raised what.\n" +
+        "Decisions: one line for each thing somebody clearly stated was decided, or \"none\".\n" +
+        "Actions: one line for each thing somebody clearly agreed to do, as \"who - what - by when\" (leave out \"by when\" if no time was said), or \"none\". " +
+        "Every \"I will ...\" said by a person is an action of that person: list each one.\n" +
+        "Open: one line for each question that was not answered, not known yet, or put off to another time, or \"none\".\n" +
+        "Never invent topics, projects, decisions, actions or names; do not guess what was meant. Answer with the four parts only, with no introduction.",
         minutes, temperature: 0);
 
     public Task<string> TranslateAsync(string english, string language) => llm.Value.ChatAsync(
-        $"You translate into {Names.GetValueOrDefault(language, language)}. Answer with the translation only, as plain text. Keep names and numbers as they are.",
+        $"You translate into {Names.GetValueOrDefault(language, language)}. Translate every line, leave nothing out and add nothing: a text in parts (Discussed, Decisions, " +
+        "Actions, Open) keeps all its parts, in the same order, each heading translated. Answer with the translation only, as plain text. Keep names and numbers as they are.",
         english, temperature: 0);
 
     // The text spoken in the language, as 16 kHz, 16 bit, mono PCM (what the clients play).
