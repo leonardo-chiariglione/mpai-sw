@@ -50,16 +50,28 @@ public sealed class BoutGiver
     public long Sequence => sequence;
 
     // The Bout, made from the first instance of the flow and signed; given before the first Bout Instance.
-    public JsonObject Open(JsonObject firstInstance) => Now(OpenAsync(firstInstance));
-    public byte[] Instance(JsonObject instance, bool last = false) => Now(InstanceAsync(instance, last));
-    public JsonObject Close() => Now(CloseAsync());
+    public JsonObject Open(JsonObject firstInstance) => Now(OpenCore(firstInstance, atOnce: true));
+    public byte[] Instance(JsonObject instance, bool last = false) => Now(InstanceCore(instance, last, atOnce: true));
+    public JsonObject Close() => Now(CloseCore(atOnce: true));
 
-    // The synchronous form, for a key that answers at once (the platform's ECDSA). A key that answers only asynchronously - the browser's Web Crypto -
-    // is used with the Async methods: blocking on it in a browser would never end.
+    public ValueTask<JsonObject> OpenAsync(JsonObject firstInstance) => OpenCore(firstInstance, atOnce: false);
+    public ValueTask<byte[]> InstanceAsync(JsonObject instance, bool last = false) => InstanceCore(instance, last, atOnce: false);
+    public ValueTask<JsonObject> CloseAsync() => CloseCore(atOnce: false);
+
+    // The synchronous form, for a key that answers at once (the platform's ECDSA): it signs with the key's synchronous Sign, so it never waits.
+    // A key that answers only asynchronously - the browser's Web Crypto - refuses Sign, and is used with the Async methods: blocking on it in a
+    // browser would never end. The giver's state (the Bout, the Sequence, the chain, Closed) changes only after the signature is made, so a refused
+    // signature leaves the giver as it was.
     private static T Now<T>(ValueTask<T> pending) =>
         pending.IsCompleted ? pending.GetAwaiter().GetResult() : throw new InvalidOperationException("This key signs asynchronously: use the Async methods.");
 
-    public async ValueTask<JsonObject> OpenAsync(JsonObject firstInstance)
+    private async ValueTask Sign(JsonObject x, bool atOnce)
+    {
+        if (atOnce) BoutSecurity.Sign(x, o.Key);
+        else await BoutSecurity.SignAsync(x, o.Key);
+    }
+
+    private async ValueTask<JsonObject> OpenCore(JsonObject firstInstance, bool atOnce)
     {
         if (Bout is not null) throw new InvalidOperationException("The Bout is open.");
         // The content of the Dictionary is the canonical form of an instance of the flow as it travels: the first instance with its Data Exchange
@@ -69,7 +81,7 @@ public sealed class BoutGiver
         sample["DataXMData"] = Metadata((string?)firstInstance["DataXMData"]?["DataID"] ?? $"bout:{o.BoutId}:0", now, 0);
         BoutSecurity.Integrity(sample)!["Hash"] = new JsonObject { ["Algorithm"] = BoutSecurity.HashAlgorithm, ["Value"] = Convert.ToHexString(BoutSecurity.H(sample)) };
         var content = PtfCanonical.Bytes(sample);
-        dictionary = BoutZstd.MakeDictionary(content, o.BoutId);
+        var made = BoutZstd.MakeDictionary(content, o.BoutId);
         var ms = now.ToUnixTimeMilliseconds();
         var bout = new JsonObject
         {
@@ -83,48 +95,51 @@ public sealed class BoutGiver
             ["DataType"] = o.DataType,
             ["PortNumber"] = o.PortNumber,
             ["Method"] = "Zstandard",
-            ["Dictionary"] = Convert.ToHexString(dictionary),
+            ["Dictionary"] = Convert.ToHexString(made),
             ["SigningMode"] = o.SigningMode
         };
         if (o.SigningMode == BoutSecurity.Chain) bout["ChainInterval"] = o.ChainInterval;
         if (o.RepeatInterval > 0) bout["RepeatInterval"] = o.RepeatInterval;
         bout["MaxInstanceLength"] = o.MaxInstanceLength;
         bout["DataXMData"] = Metadata($"bout:{o.BoutId}", now, sequence: null);
-        await BoutSecurity.SignAsync(bout, o.Key);
+        await Sign(bout, atOnce);
         chain = SHA256.HashData(BoutSecurity.SignedBytes(bout));
+        dictionary = made;
         return Bout = bout;
     }
 
     // A Bout Instance: one Zstandard frame. last: the instance is the last before CloseBout, and is signed in a Chain.
-    public async ValueTask<byte[]> InstanceAsync(JsonObject instance, bool last = false)
+    private async ValueTask<byte[]> InstanceCore(JsonObject instance, bool last, bool atOnce)
     {
         if (Bout is null || dictionary is null) throw new InvalidOperationException("The Bout is not open.");
         if (Closed) throw new InvalidOperationException("The Bout is closed.");
         var x = instance.DeepClone().AsObject();
-        var k = ++sequence;
+        var k = sequence + 1;
         var dataId = (string?)x["DataXMData"]?["DataID"] ?? $"bout:{o.BoutId}:{k}";
         x["DataXMData"] = Metadata(dataId, o.Clock(), k);
         var h = BoutSecurity.H(x);
+        var next = chain;
         if (o.SigningMode == BoutSecurity.Chain)
         {
-            chain = SHA256.HashData([.. chain, .. h]);
-            BoutSecurity.Security(x)!["AuditChainHash"] = Convert.ToHexString(chain);
+            next = SHA256.HashData([.. chain, .. h]);
+            BoutSecurity.Security(x)!["AuditChainHash"] = Convert.ToHexString(next);
         }
         var signed = o.SigningMode == BoutSecurity.EachInstance || k % o.ChainInterval == 0 || last;
-        if (signed) await BoutSecurity.SignAsync(x, o.Key);
+        if (signed) await Sign(x, atOnce);
         else BoutSecurity.Integrity(x)!["Hash"] = new JsonObject { ["Algorithm"] = BoutSecurity.HashAlgorithm, ["Value"] = Convert.ToHexString(h) };
-        lastSigned = signed;
         var canonical = PtfCanonical.Bytes(x);
         if (canonical.Length > o.MaxInstanceLength) throw new InvalidOperationException($"The instance is {canonical.Length} bytes, more than MaxInstanceLength {o.MaxInstanceLength}.");
+        sequence = k;
+        chain = next;
+        lastSigned = signed;
         return BoutZstd.Compress(dictionary, canonical, o.CompressionLevel);
     }
 
     // CloseBout (MPAI-PTF V1.0, Verification Pipeline 11.3): a Trust Message of type TrustRequest, signed by the giver, giving the last Sequence and, in a
     // Chain, the last chain value - which also verifies the instances after the last signed one.
-    public async ValueTask<JsonObject> CloseAsync()
+    private async ValueTask<JsonObject> CloseCore(bool atOnce)
     {
         if (Bout is null) throw new InvalidOperationException("The Bout is not open.");
-        Closed = true;
         var now = o.Clock();
         var dem = Metadata($"bout:{o.BoutId}:close", now, sequence);
         var request = new JsonObject { ["Operation"] = "CloseBout", ["TargetType"] = BoutSecurity.BoutHeader, ["TargetID"] = o.BoutId.ToString(System.Globalization.CultureInfo.InvariantCulture) };
@@ -141,7 +156,9 @@ public sealed class BoutGiver
             ["Request"] = request,
             ["DataXMData"] = dem
         };
-        return await BoutSecurity.SignTopAsync(message, o.Key, o.KeyId);
+        var closing = atOnce ? BoutSecurity.SignTop(message, o.Key, o.KeyId) : await BoutSecurity.SignTopAsync(message, o.Key, o.KeyId);
+        Closed = true;
+        return closing;
     }
 
     public bool LastInstanceSigned => lastSigned;

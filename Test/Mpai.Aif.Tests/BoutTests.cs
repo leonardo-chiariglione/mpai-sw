@@ -334,6 +334,7 @@ public sealed class BoutTests
 
         // The synchronous methods refuse a key that answers only asynchronously.
         Assert.Throws<InvalidOperationException>(() => giver.Open(Instance(0)));
+        Assert.Null(giver.Bout);                                                    // the refusal leaves the giver as it was
 
         Assert.True((await r.AcceptAsync(await giver.OpenAsync(Instance(0)))).Ok);
         var delivered = 0;
