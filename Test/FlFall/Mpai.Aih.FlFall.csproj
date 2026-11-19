@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- 2026-11-19: Leonor Ramos's fall-detection experiment (MSc thesis, Iscte, 2026) run the AIH-HSP way: one End User per subject, each trained model arriving
+       at the Back End on its own; compared with her unweighted FedAvg, local-only and central training. Data: UP-Fall (Test/Data/Fall, git-ignored). -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\AIMs\AIH\V1.1\HFL\Mpai.Aih.Hfl.csproj" />
+  </ItemGroup>
+
+</Project>
