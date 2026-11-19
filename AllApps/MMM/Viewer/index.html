@@ -965,6 +965,11 @@ async function microphone() {
   talk.oncontextmenu = e => e.preventDefault();
   document.getElementById('bar').appendChild(talk);
   const ctx = new AudioContext({ sampleRate: 16000 });
+  // A page opened or reloaded already seated starts the microphone with no click: the browser keeps this audio stopped ("suspended") until the User touches the page, and nothing is
+  // captured (2026-11-19: the chair spoke and the room heard nothing). The first click or key starts it.
+  const wake = () => { if (ctx.state !== 'running') ctx.resume().then(() => { if (ctx.state === 'running') client.notice = 'Microphone on.'; }); };
+  for (const ev of ['pointerdown', 'keydown']) document.addEventListener(ev, wake, true);
+  if (ctx.state !== 'running') client.notice = 'Click anywhere on the page to start your microphone.';
   let src;
   if (tone) { src = ctx.createGain(); const o = ctx.createOscillator(); o.frequency.value = 220; const g = ctx.createGain(); o.connect(g); g.connect(src); o.start(); setInterval(() => { g.gain.value = (Date.now() / 1000 | 0) % 6 < 3 ? 0.3 : 0; }, 100); }
   else src = ctx.createMediaStreamSource(stream);
@@ -1001,14 +1006,27 @@ async function microphone() {
   }
   const feed = (o, f) => { const p = int16(f); if (o.ready) o.ws.send(p.buffer); else o.queue.push(p); };
   const finish = o => { o.closing = true; if (o.ready) o.ws.close(); };
+  // THE MICROPHONE CHECK (2026-11-19): type mmmMic() in the browser's Console - the state of the audio, of the microphone track, the loudest level heard (the threshold is 0.02),
+  // how many blocks of sound were processed, muted, seated, in a dialogue with the Secretary, the speeches begun and those refused by the server.
+  const diag = { blocks: 0, peak: 0, begun: 0 };
+  window.mmmMic = () => ({ audio: ctx.state, track: stream ? stream.getAudioTracks().map(t => `${t.label}: ${t.readyState}, ${t.enabled ? 'enabled' : 'disabled'}, ${t.muted ? 'MUTED by the system' : 'not muted'}`) : 'tone',
+    blocks: diag.blocks, peakLevel: +diag.peak.toFixed(4), threshold: THRESHOLD, muted: !!client.muted, seated: !!client.seated, secretaryDialogue: !!client.dialogue, speechesBegun: diag.begun, current: current ? (current.dead ? 'refused' : current.ready ? 'sending' : 'opening') : 'none' });
+  // ... and on the Mic button, every second: the loudest level of the last second (a speech begins above 0.02), or why there is none (the audio stopped, the track ended or muted).
+  let recent = 0;
+  setInterval(() => {
+    const t = stream?.getAudioTracks()[0];
+    const why = ctx.state !== 'running' ? 'audio ' + ctx.state + ' - click the page' : t && t.readyState !== 'live' ? 'microphone ended' : t?.muted ? 'muted by the system' : 'level ' + recent.toFixed(3) + (diag.begun ? ', speeches ' + diag.begun : '');
+    micBtn.textContent = 'Mic: ' + (client.muted ? 'off' : 'on') + ' (' + why + ')'; recent = 0;
+  }, 1000);
   node.onaudioprocess = e => {
+    diag.blocks++; { const l = level(e.inputBuffer.getChannelData(0)); if (l > diag.peak) diag.peak = l; if (l > recent) recent = l; }
     if (!client.seated) return;
     mouthSend(client.muted || client.dialogue ? null : e.inputBuffer.getChannelData(0));      // the mouth moves for the room, not for the Secretary
     if (client.muted) { if (current) { finish(current); current = null; } pre = []; return; }
     const f = Array.from(e.inputBuffer.getChannelData(0)), loud = level(f) > THRESHOLD, now = Date.now();
     if (!current) {
       if (!loud) { pre.push(...f); if (pre.length > PRE) pre = pre.slice(pre.length - PRE); return; }
-      current = begin(pre.concat(f)); pre = []; silent = 0; return;
+      current = begin(pre.concat(f)); diag.begun++; pre = []; silent = 0; return;
     }
     if (current.dead) { current = null; return; }
     // THE SECRETARY BUTTON CUTS THE SPEECH (2026-11-12): a speech begun before it was pressed went on to the room, with the request in it, as long as the person did not pause - the room
@@ -1018,6 +1036,28 @@ async function microphone() {
     if (silent >= HANG) { finish(current); current = null; }
   };
   src.connect(node); node.connect(ctx.destination);
+  // THE MICROPHONE ENDED (2026-11-19: the chair's track went to "ended" - the device was taken by another program or changed - and nothing was sent again): it is opened again, at once
+  // and every 2 s for a minute, and the new track takes the place of the old one; the mute is kept.
+  if (!tone) {
+    let reopening = false;
+    const reopen = async () => {
+      if (reopening) return; reopening = true;
+      for (let k = 0; k < 30; k++) {
+        try {
+          const s = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+          try { src.disconnect(); } catch { }
+          stream = s; src = ctx.createMediaStreamSource(s); src.connect(node);
+          s.getAudioTracks().forEach(t => { t.enabled = !client.muted; t.onended = reopen; });
+          client.notice = 'Microphone back.'; reopening = false; return;
+        } catch { await new Promise(r => setTimeout(r, 2000)); }
+      }
+      reopening = false; client.notice = 'The microphone cannot be opened: check that no other program uses it, then reload the page.';
+    };
+    stream.getAudioTracks().forEach(t => { t.onended = reopen; });
+    if (stream.getAudioTracks().every(t => t.readyState !== 'live')) reopen();
+    navigator.mediaDevices.addEventListener?.('devicechange', () => { if (stream.getAudioTracks().every(t => t.readyState !== 'live')) reopen(); });
+    setInterval(() => { if (stream.getAudioTracks().every(t => t.readyState !== 'live')) reopen(); }, 3000);
+  }
   client.status += ' - listening';
 }
 async function capture() {   // MM-Capture: the Things of the M-Location that this Point of View sees

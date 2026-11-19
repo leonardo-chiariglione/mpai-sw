@@ -102,8 +102,13 @@ if (-not $Written) {
     try { $null = Invoke-RestMethod -Uri 'http://127.0.0.1:11434/api/generate' -Method Post -ContentType 'application/json' -TimeoutSec 120 -Body (@{ model = $Llm; prompt = 'hi'; stream = $false; keep_alive = '6h'; options = @{ num_predict = 1 } } | ConvertTo-Json -Compress); Write-Host 'The language model is ready.' }
     catch { Write-Host "Ollama did not load $Llm ($($_.Exception.Message)): the Secretary will understand only the written requests until it does." }
 }
-Start-Process -FilePath $dotnet -ArgumentList $arguments -WindowStyle Normal
-Write-Host 'The server starts (the first time it compiles, about a minute)...'
+# Compiled HERE, in this window, so that an error shows (2026-11-19: the server's own window closed during its build and took the message with it); then started without building, in a
+# window that stays open if the server stops (cmd /k), so that its last message can be read.
+Write-Host 'Compiling the server (the first time about a minute)...'
+& $dotnet build "$here\Server\Mpai.Mmm.Server.csproj" -c Release -v q -nologo -clp:ErrorsOnly
+if ($LASTEXITCODE -ne 0) { Write-Host 'The server did not compile: the errors are above.'; exit 1 }
+Start-Process -FilePath 'cmd.exe' -ArgumentList "/k `"`"$dotnet`" $($arguments -replace '^run ', 'run --no-build ')`"" -WindowStyle Normal
+Write-Host 'The server starts...'
 $up = $false
 for ($i = 0; $i -lt 180 -and -not $up; $i++) {
     Start-Sleep 2
