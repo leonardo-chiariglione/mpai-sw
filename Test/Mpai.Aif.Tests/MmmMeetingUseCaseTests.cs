@@ -21,7 +21,7 @@ public class MmmMeetingUseCaseTests
         await using var app = MmmServer.Build(m, "http://127.0.0.1:0");
         await app.StartAsync();
         using var http = new HttpClient { BaseAddress = new Uri(app.Urls.First()) };
-        var services = new MeetingServices(http, m, MeetingUseCase.ScriptedRecognizer());
+        var services = new MeetingServices(http, m, MeetingUseCase.ScriptedRecognizer()) { TranscribeAlways = true };
 
         var result = await MeetingUseCase.RunAsync(http, m, services);
         await app.StopAsync();

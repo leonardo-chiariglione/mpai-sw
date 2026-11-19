@@ -143,7 +143,8 @@ public sealed class WhisperAsr : IDisposable
     public void Start()
     {
         if (!Available || process is not null) return;
-        process = Process.Start(new ProcessStartInfo(program, $"-m \"{model}\" --host 127.0.0.1 --port {port} -t 6 -l auto")
+        // 2 threads: the program of the L3 is the build for CUDA (2026-11-19, the author: "no whisper on the processor"), the graphics card does the work.
+        process = Process.Start(new ProcessStartInfo(program, $"-m \"{model}\" --host 127.0.0.1 --port {port} -t 2 -l auto")
         {
             UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true, WorkingDirectory = Path.GetDirectoryName(program)!
         });
@@ -151,6 +152,12 @@ public sealed class WhisperAsr : IDisposable
         process.ErrorDataReceived += (_, _) => { };
         process.BeginOutputReadLine(); process.BeginErrorReadLine();
         KillWithMe.Add(process);
+        // The first recognition on the card takes about 13 s (the card is prepared); a second of silence is recognised now, so the first request of the meeting is answered at once.
+        _ = Task.Run(async () =>
+        {
+            for (var i = 0; i < 60; i++) { try { await http.GetAsync("/"); break; } catch { await Task.Delay(1000); } }
+            try { await RecognizeAsync(new byte[2 * 16000]); } catch { }
+        });
     }
 
     // WHISPER ENDS WITH ITS SERVER (2026-11-12): a server whose window was closed left its whisper-server running - three of them after one meeting, one taking 6 cores, and the next

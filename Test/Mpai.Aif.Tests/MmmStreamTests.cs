@@ -82,7 +82,7 @@ public class MmmStreamTests
         var url = app.Urls.First();
         var ws = url.Replace("http", "ws");
         using var http = new HttpClient { BaseAddress = new Uri(url), Timeout = Timeout.InfiniteTimeSpan };
-        var services = new MeetingServices(http, m, _ => Task.FromResult("this was said while it was streamed"));
+        var services = new MeetingServices(http, m, _ => Task.FromResult("this was said while it was streamed")) { TranscribeAlways = true };
 
         var anna = await Register(http, "Anna");
         var bruno = await Register(http, "Bruno");
@@ -153,6 +153,53 @@ public class MmmStreamTests
         await app.StopAsync();
     }
 
+    // A HAND COMES DOWN WHILE ITS OWNER SPEAKS, by the length of the voice, and with no summary open nothing is transcribed (the author, 2026-11-19: Whisper only when needed;
+    // "lower the hand when that person speaks but only for how long the voice lasts"). On 2026-11-19 a hand stayed up in a live meeting while Whisper was minutes behind.
+    [Fact]
+    public async Task AHandComesDownWhileItsOwnerSpeaksAndNothingIsTranscribedWithoutASummary()
+    {
+        var m = new MInstance(Repository.Schemas);
+        Uc2.Setup(m);
+        Meeting.Setup(m);
+        await using var app = MmmServer.Build(m, "http://127.0.0.1:0");
+        await app.StartAsync();
+        var url = app.Urls.First();
+        var ws = url.Replace("http", "ws");
+        using var http = new HttpClient { BaseAddress = new Uri(url), Timeout = Timeout.InfiniteTimeSpan };
+        var recognised = 0;
+        var services = new MeetingServices(http, m, _ => { Interlocked.Increment(ref recognised); return Task.FromResult("words"); });
+        var anna = await Register(http, "Anna");
+        var bruno = await Register(http, "Bruno");
+        await services.StartAsync(); await services.PumpAsync(); await services.PumpAsync();
+        foreach (var (cid, text) in new[] { ("Convene-Anna", "convene"), ("Invite-Bruno", "invite;user=Bruno") })
+            await anna.PerformAsync("MM-Send", Uc2.C(cid, to: Meeting.Avs, with: Uc2.Message(cid, text)));
+        await services.PumpAsync();
+        await Sit(services, anna);
+        var seat = await Sit(services, bruno);
+        await bruno.PerformAsync("MM-Send", Uc2.C("Hand-Bruno", to: Meeting.Avs, with: Uc2.Message("Hand-Bruno", "hand;up")));
+        for (var i = 0; i < 3; i++) await services.PumpAsync();
+        Assert.Equal(["Bruno"], services.HandsUp);
+
+        var id = "Speech-Bruno-1";
+        var q = Speech.StreamQualifier(id);
+        Assert.Equal(201, (await bruno.PerformAsync("UM-Capture", Uc2.C(id, at: "ULoc-Bruno", with: q))).Http);
+        Assert.Equal(201, (await bruno.PerformAsync("Identify", Uc2.C(id, with: q.DeepClone()))).Http);
+        Assert.Equal(200, (await bruno.PerformAsync("MM-Add", Uc2.C(id, at: seat))).Http);
+        using var feed = new ClientWebSocket();
+        await feed.ConnectAsync(new Uri($"{ws}/ws/v2.2/speech/{id}?token={m.TokenOf("Bruno")}"), CancellationToken.None);
+        for (var s = 0; s < 3; s++) { await feed.SendAsync(Pcm(1.0, 0.05), WebSocketMessageType.Binary, true, CancellationToken.None); for (var i = 0; i < 4; i++) { await services.PumpAsync(); await Task.Delay(50); } }
+        Assert.Equal(["Bruno"], services.HandsUp);                                    // 3 s of voice: still up
+        for (var s = 0; s < 3; s++) await feed.SendAsync(Pcm(1.0, 0.05), WebSocketMessageType.Binary, true, CancellationToken.None);
+        for (var i = 0; i < 60 && services.HandsUp.Count > 0; i++) { await services.PumpAsync(); await Task.Delay(50); }
+        Assert.Empty(services.HandsUp);                                               // 6 s: down, and the stream is still open - he is still speaking
+        Assert.True(m.IsStream(id));
+        await feed.CloseAsync(WebSocketCloseStatus.NormalClosure, "done", CancellationToken.None);
+        for (var i = 0; i < 10; i++) { await services.PumpAsync(); await services.PumpAsrAsync(); await Task.Delay(50); }
+        Assert.Equal(0, recognised);                                                  // no summary open: nothing went to the speech recognition
+        Assert.DoesNotContain(services.TheMinutes, l => l.StartsWith("Bruno: words", StringComparison.Ordinal));
+        await app.StopAsync();
+    }
+
     // A speech has no duration fixed beforehand: it goes on as long as the person speaks. The Secretary does not wait for it to end: it listens to the stream and has what it hears recognised
     // at a pause, so the words of the first sentence are in the minutes while the person is still speaking.
     [Fact]
@@ -167,7 +214,7 @@ public class MmmStreamTests
         var ws = url.Replace("http", "ws");
         using var http = new HttpClient { BaseAddress = new Uri(url), Timeout = Timeout.InfiniteTimeSpan };
         var said = new Queue<string>(["the first sentence", "the second sentence"]);
-        var services = new MeetingServices(http, m, _ => Task.FromResult(said.Count > 0 ? said.Dequeue() : "more"));
+        var services = new MeetingServices(http, m, _ => Task.FromResult(said.Count > 0 ? said.Dequeue() : "more")) { TranscribeAlways = true };
 
         var anna = await Register(http, "Anna");
         var bruno = await Register(http, "Bruno");
@@ -224,7 +271,7 @@ public class MmmStreamTests
         var url = app.Urls.First();
         var ws = url.Replace("http", "ws");
         using var http = new HttpClient { BaseAddress = new Uri(url), Timeout = Timeout.InfiniteTimeSpan };
-        var services = new MeetingServices(http, m, _ => Task.FromResult("words"));
+        var services = new MeetingServices(http, m, _ => Task.FromResult("words")) { TranscribeAlways = true };
         var anna = await Register(http, "Anna");
         var bruno = await Register(http, "Bruno");
         var carla = await Register(http, "Carla");

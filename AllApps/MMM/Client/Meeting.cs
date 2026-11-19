@@ -132,8 +132,22 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
 
     // THE HANDS RAISED. A participant raises a hand to ask for the floor: the AVS Service keeps who has one up and tells every participant (Hands-for-<User>), and the Secretary
     // notes it in the minutes. A hand comes down when its owner lowers it, when the convener lowers it, or by itself once its owner has spoken for at least HandLowersAfterMs (the
-    // Secretary tells the AVS Service how long each recognised utterance was).
+    // Secretary tells the AVS Service how long its owner's VOICE lasted - the time the level of the speech is above Loud - with no speech recognition: the author, 2026-11-19,
+    // "lower the hand when that person speaks but only for how long the voice lasts").
     public const long HandLowersAfterMs = 5000;
+
+    // WHISPER ONLY WHEN IT IS NEEDED (the author, 2026-11-19: "the processing resources I can offer are too scarce to support continuous summary. If somebody asks for the
+    // summary, it should be for a brief period of time ... for 1 min. summary is for demo purposes"). What is said in the room goes to the ASR Service only while a summary
+    // asked for is open: SummaryWindowMs from the request (what the person speaking then goes on to say is in it). Then the summary is made, once, and nothing more is
+    // transcribed until somebody asks again. What is said to the Secretary (the Secretary button) is always recognised: it is a request.
+    public const int SummaryWindowMs = 60_000;
+    public int SummaryWindow { get; init; } = SummaryWindowMs;
+    private readonly Dictionary<string, (long Until, string? ButtonId, string Language, string Mode)> summaryWindow = new();
+    private int roomPending;                                                    // speech of the room sent to the ASR Service and not yet recognised
+    private bool Transcribing { get { if (TranscribeAlways) return true; lock (summaryWindow) return summaryWindow.Count > 0; } }
+    // Everything said in the room is transcribed, whether or not a summary is open: for a machine that can afford continuous minutes, and for the tests of the way from the
+    // voice to the minutes. Off by default (the author, 2026-11-19).
+    public bool TranscribeAlways { get; init; }
     private readonly List<string> hands = [];
     private readonly HashSet<string> sharers = [];      // the participants the convener has let show a screen
     private readonly Dictionary<string, long> handSpoken = new();
@@ -289,7 +303,7 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
                 if (Speech.Is(item))                                                  // sent to the Secretary directly: a stream is a dialogue with it, listened to as it goes on
                 {
                     if (Speech.DurationMs(item) == 0 && Speech.PcmOf(item).Length == 0) { if (handled.Add($"{Meeting.Secretary}|tap|{id}")) _ = TapAsync(id, from, true); }
-                    else await Forward(id, from, item!);
+                    else { await CountVoice(from, VoicedMs(Speech.PcmOf(item!))); await Forward(id, from, item!); }
                     continue;
                 }
                 var text = Meeting.TextOf(item);
@@ -307,11 +321,8 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
                 }
                 else if (from == Meeting.Asr && id.StartsWith("Words-", StringComparison.Ordinal) && asked.Remove(id["Words-".Length..], out var who))
                 {
-                    if (text != NoWords)
-                    {
-                        minutes.Add($"{who.Speaker}: {text}"); await Publish();
-                        if (HandsUp.Contains(who.Speaker)) await Say(secretary, $"Spoke-{id}", Meeting.Avs, $"spoke;user={who.Speaker};ms={who.ActualMs}");      // only a hand up has to be told how long its owner spoke
-                    }
+                    Interlocked.Decrement(ref roomPending);
+                    if (text != NoWords) { minutes.Add($"{who.Speaker}: {text}"); await Publish(); }
                     lock (latencies) latencies.Add((who.Speaker, who.SpeechMs, (long)Stopwatch.GetElapsedTime(who.Since).TotalMilliseconds));
                 }
                 else if (text.StartsWith("pref;", StringComparison.Ordinal))
@@ -319,7 +330,10 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
                 else if (text.StartsWith("summary;", StringComparison.Ordinal))
                 {
                     var asking = Meeting.ParseSeat(text["summary;".Length..]);
-                    lock (summaryAsked) summaryAsked.Enqueue((from, id, asking.GetValueOrDefault("lang") ?? "en", asking.GetValueOrDefault("mode") ?? "written"));
+                    var (lang, mode) = ((asking.GetValueOrDefault("lang") ?? "en").ToLowerInvariant(), asking.GetValueOrDefault("mode") ?? "written");
+                    bool made; lock (summaryStarted) made = summaryFrom.ContainsKey(from);
+                    if (made) lock (summaryAsked) summaryAsked.Enqueue((from, id, lang, mode));      // a summary just finished, asked to be read: it is made now
+                    else OpenWindow(from, lang, mode, id);             // the button: what is said in the next minute; the answer (Summary-for-<id>) comes when it is over
                 }
                 else if (text.StartsWith("seat=", StringComparison.Ordinal)) await Sit(Meeting.ParseSeat(text));
                 else if (text.StartsWith("ask:", StringComparison.Ordinal))         // A REQUEST WRITTEN TO THE SECRETARY (2026-11-18): the same dialogue as a spoken one, without speech recognition
@@ -341,8 +355,9 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
     private async Task Forward(string id, string speaker, JsonObject item, bool dialogue = false)
     {
         var forward = $"Forward-{id}";
-        if (dialogue) lock (dialogueIds) dialogueIds.Add(forward);
         var pcm = Speech.PcmOf(item);
+        if (!dialogue && !Transcribing) return;                                  // no summary open: the room is not transcribed
+        if (dialogue) lock (dialogueIds) dialogueIds.Add(forward); else Interlocked.Increment(ref roomPending);
         asked[forward] = (speaker, Stopwatch.GetTimestamp(), Speech.DurationMs(item), pcm.Length > 0 ? pcm.Length / 32 : Speech.DurationMs(item));      // 16 kHz, 16 bits: 32 bytes a millisecond
         await secretary.PerformAsync("MM-Send", Uc2.C(forward, to: Meeting.Asr, with: (JsonObject)item["ItemValueOrRef"]![0]!.DeepClone()));
     }
@@ -366,8 +381,30 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
             if (handled.Contains($"{Meeting.Secretary}|tap|{id}")) continue;      // it was listened to, in pieces, while it went on
             if (!handled.Add($"{Meeting.Secretary}|heard|{id}")) continue;
             var item = (await secretary.ReadAsync(id)).Item;
-            if (Speech.Is(item)) await Forward(id, (string?)thing["Owner"] ?? "?", item!);
+            if (!Speech.Is(item)) continue;
+            await CountVoice((string?)thing["Owner"] ?? "?", VoicedMs(Speech.PcmOf(item!)));
+            await Forward(id, (string?)thing["Owner"] ?? "?", item!);
         }
+    }
+
+    // How long the voice lasts in a speech: the 20 ms frames whose level is above Loud.
+    public static long VoicedMs(byte[] pcm)
+    {
+        long ms = 0; const int frame = 640;                                      // 20 ms of 16 kHz, 16-bit samples
+        for (var o = 0; o + frame <= pcm.Length; o += frame)
+        {
+            double sum = 0;
+            for (var i = o; i < o + frame; i += 2) { double v = BitConverter.ToInt16(pcm, i); sum += v * v; }
+            if (Math.Sqrt(sum / (frame / 2)) > Loud) ms += 20;
+        }
+        return ms;
+    }
+
+    // A participant with a hand up has spoken for that long: the AVS Service is told (it lowers the hand at HandLowersAfterMs). No speech recognition.
+    private async Task CountVoice(string speaker, long voicedMs)
+    {
+        if (voicedMs <= 0 || !HandsUp.Contains(speaker)) return;
+        await Say(secretary, $"Spoke-{speaker}-{Interlocked.Increment(ref sequence)}", Meeting.Avs, $"spoke;user={speaker};ms={voicedMs}");
     }
 
     // A SPEECH THAT IS A STREAM HAS NO DURATION FIXED BEFOREHAND, so the Secretary does not wait for it to end. It listens to the stream as any participant does (the address of its data)
@@ -383,8 +420,11 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
             using var ws = new ClientWebSocket();
             await ws.ConnectAsync(new Uri($"ws://{secretary.Server!.Authority}/ws/v2.2/speech/{id}/listen?token={Uri.EscapeDataString(secretary.Token!)}"), CancellationToken.None);
             var piece = new List<byte>(); int quietMs = 0, n = 0; var spoken = false; var start = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            long voiced = 0;                                                     // ms of voice not yet counted for a raised hand (speech to the Secretary does not count)
+            async Task Count() { if (!dialogue && voiced > 0) { var v = voiced; voiced = 0; await CountVoice(speaker, v); } }
             async Task Cut()
             {
+                await Count();
                 if (spoken && piece.Count / 32 >= MinPieceMs)
                 {
                     var pieceId = $"{id}-p{++n}";
@@ -402,7 +442,8 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
                 double sum = 0; var bytes = got.ToArray(); var samples = bytes.Length / 2;
                 for (var i = 0; i < samples; i++) { double v = BitConverter.ToInt16(bytes, i * 2); sum += v * v; }
                 var rms = Math.Sqrt(sum / samples);
-                if (rms > Loud) { spoken = true; quietMs = 0; } else quietMs += got.Count / 32;
+                if (rms > Loud) { spoken = true; quietMs = 0; voiced += got.Count / 32; } else quietMs += got.Count / 32;
+                if (voiced >= 1000) await Count();                               // told each second of voice: the hand comes down while the person speaks
                 piece.AddRange(got);
                 if ((spoken && quietMs >= pause) || piece.Count / 32 >= MaxPieceMs) await Cut();
             }
@@ -505,11 +546,55 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
         if (!await runningOne.WaitAsync(0)) return;
         try
         {
+            // a window that is over - and whose speech has been recognised (or 30 s more have passed) - is closed: its summary is made once
+            var now = Environment.TickCount64;
+            List<string> over; lock (summaryWindow) over = summaryWindow.Where(w => now >= w.Value.Until && (Volatile.Read(ref roomPending) <= 0 || now >= w.Value.Until + 30_000)).Select(w => w.Key).ToList();
+            foreach (var user in over) await FinishSummary(user, $"The {SummaryWindow / 1000} seconds are over: here is the summary.");
             List<KeyValuePair<string, (int From, string Language, string Form)>> running;
             lock (summaryStarted) running = summaryStarted.ToList();
             foreach (var (user, s) in running) await UpdateSummary(user, s, force: false);
         }
         finally { runningOne.Release(); }
+    }
+
+    // A summary asked for: from now (the line of the minutes reached), for SummaryWindow ms; the room is transcribed while one is open. ButtonId: asked with the button (its
+    // answer is Summary-for-<ButtonId>); null: asked by voice (the display shows it as it grows, and it is read if asked spoken).
+    private void OpenWindow(string user, string language, string mode, string? buttonId)
+    {
+        if (TranscribeAlways)                                                     // the whole meeting is in the minutes: the button gives the summary of it at once, the voice a running one
+        {
+            if (buttonId is not null) { lock (summaryAsked) summaryAsked.Enqueue((user, buttonId, language, mode)); return; }
+            lock (summaryStarted) { summaryStarted[user] = (minutes.Count, language, mode == "spoken" ? "spoken" : "written"); summarySent.Remove(user); }
+            return;
+        }
+        lock (summaryStarted) { summaryStarted[user] = (minutes.Count, language, mode == "spoken" ? "spoken" : "written"); summarySent.Remove(user); summaryFrom.Remove(user); }
+        lock (summaryWindow) summaryWindow[user] = (Environment.TickCount64 + SummaryWindow, buttonId, language, mode);
+    }
+
+    // The end of a summary (at the end of its window, or when its owner stops it): the last version is made and, asked with the button or spoken, sent as an answer.
+    private async Task<bool> FinishSummary(string user, string said)
+    {
+        (int From, string Language, string Form) started; bool had;
+        (long Until, string? ButtonId, string Language, string Mode) window = default; bool windowed;
+        lock (summaryStarted) had = summaryStarted.Remove(user, out started);
+        lock (summaryWindow) windowed = summaryWindow.Remove(user, out window);
+        if (!had) return false;
+        if (windowed && window.ButtonId is string button)                     // the button waits for Summary-for-<its id>: the summary of the window, made now
+        {
+            lock (summaryStarted) summaryFrom[user] = started.From;
+            lock (summaryAsked) summaryAsked.Enqueue((user, button, window.Language, window.Mode));
+            lock (summaryStarted) summarySent.Remove(user);
+            return true;
+        }
+        await Reply(user, said, null);
+        await UpdateSummary(user, started, force: true, final: true);         // the last of what was said goes in
+        if (started.Form == "spoken")                                           // asked spoken: it is read once, now that it is complete
+        {
+            lock (summaryStarted) summaryFrom[user] = started.From;
+            await Reply(user, "Here it is.", new JsonObject { ["Summary"] = new JsonObject { ["Language"] = started.Language, ["Form"] = "spoken" } });
+        }
+        lock (summaryStarted) summarySent.Remove(user);
+        return true;
     }
 
     private async Task UpdateSummary(string user, (int From, string Language, string Form) s, bool force, bool final = false)
@@ -545,6 +630,7 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
     {
         List<KeyValuePair<string, (int From, string Language, string Form)>> pending;
         lock (summaryStarted) { pending = summaryStarted.ToList(); summaryStarted.Clear(); }
+        lock (summaryWindow) summaryWindow.Clear();
         foreach (var (user, s) in pending) await UpdateSummary(user, s, force: true, final: true);
     }
 
@@ -584,17 +670,7 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
         }
         if (StopSummary(words))                                                // the end of a summary asked before: it is made now, of what was said since
         {
-            (int From, string Language, string Form) started; bool had;
-            lock (summaryStarted) had = summaryStarted.Remove(user, out started);
-            if (!had) { await Reply(user, "OK. No summary is running: say \"summarise the meeting\" to start one.", null, pref); return; }
-            await Reply(user, "OK. The summary is stopped; it stays on your display.", null, pref);
-            await UpdateSummary(user, started, force: true, final: true);     // the last of what was said goes in
-            if (started.Form == "spoken")                                       // asked spoken: it is read once, now that it is complete
-            {
-                lock (summaryStarted) summaryFrom[user] = started.From;
-                await Reply(user, "Here it is.", new JsonObject { ["Summary"] = new JsonObject { ["Language"] = started.Language, ["Form"] = "spoken" } }, pref);
-            }
-            lock (summaryStarted) summarySent.Remove(user);
+            if (!await FinishSummary(user, "OK. The summary is stopped; it stays on your display.")) await Reply(user, "OK. No summary is running: say \"summarise the meeting\" to start one.", null, pref);
             return;
         }
         // The requests of the list are carried out without the language model; with none (--no-summary), they are the only ones understood.
@@ -619,8 +695,8 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
             if (language is "ja" or "zh" && form == "spoken") { form = "written"; say.Add("No voice speaks that language, so I will write it."); }
             pref.Language = language; pref.Form = form;
             // THE SUMMARY IS OF WHAT IS SAID FROM NOW (the author, 2026-11-12): until the participant says "stop the summary", or the meeting ends.
-            lock (summaryStarted) { summaryStarted[user] = (minutes.Count, language, form); summarySent.Remove(user); }
-            say.Add("I am summarising from now: the summary appears on your display and grows as the meeting goes on. Say \"stop the summary\" to stop it.");
+            OpenWindow(user, language, form, null);
+            say.Add($"I am summarising what is said in the next {SummaryWindow / 1000} seconds: the summary appears on your display. Say \"stop the summary\" to end it sooner.");
         }
         if (rq["Display"] is JsonValue d) { ui["Display"] = d.GetValue<string>(); say.Add("Done."); }
         if (rq["Hand"] is JsonValue h) { var up = h.GetValue<string>() == "Raise"; await SetHand(user, up, ""); say.Add(up ? "Your hand is up." : "Your hand is down."); }

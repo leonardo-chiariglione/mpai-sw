@@ -59,7 +59,7 @@ public class MmmSummaryRealModelTests
         await app.StartAsync();
         using var http = new HttpClient { BaseAddress = new Uri(app.Urls.First()), Timeout = TimeSpan.FromMinutes(10) };
         var words = "";
-        var services = new MeetingServices(http, m, _ => Task.FromResult(words));
+        var services = new MeetingServices(http, m, _ => Task.FromResult(words)) { TranscribeAlways = true };
         var model = Environment.GetEnvironmentVariable("MMM_SUMMARY_MODEL") ?? "llama3.2:3b";                          // the meeting's model; another to compare
         using var summary = new SummaryServices(root, model);
         services.Summarise = summary.SummariseAsync; services.Translate = summary.TranslateAsync; services.Synthesise = summary.SynthesiseAsync;

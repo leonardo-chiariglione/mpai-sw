@@ -143,7 +143,7 @@ else Console.WriteLine("Whisper (the program and the model the L3 of ASR declare
 var meetingDemo = Array.IndexOf(args, "--meeting-demo");
 var meetingPause = meetingDemo >= 0 && meetingDemo + 1 < args.Length && double.TryParse(args[meetingDemo + 1], out var mp) ? mp : 5.0;
 var inside = new HttpClient { BaseAddress = new Uri(url) }; inside.DefaultRequestHeaders.Add("X-Mmm-Internal", internalKey);
-var meeting = new MeetingServices(inside, m, meetingDemo >= 0 ? MeetingUseCase.ScriptedRecognizer() : !noAsr && whisper.Available ? whisper.RecognizeAsync : null);
+var meeting = new MeetingServices(inside, m, meetingDemo >= 0 ? MeetingUseCase.ScriptedRecognizer() : !noAsr && whisper.Available ? whisper.RecognizeAsync : null) { TranscribeAlways = meetingDemo >= 0 };
 // --llm llama3.1: the language model of the Secretary and of the summary (default llama3.2:3b, which fits on a 4 GB card and leaves the processor to Whisper).
 var llm = Arg("--llm") ?? "llama3.2:3b";
 // The summary, for who asks (--no-summary: none): the language model and the voices are asked only when somebody does.

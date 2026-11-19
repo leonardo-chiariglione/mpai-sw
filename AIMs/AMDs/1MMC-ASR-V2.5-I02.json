@@ -115,8 +115,8 @@
       "Name": "asr-program",
       "OperatingSystem": "Windows",
       "Architecture": "x86-64",
-      "Uri": "https://github.com/ggerganov/whisper.cpp/releases/download/b4938/whisper-bin-x64.zip",
-      "Sha256": "C2A4B60EDB11F7E11A9191FFB50929535527D4D91C9903DBE3E554583BBBC63D",
+      "Uri": "https://github.com/ggml-org/whisper.cpp/releases/download/b4938/whisper-cublas-12.4.0-bin-x64.zip",
+      "Sha256": "C1B17166E1E31A91CC8E9C1F910D3785E3CE757BB2958BF9DCE13FDB4880005F",
       "Unpack": true,
       "Inside": "Release/whisper-cli.exe",
       "Setting": "ExecutablePath",
@@ -125,14 +125,14 @@
         "Uri": "https://github.com/ggerganov/whisper.cpp/blob/master/LICENSE",
         "PersonalData": false
       },
-      "Description": "The whisper program (whisper.cpp, Windows release b4938) that reads the model; it comes in a zip with the libraries it needs."
+      "Description": "The whisper program (whisper.cpp, Windows release b4938, the build for CUDA 12.4: it runs on the NVIDIA graphics card, and on the processor where there is none) that reads the model; it comes in a zip with the libraries it needs."
     },
     {
       "Name": "asr-server",
       "OperatingSystem": "Windows",
       "Architecture": "x86-64",
-      "Uri": "https://github.com/ggerganov/whisper.cpp/releases/download/b4938/whisper-bin-x64.zip",
-      "Sha256": "C2A4B60EDB11F7E11A9191FFB50929535527D4D91C9903DBE3E554583BBBC63D",
+      "Uri": "https://github.com/ggml-org/whisper.cpp/releases/download/b4938/whisper-cublas-12.4.0-bin-x64.zip",
+      "Sha256": "C1B17166E1E31A91CC8E9C1F910D3785E3CE757BB2958BF9DCE13FDB4880005F",
       "Unpack": true,
       "Inside": "Release/whisper-server.exe",
       "Setting": "ServerPath",

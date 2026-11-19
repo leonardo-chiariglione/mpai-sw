@@ -37,7 +37,7 @@ public class MmmSpeechTests
         var http = new HttpClient { BaseAddress = new Uri(app.Urls.First()) };
         var reg = await new MmmClient(http, "Anna-human").PerformAsync("Register", new Complements { With = [Profile("Anna")] });
         var anna = new MmmClient(http, "Anna", reg.Tokens["Anna"]);
-        return (m, app, http, new MeetingServices(http, m, recognize), anna);
+        return (m, app, http, new MeetingServices(http, m, recognize) { TranscribeAlways = true }, anna);
     }
 
     // The PCM of one second of a tone: the content does not matter to the logic.
