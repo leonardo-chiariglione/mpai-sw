@@ -2,4 +2,4 @@
   "$id":     "https://schemas.mpai.community/CAV2/V2.0/data/RouteEnvironmentIDs.json",
   "title":   "Route Environment ID V2.0",
   "type":    "string",
-  "enum":    [ "RouteEnvironment1" ] }
+  "enum":    [ "Ice", "Wind", "Water", "Pothole" ] }
