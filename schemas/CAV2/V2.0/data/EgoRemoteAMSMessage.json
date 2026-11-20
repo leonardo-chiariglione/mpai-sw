@@ -37,7 +37,7 @@
 
     "SenderInfoMessage":            { "type": "object", "additionalProperties": false, "required": [ "EgoCAVID", "Trajectory" ], "properties": {
       "EgoCAVID":                   { "type": "string", "description": "Identifier of the Ego CAV." },
-      "Trajectory":                 { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/Trajectory.json", "description": "Trajectory the Ego CAV intends to adopt." } } },
+      "Trajectory":                 { "$ref": "https://schemas.mpai.community/CAV2/V2.0/data/Trajectory.json", "description": "Trajectory the Ego CAV intends to adopt." } } },
 
     "AMSAlertMessage":              { "type": "object", "additionalProperties": false, "required": [ "EgoCAVID", "AMSAlertID" ], "properties": {
       "EgoCAVID":                   { "type": "string", "description": "Identifier of the Ego CAV sending the alert." },

@@ -20,7 +20,7 @@
     "PathResponse":               { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/Path.json",
                                     "description": "Path provided in response to a Path Request." },
     "TrajectoryRequest":          { "type": "string", "description": "Request trigger for a new Trajectory." },
-    "TrajectoryResponse":         { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/Trajectory.json", "description": "Trajectory provided in response to a Trajectory Request." },
+    "TrajectoryResponse":         { "$ref": "https://schemas.mpai.community/CAV2/V2.0/data/Trajectory.json", "description": "Trajectory provided in response to a Trajectory Request." },
 
     "DataXMData":                 { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json",
                                     "description": "MPAI-PTF Data Exchange Metadata providing provenance, authorisation, legal, security, and confidence information associated with this Interaction in a trusted data exchange context." },

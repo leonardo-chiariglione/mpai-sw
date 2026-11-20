@@ -18,7 +18,7 @@
     "RouteID":            { "type": "string", "description": "Identifier of the Route produced by Route Selection Planning." },
     "Path":               { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/Path.json",
                             "description": "Path produced by Path Selection Planning." },
-    "Trajectory":         { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/Trajectory.json",
+    "Trajectory":         { "$ref": "https://schemas.mpai.community/CAV2/V2.0/data/Trajectory.json",
                             "description": "Trajectory produced by Motion Selection Planning." },
     "Alert":              { "$ref": "https://schemas.mpai.community/CAV2/V2.0/data/Alert.json",
                             "description": "Alert produced by an Environment Sensing Technology Scene Description AIM." },

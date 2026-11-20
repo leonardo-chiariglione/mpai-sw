@@ -124,4 +124,4 @@
       "Height":                     { "type": "integer", "description": "Number of rows in the grid." },
       "Data":                       { "type": "array", "items": { "type": "number" }, "description": "Grid cell values, row-major order." } } },
 
-    "Trajectory":                   { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/Trajectory.json" } } }
+    "Trajectory":                   { "$ref": "https://schemas.mpai.community/CAV2/V2.0/data/Trajectory.json" } } }
