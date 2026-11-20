@@ -3,13 +3,13 @@
   "AIMType":           "MMC-TTS-V2.5",
 
   "APIProfile":       "Basic",
-  "Description":      "Text to Speech: converts a Text Object (Basic Text Object or Text Object) into a Speech Object (Basic Speech Object or Speech Object). The input port accepts both OSD-BTO and OSD-TXO; the output port carries both OSD-BSO and OSD-SPO.",
+  "Description":      "Text to Speech: converts a Text Object (Basic Text Object or Text Object) into a Speech Object (Basic Speech Object or Speech Object). The input port accepts both OSD-BTO and OSD-TXO; the output port carries both OSD-BSO and OSD-SPO. The optional Personal Status port accepts a Speech Personal Status (MMC-SPS) or a Personal Status (MMC-EPS), e.g. an Emotion, whose Emotion the synthetic speech conveys.",
 
   "InternalTypes":   [ ],
 
   "ExternalPorts":   [{"Name": "InputText",            "Direction": "Input",  "DataType": ["OSD-BTO-V1.5", "OSD-TXO-V1.5"],                     "Technology": "", "Protocol": "", "IsRemote": ""},
                      {"Name": "OutputSpeech",         "Direction": "Output", "DataType": ["OSD-BSO-V1.5", "OSD-SPO-V1.5"],                     "Technology": "", "Protocol": "", "IsRemote": ""},
-                     {"Name": "SpeechPersonalStatus", "Direction": "Input",  "DataType": "MMC-SPS-V2.5",                   "IsOptional": true, "Technology": "", "Protocol": "", "IsRemote": ""},
+                     {"Name": "SpeechPersonalStatus", "Direction": "Input",  "DataType": ["MMC-SPS-V2.5", "MMC-EPS-V2.5"], "IsOptional": true, "Technology": "", "Protocol": "", "IsRemote": ""},
                      {"Name": "SpeechModel",          "Direction": "Input",  "DataType": "AIP-MLO-V1.0",                   "IsOptional": true, "Technology": "", "Protocol": "", "IsRemote": ""}],
 
   "SubAIMs":         [ ],

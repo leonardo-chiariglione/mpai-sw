@@ -31,7 +31,7 @@ public sealed class TtsAimProcessor : IAimProcessor
         _tts        = tts;
         _inputPort  = ports.Input("OSD-BTO-V1.5");   // dual-typed port [OSD-BTO, OSD-TXO]
         _outputPort = ports.Output("OSD-BSO-V1.5");  // dual-typed port [OSD-BSO, OSD-SPO]
-        _spsPort    = ports.InputOrDefault("MMC-SPS-V2.5", 1, string.Empty);   // optional emotion
+        _spsPort    = ports.InputOrDefault("MMC-SPS-V2.5", 1, string.Empty);   // optional, dual-typed port [MMC-SPS, MMC-EPS]: the Emotion to convey
         _modelPort  = ports.InputOrDefault("AIP-MLO-V1.0", 1, string.Empty);   // optional Speech Model
     }
     public async Task<Message> ProcessAsync(Message message)
@@ -52,7 +52,7 @@ public sealed class TtsAimProcessor : IAimProcessor
             message.Ports.TryGetValue(_spsPort, out var spsJson) &&
             !string.IsNullOrWhiteSpace(spsJson))
         {
-            sps = MpaiJson.FromJson<SpeechPersonalStatus>(spsJson);
+            sps = SpeechStatusOf(spsJson);
         }
 
         var prosody = ProsodyArgs(sps);
@@ -116,6 +116,20 @@ public sealed class TtsAimProcessor : IAimProcessor
     // Map the Speech Personal Status emotion to Piper prosody flags (speaking rate
     // + variation), blended toward Piper's defaults by the emotion Degree. Absent
     // or neutral => no flags, so neutral synthesis is unchanged.
+    // THE PERSONAL STATUS PORT TAKES A SPEECH PERSONAL STATUS OR A PERSONAL STATUS (e.g. the Machine Emotion of Entity Dialogue Processing in Conversation with
+    // Emotion, a Personal Status with only the Emotion). Of a Personal Status the speech conveys the Emotion of its Speech modality, else of the first modality
+    // that has one (Text, Face, Body).
+    private static SpeechPersonalStatus? SpeechStatusOf(string json)
+    {
+        if (!json.Contains("MMC-EPS-V2.5", StringComparison.Ordinal))
+            return MpaiJson.FromJson<SpeechPersonalStatus>(json);
+        var ps = MpaiJson.FromJson<EntityPersonalStatus>(json);
+        if (ps is null) return null;
+        if (ps.SpeechPersonalStatus is { } speech) return speech;
+        var emotion = ps.TextPersonalStatus?.TextEmotion ?? ps.FacePersonalStatus?.FaceEmotion ?? ps.BodyPersonalStatus?.BodyEmotion;
+        return emotion is null ? null : new SpeechPersonalStatus { SpeechEmotion = emotion };
+    }
+
     private static string ProsodyArgs(SpeechPersonalStatus? sps)
     {
         var em  = sps?.SpeechEmotion;

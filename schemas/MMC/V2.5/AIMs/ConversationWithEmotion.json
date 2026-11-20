@@ -43,6 +43,7 @@
                       {"Output": {"AIMCode": "PAF-PFI-V1.6", "DataType": "MMC-FPS-V2.5"}, "Input": {"AIMCode": "MMC-MEF-V2.5", "DataType": "MMC-FPS-V2.5"}},
                       {"Output": {"AIMCode": "MMC-MEF-V2.5", "DataType": "MMC-EPS-V2.5"}, "Input": {"AIMCode": "MMC-EDP-V2.5", "DataType": "MMC-EPS-V2.5", "PortNumber": 1}},
                       {"Output": {"AIMCode": "MMC-EDP-V2.5", "DataType": "OSD-BTO-V1.5"}, "Input": {"AIMCode": "MMC-TTS-V2.5", "DataType": "OSD-BTO-V1.5"}},
+                      {"Output": {"AIMCode": "MMC-EDP-V2.5", "DataType": "MMC-EPS-V2.5"}, "Input": {"AIMCode": "MMC-TTS-V2.5", "DataType": "MMC-EPS-V2.5"}},
                       {"Output": {"AIMCode": "MMC-EDP-V2.5", "DataType": "OSD-BTO-V1.5"}, "Input": {"AIMCode": "", "DataType": "OSD-BTO-V1.5"}},
                       {"Output": {"AIMCode": "MMC-EDP-V2.5", "DataType": "MMC-EPS-V2.5"}, "Input": {"AIMCode": "MMC-VLA-V2.5", "DataType": "MMC-EPS-V2.5"}},
                       {"Output": {"AIMCode": "MMC-TTS-V2.5", "DataType": "OSD-BSO-V1.5"}, "Input": {"AIMCode": "", "DataType": "OSD-BSO-V1.5"}},
