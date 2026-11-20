@@ -112,7 +112,9 @@ var result = new
     Method = method, Seed = seed, Rounds = rounds, Epochs = epochs, Train = train, Test = test, Arrivals = arrivals,
     Local = Metrics.Mean(local), Global = global, Seconds = Math.Round(clock.Elapsed.TotalSeconds, 1)
 };
-var line = JsonSerializer.Serialize(result);
+// A measure that cannot be computed (no fall among the test subjects' windows: no PR-AUC, no miss rate) is written as no value (null), not a number;
+// the run is kept and the summary leaves it out of that measure only.
+var line = JsonSerializer.Serialize(result, new JsonSerializerOptions { Converters = { new NoValueForNaN() } });
 lock (typeof(Program)) File.AppendAllText(outPath, line + Environment.NewLine);
 Console.WriteLine(line);
 
@@ -140,5 +142,15 @@ public sealed record Metrics(double PrAuc, double RocAuc, double F1, double Miss
     {
         double M(Func<Metrics, double> f) => ms.Select(f).Where(v => !double.IsNaN(v)).DefaultIfEmpty(double.NaN).Average();
         return new Metrics(M(m => m.PrAuc), M(m => m.RocAuc), M(m => m.F1), M(m => m.MissRate), M(m => m.FalseAlarmRate), ms.Sum(m => m.Positives), ms.Sum(m => m.Cases));
+    }
+}
+
+public sealed class NoValueForNaN : System.Text.Json.Serialization.JsonConverter<double>
+{
+    public override double Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        => reader.TokenType == JsonTokenType.Null ? double.NaN : reader.GetDouble();
+    public override void Write(Utf8JsonWriter writer, double value, JsonSerializerOptions options)
+    {
+        if (double.IsNaN(value) || double.IsInfinity(value)) writer.WriteNullValue(); else writer.WriteNumberValue(value);
     }
 }

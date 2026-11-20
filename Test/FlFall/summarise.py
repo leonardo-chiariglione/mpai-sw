@@ -13,9 +13,10 @@ for m in ORDER:
     for side in ["Local", "Global"]:
         for k in KEYS:
             v = [r[side][k] for r in rs if r[side][k] is not None]
-            d[f"{side} {k}"] = (round(st.mean(v), 4), round(st.stdev(v), 4) if len(v) > 1 else 0.0)
+            d[f"{side} {k}"] = (round(st.mean(v), 4), round(st.stdev(v), 4) if len(v) > 1 else 0.0) if v else (None, None)   # no seed gave a value
     out[m] = d
 json.dump(out, open(os.path.join(os.path.dirname(path), "summary.json"), "w"), indent=1)
 print(f"{'method':9} {'n':>2}  " + "  ".join(f"{s[0]}.{k[:6]:>6}" for s in ['Local', 'Global'] for k in KEYS))
+def cell(v): return "   no value  " if v[0] is None else f"{v[0]:.3f}±{v[1]:.3f}"
 for m, d in out.items():
-    print(f"{m:9} {len(d['seeds']):>2}  " + "  ".join(f"{d[f'{s} {k}'][0]:.3f}±{d[f'{s} {k}'][1]:.3f}" for s in ['Local', 'Global'] for k in KEYS))
+    print(f"{m:9} {len(d['seeds']):>2}  " + "  ".join(cell(d[f"{s} {k}"]) for s in ['Local', 'Global'] for k in KEYS))
