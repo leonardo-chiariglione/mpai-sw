@@ -160,7 +160,8 @@ def build(folders):
     # THE LATEST VERSION, AND WHAT IT DOES NOT HAVE FROM THE EARLIER ONES (the author, 2026-11-18): "for each standard you take the last version. if there is a previous
     # version in D:\AI\schemas, you take from the previous ones the AIMs, the Units, and the Data Types that are not in the last Versions". A new version holds only what
     # changed (MMM-TEC V3.0: 5 data types; the others are those of V2.2). An AIM or a Data Type is the same one in two versions when its code is the same without the
-    # version (MMM-ACT-V2.2 and MMM-ACT-V3.0); one without a code, when its file has the same name. The Actions are those of the latest version only.
+    # version (MMM-ACT-V2.2 and MMM-ACT-V3.0); one without a code, when its file has the same name. The Process Actions follow the same rule (MMM-TEC V3.0 changes
+    # two of the 30 and keeps the codes of V2.2: the other 28 are those of V2.2; author 2026-11-20, "fix both first").
     def unversioned(ident):
         return re.sub(r'-V\d+(\.\d+)*$', '', ident)
     def aim_name(d):
@@ -179,7 +180,7 @@ def build(folders):
     id_by_url = {}
     for folder, v in latest.items():
         for sub in ('data', 'actions'):
-            for f in (picked(folder, sub) if sub == 'data' else merged(folder, v, sub)):
+            for f in picked(folder, sub):
                 d = load(f)
                 id_by_url[schema_url(d, f)] = header_of(d) or folder + '/' + os.path.splitext(os.path.basename(f))[0]
 
@@ -213,7 +214,7 @@ def build(folders):
 
         # ---- data types and actions
         for sub, kind in (('data', 'DataType'), ('actions', 'Action')):
-            for f in (picked(folder, sub) if sub == 'data' else merged(folder, version, sub)):
+            for f in picked(folder, sub):
                 from_ai = f.startswith(AI_SCH)
                 d = load(f)
                 ident = id_by_url[schema_url(d, f)]
@@ -399,9 +400,17 @@ def web_pages(g, stats):
         for code, name in mmm.get('actions', {}).items():
             ident = code + '-' + mmm['version']
             n = KIND_NS['Action'][ident]
+            # the same code, kept from an earlier version (MMM-RCP-V2.2 for MMM-RCP-V3.0)
+            kept = next((a for a in g.subjects(RDF.type, MKG.Action) if a != n and re.sub(r'-V\d+(\.\d+)*$', '', str(a).rsplit('/', 1)[-1]) == code), None)
+            if kept is not None and (n, RDF.type, MKG.Action) not in g:
+                g.add((kept, MKG.webPage, URIRef(mmm['base'] + 'process-actions/')))
+                continue
             # the same Process Action under another code: match on the name (UM-Actuate = UMActuatePA)
             same = next((a for a in g.subjects(RDF.type, MKG.Action) if g.value(a, MKG.schema) is not None
                          and os.path.splitext(str(g.value(a, MKG.schema)).rsplit('/', 1)[-1])[0].lower() == name.replace('-', '').lower() + 'pa'), None)
+            if same is not None and same != n and re.sub(r'-V\d+(\.\d+)*$', '', str(same).rsplit('/', 1)[-1]) == code:
+                g.add((same, MKG.webPage, URIRef(mmm['base'] + 'process-actions/')))   # the same code, kept from an earlier version
+                continue
             if same is not None and same != n:
                 g.add((same, MKG.webPage, URIRef(mmm['base'] + 'process-actions/')))
                 g.add((same, MKG.webCode, Literal(code)))

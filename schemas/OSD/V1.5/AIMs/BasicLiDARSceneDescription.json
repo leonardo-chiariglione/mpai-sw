@@ -3,7 +3,7 @@
   "AIMType":          "OSD-BLS-V1.5",
 
   "APIProfile":       "Basic",
-  "Description":      "Basic LiDAR Scene Description: describes the acquired BasicLiDARObject as BasicLiDARSceneDescriptors. It raises an Alert when what it describes warrants one, without waiting for integration. Two of its inputs are optional, so that the same AIM serves applications that have something to connect to them and applications that do not: an application holding an ego Spatial Attitude receives descriptors already expressed in that frame, and one that maintains a running environment description returns it as a prior. Both are wired in EnvironmentSensingSubsystem.json and neither is wired in MMC-HCI.",
+  "Description":      "Basic LiDAR Scene Description: describes the acquired BasicLiDARObject as BasicLiDARSceneDescriptors. It raises an Alert when what it describes warrants one, without waiting for integration. Two of its inputs are optional, so that the same AIM serves applications that have something to connect to them and applications that do not: an application holding an ego Spatial Attitude receives descriptors already expressed in that frame, and one that maintains a running environment description returns it as a prior. Both are wired in EnvironmentSensingSubsystem.json and neither is wired in CAV-HCI.",
 
   "InternalTypes":   [ ],
 
