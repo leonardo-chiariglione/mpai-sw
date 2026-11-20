@@ -3,7 +3,7 @@
   "AIMType":              "OSD-MAL-V1.5",
 
   "APIProfile":           "Basic",
-  "Description":          "Multimodal Alignment: aligns the Basic Audio, Visual and LiDAR Scene Descriptors sharing the same spatial attitude. It emits the aligned Audio and Visual Scene Descriptors and the Basic Audio and Visual Scene Geometries; the LiDAR Scene Descriptors are consumed to give the visual objects their points of view and are not re-emitted. Front-end alignment of MMC-HCI. (Front-end record: L3 from the L2, extended with the two Scene Geometry outputs; processor to be provided.)",
+  "Description":          "Multimodal Alignment: aligns the Basic Audio, Visual and LiDAR Scene Descriptors sharing the same spatial attitude. It emits the aligned Audio and Visual Scene Descriptors and the Basic Audio and Visual Scene Geometries; the LiDAR Scene Descriptors are consumed to give the visual objects their points of view and are not re-emitted. Front-end alignment of CAV-HCI. (Front-end record: L3 from the L2, extended with the two Scene Geometry outputs; processor to be provided.)",
 
   "InternalTypes":        [],
 

@@ -3,7 +3,7 @@
   "AIMType":              "OSD-BAS-V1.5",
 
   "APIProfile":           "Basic",
-  "Description":          "Basic Audio Scene Description: describes the acquired audio as a Basic Audio Scene - its Basic Audio Objects, each with its point of view. Front-end describer of MMC-HCI. (Front-end record: L3 from the L2; processor to be provided.)",
+  "Description":          "Basic Audio Scene Description: describes the acquired audio as a Basic Audio Scene - its Basic Audio Objects, each with its point of view. Front-end describer of CAV-HCI. (Front-end record: L3 from the L2; processor to be provided.)",
 
   "InternalTypes":        [],
 

@@ -3,7 +3,7 @@
   "AIMType":              "OSD-BOS-V1.5",
 
   "APIProfile":           "Basic",
-  "Description":          "Basic Offline Map Scene Description: describes the acquired BasicOfflineMapObject as BasicOfflineMapSceneDescriptors. Two of its inputs are optional, so that the same AIM serves applications that have something to connect to them and applications that do not: an application holding an ego Spatial Attitude receives descriptors already expressed in that frame, and one that maintains a running environment description returns it as a prior. Both are wired in EnvironmentSensingSubsystem.json and neither is wired in MMC-HCI. It neither raises an Alert nor takes a prior: EnvironmentSensingSubsystem.json wires neither to the offline map, a stored map having nothing to react to and nothing to gain from the previous cycle.",
+  "Description":          "Basic Offline Map Scene Description: describes the acquired BasicOfflineMapObject as BasicOfflineMapSceneDescriptors. Two of its inputs are optional, so that the same AIM serves applications that have something to connect to them and applications that do not: an application holding an ego Spatial Attitude receives descriptors already expressed in that frame, and one that maintains a running environment description returns it as a prior. Both are wired in EnvironmentSensingSubsystem.json and neither is wired in CAV-HCI. It neither raises an Alert nor takes a prior: EnvironmentSensingSubsystem.json wires neither to the offline map, a stored map having nothing to react to and nothing to gain from the previous cycle.",
 
   "InternalTypes":        [],
 
