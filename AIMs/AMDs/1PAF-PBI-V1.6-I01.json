@@ -5,8 +5,7 @@
   "APIProfile":       "Basic",
   "Description":      "PS-Body Interpretation: gives the Body Personal Status from the Body Descriptors Object of a body (the 33 keypoints of Entity Body Description). FIRST IMPLEMENTATION, BY SIMPLE RULES: no model reads the Personal Status from the keypoints; six postures and gestures (arms raised, hand at the face, arms crossed, hands on the hips, arms open, head dropped) are recognised from the geometry of the keypoints and each is given a label of the vocabulary. A posture that is not among them gives no Personal Status.",
 
-  "ExternalPorts":   [{"Name": "BodyDescriptorsObject", "Direction": "Input", "DataType": "PAF-BDO-V1.6", "PortNumber": 1, "Technology": "Software", "Protocol": "", "IsRemote": false},
-                      {"Name": "EntityBodyDescriptorsObject", "Direction": "Input", "DataType": "PAF-BDO-V1.6", "PortNumber": 2, "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+  "ExternalPorts":   [{"Name": "BodyDescriptorsObject", "Direction": "Input", "DataType": "PAF-BDO-V1.6", "Technology": "Software", "Protocol": "", "IsRemote": false},
                       {"Name": "BodyPersonalStatus", "Direction": "Output", "DataType": "MMC-BPS-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":         [ ],

@@ -9,10 +9,9 @@
   "Identifier":           {"ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */"},
 
   "APIProfile":           "Basic",
-  "Description":          "This AIM extracts the Text Personal Status from the Text Descriptors Object: the one supplied from outside (Port 1) and the one derived by the Entity Text Description (Port 2).",
+  "Description":          "This AIM extracts the Text Personal Status from the Text Descriptors Object, received from the Entity Text Description or directly as an input.",
 
-  "ExternalPorts":        [{"Name": "TextDescriptorsObject",       "Direction": "Input",  "DataType": "MMC-TDO-V2.5", "PortNumber": 1, "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "EntityTextDescriptorsObject", "Direction": "Input",  "DataType": "MMC-TDO-V2.5", "PortNumber": 2, "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+  "ExternalPorts":        [{"Name": "TextDescriptorsObject",       "Direction": "Input",  "DataType": "MMC-TDO-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "TextPersonalStatus",          "Direction": "Output", "DataType": "MMC-TPS-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":              [ ],

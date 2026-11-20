@@ -14,21 +14,20 @@ namespace Mpai.Paf.Pfi;
 // the most probable emotion of AffectNet is mapped to an Emotion of the vocabulary (surprise to the Cognitive State Surprise), with its probability as Degree.
 public sealed class PfiAimProcessor : IAimProcessor
 {
-    private readonly string _firstPort, _secondPort, _outPort;
+    private readonly string _inputPort, _outPort;
     public string InstanceId { get; }
 
     public PfiAimProcessor(string instanceId, AimPortReader ports)
     {
         InstanceId = instanceId;
-        _firstPort = ports.Input("PAF-FDO-V1.6", 1);
-        _secondPort = ports.InputOrDefault("PAF-FDO-V1.6", 2, "");
+        _inputPort = ports.Input("PAF-FDO-V1.6");   // one Port: the Descriptors from the Entity Face Description or given directly as an input
         _outPort = ports.Output("MMC-FPS-V2.5");
     }
 
     public Task<Message> ProcessAsync(Message message)
     {
         string? json = null;
-        foreach (var port in new[] { _firstPort, _secondPort })
+        foreach (var port in new[] { _inputPort })
             if (port.Length > 0 && message.Ports.TryGetValue(port, out var j) && !string.IsNullOrWhiteSpace(j)) { json = j; break; }
         if (json is null) return Task.FromResult(Message.Error(message.MessageId, InstanceId, "PAF-PFI-V1.6: no Face Descriptors Object to interpret."));
         FaceAffect affect;

@@ -61,14 +61,13 @@ public sealed class PtiAimProcessor : IAimProcessor
     // The labels of GoEmotions that the Personal Status cannot say.
     public static readonly string[] Lost = { "desire", "gratitude", "neutral" };
 
-    private readonly string _firstPort, _secondPort, _outputPort;
+    private readonly string _inputPort, _outputPort;
     public string InstanceId { get; }
 
     public PtiAimProcessor(string instanceId, AimPortReader ports)
     {
         InstanceId = instanceId;
-        _firstPort = ports.Input("MMC-TDO-V2.5", 1);
-        _secondPort = ports.InputOrDefault("MMC-TDO-V2.5", 2, "");
+        _inputPort = ports.Input("MMC-TDO-V2.5");   // one Port: the Descriptors from the Entity Text Description or given directly as an input
         _outputPort = ports.Output("MMC-TPS-V2.5");
     }
 
@@ -76,7 +75,7 @@ public sealed class PtiAimProcessor : IAimProcessor
     {
         // The Descriptors come from Entity Text Description, or directly as input: whichever port holds them.
         string? json = null;
-        foreach (var port in new[] { _firstPort, _secondPort })
+        foreach (var port in new[] { _inputPort })
             if (port.Length > 0 && message.Ports.TryGetValue(port, out var j) && !string.IsNullOrWhiteSpace(j)) { json = j; break; }
         if (json is null) return Task.FromResult(Message.Error(message.MessageId, InstanceId, "MMC-PTI-V2.5: no Text Descriptors Object to interpret."));
         float[] scores;

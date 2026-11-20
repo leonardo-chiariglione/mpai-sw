@@ -20,8 +20,8 @@
                           { "AIMType": "PAF-PFI-V1.6", "Identifier": { "ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": "" } }],
 
   "Topology":             [{"Output": {"AIMCode": "", "DataType": "OSD-BVO-V1.5", "PortNumber": 1}, "Input": {"AIMCode": "PAF-EFD-V1.6", "DataType": "OSD-BVO-V1.5"}},
-                          {"Output": {"AIMCode": "", "DataType": "PAF-FDO-V1.6", "PortNumber": 1}, "Input": {"AIMCode": "PAF-PFI-V1.6", "DataType": "PAF-FDO-V1.6", "PortNumber": 2}},
-                          {"Output": {"AIMCode": "PAF-EFD-V1.6", "DataType": "PAF-FDO-V1.6"}, "Input": {"AIMCode": "PAF-PFI-V1.6", "DataType": "PAF-FDO-V1.6", "PortNumber": 1}},
+                          {"Output": {"AIMCode": "", "DataType": "PAF-FDO-V1.6", "PortNumber": 1}, "Input": {"AIMCode": "PAF-PFI-V1.6", "DataType": "PAF-FDO-V1.6"}},
+                          {"Output": {"AIMCode": "PAF-EFD-V1.6", "DataType": "PAF-FDO-V1.6"}, "Input": {"AIMCode": "PAF-PFI-V1.6", "DataType": "PAF-FDO-V1.6"}},
                           {"Output": {"AIMCode": "PAF-PFI-V1.6", "DataType": "MMC-FPS-V2.5"}, "Input": {"AIMCode": "", "DataType": "MMC-FPS-V2.5", "PortNumber": 1}}],
 
   "AIMLicence":          "/* AIM Licence offered by the Implementer (AIF-LIC-V3.0): Grant, Term, Updates, Payment, TermsURI - or omit it if the AIM needs no AIM Licence */",
