@@ -10,8 +10,8 @@
   "APIProfile":           "Basic",
   "Description":          "Portable Avatar Formation: forms the Portable Avatar of the machine from the Speech, the Text, the Face and the Body Personal Status and the Avatar Model. Generative Face Description and Generative Body Description make the Face and Body Descriptors from the Speech and the Text and the Personal Statuses; Portable Avatar Multiplexing puts the Model, the Speech and the Descriptors - and, where Response and Scene Rendering has them, the Avatar's Spatial Attitude and the Descriptors of the Audio-Visual Scene - into the Portable Avatar.",
 
-  "InternalTypes":        [{"Name": "FaceDescriptors", "DataType": "PAF-FDO-V1.6"},
-                          {"Name": "BodyDescriptors", "DataType": "PAF-BDO-V1.6"}],
+  "InternalTypes":        [{"Name": "FaceDescriptorsObject", "DataType": "PAF-FDO-V1.6"},
+                          {"Name": "BodyDescriptorsObject", "DataType": "PAF-BDO-V1.6"}],
 
   "ExternalPorts":        [{"Name": "SpeechGFD", "Direction": "Input", "DataType": ["OSD-BSO-V1.5", "OSD-SPO-V1.5"], "PortNumber": 1, "Input": 2, "Technology": "Software", "Protocol": "", "IsRemote": false},
                           {"Name": "SpeechGBD", "Direction": "Input", "DataType": ["OSD-BSO-V1.5", "OSD-SPO-V1.5"], "PortNumber": 2, "Input": 2, "Technology": "Software", "Protocol": "", "IsRemote": false},

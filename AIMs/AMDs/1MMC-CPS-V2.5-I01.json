@@ -15,7 +15,7 @@
       "DataType": "OSD-BTO-V1.5"
     },
     {
-      "Name": "TextDescriptors",
+      "Name": "TextDescriptorsObject",
       "DataType": "MMC-TDO-V2.5"
     },
     {

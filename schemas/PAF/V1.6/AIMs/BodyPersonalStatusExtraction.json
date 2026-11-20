@@ -13,7 +13,7 @@
   "InternalTypes":        [ ],
 
   "ExternalPorts":        [{"Name": "BodyObject", "Direction": "Input", "DataType": "OSD-VIO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                          {"Name": "BodyDescriptors", "Direction": "Input", "DataType": "PAF-BDO-V1.6", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                          {"Name": "BodyDescriptorsObject", "Direction": "Input", "DataType": "PAF-BDO-V1.6", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
                           {"Name": "BodyPersonalStatus", "Direction": "Output", "DataType": "MMC-BPS-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":              [ ],

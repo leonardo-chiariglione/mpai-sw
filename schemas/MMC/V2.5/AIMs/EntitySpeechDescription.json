@@ -8,7 +8,7 @@
   "InternalTypes":   [ ],
 
   "ExternalPorts":   [{"Name": "BasicSpeechObject",      "Direction": "Input",  "DataType": "OSD-BSO-V1.5", "Technology": "", "Protocol": "", "IsRemote": ""},
-                     {"Name": "SpeechDescriptors", "Direction": "Output", "DataType": "MMC-SDO-V2.5", "Technology": "", "Protocol": "", "IsRemote": ""},
+                     {"Name": "SpeechDescriptorsObject", "Direction": "Output", "DataType": "MMC-SDO-V2.5", "Technology": "", "Protocol": "", "IsRemote": ""},
                      {"Name": "UserName",          "Direction": "Input",  "DataType": "OSD-BTO-V1.5", "IsOptional": true, "Technology": "", "Protocol": "", "IsRemote": ""}],
 
   "SubAIMs":         [ ],

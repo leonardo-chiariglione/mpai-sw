@@ -7,7 +7,7 @@
 
   "InternalTypes":   [ ],
 
-  "ExternalPorts":   [{"Name": "TextDescriptors",               "Direction": "Input",  "DataType": "MMC-TDO-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
+  "ExternalPorts":   [{"Name": "TextDescriptorsObject",               "Direction": "Input",  "DataType": "MMC-TDO-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
                       {"Name": "AUCPRCRequest",                 "Direction": "Input",  "DataType": "PGM-UCR-V1.0", "Technology": "Software", "Protocol": "", "IsRemote": false},
                       {"Name": "PRCInteractionHistoryResponse", "Direction": "Input",  "DataType": "PGM-IHI-V1.0", "Technology": "Software", "Protocol": "", "IsRemote": false},
                       {"Name": "ContextDescriptors",            "Direction": "Input",  "DataType": "PGM-CXD-V1.0", "Technology": "Software", "Protocol": "", "IsRemote": false},

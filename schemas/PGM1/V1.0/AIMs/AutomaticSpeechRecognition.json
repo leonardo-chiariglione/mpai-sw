@@ -17,7 +17,7 @@
                       {"Name": "UserDomainResponse",             "Direction": "Input",  "DataType": "PGM-DOM-V1.0", "Technology": "Software", "Protocol": "", "IsRemote": false},
                       {"Name": "UserInteractionHistoryResponse", "Direction": "Input",  "DataType": "PGM-IHI-V1.0", "Technology": "Software", "Protocol": "", "IsRemote": false},
                       {"Name": "RecognisedText",                 "Direction": "Output", "DataType": "OSD-BTO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                      {"Name": "SpeechDescriptors",              "Direction": "Output", "DataType": "MMC-SDO-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                      {"Name": "SpeechDescriptorsObject",              "Direction": "Output", "DataType": "MMC-SDO-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
                       {"Name": "UserCXTResponse",                "Direction": "Output", "DataType": "PGM-UCC-V1.0", "Technology": "Software", "Protocol": "", "IsRemote": false},
                       {"Name": "UserDomainRequest",              "Direction": "Output", "DataType": "PGM-DOM-V1.0", "Technology": "Software", "Protocol": "", "IsRemote": false},
                       {"Name": "UserInteractionHistoryRequest",  "Direction": "Output", "DataType": "PGM-IHI-V1.0", "Technology": "Software", "Protocol": "", "IsRemote": false}],

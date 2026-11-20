@@ -10,10 +10,10 @@
   "APIProfile":           "Basic",
   "Description":          "Face Personal Status Extraction: extracts the Face Personal Status from the Face Object, optionally using the Face Descriptors.",
 
-  "InternalTypes":        [{"Name": "FaceDescriptors", "DataType": "PAF-FDO-V1.6"}],
+  "InternalTypes":        [{"Name": "FaceDescriptorsObject", "DataType": "PAF-FDO-V1.6"}],
 
   "ExternalPorts":        [{"Name": "FaceObject", "Direction": "Input", "DataType": ["OSD-BVO-V1.5", "OSD-VIO-V1.5"], "Technology": "Software", "Protocol": "", "IsRemote": false},
-                          {"Name": "FaceDescriptors", "Direction": "Input", "DataType": "PAF-FDO-V1.6", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
+                          {"Name": "FaceDescriptorsObject", "Direction": "Input", "DataType": "PAF-FDO-V1.6", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
                           {"Name": "FacePersonalStatus", "Direction": "Output", "DataType": "MMC-FPS-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":              [{ "AIMType": "PAF-EFD-V1.6", "Identifier": { "ImplementerID": "/* String assigned by IIDRA */", "ImplementationID": "/* String assigned by Implementer */", "AIMCode": "/* The AIM Instance ID of the L3 (its AIMInstID), given by the concatenation of the two strings ImplementerID and ImplementationID, in this order, with no space and no character between them. */", "Relation": "" } },

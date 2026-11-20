@@ -6,7 +6,7 @@
   "Description":      "Entity Speech Description, the instance that describes the affect of the speech: gives the Speech Descriptors Object of a Speech Object. The descriptors are the three numbers that the wav2vec 2.0 model of audeering reads from the speech (valence, arousal, dominance), three numbers in this order; the Qualifier of the Object names the format (wav2vec 2.0 Dimensional Affect (valence, arousal, dominance)). PS-Speech Interpretation turns them into the Speech Personal Status. The instances I01 (ECAPA-TDNN) and I02 (OpenVoice) describe the voice, not the affect.",
 
   "ExternalPorts":   [{"Name": "BasicSpeechObject", "Direction": "Input", "DataType": "OSD-BSO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                      {"Name": "SpeechDescriptors", "Direction": "Output", "DataType": "MMC-SDO-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
+                      {"Name": "SpeechDescriptorsObject", "Direction": "Output", "DataType": "MMC-SDO-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":         [ ],
 

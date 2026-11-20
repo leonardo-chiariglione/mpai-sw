@@ -92,7 +92,7 @@
       "IsRemote": false
     },
     {
-      "Name": "SpeechDescriptors",
+      "Name": "SpeechDescriptorsObject",
       "Direction": "Output",
       "DataType": "MMC-SDO-V2.5",
       "Technology": "Software",

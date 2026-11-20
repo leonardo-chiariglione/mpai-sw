@@ -13,8 +13,8 @@
   "InternalTypes":        [ ],
 
   "ExternalPorts":        [{"Name": "SpeechObject",    "Direction": "Input",  "DataType": "OSD-SPO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "FaceDescriptors", "Direction": "Input",  "DataType": "PAF-FDO-V1.6", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "BodyDescriptors", "Direction": "Input",  "DataType": "PAF-BDO-V1.6", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "FaceDescriptorsObject", "Direction": "Input",  "DataType": "PAF-FDO-V1.6", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "BodyDescriptorsObject", "Direction": "Input",  "DataType": "PAF-BDO-V1.6", "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "AvatarModel",     "Direction": "Input",  "DataType": "OSD-3DO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "SpeechObject",    "Direction": "Output", "DataType": "OSD-SPO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "VisualObject",    "Direction": "Output", "DataType": "OSD-VIO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],

@@ -6,7 +6,7 @@
   "Description":      "Entity Face Description, the instance that describes the expression of the face: gives the Face Descriptors Object of a Face Object (a picture of one face). The descriptors are the ten numbers that the HSEmotion model reads from the face: the probabilities of the eight emotions of AffectNet, then the valence and the arousal; the Qualifier of the Object names the format. PS-Face Interpretation turns them into the Face Personal Status. The instance I01 describes the identity of the face (ArcFace), not the expression.",
 
   "ExternalPorts":   [{"Name": "FaceObject", "Direction": "Input", "DataType": "OSD-BVO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                      {"Name": "FaceDescriptors", "Direction": "Output", "DataType": "PAF-FDO-V1.6", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                      {"Name": "FaceDescriptorsObject", "Direction": "Output", "DataType": "PAF-FDO-V1.6", "Technology": "Software", "Protocol": "", "IsRemote": false},
                       {"Name": "UserName", "Direction": "Input", "DataType": "OSD-BTO-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":         [ ],

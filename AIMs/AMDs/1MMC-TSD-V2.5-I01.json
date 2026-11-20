@@ -6,7 +6,7 @@
   "Description":      "Text-to-Speech with Descriptors: speaks a Text Object with the voice that a Speech Descriptors Object describes. The Text-To-Speech of MPAI-MMC (Piper) says the text in the voice of its own; each piece is then given the tone colour of the Speech Descriptors Object (OpenVoice V2: the tone-colour embedding of the voice, 256 numbers, that Entity Speech Description made from the speech of the Entity). A Speech Descriptors Object of another format - an ECAPA-TDNN speaker embedding - is refused.",
 
   "ExternalPorts":   [{"Name": "InputText",         "Direction": "Input",  "DataType": "OSD-BTO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                      {"Name": "SpeechDescriptors", "Direction": "Input",  "DataType": "MMC-SDO-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                      {"Name": "SpeechDescriptorsObject", "Direction": "Input",  "DataType": "MMC-SDO-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
                       {"Name": "Selector",          "Direction": "Input",  "DataType": "OSD-SEL-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
                       {"Name": "OutputSpeech",      "Direction": "Output", "DataType": "OSD-BSO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 

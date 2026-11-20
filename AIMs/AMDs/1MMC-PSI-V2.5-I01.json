@@ -5,7 +5,7 @@
   "APIProfile":       "Basic",
   "Description":      "PS-Speech Interpretation: gives the Speech Personal Status from the Speech Descriptors Object of a speech (the valence, arousal and dominance of the instance I03 of Entity Speech Description). The interpretation is that of MMC-SPE: the (valence, arousal) point is mapped to an Emotion by the quadrants of the affective circumplex, and the dominance to a Social Attitude. A Speech Descriptors Object of another format (a voice embedding) is refused. The model that gives these descriptors (in the instance I03 of Entity Speech Description) is licensed for non-commercial use only (CC-BY-NC-SA-4.0).",
 
-  "ExternalPorts":   [{"Name": "SpeechDescriptors", "Direction": "Input", "DataType": "MMC-SDO-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
+  "ExternalPorts":   [{"Name": "SpeechDescriptorsObject", "Direction": "Input", "DataType": "MMC-SDO-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
                       {"Name": "SpeechPersonalStatus", "Direction": "Output", "DataType": "MMC-SPS-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":         [ ],

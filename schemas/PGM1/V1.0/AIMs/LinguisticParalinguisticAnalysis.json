@@ -8,7 +8,7 @@
   "InternalTypes":   [ ],
 
   "ExternalPorts":   [{"Name": "HarmonisedMultimodalContext",      "Direction": "Input",  "DataType": "PGM-MIH-V1.0", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                      {"Name": "SpeechDescriptors",                "Direction": "Input",  "DataType": "MMC-SDO-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                      {"Name": "SpeechDescriptorsObject",                "Direction": "Input",  "DataType": "MMC-SDO-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
                       {"Name": "UserCXTRequest",                   "Direction": "Input",  "DataType": "PGM-UCC-V1.0", "Technology": "Software", "Protocol": "", "IsRemote": false},
                       {"Name": "UserDomainResponse",               "Direction": "Input",  "DataType": "PGM-DOM-V1.0", "Technology": "Software", "Protocol": "", "IsRemote": false},
                       {"Name": "UserInteractionHistoryResponse",   "Direction": "Input",  "DataType": "PGM-IHI-V1.0", "Technology": "Software", "Protocol": "", "IsRemote": false},

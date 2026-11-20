@@ -6,7 +6,7 @@
   "Description":      "Entity Speech Description: computes the Speech Descriptors of an Entity from its Speech Object. This instance gives the tone-colour embedding of the voice (OpenVoice V2, 256 numbers) in a Speech Descriptors Object whose Qualifier says so: the descriptors that Text-to-Speech with Descriptors speaks with. The ECAPA-TDNN speaker embedding, for recognising a speaker, is the first instance.",
 
   "ExternalPorts":   [{"Name": "BasicSpeechObject", "Direction": "Input",  "DataType": "OSD-BSO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                      {"Name": "SpeechDescriptors", "Direction": "Output", "DataType": "MMC-SDO-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
+                      {"Name": "SpeechDescriptorsObject", "Direction": "Output", "DataType": "MMC-SDO-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
 
   "SubAIMs":         [ ],
 

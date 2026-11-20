@@ -87,7 +87,7 @@
       "IsRemote": false
     },
     {
-      "Name": "FaceDescriptors",
+      "Name": "FaceDescriptorsObject",
       "Direction": "Output",
       "DataType": "PAF-FDO-V1.6",
       "Technology": "Software",
@@ -95,7 +95,7 @@
       "IsRemote": false
     },
     {
-      "Name": "BodyDescriptors",
+      "Name": "BodyDescriptorsObject",
       "Direction": "Output",
       "DataType": "PAF-BDO-V1.6",
       "Technology": "Software",

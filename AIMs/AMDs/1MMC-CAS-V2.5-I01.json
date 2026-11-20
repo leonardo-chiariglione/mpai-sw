@@ -5,7 +5,7 @@
   "OnDegraded":       "Continue",
   "Description":      "Conversation About a Scene: Multimodal Frontend Description gives the Basic Speech, Face, Body and Visual Objects and the Basic Visual Scene Descriptors of the Input Visual and Input Audio; Entity Body Description gives the Body Descriptors of the Body Object; Visual Object Identification gives the Instance ID of the Visual Object the Entity indicates; Automatic Speech Recognition recognises the Basic Speech Object; Natural Language Understanding gives the Text Descriptors and the Refined Text from the Recognised Text and the Instance ID; Personal Status Extraction gives the Input Personal Status from the Speech, Face and Body Objects and the Text Descriptors; Entity Dialogue Processing gives the Machine Personal Status and the Machine Text; Portable Avatar Multiplexing gives the Portable Avatar, with the Basic Visual Scene Descriptors, the View Selector, the Point of View and the Machine ID.",
   "InternalTypes":    [{"Name": "RecognisedText", "DataType": "OSD-BTO-V1.5"},
-                       {"Name": "TextDescriptors", "DataType": "MMC-TDO-V2.5"},
+                       {"Name": "TextDescriptorsObject", "DataType": "MMC-TDO-V2.5"},
                        {"Name": "RefinedText", "DataType": "OSD-BTO-V1.5"},
                        {"Name": "PersonalStatus", "DataType": "MMC-EPS-V2.5"},
                        {"Name": "MachineText", "DataType": "OSD-BTO-V1.5"},

@@ -12,7 +12,7 @@
                           {"Name": "FaceAnimationObject", "Direction": "Input", "DataType": "PAF-AMO-V1.6", "IsOptional": true, "Technology": "", "Protocol": "", "IsRemote": ""},
                           {"Name": "TextObject", "Direction": "Input", "DataType": ["OSD-BTO-V1.5", "OSD-TXO-V1.5"], "Technology": "", "Protocol": "", "IsRemote": ""},
                           {"Name": "MachineSpeech", "Direction": "Input", "DataType": "OSD-BSO-V1.5", "Technology": "", "Protocol": "", "IsRemote": ""},
-                          {"Name": "MachineFaceDescriptors", "Direction": "Output", "DataType": "PAF-FDO-V1.6", "Technology": "", "Protocol": "", "IsRemote": ""}],
+                          {"Name": "MachineFaceDescriptorsObject", "Direction": "Output", "DataType": "PAF-FDO-V1.6", "Technology": "", "Protocol": "", "IsRemote": ""}],
   "SubAIMs":              [],
   "Topology":             [],
   "AIMLicence":          "/* AIM Licence offered by the Implementer (AIF-LIC-V3.0): Grant, Term, Updates, Payment, TermsURI - or omit it if the AIM needs no AIM Licence */",

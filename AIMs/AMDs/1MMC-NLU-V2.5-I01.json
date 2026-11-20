@@ -12,7 +12,7 @@
                        {"Name": "InputSelector",     "Direction": "Input",  "DataType": "OSD-SEL-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
                        {"Name": "InstanceIdentifier", "Direction": "Input",  "DataType": "OSD-IID-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
                        {"Name": "VisualSceneGeometry", "Direction": "Input",  "DataType": "OSD-BVG-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
-                       {"Name": "TextDescriptors",    "Direction": "Output", "DataType": "MMC-TDO-V2.5",                                      "Technology": "Software", "Protocol": "", "IsRemote": false},
+                       {"Name": "TextDescriptorsObject",    "Direction": "Output", "DataType": "MMC-TDO-V2.5",                                      "Technology": "Software", "Protocol": "", "IsRemote": false},
                        {"Name": "RefinedText",        "Direction": "Output", "DataType": "OSD-BTO-V1.5",                                      "Technology": "Software", "Protocol": "", "IsRemote": false},
                        {"Name": "TextPersonalStatus", "Direction": "Output", "DataType": "MMC-TPS-V2.5",                                      "Technology": "Software", "Protocol": "", "IsRemote": false},
                        {"Name": "OutputInstanceIdentifier", "Direction": "Output", "DataType": "OSD-IID-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false}],

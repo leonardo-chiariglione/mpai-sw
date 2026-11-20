@@ -8,7 +8,7 @@
   "InternalTypes":        [],
 
   "ExternalPorts":        [{"Name": "TextObject", "Direction": "Input", "DataType": "OSD-BTO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
-                           {"Name": "TextDescriptors", "Direction": "Input", "DataType": "MMC-TDO-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
+                           {"Name": "TextDescriptorsObject", "Direction": "Input", "DataType": "MMC-TDO-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "InstanceIdentifier", "Direction": "Input", "DataType": "OSD-IID-V1.5", "IsOptional": true, "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "Intention", "Direction": "Input", "DataType": "MMC-INT-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
                            {"Name": "MachineText", "Direction": "Output", "DataType": "OSD-BTO-V1.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
