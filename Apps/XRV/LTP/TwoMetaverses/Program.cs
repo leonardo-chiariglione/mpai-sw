@@ -41,7 +41,7 @@ var root = FindRoot();
 var scale = double.Parse(Arg(args, "--scale", "1"), CultureInfo.InvariantCulture);
 var fps = int.Parse(Arg(args, "--fps", "20"), CultureInfo.InvariantCulture);
 var outDir = Path.GetFullPath(Arg(args, "--out", Path.Combine(root, "Test", "Results", DateTime.Now.ToString("yyyy-MM-dd"), "xrv-two-metaverses")));
-var video = Arg(args, "--video", Path.Combine(outDir, "XRV-LTP-two-metaverses-demo.mp4"));
+var video = Arg(args, "--video", Path.Combine(outDir, "XRV-LTP-Real-Virtual-Environments-demo.mp4"));
 Directory.CreateDirectory(outDir);
 var showDir = Path.Combine(root, "Test", "Data", "XRV", "LongerEvening");
 var events = new List<string>();

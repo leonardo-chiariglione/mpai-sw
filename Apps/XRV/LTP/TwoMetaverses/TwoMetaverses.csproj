@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- N-26: THE XRV-LTP DEMO ON TWO METAVERSES. Two M-Instances of MMM-TEC V2.2 (Theatre = the Real Environment, Square = the Virtual Environment), each driven by its own list of
+  <!-- N-26: THE XRV-LTP DEMO "REAL-VIRTUAL ENVIRONMENTS". Two M-Instances of MMM-TEC V2.2 (Theatre = the Real Environment, Square = the Virtual Environment), each driven by its own list of
        time-stamped Process Actions; the Module 1XRV-LTP-V1.0-I01 through the workflow XRV-LTP.orch and the Controller API; the run is recorded and drawn into a video. -->
 
   <PropertyGroup>
