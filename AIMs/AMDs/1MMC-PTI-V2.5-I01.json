@@ -3,7 +3,7 @@
   "AIMType":          "MMC-PTI-V2.5",
 
   "APIProfile":       "Basic",
-  "Description":      "PS-Text Interpretation: gives the Text Personal Status from the Text Descriptors Object of a text (the 28 GoEmotions scores of Entity Text Description). Each label of GoEmotions is mapped to a label of the Emotion, Cognitive State or Social Attitude vocabulary; the label of each Factor with the highest score is given, with the score as Degree, if the score reaches 0.25. Desire, gratitude and neutral have no label in the vocabulary and are not given.",
+  "Description":      "PS-Text Interpretation: gives the Text Personal Status from the Text Descriptors Object of a text: the 28 GoEmotions scores of Entity Text Description, or the Basic Text Descriptors (taggings) of Natural Language Understanding, whose words it scores with the same GoEmotions classifier (its AccessSources). Each label of GoEmotions is mapped to a label of the Emotion, Cognitive State or Social Attitude vocabulary; the label of each Factor with the highest score is given, with the score as Degree, if the score reaches 0.25. Desire, gratitude and neutral have no label in the vocabulary and are not given.",
 
   "ExternalPorts":   [{"Name": "TextDescriptorsObject", "Direction": "Input", "DataType": "MMC-TDO-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false},
                       {"Name": "TextPersonalStatus", "Direction": "Output", "DataType": "MMC-TPS-V2.5", "Technology": "Software", "Protocol": "", "IsRemote": false}],
@@ -11,6 +11,10 @@
   "SubAIMs":         [ ],
 
   "Topology":        [ ],
+
+  "AccessSources":   [{"Name": "text-emotion", "Uri": "https://huggingface.co/SamLowe/roberta-base-go_emotions-onnx/resolve/90ee0c1c4796d370e68968687b8ba51fc11224f4/onnx/model.onnx", "Sha256": "3BF605ADFA0E59AE36723F1136D37865ACB0EC4DED7831F7F7F5231EB032D60A", "Setting": "GoEmotionsModel", "AsFile": "go_emotions_roberta_base.onnx", "Terms": {"Licence": "MIT (the model, as its model page states); the licence of the GoEmotions training data is not stated on the model page", "Uri": "https://huggingface.co/SamLowe/roberta-base-go_emotions-onnx", "PersonalData": false}, "Description": "The text emotion model (RoBERTa-base fine-tuned on GoEmotions, 28 labels; full precision ONNX version of SamLowe/roberta-base-go_emotions-onnx)."},
+                      {"Name": "text-emotion-vocab", "Uri": "https://huggingface.co/SamLowe/roberta-base-go_emotions-onnx/resolve/90ee0c1c4796d370e68968687b8ba51fc11224f4/vocab.json", "Sha256": "ED19656EA1707DF69134C4AF35C8CEDA2CC9860BF2C3495026153A133670AB5E", "Setting": "GoEmotionsVocab", "AsFile": "go_emotions_vocab.json", "Terms": {"Licence": "MIT (the model, as its model page states); the licence of the GoEmotions training data is not stated on the model page", "Uri": "https://huggingface.co/SamLowe/roberta-base-go_emotions-onnx", "PersonalData": false}, "Description": "The vocabulary of the byte-level BPE tokeniser of the model."},
+                      {"Name": "text-emotion-merges", "Uri": "https://huggingface.co/SamLowe/roberta-base-go_emotions-onnx/resolve/90ee0c1c4796d370e68968687b8ba51fc11224f4/merges.txt", "Sha256": "FE36CAB26D4F4421ED725E10A2E9DDB7F799449C603A96E7F29B5A3C82A95862", "Setting": "GoEmotionsMerges", "AsFile": "go_emotions_merges.txt", "Terms": {"Licence": "MIT (the model, as its model page states); the licence of the GoEmotions training data is not stated on the model page", "Uri": "https://huggingface.co/SamLowe/roberta-base-go_emotions-onnx", "PersonalData": false}, "Description": "The merge rules of the byte-level BPE tokeniser of the model."}],
 
   "Implementations": [{"ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/MMC/V2.5/PTI", "MASPort": 443, "BinaryName": "Mpai.Mmc.Pti", "Architecture": "x86-64", "OperatingSystem": "Windows", "Version": "2.5", "Source": "AIMStorage"}],
 

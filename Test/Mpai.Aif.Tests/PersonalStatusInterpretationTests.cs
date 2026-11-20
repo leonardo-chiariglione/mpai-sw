@@ -81,9 +81,14 @@ public class PersonalStatusInterpretationTests
         var none = await pti.ProcessAsync(new Message { MessageId = "m", Ports = new() });
         Assert.True(none.IsError); Assert.Contains("no Text Descriptors Object", none.Payload);
 
-        var taggings = TextDescriptorsObject.FromTaggings(new TextTaggings());           // the descriptors of MMC-NLU, not scores
-        var wrong = await pti.ProcessAsync(new Message { MessageId = "m", Ports = new() { [inPort] = MpaiJson.ToJson(taggings) } });
-        Assert.True(wrong.IsError); Assert.Contains("this interpretation takes", wrong.Payload);
+        var empty = TextDescriptorsObject.FromTaggings(new TextTaggings());              // Basic Text Descriptors with no tagging: nothing to read
+        var wrong = await pti.ProcessAsync(new Message { MessageId = "m", Ports = new() { [inPort] = MpaiJson.ToJson(empty) } });
+        Assert.True(wrong.IsError); Assert.Contains("neither GoEmotions scores nor a part-of-speech tagging", wrong.Payload);
+
+        var nlu = TextDescriptorsObject.FromTaggings(new TextTaggings { TextDescriptorsData = new() { POS_tagging = new Tagging { Set = "MPAI-NLU-simple-POS", Result = "I/PRON am/VERB furious/ADJ ./PUNCT" } } });
+        var noModel = await pti.ProcessAsync(new Message { MessageId = "m", Ports = new() { [inPort] = MpaiJson.ToJson(nlu) } });   // the taggings of MMC-NLU, and no classifier
+        Assert.True(noModel.IsError); Assert.Contains("need the GoEmotions classifier", noModel.Payload);
+        Assert.Equal("I am furious.", PtiAimProcessor.TextOfTaggings(nlu));
 
         var scores = new TextDescriptorsObject { TextDescriptorsObjectID = "t", TextDescriptorsData = new() { new TextDescriptorsDataItem { Data = EmbeddingCodec.ToBase64(Scores(("anger", 0.8f))) } },
                                                  TextDescriptorsQualifier = TextDescriptorsQualifier.ForOther(EtdAimProcessor.DescriptorFormat) };
@@ -175,6 +180,28 @@ public class PersonalStatusInterpretationTests
         var p = await pti.ProcessAsync(new Message { MessageId = "m", Ports = new() { [ptiPorts.Input("MMC-TDO-V2.5", 1)] = d.Ports[etdPorts.Output("MMC-TDO-V2.5")] } });
         Assert.False(p.IsError, p.Payload);
         return MpaiJson.FromJson<TextPersonalStatus>(p.Ports[ptiPorts.Output("MMC-TPS-V2.5")])!;
+    }
+
+    [SkippableFact, Trait("Group", "Slow")]
+    public async Task TheEmotionOfATextIsReadFromTheBasicTextDescriptorsOfNaturalLanguageUnderstanding()
+    {
+        // In HMC, Conversation with Personal Status and Conversation About a Scene, PS-Text Interpretation receives the Text Descriptors Object of NLU (the Basic taggings).
+        Skip.IfNot(TestModels.Can("text-emotion", "text-emotion-vocab", "text-emotion-merges"), "the GoEmotions model is not obtained");
+        var store = Store();
+        var nluPorts = AimPortReader.Load(store, "1MMC-NLU-V2.5-I01"); var ptiPorts = AimPortReader.Load(store, "1MMC-PTI-V2.5-I01");
+        using var model = EtdFactory.Create(TestModels.Settings("1MMC-PTI-V2.5-I01"));
+        var nlu = new Mpai.Mmc.Nlu.NluAimProcessor("nlu", nluPorts); var pti = new PtiAimProcessor("pti", ptiPorts, () => model);
+        async Task<TextPersonalStatus> Of(string text)
+        {
+            var d = await nlu.ProcessAsync(new Message { MessageId = "m", Ports = new() { [nluPorts.Input("OSD-BTO-V1.5", 1)] = MpaiJson.ToJson(BasicTextObject.FromText(text)) } });
+            Assert.False(d.IsError, d.Payload);
+            var r = await pti.ProcessAsync(new Message { MessageId = "m", Ports = new() { [ptiPorts.Input("MMC-TDO-V2.5")] = d.Ports[nluPorts.Output("MMC-TDO-V2.5")] } });
+            Assert.False(r.IsError, r.Payload);
+            return MpaiJson.FromJson<TextPersonalStatus>(r.Ports[ptiPorts.Output("MMC-TPS-V2.5")])!;
+        }
+        Assert.Equal("ANGER", (await Of("I am absolutely furious with you. This is outrageous and I will not accept it.")).TextEmotion?.Category);
+        Assert.Equal("SADNESS", (await Of("My dog died this morning and I cannot stop crying.")).TextEmotion?.Category);
+        Assert.Equal("HAPPINESS", (await Of("I am so happy today, this is the best news I have had in years!")).TextEmotion?.Category);
     }
 
     [SkippableFact, Trait("Group", "Slow")]

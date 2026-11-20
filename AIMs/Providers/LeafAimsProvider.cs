@@ -67,7 +67,7 @@ public sealed class LeafAimsProvider : IAimProvider, IDisposable
             "1MMC-TSD-V2.5-I01" => new TsdAimProcessor(aimName, TtsFactory.Create(settings), new OpenVoiceWorker(settings), AimPortReader.Load(_store, aimName)),
             "1MMC-ESD-V2.5-I02" => new EsdOpenVoiceAimProcessor(aimName, new OpenVoiceWorker(settings), AimPortReader.Load(_store, aimName)),
             "1MMC-ETD-V2.5-I01" => new Mpai.Mmc.Etd.EtdAimProcessor(aimName, _goEmotions ??= Mpai.Mmc.Etd.EtdFactory.Create(settings), AimPortReader.Load(_store, aimName)),
-            "1MMC-PTI-V2.5-I01" => new Mpai.Mmc.Pti.PtiAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
+            "1MMC-PTI-V2.5-I01" => new Mpai.Mmc.Pti.PtiAimProcessor(aimName, AimPortReader.Load(_store, aimName), () => _goEmotions ??= Mpai.Mmc.Etd.EtdFactory.Create(settings)),
             "1MMC-ESD-V2.5-I03" => new Mpai.Mmc.Spe.EsdAffectAimProcessor(aimName, _w2v2 ??= new Mpai.Mmc.Spe.Wav2Vec2EmotionEstimator(MpaiPaths.Given(settings, "W2v2Model")), AimPortReader.Load(_store, aimName)),
             "1MMC-PSI-V2.5-I01" => new Mpai.Mmc.Psi.PsiAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
             "1PAF-EFD-V1.6-I02" => new Mpai.Paf.Fpe.EfdAffectAimProcessor(aimName, _hse ??= new Mpai.Paf.Fpe.HSEmotionEstimator(MpaiPaths.Given(settings, "HseModel")), AimPortReader.Load(_store, aimName)),
