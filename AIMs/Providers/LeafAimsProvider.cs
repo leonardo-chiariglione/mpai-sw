@@ -26,6 +26,7 @@ namespace Mpai.Providers;
 //   MMC-TTT - text-to-text translation (M2M100), to the Language Selector's target
 //   MMC-PDX, MMC-TTS, PAF-GFD, PAF-GBD, PAF-PMX - Response and Scene Rendering (speaks in the target voice)
 //   MMC-TSD, MMC-ESD (the OpenVoice instance) - Speech Translation with Descriptors (speaks the translation in the voice of the speaker)
+//   CVE-VDI, OSD-VOE, OSD-BAS - the front end of HMC-ECU, MMC-CPS and MMC-CAS (Visual Direction Identification, Visual Object Extraction, Basic Audio Scene Description)
 public sealed class LeafAimsProvider : IAimProvider, IDisposable
 {
     private readonly AmdStore _store;
@@ -45,7 +46,8 @@ public sealed class LeafAimsProvider : IAimProvider, IDisposable
         aimName is "1MMC-ASR-V2.5-I01" or "1MMC-EDP-V2.5-I01" or "1MMC-TTT-V2.5-I01" or "1MMC-TTS-V2.5-I01" or "1MMC-PDX-V2.5-I01" or "1PAF-GFD-V1.6-I01"
                 or "1PAF-GBD-V1.6-I01" or "1PAF-PMX-V1.6-I01" or "1MMC-TSD-V2.5-I01" or "1MMC-ESD-V2.5-I02"
                 or "1MMC-ETD-V2.5-I01" or "1MMC-PTI-V2.5-I01" or "1MMC-ESD-V2.5-I03" or "1MMC-PSI-V2.5-I01" or "1PAF-EFD-V1.6-I02" or "1PAF-PFI-V1.6-I01"
-                or "1PAF-EBD-V1.6-I01" or "1PAF-PBI-V1.6-I01" or "1MMC-PMX-V2.5-I01" or "1MMC-NLU-V2.5-I01";
+                or "1PAF-EBD-V1.6-I01" or "1PAF-PBI-V1.6-I01" or "1MMC-PMX-V2.5-I01" or "1MMC-NLU-V2.5-I01"
+                or "1CVE-VDI-V1.0-I01" or "1OSD-VOE-V1.5-I01" or "1OSD-BAS-V1.5-I01";
     public IAimProcessor Create(string aimName, IReadOnlyDictionary<string, string> settings, AIF.SharedStorage.ISharedStorage? storage) =>
         Create(aimName, settings, storage, null, null, null);
 
@@ -74,6 +76,9 @@ public sealed class LeafAimsProvider : IAimProvider, IDisposable
             "1PAF-PBI-V1.6-I01" => new Mpai.Paf.Pbi.PbiAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
             "1MMC-PMX-V2.5-I01" => new Mpai.Mmc.Pmx.PmxAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
             "1MMC-NLU-V2.5-I01" => new Mpai.Mmc.Nlu.NluAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
+            "1CVE-VDI-V1.0-I01" => new Mpai.Cve.Vdi.CveVdiAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
+            "1OSD-VOE-V1.5-I01" => new Mpai.Osd.Voe.OsdVoeAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
+            "1OSD-BAS-V1.5-I01" => new Mpai.Osd.Bas.BasAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
             _ => throw new NotSupportedException($"LeafAimsProvider does not provide '{aimName}'.")
         };
 

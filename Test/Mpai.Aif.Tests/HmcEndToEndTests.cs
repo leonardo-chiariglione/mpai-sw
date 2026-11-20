@@ -110,7 +110,7 @@ public class HmcEndToEndTests(Xunit.Abstractions.ITestOutputHelper output)
     }
 
     // What a microphone gives: a Basic Audio Object of the PCM samples of a WAV file.
-    private static string Microphone(byte[] wav)
+    internal static string Microphone(byte[] wav)
     {
         var rate = BitConverter.ToInt32(wav, 24); var pcm = wav[44..];
         for (var pos = 12; pos + 8 <= wav.Length;)

@@ -19,14 +19,19 @@ namespace Mpai.Osd.Voe;
 // away, as the Visual Direction Identification writes it (see there; the standard does not fix it).
 //
 // A Port carries one Visual Object, so the AIM keeps the Visual Objects it has received by their identifier (a continuous run is one execution) and
-// gives the one the Point of View crosses; if that one has not arrived, the AIM says so. The identifier of a member of the Basic Visual Scene Descriptors
-// is the string that stands for its Visual Object, or the BasicVisualObjectID of the Visual Object it carries.
+// gives the one the Point of View crosses. The identifier of a member of the Basic Visual Scene Descriptors is the string that stands for its Visual Object,
+// or the BasicVisualObjectID of the Visual Object it carries.
+//
+// NOTHING CROSSED IS NOT A FAULT (2026-11-20): the AIM keeps the latest Point of View and the latest Basic Visual Scene Descriptors. A Point of View that
+// crosses no Visual Object gives no output and no error (an error would make the Controller stop the Module by default); one that crosses a Visual Object
+// not yet received is kept, and the object is given when it arrives. A Point of View or Descriptors that cannot be read remain errors.
 public sealed class OsdVoeAimProcessor : IAimProcessor
 {
     private const double DefaultApertureDegrees = 10;
     private readonly string _instanceId;
     private readonly string _povPort, _geometryPort, _objectsPort, _outPort;
     private readonly Dictionary<string, string> _received = new();      // BasicVisualObjectID -> the object as it came
+    private string? _pov, _geometry;                                      // the latest Point of View not yet answered, the latest Descriptors
 
     public OsdVoeAimProcessor(string instanceId, AimPortReader ports)
     {
@@ -46,14 +51,16 @@ public sealed class OsdVoeAimProcessor : IAimProcessor
             var visual = PortObjects.ReadVisual(objectJson);
             if (visual is not null) _received[visual.BasicVisualObjectID] = objectJson;
         }
-        if (!message.Ports.TryGetValue(_povPort, out var povJson) || string.IsNullOrWhiteSpace(povJson))
-            return Task.FromResult(Message.Error(message.MessageId, _instanceId, "no Point of View on input port"));
-        if (!message.Ports.TryGetValue(_geometryPort, out var geometryJson) || string.IsNullOrWhiteSpace(geometryJson))
-            return Task.FromResult(Message.Error(message.MessageId, _instanceId, "no Basic Visual Scene Descriptors on input port"));
+        if (message.Ports.TryGetValue(_povPort, out var p) && !string.IsNullOrWhiteSpace(p)) _pov = p;
+        if (message.Ports.TryGetValue(_geometryPort, out var g) && !string.IsNullOrWhiteSpace(g)) _geometry = g;
+        if (_pov is not { } povJson || _geometry is not { } geometryJson) return Task.FromResult(Nothing(message));
 
         var pov = MpaiJson.FromJson<PointOfView>(povJson);
         if (pov is null || pov.CartPosition.Length != 3 || pov.Orientation.Length < 2)
+        {
+            _pov = null;
             return Task.FromResult(Message.Error(message.MessageId, _instanceId, "the Point of View cannot be read"));
+        }
         if (JsonNode.Parse(geometryJson) is not JsonObject geometry)
             return Task.FromResult(Message.Error(message.MessageId, _instanceId, "the Basic Visual Scene Descriptors cannot be read"));
 
@@ -77,12 +84,14 @@ public sealed class OsdVoeAimProcessor : IAimProcessor
             if (angle > half) continue;
             if (angle < bestAngle || (angle == bestAngle && distance < bestDistance)) { crossed = id; bestAngle = angle; bestDistance = distance; }
         }
-        if (crossed is null)
-            return Task.FromResult(Message.Error(message.MessageId, _instanceId, "the Point of View crosses no Visual Object of the Basic Visual Scene Descriptors"));
-        if (!_received.TryGetValue(crossed, out var target))
-            return Task.FromResult(Message.Error(message.MessageId, _instanceId, $"the Visual Object '{crossed}' that the Point of View crosses has not been received"));
+        if (crossed is null) { _pov = null; return Task.FromResult(Nothing(message)); }                    // the Point of View crosses no Visual Object
+        if (!_received.TryGetValue(crossed, out var target)) return Task.FromResult(Nothing(message));    // kept until the object arrives
+        _pov = null;
         return Task.FromResult(new Message { MessageId = message.MessageId, MessageType = message.MessageType, Ports = new Dictionary<string, string> { [_outPort] = target } });
     }
+
+    // No Target Visual Object: an answer with no output, not an error.
+    private static Message Nothing(Message message) => new() { MessageId = message.MessageId, MessageType = message.MessageType, Ports = new Dictionary<string, string>() };
 
     // The identifier of a member of the Basic Visual Scene Descriptors: the string that stands for its Visual Object, or the BasicVisualObjectID of the
     // Visual Object it carries.

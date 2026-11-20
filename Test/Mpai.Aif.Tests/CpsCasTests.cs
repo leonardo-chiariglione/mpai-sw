@@ -90,13 +90,13 @@ public class CpsCasTests
         try
         {
             var trace = new List<string>();
-            using var api = new ControllerApi(Repository.Amds, settings, s => new TracingProvider(s, trace));
+            // Conversation About a Scene has the front end of Conversation with Personal Status (2026-11-15): the same providers.
+            using var api = new ControllerApi(Repository.Amds, settings, s => new TracingProvider(Mpai.Hmc.Provider.HmcProviders.For(s, Repository.Root), trace));
             const string Cas = "1MMC-CAS-V2.5-I01";
-            var speech = UscSpeech.Make("said", UscAudio.FromWav(File.ReadAllBytes(Path.Combine(MpaiPaths.Clips, "clip1272.wav"))));
+            // The Input Audio of its L2: a Basic Audio Object as a microphone gives it; the Multimodal Frontend Description makes the Speech Objects.
             Assert.Equal(AifError.OK, api.StartFlow(Cas, out var moduleId));
             Assert.Equal(AifError.OK, api.InputWrite(moduleId, "OSD-BVO-V1.5", 1, Face("neutral")));
-            Assert.Equal(AifError.OK, api.InputWrite(moduleId, "OSD-BSO-V1.5", 1, speech));
-            Assert.Equal(AifError.OK, api.InputWrite(moduleId, "OSD-BSO-V1.5", 2, speech));
+            Assert.Equal(AifError.OK, api.InputWrite(moduleId, "OSD-BAO-V1.5", 1, HmcEndToEndTests.Microphone(File.ReadAllBytes(Path.Combine(MpaiPaths.Clips, "clip1272.wav")))));
             Assert.Equal(AifError.OK, api.InputWrite(moduleId, "string", 1, "\"MPAI as a Service\""));
             var avatar = api.OutputRead(moduleId, "PAF-PAV-V1.6", 1, 600_000);
             Assert.True(avatar.Error == AifError.OK, avatar.Error + Environment.NewLine + string.Join(Environment.NewLine, trace));

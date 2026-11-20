@@ -91,11 +91,23 @@ public class CveVdiVoeTests
     }
 
     [Fact]
-    public async Task NoIndexFingerSeenIsSaidAndNoDirectionIsGuessed()
+    public async Task NoIndexFingerSeenGivesNoDirectionAndNoError()
     {
+        // Nobody pointing is not a fault: no Point of View, and no error that would stop the Module.
         var reply = await Direction(Body(k => { Joint(k, RightShoulder, 0, 0, 0); Joint(k, RightWrist, 0.3, 0, 0); Joint(k, RightIndex, 0.4, 0, 0, visibility: 0.1f); }), Geometry());
-        Assert.True(reply.IsError);
-        Assert.Contains("no direction", reply.Payload);
+        Assert.False(reply.IsError, reply.Payload);
+        Assert.Empty(reply.Ports);
+    }
+
+    [Fact]
+    public async Task ABodyThatArrivesAfterTheSceneIsAnswered()
+    {
+        var ports = Ports(VdiName); var vdi = new CveVdiAimProcessor(VdiName, ports);
+        var first = await vdi.ProcessAsync(new Message { MessageId = "m", Ports = new Dictionary<string, string> { [ports.Input("OSD-BVS-V1.5")] = Geometry() } });
+        Assert.False(first.IsError, first.Payload);
+        Assert.Empty(first.Ports);
+        var then = await vdi.ProcessAsync(new Message { MessageId = "m", Ports = new Dictionary<string, string> { [ports.Input("PAF-BDO-V1.6")] = RightArmAlongX() } });
+        Assert.True(then.Ports.ContainsKey(ports.Output("OSD-OPV-V1.5")));
     }
 
     [Fact]
@@ -137,18 +149,22 @@ public class CveVdiVoeTests
         var ports = Ports(VoeName); var voe = new OsdVoeAimProcessor(VoeName, ports);
         var geometry = Geometry(("side", 1, 0, 2));        // 26.6 degrees off the axis
         await Extract(voe, ports, null, geometry, VisualObject("side"));
-        Assert.True((await Extract(voe, ports, PointOfViewAlongZ(aperture: 10), geometry, null)).IsError);
-        Assert.False((await Extract(voe, ports, PointOfViewAlongZ(aperture: 60), geometry, null)).IsError);
+        Assert.Empty((await Extract(voe, ports, PointOfViewAlongZ(aperture: 10), geometry, null)).Ports);
+        Assert.Single((await Extract(voe, ports, PointOfViewAlongZ(aperture: 60), geometry, null)).Ports);
     }
 
     [Fact]
-    public async Task NothingCrossedAndAnObjectNotYetReceivedAreSaidDifferently()
+    public async Task NothingCrossedGivesNothingAndALateObjectIsGivenWhenItArrives()
     {
         var ports = Ports(VoeName); var voe = new OsdVoeAimProcessor(VoeName, ports);
         var nothing = await Extract(voe, ports, PointOfViewAlongZ(), Geometry(("far", 5, 0, 1)), null);
-        Assert.Contains("crosses no Visual Object", nothing.Payload);
+        Assert.False(nothing.IsError, nothing.Payload);
+        Assert.Empty(nothing.Ports);
         var late = await Extract(voe, ports, PointOfViewAlongZ(), Geometry(("here", 0, 0, 2)), null);
-        Assert.Contains("has not been received", late.Payload);
+        Assert.False(late.IsError, late.Payload);
+        Assert.Empty(late.Ports);
+        var arrived = await Extract(voe, ports, null, Geometry(("here", 0, 0, 2)), VisualObject("here"));
+        Assert.Equal("here", PortObjects.ReadVisual(arrived.Ports[ports.Output("OSD-BVO-V1.5")]).BasicVisualObjectID);
     }
 
     [Fact]

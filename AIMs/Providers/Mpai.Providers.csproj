@@ -49,6 +49,9 @@
     <ProjectReference Include="..\PAF\V1.6\PFI\Mpai.Paf.Pfi.csproj" />
     <ProjectReference Include="..\PAF\V1.6\EBD\Mpai.Paf.Ebd.csproj" />
     <ProjectReference Include="..\PAF\V1.6\PBI\Mpai.Paf.Pbi.csproj" />
+    <ProjectReference Include="..\CVE\V1.0\VDI\Mpai.Cve.Vdi.csproj" />
+    <ProjectReference Include="..\OSD\V1.5\VOE\Mpai.Osd.Voe.csproj" />
+    <ProjectReference Include="..\OSD\V1.5\BAS\Mpai.Osd.Bas.csproj" />
   </ItemGroup>
 
 </Project>

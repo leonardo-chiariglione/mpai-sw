@@ -20,6 +20,10 @@ namespace Mpai.Cve.Vdi;
 //  - the Orientation of a Point of View is "three Euler angles": here (azimuth, elevation, 0) in degrees, azimuth = atan2(dx, dz) about the vertical
 //    axis, elevation = angle above the horizontal (y is down, so elevation = asin(-dy)); the Visual Object Extraction reads it the same way;
 //  - the Aperture of the Point of View is the cone in which an object counts as crossed: Aperture degrees (twice the half-angle), 10 here.
+//
+// NOBODY POINTING IS NOT A FAULT (2026-11-20): when no index finger, wrist and shoulder are seen, or the finger and the wrist coincide, the AIM gives no
+// Point of View and no error - an error would make the Controller apply its OnDegraded policy and, by default, stop the Module. The AIM remembers that the
+// Basic Visual Scene Descriptors have arrived, so a body that comes after them is still answered. A body in another format remains an error.
 public sealed class CveVdiAimProcessor : IAimProcessor
 {
     public const double ApertureDegrees = 10;            // twice the half-angle of the cone in which an object is crossed
@@ -28,6 +32,7 @@ public sealed class CveVdiAimProcessor : IAimProcessor
 
     private readonly string _instanceId;
     private readonly string _bodyPort, _geometryPort, _outPort;
+    private bool _geometrySeen;
 
     public CveVdiAimProcessor(string instanceId, AimPortReader ports)
     {
@@ -41,10 +46,9 @@ public sealed class CveVdiAimProcessor : IAimProcessor
 
     public Task<Message> ProcessAsync(Message message)
     {
-        if (!message.Ports.TryGetValue(_bodyPort, out var bdo) || string.IsNullOrWhiteSpace(bdo))
-            return Task.FromResult(Message.Error(message.MessageId, _instanceId, "no Body Descriptors Object on input port"));
-        if (!message.Ports.ContainsKey(_geometryPort))
-            return Task.FromResult(Message.Error(message.MessageId, _instanceId, "no Basic Visual Scene Descriptors on input port"));
+        if (message.Ports.TryGetValue(_geometryPort, out var geometry) && !string.IsNullOrWhiteSpace(geometry)) _geometrySeen = true;
+        if (!message.Ports.TryGetValue(_bodyPort, out var bdo) || string.IsNullOrWhiteSpace(bdo) || !_geometrySeen)
+            return Task.FromResult(Nothing(message));                       // waits for a body and for the scene
 
         float[] k;
         try { k = EbdAimProcessor.Keypoints(bdo); }
@@ -59,13 +63,13 @@ public sealed class CveVdiAimProcessor : IAimProcessor
             if (r > reach) { reach = r; best = index; }
         }
         if (best < 0)
-            return Task.FromResult(Message.Error(message.MessageId, _instanceId, "no index finger, wrist and shoulder seen: no direction is indicated"));
+            return Task.FromResult(Nothing(message));                       // no index finger, wrist and shoulder seen: no direction is indicated
         var wristOfBest = best == LeftIndex ? LeftWrist : RightWrist;
 
         double dx = k[best * 4] - k[wristOfBest * 4], dy = k[best * 4 + 1] - k[wristOfBest * 4 + 1], dz = k[best * 4 + 2] - k[wristOfBest * 4 + 2];
         var length = Math.Sqrt(dx * dx + dy * dy + dz * dz);
         if (length < 1e-6)
-            return Task.FromResult(Message.Error(message.MessageId, _instanceId, "the index finger and the wrist are at the same place: no direction is indicated"));
+            return Task.FromResult(Nothing(message));                       // the index finger and the wrist at the same place: no direction is indicated
         var azimuth   = Math.Atan2(dx, dz) * 180 / Math.PI;
         var elevation = Math.Asin(Math.Clamp(-dy / length, -1, 1)) * 180 / Math.PI;
 
@@ -81,6 +85,9 @@ public sealed class CveVdiAimProcessor : IAimProcessor
         };
         return Task.FromResult(new Message { MessageId = message.MessageId, MessageType = message.MessageType, Ports = new Dictionary<string, string> { [_outPort] = MpaiJson.ToJson(pov) } });
     }
+
+    // No Point of View: an answer with no output, not an error.
+    private static Message Nothing(Message message) => new() { MessageId = message.MessageId, MessageType = message.MessageType, Ports = new Dictionary<string, string>() };
 
     private static double Distance(float[] k, int a, int b)
     {
