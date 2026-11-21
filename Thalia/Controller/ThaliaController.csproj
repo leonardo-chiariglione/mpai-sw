@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- ThaliaController - THE LOCAL CONTROLLER OF THALIA: one general program, of no standard in particular, that runs the Module of any local App
+       whose AIMs it carries. Thalia starts ONE INSTANCE FOR EACH RUNNING APP, so that the failure of one App does not reach the others, and reaches
+       it only through the Controller-User Agent API (the routes of Mpai.Mas.Server, on the loopback) - the same API a MPAI as a Service instance
+       answers, so that a local App and a MAS-based App are run in the same way.
+       First version: the AIMs of the first set of Apps (MMC-MTS, MMC-MCA, MMC-AMQ, MMC-NPR, and the PAF and OSD AIMs they use) are compiled in,
+       as in Apps\MMC\Controller; they move to packages from the AIM repository afterwards. -->
+
+  <PropertyGroup>
+    <AssemblyName>ThaliaController</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RootNamespace>Mpai.Thalia.Controller</RootNamespace>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="..\..\Apps\MAS\Service\src\ControllerApiRunner.cs" Link="ControllerApiRunner.cs" />
+    <Compile Include="..\..\Apps\MMC\Controller\AcrProvider.cs" Link="AcrProvider.cs" />
+    <Compile Include="..\..\Apps\MMC\Controller\MacProvider.cs" Link="MacProvider.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\AIF\Controller\AIF.Controller.csproj" />
+    <ProjectReference Include="..\..\Store\AIF.Store.csproj" />
+    <ProjectReference Include="..\..\AIF\Communication\GlobalStorage\AIF.GlobalStorage.csproj" />
+    <ProjectReference Include="..\..\AIMs\Core\Mpai.Core.csproj" />
+    <ProjectReference Include="..\..\AIF\ControllerApi\Mpai.Aif.Api.csproj" />
+    <ProjectReference Include="..\..\AIF\PortData\Mpai.Aif.PortData.csproj" />
+    <ProjectReference Include="..\..\Apps\MAS\Server\Mpai.Mas.Server.csproj" />
+    <ProjectReference Include="..\..\AIMs\Providers\Mpai.Providers.csproj" />
+    <ProjectReference Include="..\..\AIMs\MMC\V2.5\ASR\Mpai.Mmc.Asr.csproj" />
+    <ProjectReference Include="..\..\AIMs\MMC\V2.5\TTS\Mpai.Mmc.Tts.csproj" />
+    <ProjectReference Include="..\..\AIMs\PAF\V1.6\PSD\Mpai.Paf.Psd.csproj" />
+    <ProjectReference Include="..\..\AIMs\PAF\V1.6\GFD\Mpai.Paf.Gfd.csproj" />
+    <ProjectReference Include="..\..\AIMs\PAF\V1.6\EFD\Mpai.Paf.Efd.csproj" />
+    <ProjectReference Include="..\..\AIMs\MMC\V2.5\ESD\Mpai.Mmc.Esd.csproj" />
+    <ProjectReference Include="..\..\AIMs\OSD\V1.5\IDR\Mpai.Osd.Idr.csproj" />
+    <ProjectReference Include="..\..\AIMs\PAF\V1.6\FIR\Mpai.Paf.Fir.csproj" />
+    <ProjectReference Include="..\..\AIMs\MMC\V2.5\SIR\Mpai.Mmc.Sir.csproj" />
+    <ProjectReference Include="..\..\AIMs\OSD\V1.5\VisualScene\Mpai.Osd.VisualScene.csproj" />
+  </ItemGroup>
+
+</Project>

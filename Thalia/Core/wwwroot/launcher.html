@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thalia</title>
+<style>
+  :root { --rail:200px; --ink:#f1f4fa; --muted:#b9c2d4; --line:rgba(255,255,255,.18); --panel:rgba(14,18,28,.62); --panel2:rgba(14,18,28,.80); --accent:#9db9ff; --ok:#6fe0a8; --warn:#f3c06a; --bad:#ff8a8d; }
+  * { box-sizing:border-box; }
+  html, body { height:100%; margin:0; }
+  body { color:var(--ink); font:15px/1.45 "Segoe UI", system-ui, sans-serif; background:#10141c center/cover no-repeat fixed; overflow:hidden; }
+  body::before { content:""; position:fixed; inset:0; background:rgba(8,11,18,.28); pointer-events:none; }
+  .shell { position:relative; height:100vh; display:grid; grid-template-rows:auto 1fr; }
+  .top { display:flex; align-items:center; gap:14px; padding:12px 22px; background:var(--panel); border-bottom:1px solid var(--line); backdrop-filter:blur(10px); }
+  .top h1 { margin:0; font-size:22px; font-weight:600; letter-spacing:.5px; }
+  .top .sub { color:var(--muted); font-size:13px; }
+  .top .space { flex:1; }
+  .body { display:grid; grid-template-columns:var(--rail) 1fr; min-height:0; }
+  .rail { padding:14px 10px; background:var(--panel); border-right:1px solid var(--line); backdrop-filter:blur(10px); display:flex; flex-direction:column; gap:4px; }
+  .rail button { all:unset; cursor:pointer; padding:8px 12px; border-radius:8px; color:var(--muted); }
+  .rail button.on { background:rgba(157,185,255,.2); color:var(--ink); }
+  .body.flip { grid-template-columns:1fr var(--rail); } .flip .rail { order:2; border-right:0; border-left:1px solid var(--line); } .flip .content { order:1; margin-left:0; margin-right:auto; }
+  .content { scrollbar-color:rgba(255,255,255,.35) transparent; scrollbar-width:thin; padding:18px 24px 24px; overflow:auto; width:min(600px, 100%); margin-left:auto; padding-bottom:24px; }   /* a column on the right: the abbey, left of centre in the pictures, stays visible */
+  .searchbar { display:flex; gap:12px; align-items:center; margin-bottom:6px; }
+  input[type=search] { flex:1; font:inherit; padding:9px 14px; border-radius:9px; border:1px solid var(--line); background:var(--panel2); color:var(--ink); }
+  input[type=search]::placeholder { color:var(--muted); }
+  .seg { display:inline-flex; border:1px solid var(--line); border-radius:9px; overflow:hidden; background:var(--panel2); }
+  .seg span { padding:8px 13px; cursor:pointer; color:var(--muted); font-size:13px; white-space:nowrap; }
+  .seg span.on { background:rgba(157,185,255,.25); color:var(--ink); }
+  .notice { margin:10px 0; padding:9px 14px; border-radius:8px; background:rgba(243,192,106,.2); font-size:13px; }
+  h2.sec { font-size:13px; font-weight:600; color:var(--muted); margin:18px 0 8px; text-transform:none; }
+  .grid { display:grid; grid-template-columns:1fr; gap:12px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:9px; backdrop-filter:blur(10px); }
+  .head { display:flex; gap:12px; align-items:center; }
+  .head img { width:42px; height:42px; }
+  .head h3 { margin:0; font-size:17px; }
+  .head .id { color:var(--muted); font-size:12px; }
+  .desc { color:var(--muted); font-size:14px; margin:0; }
+  .where { border-top:1px solid var(--line); padding-top:9px; display:grid; grid-template-columns:104px 1fr; gap:6px 10px; align-items:center; }
+  .label { font-weight:600; font-size:13px; }
+  .status { font-size:13px; color:var(--muted); }
+  .status.ok { color:var(--ok); } .status.bad { color:var(--bad); } .status.busy { color:var(--warn); }
+  .buttons { grid-column:2; display:flex; gap:8px; flex-wrap:wrap; }
+  button.act, a.btn { font:inherit; font-size:13px; padding:5px 14px; border-radius:7px; border:1px solid var(--accent); background:var(--accent); color:#0d1422; cursor:pointer; text-decoration:none; }
+  button.act.secondary { background:transparent; color:var(--accent); }
+  button.act:disabled { opacity:.4; cursor:default; }
+  details { font-size:12.5px; color:var(--muted); }
+  details summary { cursor:pointer; } details ul { margin:6px 0 0; padding-left:18px; }
+  .empty { color:var(--muted); padding:20px 0; }
+  .seasons { display:flex; gap:6px; margin-right:8px; }
+  .seasons button { all:unset; cursor:pointer; width:54px; height:32px; border-radius:7px; border:2px solid var(--line); background:center/cover #222; color:var(--ink); font-size:12px; text-align:center; line-height:28px; }
+  .seasons button:hover { border-color:var(--muted); } .seasons button.on { border-color:var(--accent); }
+  .soon { font-size:10px; margin-left:4px; padding:1px 6px; border-radius:20px; border:1px solid var(--line); color:var(--muted); }
+  .enables { margin:4px 0 0; padding-left:18px; color:var(--ink); } .enables li { margin:5px 0; } .enables li span { color:var(--muted); }
+  .fn { gap:4px; padding:11px 14px; } .fn .fh { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .chip { font-size:11px; padding:2px 9px; border-radius:20px; border:1px solid var(--line); color:var(--muted); }
+  .fn.available .chip { color:var(--ok); border-color:var(--ok); } .fn.coming { opacity:.8; }
+  .ret { font:inherit; font-size:13px; padding:6px 14px; border-radius:8px; border:1px solid var(--line); background:var(--panel2); color:var(--ink); cursor:pointer; }
+  .ret:hover { border-color:var(--accent); }
+  .dock { margin-top:auto; display:flex; flex-direction:column; align-items:center; gap:8px; padding:12px 4px 4px; border-top:1px solid var(--line); }
+  .face { width:104px; height:104px; border-radius:50%; object-fit:cover; border:2px solid var(--line); background:#222; }
+  .dock .name { font-size:13px; color:var(--muted); margin-top:-4px; }
+  .sw { width:100%; display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  .sw button { all:unset; cursor:pointer; text-align:center; font-size:12.5px; padding:6px 4px; border-radius:8px; border:1px solid var(--line); color:var(--muted); }
+  .sw button:disabled { opacity:.45; cursor:default; }
+  .sw button.on { background:rgba(157,185,255,.25); color:var(--ink); border-color:var(--accent); }
+  .ack { font-size:10.5px; line-height:1.3; color:var(--muted); text-align:center; }
+  .credit { position:fixed; left:12px; bottom:8px; font-size:11px; color:rgba(255,255,255,.75); text-shadow:0 1px 2px #000; max-width:calc(100% - 230px); }
+  .credit a { color:inherit; }
+  @media (max-width:700px) { .body { grid-template-columns:1fr; } .rail { display:none; } .content { padding-bottom:230px; } }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="top">
+    <h1>Thalia</h1><span class="sub" id="machine"></span><span class="space"></span>
+    <div class="seasons" id="seasons" role="group" aria-label="Season of the picture"></div>
+    <button class="ret" id="flip" title="Put the functions on the other side of the picture">Swap sides</button>
+    <button class="ret" id="full" title="Fill the screen">Full screen</button>
+    <button class="ret" id="ret">Return to Windows</button>
+  </div>
+  <div class="body">
+    <nav class="rail"><button class="on" data-view="apps">Apps</button><button data-view="running">Running</button><button data-view="store">Store <span class="soon">soon</span></button><button data-view="settings">Settings <span class="soon">soon</span></button>
+<aside class="dock" aria-label="Thalia">
+  <img class="face" src="/thalia.png?v=2" alt="Thalia">
+  <div class="name">Thalia</div>
+  <div class="sw" id="sw"><button disabled title="Coming: Thalia listens to you">Listen</button><button disabled title="Coming: Thalia speaks to you">Speak</button></div>
+  <div class="ack">Avatar by Ready Player Me (CC BY-NC-SA 4.0), used for demonstration. Other uses are subject to restrictions.</div>
+</aside>
+    </nav>
+    <main class="content">
+      <div class="searchbar">
+        <input type="search" id="q" placeholder="Search Apps" autocomplete="off">
+        <div class="seg" id="scope"><span class="on" data-s="local">This machine</span><span data-s="mas">MPAI as a Service</span><span data-s="both">Both</span></div>
+      </div>
+      <div class="notice" id="notice" hidden></div>
+      <div id="view"></div>
+    </main>
+  </div>
+</div>
+<div class="credit" id="credit"></div>
+<script>
+const $ = s => document.querySelector(s);
+
+// ---- the User's choices (season, side, scope, welcome) are kept by Thalia in a file on this machine, not in the browser: the window that shows Thalia
+// may be a private one that forgets everything when it closes. Read once, before the page is drawn; written at each change. ----------------------
+const P = (() => { try { const x = new XMLHttpRequest(); x.open('GET', '/api/prefs', false); x.send(); return JSON.parse(x.responseText) || {}; } catch { return {}; } })();
+function setPref(k, v) { P[k] = v; fetch('/api/prefs', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ [k]: v }) }).catch(() => { }); }
+
+// ---- the season: the background follows the month (northern hemisphere); ?season=spring|summer|autumn|winter shows another one ----------------------
+const SEASONS = {
+  winter: { side: 'right', file: 'winter.jpg', by: 'Elio Pallard', title: 'La Sacra ammantata dalla neve', page: 'https://commons.wikimedia.org/wiki/File:La_Sacra_ammantata_dalla_neve.jpg' },
+  spring: { side: 'left', file: 'spring.jpg', by: 'Elio Pallard', title: 'Nuvoloni sulla Sacra', page: 'https://commons.wikimedia.org/wiki/File:Nuvoloni_sulla_Sacra.jpg' },
+  summer: { side: 'left', file: 'summer.jpg', by: 'Eugenio Vota', title: 'Sacra di San Michele su cielo azzurro e nuvole', page: 'https://commons.wikimedia.org/wiki/File:20160609_Sacra_di_San_Michele_su_cielo_azzurro_e_nuvole.jpg' },
+  autumn: { side: 'left', file: 'autumn.jpg', by: 'Elio Pallard', title: 'La Sacra di San Michele in veste autunnale', page: 'https://commons.wikimedia.org/wiki/File:La_Sacra_di_San_Michele_in_veste_autunnale02.jpg' }
+};
+// The User chooses a season (kept in this browser) or leaves it to the calendar ("auto"). ?season=... still overrides, for a quick look.
+function autoSeason() {
+  const m = new Date().getMonth();                       // 0 = January
+  return m >= 10 || m <= 1 ? 'winter' : m <= 4 ? 'spring' : m <= 7 ? 'summer' : 'autumn';   // winter = November to February; the snow is on the Alps by then
+}
+let chosen = 'auto';
+chosen = P.season || 'auto';
+function season() {
+  const forced = new URLSearchParams(location.search).get('season');
+  if (forced && SEASONS[forced]) return forced;
+  return SEASONS[chosen] ? chosen : autoSeason();
+}
+function applySeason() {
+  const k = season(), s = SEASONS[k];
+  document.body.style.backgroundImage = `url(/seasons/${s.file})`;
+  $('#credit').innerHTML = `Sacra di San Michele, Monte Pirchiriano (Valsusa): <a href="${s.page}" target="_blank" rel="noopener">${s.title}</a> by ${s.by}, CC BY-SA 4.0`;
+  for (const b of document.querySelectorAll('#seasons button')) b.classList.toggle('on', b.dataset.k === chosen);
+}
+{
+  const box = $('#seasons');
+  const mk = (k, label, img) => { const b = document.createElement('button'); b.dataset.k = k; b.title = label; b.setAttribute('aria-label', label);
+    if (img) { b.style.backgroundImage = `url(/seasons/${img})`; } else { b.textContent = 'Auto'; }
+    b.onclick = () => { chosen = k; setPref('season', k); applySeason(); if (typeof applySide === 'function') applySide(); }; box.appendChild(b); };
+  mk('auto', 'Follow the calendar', null);
+  for (const [k, s] of Object.entries(SEASONS)) mk(k, k[0].toUpperCase() + k.slice(1), s.file);
+  applySeason();
+}
+
+// ---- state: what is shown is the scope of the search (this machine / the Service / both), limited by the two switches under her face ---------------------
+let catalogue = null, shown = '', view = 'apps', scope = 'local';
+scope = P.scope || scope;
+const wheres = () => ['local', 'mas'].filter(w => scope === 'both' || scope === w);
+
+function syncControls() {
+  for (const s of document.querySelectorAll('#scope span')) s.classList.toggle('on', s.dataset.s === scope);
+  for (const b of document.querySelectorAll('.rail button[data-view]')) b.classList.toggle('on', b.dataset.view === view);
+}
+for (const s of document.querySelectorAll('#scope span')) s.onclick = () => { scope = s.dataset.s; save(); };
+for (const b of document.querySelectorAll('.rail button[data-view]')) b.onclick = () => { view = b.dataset.view; save(); };
+$('#q').oninput = () => render();
+function save() { setPref('scope', scope); syncControls(); render(); }
+
+// ---- the side of the functions: each picture has the side that leaves its abbey free; the User can swap it (kept in this browser) --------------------
+let sideChoice = null;                                   // 'left' | 'right' | null = the picture's own
+sideChoice = P.side || null;
+const functionsSide = () => sideChoice || SEASONS[season()].side;
+function applySide() { document.querySelector('.body').classList.toggle('flip', functionsSide() === 'left'); }
+$('#flip').onclick = () => { sideChoice = functionsSide() === 'left' ? 'right' : 'left'; setPref('side', sideChoice); applySide(); };
+applySide();
+
+// ---- the window: the whole screen, and the way back to Windows --------------------------------------------------------------------------------------
+const fullscreen = () => document.fullscreenElement || document.documentElement.requestFullscreen?.().catch(() => { });
+$('#full').onclick = fullscreen;
+$('#ret').onclick = async () => { if (document.fullscreenElement) await document.exitFullscreen().catch(() => { }); fetch('/api/windows', { method: 'POST' }); };
+document.addEventListener('click', () => fullscreen(), { once: true });   // the first click anywhere fills the screen (a browser allows it only on a click)
+document.addEventListener('fullscreenchange', () => { $('#full').hidden = !!document.fullscreenElement; });
+
+// ---- the catalogue -----------------------------------------------------------------------------------------------------------------------------------
+// Drawn again only when something changed, so that an open "What its Module needs" stays open.
+async function load() {
+  let text;
+  try { text = await (await fetch('/api/catalogue', { cache: 'no-store' })).text(); }
+  catch { $('#notice').hidden = false; $('#notice').textContent = 'Thalia does not answer.'; return; }
+  if (text === shown) return;
+  shown = text; catalogue = JSON.parse(text);
+  if (new URLSearchParams(location.search).has('first')) { catalogue.apps = []; catalogue.running = []; }   // ?first=1 shows Thalia as a User sees it the first time: no Apps yet
+  const open = new Set([...document.querySelectorAll('details[open]')].map(d => d.dataset.id));
+  render();
+  for (const d of document.querySelectorAll('details')) if (open.has(d.dataset.id)) d.open = true;
+}
+
+function runOf(id, where) { return (catalogue.running || []).find(r => r.app === id && r.where === where); }
+
+function render() {
+  if (!catalogue) return;
+  const m = catalogue.machine;
+  $('#machine').textContent = `${m.os}, ${m.arch}; graphics: ${m.gpu}`;
+  $('#notice').hidden = !(catalogue.masProblem && wheres().includes('mas'));
+  $('#notice').textContent = catalogue.masProblem || '';
+  $('#q').placeholder = view === 'apps' ? 'Search Apps' : 'Search running Apps';
+
+  $('.searchbar').hidden = view === 'store' || view === 'settings';
+  if (view === 'store' || view === 'settings') { $('#notice').hidden = true; section(view); return; }
+  if (!catalogue.apps.length) { welcome(); return; }
+  const q = $('#q').value.trim().toLowerCase(), ws = wheres();
+  const byId = new Map();
+  for (const a of catalogue.apps) { if (!byId.has(a.id)) byId.set(a.id, {}); byId.get(a.id)[a.where] = a; }
+  const view_ = $('#view'); view_.innerHTML = '';
+  const grid = document.createElement('div'); grid.className = 'grid';
+  let n = 0;
+  for (const [id, sides] of byId) {
+    const a = sides.local || sides.mas;
+    if (q && !`${a.name} ${id} ${a.description} ${a.module || ''}`.toLowerCase().includes(q)) continue;
+    if (view === 'running' && !ws.some(w => { const r = runOf(id, w); return r && !r.phase.startsWith('failed') && !r.phase.startsWith('stopped'); })) continue;
+    if (!ws.length) continue;
+    const card = document.createElement('section'); card.className = 'card';
+    card.innerHTML = `<div class="head"><img alt="" src="${a.icon}"><div><h3></h3><div class="id"></div></div></div><p class="desc"></p>`;
+    card.querySelector('h3').textContent = a.name;
+    card.querySelector('.id').textContent = `${id} - Module ${a.module || '?'}`;
+    card.querySelector('.desc').textContent = a.description;
+    for (const where of ws) card.appendChild(row(id, where, sides[where]));
+    card.appendChild(needs(sides.local || a));
+    grid.appendChild(card); n++;
+  }
+  if (!n) view_.innerHTML = `<p class="empty">${view === 'running' ? 'No App is running here.' : 'No App matches.'}</p>`;
+  else view_.appendChild(grid);
+}
+
+// What Thalia offers, and how much of it exists today: shown when there is no App yet (the first time a User runs Thalia).
+const FUNCTIONS = [
+  ['Find an App', 'Search the Apps of this machine and of MPAI as a Service, by name or by what they do.', 'available'],
+  ['Run and stop an App', 'Start an App here or on MPAI as a Service in the same way, and stop it.', 'available'],
+  ['Obtain an App', 'Get an App from the MPAI Store, with what its Module needs and the licences of the data it obtains shown before you accept.', 'coming'],
+  ['Pause, resume, update and remove', 'The rest of the life of an App on this machine.', 'coming'],
+  ['Make your own Module', 'Combine Basic and Composite AIMs into a Composite AIM that does not exist yet, and submit it.', 'coming'],
+  ['Devices', 'Choose the microphone, the camera and the screens Thalia and its Apps use.', 'coming'],
+  ['Talk to Thalia', 'Ask her for an App, or to run it, by voice.', 'coming']
+];
+// Store and Settings do not exist yet: each says what it would enable.
+const SECTIONS = {
+  store: {
+    title: 'Store',
+    lead: 'Where Apps and the AIMs behind them are obtained, and where your own are offered.',
+    items: [
+      ['Obtain an App', 'from the MPAI Store, by search or by browsing. One Module can serve several Apps, so getting an App is not the same as getting its Module.'],
+      ['See what it needs before you accept', 'the AIMs of its Module, the resources and processing units, whether this machine can run it, and the licences of the data its AIMs obtain.'],
+      ['Obtain the AIMs of a Module', 'each AIM comes from the implementer you choose, under its licence, and is kept by the Controller for the next run.'],
+      ['Keep your Apps and AIMs current', 'see what has a newer version, update it, or remove what you no longer use.'],
+      ['Your licences', 'what you accepted, from whom, and for which AIM.'],
+      ['Offer your own AIM', 'submit a Basic or Composite AIM you made, so that others can obtain it.']
+    ]
+  },
+  settings: {
+    title: 'Settings',
+    lead: 'How Thalia behaves on this machine.',
+    items: [
+      ['Where Thalia looks', 'this machine, MPAI as a Service, or both by default, and the address of the MPAI as a Service instance you use.'],
+      ['Devices', 'the microphone, the camera and the screens that Thalia and its Apps use.'],
+      ['Thalia’s voice', 'whether she listens and whether she speaks, and in which language.'],
+      ['Storage', 'where Apps, AIMs and models are kept, how much space they take, and what to clear.'],
+      ['Privacy', 'what may leave this machine when an App runs on MPAI as a Service, and what is kept afterwards.'],
+      ['Appearance', 'the background of the season or a fixed one, and whether Thalia starts full screen.']
+    ]
+  }
+};
+function section(key) {
+  const s = SECTIONS[key], v = $('#view'); v.innerHTML = '';
+  const c = document.createElement('section'); c.className = 'card';
+  c.innerHTML = `<div class="fh" style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0;font-size:20px"></h3><span class="chip">coming</span></div><p class="desc"></p><p class="desc" style="color:var(--ink)">It would let you:</p><ul class="enables"></ul>`;
+  c.querySelector('h3').textContent = s.title; c.querySelector('p.desc').textContent = s.lead;
+  const ul = c.querySelector('ul');
+  for (const [a, b] of s.items) { const li = document.createElement('li'); li.innerHTML = `<b></b> <span></span>`; li.querySelector('b').textContent = a; li.querySelector('span').textContent = '- ' + b; ul.appendChild(li); }
+  if (key === 'settings' && P.welcomeHidden === true) {
+    const b = document.createElement('button'); b.className = 'act secondary'; b.style.alignSelf = 'flex-start'; b.textContent = 'Show the welcome again';
+    b.onclick = () => { setPref('welcomeHidden', false); b.disabled = true; b.textContent = 'The welcome is back'; };
+    c.appendChild(b);
+  }
+  v.appendChild(c);
+}
+function welcome() {
+  const q = $('#q').value.trim();
+  $('#notice').hidden = true;
+  $('#q').placeholder = 'Search for an App';
+  const v = $('#view'); v.innerHTML = '';
+  let welcomeHidden = false;
+  welcomeHidden = P.welcomeHidden === true;
+  if (!welcomeHidden) {
+    const intro = document.createElement('section'); intro.className = 'card';
+    intro.innerHTML = `<div class="fh" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><h3 style="margin:0;font-size:26px;line-height:1.25">Welcome to Thalia</h3><p class="desc" style="font-size:16px;margin-top:2px">the MPAI AI Framework user environment</p></div><button class="act secondary" id="hideWelcome" title="Do not show this again">Hide</button></div>`;
+    v.appendChild(intro);
+    intro.querySelector('#hideWelcome').onclick = () => { setPref('welcomeHidden', true); render(); };
+  }
+  if (q) { const p = document.createElement('p'); p.className = 'empty'; p.textContent = `Nothing found for "${q}"${wheres().length ? ' in ' + wheres().map(w => w === 'local' ? 'this machine' : 'MPAI as a Service').join(' and ') : ''}.`; v.appendChild(p); }
+  const h = document.createElement('h2'); h.className = 'sec'; h.textContent = 'What Thalia does'; v.appendChild(h);
+  const list = document.createElement('div'); list.className = 'grid';
+  for (const [name, text, state] of FUNCTIONS) {
+    const c = document.createElement('section'); c.className = 'card fn ' + state;
+    c.innerHTML = `<div class="fh"><b></b><span class="chip"></span></div><p class="desc"></p>`;
+    c.querySelector('b').textContent = name; c.querySelector('.chip').textContent = state === 'available' ? 'available' : 'coming';
+    c.querySelector('.desc').textContent = text; list.appendChild(c);
+  }
+  v.appendChild(list);
+}
+
+function row(id, where, entry) {
+  const div = document.createElement('div'); div.className = 'where';
+  const label = where === 'local' ? 'On this machine' : 'MPAI as a Service';
+  const run = runOf(id, where);
+  let text, cls = '';
+  if (!entry && !run) { text = where === 'mas' ? (catalogue.masProblem ? 'the Service is not running: Run starts it' : 'not offered by the Service') : 'not on this machine'; }
+  else if (run && run.phase === 'running') { text = 'running'; cls = 'ok'; }
+  else if (run && run.phase.startsWith('failed')) { text = run.phase; cls = 'bad'; }
+  else if (run && run.phase.startsWith('stopped')) { text = run.phase; }
+  else if (run) { text = run.phase + '...'; cls = 'busy'; }
+  else { text = where === 'local' ? (entry.canRun ? 'ready to run' : 'cannot run: ' + entry.why) : 'offered'; }
+  div.innerHTML = `<span class="label"></span><span class="status ${cls}"></span><span class="buttons"></span>`;
+  div.querySelector('.label').textContent = label;
+  div.querySelector('.status').textContent = text;
+  const b = div.querySelector('.buttons');
+  const live = run && !run.phase.startsWith('failed') && !run.phase.startsWith('stopped');
+  if (live && run.url) { const o = document.createElement('a'); o.className = 'btn'; o.href = run.url; o.target = '_blank'; o.rel = 'noopener'; o.textContent = 'Open'; b.appendChild(o); }
+  const go = document.createElement('button'); go.className = 'act'; go.textContent = 'Run';
+  go.disabled = !!live || (where === 'local' && entry && !entry.canRun) || (!entry && where === 'local');
+  // The App's tab is opened by the click itself (a tab opened later is blocked as a pop-up); it shows the start and becomes the App when ready.
+  go.onclick = async () => { go.disabled = true; window.open(`/wait.html?where=${where}&id=${encodeURIComponent(id)}`, '_blank'); await fetch(`/api/run/${where}/${id}`, { method: 'POST' }); load(); };
+  const stop = document.createElement('button'); stop.className = 'act secondary'; stop.textContent = 'Stop'; stop.disabled = !live;
+  stop.onclick = async () => { stop.disabled = true; await fetch(`/api/stop/${where}/${id}`, { method: 'POST' }); load(); };
+  b.appendChild(go); b.appendChild(stop);
+  return div;
+}
+
+function needs(a) {
+  const d = document.createElement('details'); d.dataset.id = a.id;
+  const list = (title, items) => items && items.length ? `<li>${title}: ${items.map(esc).join(', ')}</li>` : '';
+  d.innerHTML = `<summary>What its Module needs</summary><ul>${list('AIMs', a.aims)}${list('Licences of the data its AIMs obtain', a.licences)}${list('Resources', a.resources)}${list('Builds by processing unit', a.accelerators)}<li>This machine: ${esc(a.why || '')}</li></ul>`;
+  return d;
+}
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+syncControls();
+load();
+setInterval(load, 2000);
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- THALIA - the environment in which the User finds, starts and stops Apps (MPAI-THL V1.0, Full Profile, first version).
+       The core keeps the catalogue (the local Apps of this machine and the Apps of the chosen MPAI as a Service instances) and the App life cycle,
+       and serves the Launcher to the browser. A local App runs under an instance of the local Controller of its own (Thalia\Controller); a
+       MAS-based App under its MPAI as a Service instance. Either way the App's User Agent is the same browser client, reached through the
+       Controller-User Agent API only (GEN-1, GEN-3). Plain .NET: no Windows-only code. -->
+
+  <PropertyGroup>
+    <AssemblyName>Thalia</AssemblyName>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Mpai.Thalia</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Apps\MAS\Server\Mpai.Mas.Server.csproj" />
+  </ItemGroup>
+
+</Project>

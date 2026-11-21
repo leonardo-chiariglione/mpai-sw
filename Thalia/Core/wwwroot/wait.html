@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thalia - starting</title>
+<style>
+  :root { --bg:#f4f6fa; --ink:#1d2433; --muted:#5b6578; --bad:#a3262a; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#12151c; --ink:#e7ebf3; --muted:#9aa4b8; --bad:#ff7b7f; } }
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg); color:var(--ink); font:16px/1.5 "Segoe UI", system-ui, sans-serif; }
+  .box { max-width:560px; padding:24px; text-align:center; }
+  h1 { font-size:22px; margin:0 0 8px; }
+  p { color:var(--muted); margin:6px 0; }
+  .bad { color:var(--bad); }
+</style>
+</head>
+<body>
+<div class="box"><h1 id="title">Starting the App...</h1><p id="phase"></p><p>This tab becomes the App when it is ready.</p></div>
+<script>
+// THE TAB THAT RUN OPENS: it waits for the App to be ready and then becomes the App (a tab opened by the click itself, so no pop-up is blocked).
+const q = new URLSearchParams(location.search), where = q.get('where'), id = q.get('id');
+document.getElementById('title').textContent = `Starting ${id} ${where === 'local' ? 'on this machine' : 'on MPAI as a Service'}...`;
+async function poll() {
+  try {
+    const runs = await (await fetch('/api/runs', { cache: 'no-store' })).json();
+    const r = runs.find(x => x.app === id && x.where === where);
+    if (r && r.url && r.phase === 'running') { location.replace(r.url); return; }
+    const p = document.getElementById('phase');
+    if (!r) { p.textContent = 'It is not running: it was stopped, or Thalia was closed.'; p.className = 'bad'; return; }
+    p.textContent = r.phase + (r.phase.startsWith('failed') ? '' : '...');
+    if (r.phase.startsWith('failed') || r.phase.startsWith('stopped')) { p.className = 'bad'; return; }
+  } catch { }
+  setTimeout(poll, 1000);
+}
+poll();
+</script>
+</body>
+</html>
