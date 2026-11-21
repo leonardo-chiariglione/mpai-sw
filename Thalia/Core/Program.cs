@@ -20,34 +20,53 @@ using Mpai.Mas.Server;
 // given and runs it with the browser's devices, so a local App and a MAS-based App behave the same (GEN-3). Stop ends the App's client and, for a
 // local App, its Controller instance.
 
-var root = RepositoryRoot(AppContext.BaseDirectory);
-// The Launcher's page is in Thalia\Core\wwwroot, wherever the program is started from.
-var builder = WebApplication.CreateBuilder(new WebApplicationOptions { Args = args, ContentRootPath = Path.Combine(root, "Thalia", "Core") });
+// THE PROFILE (MPAI-THL V1.0 WD0.1, Profiles): Full - local and MAS-based Apps, a Controller on this machine (the default);
+// Remote - MAS-based Apps only, no Controller here: the User's laptop or phone using the MPAI as a Service of the User's own machine, over Tailscale.
+//   dotnet Thalia.dll --Profile Remote        (reads remote.json - {"Service": "https://...", "Token": "..."} - from the folder of the package)
+var remote = args.Zip(args.Skip(1)).Any(p => p.First.Equals("--Profile", StringComparison.OrdinalIgnoreCase) && p.Second.Equals("Remote", StringComparison.OrdinalIgnoreCase));
+var root = remote ? RemotePackageRoot(AppContext.BaseDirectory) : RepositoryRoot(AppContext.BaseDirectory);
+string? masToken = null;
+string? remoteService = null;
+if (remote)
+{
+    var rj = Path.Combine(root, "remote.json");
+    if (!File.Exists(rj)) throw new InvalidOperationException($"{rj} is missing: it names the Service of the User's machine and the User's token.");
+    var j = JsonNode.Parse(File.ReadAllText(rj))!.AsObject();
+    remoteService = (string?)j["Service"] ?? throw new InvalidOperationException("remote.json has no Service");
+    masToken = (string?)j["Token"];
+}
+// The Launcher's page is in Thalia\Core\wwwroot (Full) or beside the program (Remote), wherever the program is started from.
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions { Args = args, ContentRootPath = remote ? AppContext.BaseDirectory : Path.Combine(root, "Thalia", "Core") });
 builder.WebHost.UseUrls(builder.Configuration["Urls"] ?? "http://localhost:5199");
 var app = builder.Build();
 
 var appsRoot = Path.Combine(root, "Apps");
 var amds     = Path.Combine(root, "AIMs", "AMDs");
-var masUrl   = new Uri(builder.Configuration["Mas"] ?? "https://localhost:5105/");
+var masUrl   = new Uri(remoteService ?? builder.Configuration["Mas"] ?? "https://localhost:5105/");
 var appIds   = (builder.Configuration["Apps"] ?? "MTS,MCA,AMQ,NPR").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 var logs     = Path.Combine(Path.GetTempPath(), "Thalia");
 Directory.CreateDirectory(logs);
 
 var controllerDll = Path.Combine(root, "Thalia", "Controller", "bin", "Debug", "net10.0", "ThaliaController.dll");
-var hostProject   = Path.Combine(root, "AIF", "UserAgent", "Clients", "Browser", "Host");
-var hostDll       = Path.Combine(hostProject, "bin", "Debug", "net10.0", "RcaWeb.Host.dll");
+var hostProject   = remote ? Path.Combine(root, "Host") : Path.Combine(root, "AIF", "UserAgent", "Clients", "Browser", "Host");
+var hostDll       = remote ? Path.Combine(hostProject, "RcaWeb.Host.dll") : Path.Combine(hostProject, "bin", "Debug", "net10.0", "RcaWeb.Host.dll");
+var hostExe       = Path.Combine(hostProject, RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "RcaWeb.Host.exe" : "RcaWeb.Host");
 var masProject    = Path.Combine(root, "Apps", "MAS", "Service", "src", "MasService.csproj");
 var masConfig     = Path.Combine(root, "Apps", "MAS", "Service", "mas-server-AI.json");
 var ollamaExe     = Path.Combine(root, "Support", "Ollama", "bin", RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "ollama.exe" : "ollama");
 
-var masHttp = new HttpClient(new HttpClientHandler { ServerCertificateCustomValidationCallback = (_, _, _, _) => true }) { Timeout = TimeSpan.FromSeconds(10) };
+// A Service on this machine's loopback has a development certificate, accepted; any other Service must present a certificate that is valid for its name.
+var masHandler = new HttpClientHandler();
+if (masUrl.IsLoopback) masHandler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+var masHttp = new HttpClient(masHandler) { Timeout = TimeSpan.FromSeconds(10) };
+if (!string.IsNullOrEmpty(masToken)) masHttp.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", masToken);
 var running = new ConcurrentDictionary<string, Run>();
 var gpu = Gpu.Probe();
 
 // ---- the catalogue (APP-2): local Apps and MAS-based Apps, each with the needs of its Module ----------------------------------------------------
 app.MapGet("/api/catalogue", async () =>
 {
-    var local = AppCatalogue.Scan(appsRoot, appIds);
+    var local = remote ? AppCatalogue.Scan(null) : AppCatalogue.Scan(appsRoot, appIds);
     var items = new JsonArray();
     foreach (var e in local.Apps.OrderBy(a => Array.IndexOf(appIds, a.Id)))
         items.Add(Item(e.Id, e.Name, e.Description, "local", e.Module, $"/api/icon/local/{e.Id}"));
@@ -62,11 +81,14 @@ app.MapGet("/api/catalogue", async () =>
             items.Add(Item(id, (string?)a["name"] ?? id, (string?)a["description"] ?? "", "mas", local.Apps.FirstOrDefault(l => l.Id == id)?.Module, $"/api/icon/mas/{id}"));
         }
     }
-    catch (Exception ex) { masProblem = $"The MPAI as a Service instance at {masUrl} does not answer ({ex.GetBaseException().Message.Split('\n')[0]}). Its Apps appear when it runs; Run on MAS starts it if it is on this machine."; }
+    catch (Exception ex) { masProblem = remote
+        ? $"Your Service at {masUrl.Host} does not answer ({ex.GetBaseException().Message.Split('\n')[0]}). Is Tailscale connected here, and is Thalia-Service running on your desktop?"
+        : $"The MPAI as a Service instance at {masUrl} does not answer ({ex.GetBaseException().Message.Split('\n')[0]}). Its Apps appear when it runs; Run on MAS starts it if it is on this machine."; }
 
     return Results.Json(new JsonObject
     {
         ["machine"] = new JsonObject { ["os"] = RuntimeInformation.OSDescription, ["arch"] = RuntimeInformation.OSArchitecture.ToString(), ["gpu"] = gpu.Text },
+        ["profile"] = remote ? "remote" : "full",
         ["mas"] = masUrl.ToString(),
         ["masProblem"] = masProblem,
         ["apps"] = items,
@@ -95,6 +117,7 @@ app.MapGet("/api/icon/{where}/{id}", async (string where, string id) =>
 app.MapPost("/api/run/{where}/{id}", async (string where, string id) =>
 {
     if (!appIds.Contains(id)) return Results.BadRequest(new { error = $"{id} is not in the catalogue" });
+    if (remote && where != "mas") return Results.BadRequest(new { error = "this is a Remote Thalia: it runs the Apps of MPAI as a Service only" });
     var key = $"{where}:{id}";
     if (running.TryGetValue(key, out var already) && already.Alive) return Results.Json(already.Json());
     var run = new Run(key, id, where);
@@ -151,7 +174,7 @@ app.UseStaticFiles();
 
 app.Lifetime.ApplicationStopping.Register(() => { foreach (var r in running.Values) r.Stop("Thalia closed"); });
 
-Console.WriteLine("=== Thalia (MPAI-THL V1.0, Full Profile, first version) ===");
+Console.WriteLine($"=== Thalia (MPAI-THL V1.0, {(remote ? "Remote" : "Full")} Profile, first version) ===");
 Console.WriteLine($"  Launcher:  {builder.Configuration["Urls"] ?? "http://localhost:5199"}");
 Console.WriteLine($"  Apps:      {string.Join(", ", appIds)} (local: {appsRoot})");
 Console.WriteLine($"  MAS:       {masUrl}");
@@ -165,6 +188,8 @@ async Task StartAsync(Run run)
     try
     {
         if (!File.Exists(hostDll)) throw new InvalidOperationException($"the App client is not built: {hostDll} (dotnet build {hostProject})");
+        var hostFile = remote && File.Exists(hostExe) ? hostExe : "dotnet";
+        var hostArgs = hostFile == "dotnet" ? $"\"{hostDll}\" " : "";
         if (run.App == "MCA") await EnsureOllamaAsync(run);
 
         Uri service;
@@ -182,7 +207,9 @@ async Task StartAsync(Run run)
         {
             if (!await AnswersAsync(masUrl))
             {
-                if (!masUrl.IsLoopback) throw new InvalidOperationException($"the MPAI as a Service instance {masUrl} does not answer");
+                if (!masUrl.IsLoopback) throw new InvalidOperationException(remote
+                    ? $"your Service at {masUrl.Host} does not answer: is Tailscale connected here, and is Thalia-Service running on your desktop?"
+                    : $"the MPAI as a Service instance {masUrl} does not answer");
                 run.Phase = "starting the MPAI as a Service instance on this machine (the first time: several minutes)";
                 Shared.Mas ??= run.Spawn("mas-service", "dotnet", $"run --project \"{masProject}\" -- \"{masConfig}\"", root, null, keep: true);
                 var until = DateTime.UtcNow.AddMinutes(10);
@@ -197,11 +224,15 @@ async Task StartAsync(Run run)
 
         var hostPort = FreePort();
         run.Phase = "starting the App's client";
-        var host = run.Spawn("client", "dotnet", $"\"{hostDll}\" --Service {service} --Urls https://localhost:{hostPort}", hostProject,
-                             new Dictionary<string, string> { ["ASPNETCORE_ENVIRONMENT"] = "Development" });
+        // Remote: the client is published (no development certificate on this machine): http on localhost is a secure context for the microphone and the camera.
+        var scheme = remote ? "http" : "https";
+        var hostEnv = new Dictionary<string, string>();
+        if (!remote) hostEnv["ASPNETCORE_ENVIRONMENT"] = "Development";
+        if (!string.IsNullOrEmpty(masToken) && run.Where == "mas") hostEnv["MPAI_MAS_TOKEN"] = masToken;   // the client adds it to what it passes to the Service
+        var host = run.Spawn("client", hostFile, $"{hostArgs}--Service {service} --Urls {scheme}://localhost:{hostPort}", hostProject, hostEnv);
         if (!await run.WaitForAsync(host, "Now listening on", TimeSpan.FromMinutes(2)))
             throw new InvalidOperationException("the App's client did not come up: " + run.LastLine(host));
-        run.Url = $"https://localhost:{hostPort}/app/{Uri.EscapeDataString(run.App)}";
+        run.Url = $"{scheme}://localhost:{hostPort}/app/{Uri.EscapeDataString(run.App)}";
         run.Phase = "running";
     }
     catch (Exception ex)
@@ -288,6 +319,14 @@ Needs Needs(string? module)
     }
     catch (Exception ex) { n.CanRun = false; n.Why = "its L3 could not be read: " + ex.Message; }
     return n;
+}
+
+// The folder of a Remote package: the first one above this program that holds remote.json and the Host folder.
+static string RemotePackageRoot(string from)
+{
+    for (var d = new DirectoryInfo(from); d is not null; d = d.Parent)
+        if (File.Exists(Path.Combine(d.FullName, "remote.json")) && Directory.Exists(Path.Combine(d.FullName, "Host"))) return d.FullName;
+    throw new InvalidOperationException("The Remote package is not complete (no remote.json and Host folder above " + from + ")");
 }
 
 static string RepositoryRoot(string from)

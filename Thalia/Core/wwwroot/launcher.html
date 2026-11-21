@@ -147,7 +147,8 @@ function applySeason() {
 // ---- state: what is shown is the scope of the search (this machine / the Service / both), limited by the two switches under her face ---------------------
 let catalogue = null, shown = '', view = 'apps', scope = 'local';
 scope = P.scope || scope;
-const wheres = () => ['local', 'mas'].filter(w => scope === 'both' || scope === w);
+const isRemote = () => catalogue && catalogue.profile === 'remote';   // a Remote Thalia: the Apps of MPAI as a Service only
+const wheres = () => isRemote() ? ['mas'] : ['local', 'mas'].filter(w => scope === 'both' || scope === w);
 
 function syncControls() {
   for (const s of document.querySelectorAll('#scope span')) s.classList.toggle('on', s.dataset.s === scope);
@@ -192,7 +193,8 @@ function runOf(id, where) { return (catalogue.running || []).find(r => r.app ===
 function render() {
   if (!catalogue) return;
   const m = catalogue.machine;
-  $('#machine').textContent = `${m.os}, ${m.arch}; graphics: ${m.gpu}`;
+  $('#scope').hidden = isRemote();
+  $('#machine').textContent = isRemote() ? `Remote Thalia: the Apps of MPAI as a Service at ${new URL(catalogue.mas).hostname}` : `${m.os}, ${m.arch}; graphics: ${m.gpu}`;
   $('#notice').hidden = !(catalogue.masProblem && wheres().includes('mas'));
   $('#notice').textContent = catalogue.masProblem || '';
   $('#q').placeholder = view === 'apps' ? 'Search Apps' : 'Search running Apps';
@@ -217,7 +219,7 @@ function render() {
     card.querySelector('.id').textContent = `${id} - Module ${a.module || '?'}`;
     card.querySelector('.desc').textContent = a.description;
     for (const where of ws) card.appendChild(row(id, where, sides[where]));
-    card.appendChild(needs(sides.local || a));
+    if (!isRemote()) card.appendChild(needs(sides.local || a));
     grid.appendChild(card); n++;
   }
   if (!n) view_.innerHTML = `<p class="empty">${view === 'running' ? 'No App is running here.' : 'No App matches.'}</p>`;
@@ -277,7 +279,7 @@ function section(key) {
 }
 function welcome() {
   const q = $('#q').value.trim();
-  $('#notice').hidden = true;
+  $('#notice').hidden = !(isRemote() && catalogue.masProblem);
   $('#q').placeholder = 'Search for an App';
   const v = $('#view'); v.innerHTML = '';
   let welcomeHidden = false;
