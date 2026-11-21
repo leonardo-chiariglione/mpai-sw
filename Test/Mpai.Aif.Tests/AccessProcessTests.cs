@@ -65,7 +65,10 @@ public class AccessProcessTests
             });
         }
 
-        public string Uri(string path) => $"https://localhost:{Port}{path}";
+        // By its address, not "localhost": every Provider of these tests presents a new certificate under the same host name, and
+        // on Windows a link to "localhost" then hung now and then, the Controller's end taking the TLS handshake as complete while
+        // the Provider's end still waited for it (two hang dumps, 2026-11-21); with the address it did not happen in any run.
+        public string Uri(string path) => $"https://127.0.0.1:{Port}{path}";
 
         private async Task Serve(TcpClient client)
         {
@@ -183,7 +186,7 @@ public class AccessProcessTests
         var fetcher = new AccessFetcher(store, AnyCertificate()) { Trust = Party("controller-1", controllerKey) };
         var entry = Entry(host.Uri("/open.txt"), "public data");
         Assert.Equal(AccessOutcome.Refused, fetcher.Ensure(entry, "aim", out _));
-        fetcher.OpenHosts.Add("localhost");
+        fetcher.OpenHosts.Add("127.0.0.1");
         Assert.Equal(AccessOutcome.OK, fetcher.Ensure(entry, "aim", out _));
         Assert.Equal("public data", Text(store, entry.Uri, "open.txt"));
     }

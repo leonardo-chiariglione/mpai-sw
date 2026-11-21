@@ -88,7 +88,7 @@ public class AccessModelsTests : IDisposable
         var entries = AccessEntry.ReadForThisMachine(doc.RootElement).Where(e => e.Name.StartsWith("voice-") || e.Name == "tts-program").ToList();
         var store = new AccessStore(Path.Combine(work, "access"));
         var fetcher = new AccessFetcher(store);
-        foreach (var e in entries) Assert.Equal(AccessOutcome.OK, fetcher.Ensure(e, "tts", out var why));
+        foreach (var e in entries) { var outcome = fetcher.Ensure(e, "tts", out var why); Assert.True(outcome == AccessOutcome.OK, $"{e.Name}: {outcome}: {why}"); }
         var aim = new BoundAccess(store.As(new StorageHolder("M", "tts")), entries, fetcher, "tts");
         var given = AccessEntry.Overlay(new Dictionary<string, string>(), entries, aim, "tts");
         var piper = given["PiperExecutable"];

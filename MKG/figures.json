@@ -421,10 +421,10 @@
   "ref": "https://mpai.community/wp-content/uploads/2026/11/Audio-Event-Description-OSD-AED-V1.5.png"
  },
  "https://mpai.community/standards/mpai-osd/v1-5/ai-modules/audio-motion-and-proximity/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/06/Audio-Motion-and-Proximity-PGM-AMP-V1.5-1.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Audio-Motion-and-Proximity-PGM-AMP-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-osd/v1-5/ai-modules/audio-salience-mapping/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Audio-Salience-Mapping-PGM-ASM-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Audio-Salience-Mapping-PGM-ASM-V1.0-AUC2.png"
  },
  "https://mpai.community/standards/mpai-osd/v1-5/ai-modules/audio-scene-description/": {
   "ref": "https://mpai.community/wp-content/uploads/2026/06/Audio-Scene-Descriptors-OSD-ASD-V1.5.png"
@@ -551,7 +551,7 @@
   "ref": "https://mpai.community/wp-content/uploads/2026/10/Entity-Body-Description-PAF-EBD-V1.6.png"
  },
  "https://mpai.community/standards/mpai-paf/v1-6/ai-modules/entity-face-description/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/10/Generative-Face-Description-PAF-GFD-V1.6.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/10/Entity-Face-Description-PAF-EFD-V1.6.png"
  },
  "https://mpai.community/standards/mpai-paf/v1-6/ai-modules/face-identity-recognition/": {
   "ref": "https://mpai.community/wp-content/uploads/2024/07/Face-Identity-Recognition1-PAF-FIR-V1.2.png"
@@ -604,153 +604,177 @@
   "comp": "https://mpai.community/wp-content/uploads/2026/10/Virtual-Meeting-Secretary-PAF-VMS-Composite-V1.6.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/a-user-control": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/A-User-Control-PGM-AUC-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/A-User-Control-PGM-AUC-V1.0-AUC2.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/a-user-formation/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/A-User-Formation-PGM-AUF-V1.0-RQRS-2026-11-04.png",
-  "comp": "https://mpai.community/wp-content/uploads/2026/11/A-User-Formation-Composite-PGM-AUF-V1.0.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/A-User-Formation-PGM-AUF-V1.0-AUC2.png",
+  "comp": "https://mpai.community/wp-content/uploads/2026/11/A-User-Formation-Composite-PGM-AUF-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/a-user-state-composition/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/A-User-State-Composition-PGM-ASC-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/A-User-State-Composition-PGM-ASC-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/acoustic-environment-analysis/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Acoustic-Environment-Analysis-PGM-AEA-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Acoustic-Environment-Analysis-PGM-AEA-V1.0-AUC2.png"
+ },
+ "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/animation-object-generation/": {
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Animation-Object-Generation-PGM-AOG-V1.0-AUC.png"
+ },
+ "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/audio-instance-identification/": {
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Audio-Instance-Identification-PGM-AII-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/audio-motion-and-proximity/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/06/Audio-Motion-and-Proximity-PGM-AMP-V1.5-1.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Audio-Motion-and-Proximity-PGM-AMP-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/audio-salience-mapping/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Audio-Salience-Mapping-PGM-ASM-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Audio-Salience-Mapping-PGM-ASM-V1.0-AUC2.png"
+ },
+ "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/audio-scene-description/": {
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Audio-Scene-Description-PGM-ASD-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/audio-scene-enhancement/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Audio-Scene-Enhancement-PGM-ASE-V1.0-RQRS.png",
-  "comp": "https://mpai.community/wp-content/uploads/2026/11/Audio-Scene-Enhancement-Composite-PGM-ASE-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Audio-Scene-Enhancement-PGM-ASE-V1.0-AUC.png",
+  "comp": "https://mpai.community/wp-content/uploads/2026/11/Audio-Scene-Enhancement-Composite-PGM-ASE-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/audio-visual-alignment/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Audio-Visual-Alignment-PGM-AVA-V1.0-RQRS.png",
-  "comp": "https://mpai.community/wp-content/uploads/2026/11/Audio-Visual-Alignment-Composite-PGM-AVA-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Audio-Visual-Alignment-PGM-AVA-V1.0-AUC.png",
+  "comp": "https://mpai.community/wp-content/uploads/2026/11/Audio-Visual-Alignment-Composite-PGM-AVA-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/audio-visual-salience-reconciliation/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Audio-Visual-Salience-Reconciliation-PGM-AVR-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Audio-Visual-Salience-Reconciliation-PGM-AVR-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/audio-visual-scene-descriptors-multiplexing/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Audio-Visual-Scene-Descriptors-Multiplexing-PGM-AVM-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Audio-Visual-Scene-Descriptors-Multiplexing-PGM-AVM-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/auf-status-multiplexing/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/AUF-Status-Multiplexing-PGM-FSM-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/AUF-Status-Multiplexing-PGM-FSM-V1.0-AUC2.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/automatic-speech-recognition/": {
   "ref": "https://mpai.community/wp-content/uploads/2026/08/Automatic-Speech-Recognition-PGM-ASR-V1.0.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/autonomous-user/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Autonomous-User-PGM-ATU-V1.0-RQRS-2026-11-04.png",
-  "comp": "https://mpai.community/wp-content/uploads/2026/11/Autonomous-User-Composite-PGM-ATU-V1.0-RQRS-2026-11-05.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Autonomous-User-PGM-ATU-V1.0-AUC2.png",
+  "comp": "https://mpai.community/wp-content/uploads/2026/11/Autonomous-User-Composite-PGM-ATU-V1.0-AUC2.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/basic-knowledge": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Basic-Knowledge-PGM-BKN-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Basic-Knowledge-PGM-BKN-V1.0-AUC.png"
+ },
+ "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/behaviour-planning/": {
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Behaviour-Planning-PGM-BPL-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/behavioural-and-expressive-analysis/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Behavioural-and-Expressive-Analysis-PGM-BEA-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Behavioural-and-Expressive-Analysis-PGM-BEA-V1.0-AUC2.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/context-description": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Context-Description-PGM-CXT-V1.0-RQRS.png",
-  "comp": "https://mpai.community/wp-content/uploads/2026/11/Context-Description-Composite-PGM-CXT-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Context-Description-PGM-CXT-V1.0-AUC2.png",
+  "comp": "https://mpai.community/wp-content/uploads/2026/11/Context-Description-Composite-PGM-CXT-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/context-resolution/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/10/Context-Resolution-PGM-CXR-V1.0.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Context-Resolution-PGM-CXR-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/correspondence-resolution/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Correspondence-Resolution-PGM-CRE-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Correspondence-Resolution-PGM-CRE-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/cross-modal-candidate-association/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Cross-Modal-Candidate-Association-PGM-CCA-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Cross-Modal-Candidate-Association-PGM-CCA-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/cross-modal-interpretation/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Cross-Modal-Interpretation-PGM-CMI-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Cross-Modal-Interpretation-PGM-CMI-V1.0-AUC2.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/deliberation-exchange/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/10/Deliberation-Exchange-PGM-DEX-V1.0.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Deliberation-Exchange-PGM-DEX-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/deliberative-domain-access/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Deliberative-Domain-Access-PGM-DDA-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Deliberative-Domain-Access-PGM-DDA-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/domain-access": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Domain-Access-PGM-DAC-V1.0-RQRS.png",
-  "comp": "https://mpai.community/wp-content/uploads/2026/11/Domain-Access-Composite-PGM-DAC-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Domain-Access-PGM-DAC-V1.0-AUC.png",
+  "comp": "https://mpai.community/wp-content/uploads/2026/11/Domain-Access-Composite-PGM-DAC-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/engagement-recalibration/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Engagement-Recalibration-PGM-ENG-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Engagement-Recalibration-PGM-ENG-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/entity-body-description/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Entity-Body-Description-PGM-EBD-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Entity-Body-Description-PGM-EBD-V1.0-AUC2.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/entity-face-description/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Entity-Face-Description-PGM-EFD-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Entity-Face-Description-PGM-EFD-V1.0-AUC2.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/entity-state-refinement/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/User-State-Synthesis-PGM-USY-V1.0.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Entity-State-Refinement-PGM-ESR-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/final-response-demultiplexing/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Final-Response-Demultiplexing-PGM-FRD-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Final-Response-Demultiplexing-PGM-FRD-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/intent-and-referent-analysis/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Intent-and-Referent-Analysis-PGM-IRA-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Intent-and-Referent-Analysis-PGM-IRA-V1.0-AUC2.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/linguistic-paralinguistic-analysis/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Linguistic-Paralinguistic-Analysis-PGM-PLE-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Linguistic-Paralinguistic-Analysis-PGM-LPA-V1.0-AUC2.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/multimodal-input-harmonisation/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Multimodal-Input-Harmonisation-PGM-MJH-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Multimodal-Input-Harmonisation-PGM-MIH-V1.0-AUC2.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/perceptual-domain-access/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Perceptual-Domain-Access-PGM-PDA-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Perceptual-Domain-Access-PGM-PDA-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/personal-status-demultiplexing/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Personal-Status-Demultiplexing-PGM-PSD-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Personal-Status-Demultiplexing-PGM-PSD-V1.0-AUC2.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/personality-alignment": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Personality-Alignment-PGM-PAL-V1.0-RQRS.png",
-  "comp": "https://mpai.community/wp-content/uploads/2026/11/Personality-Alignment-Composite-PGM-PAL-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Personality-Alignment-PGM-PAL-V1.0-AUC.png",
+  "comp": "https://mpai.community/wp-content/uploads/2026/11/Personality-Alignment-Composite-PGM-PAL-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/prompt-contextualisation/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Prompt-Contextualisation-PGM-PCX-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Prompt-Contextualisation-PGM-PCX-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/prompt-creation": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Prompt-Creation-PGM-PRC-V1.0-RQRS.png",
-  "comp": "https://mpai.community/wp-content/uploads/2026/11/Prompt-Creation-Composite-PGM-PRC-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Prompt-Creation-PGM-PRC-V1.0-AUC.png",
+  "comp": "https://mpai.community/wp-content/uploads/2026/11/Prompt-Creation-Composite-PGM-PRC-V1.0-AUC2.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/prompt-planning-and-formatting/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Prompt-Planning-and-Formatting-PGM-PPF-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Prompt-Planning-and-Formatting-PGM-PPF-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/prompt-token-analysis/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Prompt-Token-Analysis-PGM-PTA-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Prompt-Token-Analysis-PGM-PTA-V1.0-AUC2.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/scene-geometry-construction/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Scene-Geometry-Construction-PGM-SGC-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Scene-Geometry-Construction-PGM-SGC-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/stance-selection/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Stance-Selection-PGM-STS-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Stance-Selection-PGM-STS-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/user-state-creation/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/08/Entity-State-Multiplexing-PGM-ESM-V1.0.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/User-State-Creation-PGM-USC-V1.0-AUC2.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/user-state-description/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/User-State-Description-PGM-USD-V1.0-RQRS-2026-11-04.png",
-  "comp": "https://mpai.community/wp-content/uploads/2026/11/User-State-Description-Composite-PGM-USD-V1.0-RQRS-2026-11-04c.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/User-State-Description-PGM-USD-V1.0-AUC2.png",
+  "comp": "https://mpai.community/wp-content/uploads/2026/11/User-State-Description-Composite-PGM-USD-V1.0-AUC2.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/user-state-refinement": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/User-State-Refinement-PGM-USR-V1.0-RQRS.png",
-  "comp": "https://mpai.community/wp-content/uploads/2026/11/User-State-Refinement-Composite-PGM-USR-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/User-State-Refinement-PGM-USR-V1.0-AUC.png",
+  "comp": "https://mpai.community/wp-content/uploads/2026/11/User-State-Refinement-Composite-PGM-USR-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/user-state-synthesis/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/User-State-Synthesis-PGM-USY-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/User-State-Synthesis-PGM-USY-V1.0-AUC.png"
+ },
+ "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/visual-enhancement-multiplexing/": {
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Visual-Enhancement-Multiplexing-PGM-VEM-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/visual-environment-analysis/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Visual-Environment-Analysis-PGM-VEA-V1.0-RQRS.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Visual-Environment-Analysis-PGM-VEA-V1.0-AUC2.png"
+ },
+ "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/visual-instance-identification/": {
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Visual-Instance-Identification-PGM-VII-V1.0-AUC.png"
+ },
+ "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/visual-salience-mapping/": {
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Visual-Salience-Mapping-PGM-VSM-V1.0-AUC.png"
+ },
+ "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/visual-scene-description/": {
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Visual-Scene-Description-PGM-VSD-V1.0-AUC.png"
  },
  "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/visual-scene-enhancement/": {
-  "ref": "https://mpai.community/wp-content/uploads/2026/11/Visual-Scene-Enhancement-PGM-VSE-V1.0-RQRS.png",
-  "comp": "https://mpai.community/wp-content/uploads/2026/08/Visual-Scene-Description-Composite-PGM-VSD-V1.0.png"
+  "ref": "https://mpai.community/wp-content/uploads/2026/11/Visual-Scene-Enhancement-PGM-VSE-V1.0-AUC.png",
+  "comp": "https://mpai.community/wp-content/uploads/2026/11/Visual-Scene-Enhancement-Composite-PGM-VSE-V1.0-AUC2.png"
  },
  "https://mpai.community/standards/mpai-xrv/ltp/v1-0/ai-modules/action-generation/": {
   "ref": "https://mpai.community/wp-content/uploads/2026/11/Action-Generation-XRV-ACG-V1.0.png"

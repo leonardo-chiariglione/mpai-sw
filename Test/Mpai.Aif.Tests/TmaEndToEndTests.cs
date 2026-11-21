@@ -228,7 +228,7 @@ public class TmaEndToEndTests : IDisposable
     {
         var gallery = new SubjectGallery();
         using var ecapa = new Mpai.Mmc.Sir.SpeakerEmbedder(Models("ecapa-tdnn.onnx"));
-        using var arc = new Mpai.Paf.Fir.ArcFaceRecogniser(Models("glintr100.onnx"));
+        using var arc = new Mpai.Paf.Fir.ArcFaceRecogniser(PinnedFaceModel() ?? Models("glintr100.onnx"));     // the model FIR is given (the settings above): enrolled and recognised by one model
         using var scrfd = new Mpai.Osd.VisualScene.ScrfdFaceDetector(Models("scrfd_10g_bnkps.onnx"));
         for (var p = 0; p < People.Length; p++)
         {
@@ -295,7 +295,21 @@ public class TmaEndToEndTests : IDisposable
         var data = log.Where(l => l.Json.Length > 0 && !l.Port.StartsWith("IN ") && l.Port != "ERROR" && l.Port != "EXCEPTION").ToList();
         string Top(string aim, string type) => string.Join(" | ", data.Where(l => l.Aim.Contains(aim) && l.Port.Contains(type)).Select(l =>
             (string?)JsonNode.Parse(l.Json)?["InstanceIdentifierData"]?[0]?["InstanceLabel"] + $" ({(double?)JsonNode.Parse(l.Json)?["InstanceIdentifierData"]?[0]?["LabelConfidenceLevel"]:F2})"));
-        var faces = Top("FIR", "OSD-IID"); var voices = Top("SIR", "OSD-IID");
+        // FIR (FirEachFace) runs continuously and is not recorded (the Recorder wraps one-shot AIMs only): the faces it named are read where they arrive, in the
+        // Event Descriptors - each face a Basic Visual Object whose Visual Qualifier names its Instance Identifier.
+        var faceLabels = new List<string>();
+        void Faces(JsonNode? n)
+        {
+            if (n is JsonObject o)
+            {
+                if ((string?)o["VisualObjectType"] == "Face" && o["ObjectID"]?["InstanceIdentifierData"]?[0] is JsonObject id)
+                    faceLabels.Add((string?)id["InstanceLabel"] + $" ({(double?)id["LabelConfidenceLevel"]:F2})");
+                foreach (var (_, v) in o) Faces(v);
+            }
+            else if (n is JsonArray a) foreach (var v in a) Faces(v);
+        }
+        Faces(last);
+        var faces = string.Join(" | ", faceLabels.Distinct()); var voices = Top("SIR", "OSD-IID");
         Record("faces: " + faces); Record("voices: " + voices);
         Record("texts: " + string.Join(" | ", data.Where(l => l.Aim.Contains("ASR")).Select(l => (string?)JsonNode.Parse(l.Json)?["BasicTextData"]?[0]?["Data"])));
         Record("users: " + string.Join(" | ", data.Where(l => l.Aim.Contains("IDR") && l.Port.Contains("OSD-IID")).Select(l => (string?)JsonNode.Parse(l.Json)?["InstanceIdentifierData"]?[0]?["InstanceLabel"])));

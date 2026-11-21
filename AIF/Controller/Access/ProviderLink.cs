@@ -36,6 +36,8 @@ public sealed class ProviderLink : IDisposable
         own = RemoteLink.CertificateForALink(protocol.Id);
         var handler = new SocketsHttpHandler { PooledConnectionLifetime = TimeSpan.FromMinutes(5) };
         handler.SslOptions.ClientCertificates = [own];
+        // A link whose connection and TLS handshake do not complete is refused, not waited for: the hour below is for the data.
+        handler.ConnectTimeout = TimeSpan.FromSeconds(30);
         handler.SslOptions.RemoteCertificateValidationCallback = (_, certificate, _, _) =>
         {
             if (certificate is null) return false;

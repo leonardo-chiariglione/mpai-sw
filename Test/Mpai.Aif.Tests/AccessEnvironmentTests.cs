@@ -62,9 +62,10 @@ public class AccessEnvironmentTests
         foreach (var (l3, name) in new[] { ("1MMC-ASR-V2.5-I01.json", "asr-program"), ("1MMC-ASR-V2.5-I01.json", "asr-server"), ("1MMC-TTS-V2.5-I01.json", "tts-program") })
         {
             using var doc = JsonDocument.Parse(File.ReadAllText(Path.Combine(Repository.Amds, l3)));
-            var e = Assert.Single(AccessEntry.ReadFrom(doc.RootElement), x => x.Name == name);
-            Assert.Equal("Windows", e.OperatingSystem);
-            Assert.Equal("x86-64", e.Architecture);
+            // asr-server has two builds for Windows x86-64, one for CUDA and one for the processor (Accelerator: AccessAcceleratorTests)
+            var entries = AccessEntry.ReadFrom(doc.RootElement).Where(x => x.Name == name).ToList();
+            Assert.NotEmpty(entries);
+            Assert.All(entries, e => { Assert.Equal("Windows", e.OperatingSystem); Assert.Equal("x86-64", e.Architecture); });
             Assert.Equal("", AccessEntry.Check(AccessEntry.ReadFrom(doc.RootElement)));
         }
     }

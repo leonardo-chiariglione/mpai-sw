@@ -530,6 +530,10 @@
      "name": "Alert",
      "url": "https://mpai.community/standards/mpai-cav/tec/v2-0/data-types/alert/"
     },
+    "ams-alert-message-ids": {
+     "name": "AMS Alert Message IDs",
+     "url": "https://mpai.community/standards/mpai-cav/tec/v2-0/data-types/ams-alert-message-ids/"
+    },
     "ams-data": {
      "name": "AMS Data",
      "url": "https://mpai.community/standards/mpai-cav/tec/v2-0/data-types/ams-data/"
@@ -577,6 +581,10 @@
     "ess-scene-descriptors": {
      "name": "ESS Scene Descriptors",
      "url": "https://mpai.community/standards/mpai-cav/tec/v2-0/data-types/ess-scene-descriptors/"
+    },
+    "failure-ids": {
+     "name": "Failure IDs",
+     "url": "https://mpai.community/standards/mpai-cav/tec/v2-0/data-types/failure-ids/"
     },
     "full-environment-descriptors": {
      "name": "Full Environment Descriptors",
@@ -630,6 +638,14 @@
      "name": "Route",
      "url": "https://mpai.community/standards/mpai-cav/tec/v2-0/data-types/route/"
     },
+    "route-command-ids": {
+     "name": "Route Command IDs",
+     "url": "https://mpai.community/standards/mpai-cav/tec/v2-0/data-types/route-command-ids/"
+    },
+    "route-environment-ids": {
+     "name": "Route Environment IDs",
+     "url": "https://mpai.community/standards/mpai-cav/tec/v2-0/data-types/route-environment-ids/"
+    },
     "spatial-data": {
      "name": "Spatial Data",
      "url": "https://mpai.community/standards/mpai-cav/tec/v2-0/data-types/spatial-data/"
@@ -641,6 +657,14 @@
     "traffic-sign-objects": {
      "name": "Traffic Sign Objects",
      "url": "https://mpai.community/standards/mpai-cav/tec/v2-0/data-types/traffic-sign-objects/"
+    },
+    "trajectory": {
+     "name": "Trajectory",
+     "url": "https://mpai.community/standards/mpai-cav/tec/v2-0/data-types/trajectory/"
+    },
+    "vehicle-types": {
+     "name": "Vehicle Types",
+     "url": "https://mpai.community/standards/mpai-cav/tec/v2-0/data-types/vehicle-types/"
     },
     "weather-data": {
      "name": "Weather Data",
@@ -1062,10 +1086,6 @@
      "name": "Knowledge",
      "url": "https://mpai.community/standards/mpai-mmc/v2-5/data-types/knowledge/"
     },
-    "meaning": {
-     "name": "Meaning (Basic Text Descriptors)",
-     "url": "https://mpai.community/standards/mpai-mmc/v2-5/data-types/meaning/"
-    },
     "motivation": {
      "name": "Motivation",
      "url": "https://mpai.community/standards/mpai-mmc/v2-5/data-types/motivation/"
@@ -1187,198 +1207,26 @@
     "MMM-VLP": "Validate"
    },
    "ai-modules": {},
-   "base": "https://mpai.community/standards/mpai-mmm/tec/v2-2/",
+   "base": "https://mpai.community/standards/mpai-mmm/tec/v3-0/",
    "data-types": {
-    "account": {
-     "name": "Account",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/account/"
-    },
     "actions": {
      "name": "Action",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/actions/"
+     "url": "https://mpai.community/standards/mpai-mmm/tec/v3-0/data-types/actions/"
     },
-    "activity-data": {
-     "name": "Activity Data",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/activity-data/"
-    },
-    "asset": {
-     "name": "Asset",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/asset/"
-    },
-    "authentication": {
-     "name": "Authentication",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/authentication/"
-    },
-    "basic-discovery": {
-     "name": "Basic Discovery",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/basic-discovery/"
-    },
-    "basic-interpretation": {
-     "name": "Basic Interpretation",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/basic-interpretation/"
-    },
-    "capabilities": {
-     "name": "Capabilities",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/capabilities/"
-    },
-    "contract-object": {
-     "name": "Contract Object",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/contract-object/"
-    },
-    "currency-object": {
-     "name": "Currency Object",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/currency-object/"
-    },
-    "discovery-object": {
-     "name": "Discovery Object",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/discovery-object/"
-    },
-    "event": {
-     "name": "Event",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/event/"
-    },
-    "fault-behaviour-report": {
-     "name": "Fault Behaviour Report",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/fault-behaviour-report/"
-    },
-    "fault-detection-report": {
-     "name": "Fault Detection Report",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/fault-detection-report/"
+    "certificate-object": {
+     "name": "Certificate Object",
+     "url": "https://mpai.community/standards/mpai-mmm/tec/v3-0/data-types/certificate-object/"
     },
     "financial-error-report": {
      "name": "Financial Error Report",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/financial-error-report/"
+     "url": "https://mpai.community/standards/mpai-mmm/tec/v3-0/data-types/financial-error-report/"
     },
-    "identifier": {
-     "name": "Identifier",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/identifier/"
-    },
-    "interpretation-object": {
-     "name": "Interpretation Object",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/interpretation-object/"
-    },
-    "ipp-message": {
-     "name": "IPP Message",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/ipp-message/"
-    },
-    "item": {
-     "name": "Item",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/item/"
-    },
-    "licence": {
-     "name": "Licence",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/licence/"
-    },
-    "m-environment": {
-     "name": "M-Environment",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/m-environment/"
-    },
-    "m-instance": {
-     "name": "M-Instance",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/m-instance/"
-    },
-    "market-classes": {
-     "name": "Market Classes",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/market-classes/"
-    },
-    "marketplace-policy-ids": {
-     "name": "Marketplace Policy IDs",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/marketplace-policy-ids/"
-    },
-    "message": {
-     "name": "Message",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/message/"
-    },
-    "penalties": {
-     "name": "Penalties",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/penalties/"
-    },
-    "personal-data": {
-     "name": "Personal Data",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/personal-data/"
-    },
-    "personal-profile": {
-     "name": "Personal Profile",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/personal-profile/"
-    },
-    "process": {
-     "name": "Process",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/process/"
-    },
-    "process-action": {
-     "name": "Process Action",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/process-action/"
-    },
-    "program-object": {
-     "name": "Program Object",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/program-object/"
-    },
-    "provenance": {
-     "name": "Provenance",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/provenance/"
-    },
-    "r-item": {
-     "name": "R-Item",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/r-item/"
-    },
-    "resolution": {
-     "name": "Resolution",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/resolution/"
-    },
-    "right": {
-     "name": "Right",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/right/"
-    },
-    "rights": {
-     "name": "Rights",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/rights/"
-    },
-    "rules": {
-     "name": "Rules",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/rules/"
-    },
-    "service-pricing-model": {
-     "name": "Service Pricing Model",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/service-pricing-model/"
-    },
-    "simple-certificate": {
-     "name": "Simple Certificate",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/simple-certificate/"
-    },
-    "simple-contract": {
-     "name": "Simple Contract",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/simple-contract/"
-    },
-    "transaction": {
-     "name": "Transaction",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/transaction/"
-    },
-    "u-environment": {
-     "name": "U-Environment",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/u-environment/"
-    },
-    "universe-metaverse-map": {
-     "name": "Universe-Metaverse Map",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/universe-metaverse-map/"
-    },
-    "validation": {
-     "name": "Validation",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/validation/"
-    },
-    "value": {
-     "name": "Value",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/value/"
-    },
-    "value-metadata-ids": {
-     "name": "Value Metadata IDs",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/value-metadata-ids/"
-    },
-    "wallet": {
-     "name": "Wallet",
-     "url": "https://mpai.community/standards/mpai-mmm/tec/v2-2/data-types/wallet/"
+    "item-property": {
+     "name": "Item Property",
+     "url": "https://mpai.community/standards/mpai-mmm/tec/v3-0/data-types/item-property/"
     }
    },
-   "version": "V2.2"
+   "version": "V3.0"
   }
  },
  "NNW": {
@@ -2283,6 +2131,10 @@
      "name": "Basic Knowledge",
      "url": "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/basic-knowledge"
     },
+    "behaviour-planning": {
+     "name": "Behaviour Planning",
+     "url": "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/behaviour-planning/"
+    },
     "behavioural-and-expressive-analysis": {
      "name": "Behavioural and Expressive Analysis",
      "url": "https://mpai.community/standards/mpai-pgm/aua/v1-0/ai-modules/behavioural-and-expressive-analysis/"
@@ -2505,6 +2357,10 @@
     "bkn-usr": {
      "name": "BKN-USR",
      "url": "https://mpai.community/standards/mpai-pgm/aua/v1-0/data-types/bkn-usr/"
+    },
+    "communicative-functions": {
+     "name": "Communicative Functions",
+     "url": "https://mpai.community/standards/mpai-pgm/aua/v1-0/data-types/communicative-functions/"
     },
     "context-descriptors": {
      "name": "Context Descriptors",

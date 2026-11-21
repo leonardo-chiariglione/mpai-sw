@@ -73,6 +73,11 @@ public sealed class DescriptorNode
     public List<AccessEntry> AccessSources { get; } =
         new();
 
+    // The entries of AccessSources built for processing units (Accelerator) of which none can be given to the AIM on this
+    // machine: one not IsOptional refuses the Module, as an entry that cannot be obtained.
+    public List<AccessEntry> AccessUnmet { get; } =
+        new();
+
     // How many times this AIM is started again when it throws (M3215 3.3), and its
     // Period and Deadline in milliseconds (3.5); null where not declared.
     public int     RestartLimit { get; set; }

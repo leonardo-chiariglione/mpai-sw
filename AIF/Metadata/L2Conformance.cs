@@ -122,6 +122,23 @@ public sealed class L2Conformance
         foreach (var s in Items(l2, "AccessSources"))
             if (Text(s, "Name") is { Length: > 0 } name && !IsPlaceholder(name) && !declared.Contains(name))
                 yield return $"Access '{name}' is in the L2 and is not declared by the L3.";
+        // The Accelerator of an entry among the options of the L2's entry of that Name, as Architecture and OperatingSystem of the Implementations.
+        foreach (var s in Items(l3, "AccessSources"))
+        {
+            var name = Text(s, "Name");
+            var chosen = Text(s, "Accelerator");
+            if (chosen.Length == 0) continue;
+            var options = new HashSet<string>(StringComparer.Ordinal);
+            var free = false;
+            foreach (var template in Items(l2, "AccessSources").Where(t => Text(t, "Name") == name).Select(t => Text(t, "Accelerator")))
+            {
+                if (!IsPlaceholder(template)) { if (template.Length > 0) options.Add(template); else free = true; }
+                else if (Options(template) is { } listed) options.UnionWith(listed);
+                else free = true;
+            }
+            if (!free && options.Count > 0 && !options.Contains(chosen))
+                yield return $"Access '{name}' Accelerator {chosen}: not one the L2 lists ({string.Join(" | ", options)}).";
+        }
     }
 
     // WHAT THE L2 LISTS, THE L3 CHOOSES FROM - as the L2s write it: the options

@@ -19,7 +19,7 @@ public sealed record AccessTerms(string Licence, string Uri, bool PersonalData);
 // classify the data: what is inside is the AIM's own business.
 public sealed record AccessEntry(
     string Name, string Uri, string Sha256, IReadOnlyList<string> KeyPrefixes, bool IsOptional, string Description = "",
-    IReadOnlyList<string>? Mirrors = null, IReadOnlyList<string>? ValidWith = null, AccessTerms? Terms = null, string Setting = "", string AsFile = "", string Member = "", bool Unpack = false, string Inside = "", string OperatingSystem = "", string Architecture = "")
+    IReadOnlyList<string>? Mirrors = null, IReadOnlyList<string>? ValidWith = null, AccessTerms? Terms = null, string Setting = "", string AsFile = "", string Member = "", bool Unpack = false, string Inside = "", string OperatingSystem = "", string Architecture = "", string Accelerator = "")
 {
     public const string ManifestKey = "manifest.json";
 
@@ -55,16 +55,45 @@ public sealed record AccessEntry(
                 terms = new AccessTerms(Text(t, "Licence"), Text(t, "Uri"), t.TryGetProperty("PersonalData", out var p) && p.ValueKind == JsonValueKind.True);
             entries.Add(new AccessEntry(Text(e, "Name"), Text(e, "Uri"), Text(e, "Sha256"), Texts("KeyPrefixes"), optional,
                 Text(e, "Description"), Texts("Mirrors"), Texts("ValidWith"), terms, Text(e, "Setting"), Text(e, "AsFile"), Text(e, "Member"),
-                e.TryGetProperty("Unpack", out var u) && u.ValueKind == JsonValueKind.True, Text(e, "Inside"), Text(e, "OperatingSystem"), Text(e, "Architecture")));
+                e.TryGetProperty("Unpack", out var u) && u.ValueKind == JsonValueKind.True, Text(e, "Inside"), Text(e, "OperatingSystem"), Text(e, "Architecture"), Text(e, "Accelerator")));
         }
         return entries;
     }
 
-    // The entries that apply where the AIM executes: what is obtained and given to it. An entry for another environment is neither.
-    public static List<AccessEntry> ReadForThisMachine(JsonElement aim) => ReadFrom(aim).Where(e => e.AppliesHere).ToList();
+    // The entries that apply where the AIM executes: what is obtained and given to it. An entry for another environment is neither,
+    // nor an entry for the processing unit not chosen (Accelerator: Choose), on the graphics card of this machine.
+    public static List<AccessEntry> ReadForThisMachine(JsonElement aim) => ReadForThisMachine(aim, ExecutionEnvironment.Card, out _);
 
-    // Whether two entries could apply together: both for all, or for the same environment.
-    private static bool Together(AccessEntry a, AccessEntry b) => ExecutionEnvironment.Overlap(a.Architecture, a.OperatingSystem, b.Architecture, b.OperatingSystem);
+    // The same, with the card the machine has (null: none); Unmet: the entries of a Name of which none could be given.
+    public static List<AccessEntry> ReadForThisMachine(JsonElement aim, ExecutionEnvironment.CudaCard? card, out List<AccessEntry> unmet) =>
+        Choose(ReadFrom(aim), ExecutionEnvironment.UsesCuda(ResourcePolicy.ReadFrom(aim), card), out unmet);
+
+    // THE ENTRY GIVEN FOR EACH PROCESSING UNIT (Accelerator, AIM Metadata AccessSources): the entries with the same Name and Setting
+    // are one program or datum built for several environments. Of those that fit the operating system and architecture where the
+    // AIM executes, where any names an Accelerator, the AIM is given one: the CUDA entry where cuda (its ResourcePolicies request a
+    // GPU and the machine has a card that meets GPU:CUDA:Class Minimum), otherwise the CPU entry or the entry with no Accelerator.
+    // The others are neither obtained nor given. Where a Name that names an Accelerator has no entry that can be given, its entries
+    // are Unmet: the Controller refuses the Module where one of them is not IsOptional, as for an entry it cannot obtain.
+    public static List<AccessEntry> Choose(IReadOnlyList<AccessEntry> entries, bool cuda, out List<AccessEntry> unmet)
+    {
+        unmet = [];
+        var given = new List<AccessEntry>();
+        foreach (var group in entries.GroupBy(e => (e.Name, e.Setting)))
+        {
+            var here = group.Where(e => e.AppliesHere).ToList();
+            if (!group.Any(e => e.Accelerator.Length > 0)) { given.AddRange(here); continue; }
+            var chosen = cuda ? here.Where(e => ExecutionEnvironment.IsCuda(e.Accelerator)).ToList() : [];
+            if (chosen.Count == 0) chosen = here.Where(e => !ExecutionEnvironment.IsCuda(e.Accelerator)).ToList();
+            if (chosen.Count == 0) unmet.AddRange(group);
+            given.AddRange(chosen);
+        }
+        // in the order the Metadata declares them
+        return entries.Where(given.Contains).ToList();
+    }
+
+    // Whether two entries could apply together: both for all, or for the same environment and processing unit.
+    private static bool Together(AccessEntry a, AccessEntry b) =>
+        ExecutionEnvironment.Overlap(a.Architecture, a.OperatingSystem, b.Architecture, b.OperatingSystem) && ExecutionEnvironment.OverlapAccelerator(a.Accelerator, b.Accelerator);
 
     // WHETHER THE ENTRIES OF ONE AIM ARE CONSISTENT: a name used once; one SHA-256 for one Uri; Mirrors of the same kind as the
     // Uri (a set's end in a slash); and every SHA-256 in ValidWith that of another entry. Empty when they are.

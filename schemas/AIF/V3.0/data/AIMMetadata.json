@@ -132,7 +132,9 @@
                             "anyOf": [ { "enum": [ "Windows", "Linux", "MacOS", "Debian", "Ubuntu", "RedHat", "Android", "Zephyr", "RTOS", "Oniro", "iOS" ] }, { "$dynamicRef": "#placeholder" } ] },
       "Architecture":     { "description": "The architecture of the processor this entry is for, as in Implementations. Omitted: for every architecture.",
                             "anyOf": [ { "enum": [ "x86", "x86-64", "ARM", "ARM64", "MIPS", "RISC-V" ] }, { "$dynamicRef": "#placeholder" } ] },
-      "IsOptional":       { "description": "True where the Module can load and the AIM can run without the data; omitted means required (implicitly false).",
+      "Accelerator":      { "description": "The processing unit that the program or data of this entry is built to execute on: CPU, built for the processor only; CUDA, built for an NVIDIA graphics card through CUDA, the compute capability it needs being the GPU:CUDA:Class Minimum of the ResourcePolicies of the AIM. Omitted: for every processing unit, as when OperatingSystem or Architecture is omitted. A program of Access may have several entries with the same Name and Setting, one for each OperatingSystem, Architecture and Accelerator it exists for; of those that fit the operating system and the architecture where the AIM executes, the Controller gives the AIM one: the CUDA entry where the ResourcePolicies of the AIM request a GPU (GPU:Number Request 1 or more) and the machine has an NVIDIA graphics card that meets GPU:CUDA:Class Minimum; otherwise the CPU entry, or the entry with no Accelerator. An entry not chosen is neither obtained nor given to the AIM; where none fits and the entry is not IsOptional, the Module is refused.",
+                            "anyOf": [ { "type": "string", "enum": [ "CPU", "CUDA" ] }, { "$dynamicRef": "#placeholder" } ] },
+      "IsOptional":      { "description": "True where the Module can load and the AIM can run without the data; omitted means required (implicitly false).",
                             "anyOf": [ { "type": "boolean" }, { "$dynamicRef": "#placeholder" } ] },
       "Terms":            { "type": "object", "additionalProperties": false,
                             "required": [ "Licence", "Uri" ],
@@ -306,8 +308,8 @@
                                                    "SM86", "SM87", "SM90" ] },
                                        { "$dynamicRef": "#placeholder" } ] },
 
-    "RPFB":               { "description": "A number, a space, GB, a space, and the GDDR generation, e.g. 24.0 GB GDDR6X.",
-                            "anyOf": [ { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)? GB (GDDR|GDDR2|GDDR3|GDDR4|GDDR5|GDDR5X|GDDR6|GDDR6X)$" },
+    "RPFB":               { "description": "A number, a space and GB, optionally followed by a space and the GDDR generation, e.g. 4 GB or 24.0 GB GDDR6X.",
+                            "anyOf": [ { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)? GB( (GDDR|GDDR2|GDDR3|GDDR4|GDDR5|GDDR5X|GDDR6|GDDR6X))?$" },
                                        { "$dynamicRef": "#placeholder" } ] },
 
     "RPGHz":              { "description": "A number, a space, and GHz, e.g. 1.75 GHz.",

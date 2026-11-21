@@ -651,6 +651,11 @@ public sealed class UserAgent
         {
             if (AccessEntry.Check(leaf.AccessSources) is { Length: > 0 } wrong)
                 throw new InvalidOperationException($"{name}: {leaf.AIMName} declares its Access wrongly: {wrong}");
+            // An entry built for processing units (Accelerator) of which none can be given here is as an entry that cannot be obtained.
+            if (leaf.AccessUnmet.FirstOrDefault(e => !e.IsOptional) is { } unmet)
+                throw new InvalidOperationException($"{name}: {leaf.AIMName} needs the Access '{unmet.Name}' and none of its entries is for this machine: " +
+                    $"they are for {string.Join(", ", leaf.AccessUnmet.Where(e => e.Name == unmet.Name).Select(e => string.Join(" ", new[] { e.OperatingSystem, e.Architecture, e.Accelerator }.Where(x => x.Length > 0))).Distinct())}" +
+                    (ExecutionEnvironment.Card is { } card ? $", and the graphics card here is {card.Class}" : ", and there is no NVIDIA graphics card here"));
             var got = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var entry in leaf.AccessSources.Where(e => !e.IsPlaceholder || !e.IsOptional))
             {

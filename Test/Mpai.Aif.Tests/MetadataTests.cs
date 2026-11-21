@@ -432,6 +432,9 @@ public class MetadataTests
             ("DataType boolean",              basic,     a => Output(a)["DataType"] = "boolean",        true),
             ("DataType uint8[]",              basic,     a => Output(a)["DataType"] = "uint8[]",        true),
             ("DataType Boolean",              basic,     a => Output(a)["DataType"] = "Boolean",        false),
+            ("Accelerator CUDA",              basic,     a => a["AccessSources"]![0]!["Accelerator"] = "CUDA",  true),
+            ("Accelerator CPU",               basic,     a => a["AccessSources"]![0]!["Accelerator"] = "CPU",   true),
+            ("Accelerator GPU",               basic,     a => a["AccessSources"]![0]!["Accelerator"] = "GPU",   false),
             ("Topology end by DataType",      composite, a => { var e = End(a).AsObject(); e.Remove("PortName"); e["DataType"] = "OSD-BSO-V1.5"; }, true),
             ("Topology end with neither",     composite, a => { var e = End(a).AsObject(); e.Remove("PortName"); e.Remove("PortNumber"); e.Remove("DataType"); }, false),
         };

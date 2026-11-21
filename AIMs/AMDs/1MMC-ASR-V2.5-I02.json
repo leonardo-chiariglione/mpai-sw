@@ -131,8 +131,26 @@
       "Name": "asr-server",
       "OperatingSystem": "Windows",
       "Architecture": "x86-64",
+      "Accelerator": "CUDA",
       "Uri": "https://github.com/ggml-org/whisper.cpp/releases/download/b4938/whisper-cublas-12.4.0-bin-x64.zip",
       "Sha256": "C1B17166E1E31A91CC8E9C1F910D3785E3CE757BB2958BF9DCE13FDB4880005F",
+      "Unpack": true,
+      "Inside": "Release/whisper-server.exe",
+      "Setting": "ServerPath",
+      "Description": "The server of the same release, which keeps the model loaded between turns.",
+      "Terms": {
+        "Licence": "MIT",
+        "Uri": "https://github.com/ggerganov/whisper.cpp/blob/master/LICENSE",
+        "PersonalData": false
+      }
+    },
+    {
+      "Name": "asr-server",
+      "OperatingSystem": "Windows",
+      "Architecture": "x86-64",
+      "Accelerator": "CPU",
+      "Uri": "https://github.com/ggerganov/whisper.cpp/releases/download/b4938/whisper-bin-x64.zip",
+      "Sha256": "C2A4B60EDB11F7E11A9191FFB50929535527D4D91C9903DBE3E554583BBBC63D",
       "Unpack": true,
       "Inside": "Release/whisper-server.exe",
       "Setting": "ServerPath",
@@ -156,6 +174,24 @@
       "Minimum": "Low",
       "Request": "Medium",
       "Maximum": "High"
+    },
+    {
+      "Name": "GPU:Number",
+      "Minimum": 0,
+      "Request": 1,
+      "Maximum": 1
+    },
+    {
+      "Name": "GPU:CUDA:Class",
+      "Minimum": "SM50",
+      "Request": "SM50",
+      "Maximum": "SM90"
+    },
+    {
+      "Name": "GPU:CUDA:FrameBuffer",
+      "Minimum": "0 GB",
+      "Request": "1 GB",
+      "Maximum": "2 GB"
     }
   ],
   "DataXMData": {},

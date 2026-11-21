@@ -22,6 +22,9 @@ public class XrvTwoMetaversesTests
     private static readonly string Folder = Path.Combine(Repository.Root, "Test", "Data", "XRV", "LongerEvening");
     private static JsonObject Doc(string file) => (JsonObject)JsonNode.Parse(File.ReadAllText(Path.Combine(Folder, file)))!;
 
+    // The applause of the Audience in the Theatre's plan (since 2026-11-16 the voices of the performers are Audio Objects of the plan too, and come first).
+    private static JsonNode AudienceAudio(JsonObject plan) => plan["Actions"]!.AsArray().OfType<JsonObject>().First(a => a["Audio"] is not null && (string?)a["Nil"] == "Audience")["Audio"]!.DeepClone();
+
     private static JsonObject Body(double la, double ra, double hip = 0, double knee = 0) => (JsonObject)JsonNode.Parse(
         ProcessActionPlayer.Frame("b", new JsonObject { ["LeftArmElevation"] = la, ["RightArmElevation"] = ra, ["HipFlexion"] = hip, ["KneeFlexion"] = knee }))!;
 
@@ -73,7 +76,7 @@ public class XrvTwoMetaversesTests
             ["Position"] = new JsonObject { ["Header"] = "OSD-OPS-V1.5", ["PositionID"] = "p", ["CartPosition"] = new JsonArray(0.1, 0.9, 0.0) },
             ["Orientation"] = new JsonObject { ["Header"] = "OSD-OOR-V1.5", ["OrientationID"] = "o", ["Orientation"] = new JsonArray(yaw, 0.0, 0.0) }
         }.ToJsonString();
-        var audience = Doc("ProcessActions-Theatre.json")["Actions"]!.AsArray().OfType<JsonObject>().First(a => a["Audio"] is not null)["Audio"]!.DeepClone();
+        var audience = AudienceAudio(Doc("ProcessActions-Theatre.json"));
         var dataIn = new JsonObject
         {
             ["Header"] = "XRV-RDI-V1.0", ["UEnvironmentID"] = "UE-Theatre", ["REDataInID"] = "rdi", ["REDataInTime"] = XrvTime.Simple("t", 0),
@@ -198,7 +201,7 @@ public class XrvTwoMetaversesTests
                 new JsonObject { ["t"] = 0.1, ["Process"] = "AnnaUser", ["Action"] = "MM-Add", ["Nil"] = "Anna", ["At"] = "TheatreStage", ["X"] = 0.0, ["Y"] = 1.0, ["Yaw"] = 180.0 },
                 new JsonObject { ["t"] = 0.2, ["Process"] = "AnnaUser", ["Action"] = "Animate", ["Nil"] = "Anna", ["Stream"] = "Anna-motion" },
                 new JsonObject { ["t"] = 0.4, ["Process"] = "AnnaUser", ["Action"] = "Frame", ["Stream"] = "Anna-motion", ["Joints"] = new JsonObject { ["LeftArmElevation"] = 170, ["RightArmElevation"] = 170, ["HipFlexion"] = 0, ["KneeFlexion"] = 0 } },
-                new JsonObject { ["t"] = 0.6, ["Process"] = "Audience", ["Action"] = "MM-Add", ["Nil"] = "Audience", ["At"] = "Hall", ["Audio"] = plan["Actions"]!.AsArray().OfType<JsonObject>().First(a => a["Audio"] is not null)["Audio"]!.DeepClone() },
+                new JsonObject { ["t"] = 0.6, ["Process"] = "Audience", ["Action"] = "MM-Add", ["Nil"] = "Audience", ["At"] = "Hall", ["Audio"] = AudienceAudio(plan) },
                 new JsonObject { ["t"] = 0.8, ["Process"] = "Operator", ["Action"] = "Property Change", ["Nil"] = "Console", ["Intensity"] = 1.0 })
         }, p => new MmmClient(http, p, tokens[p]), url.Replace("http", "ws"));
         await player.RunAsync(DateTimeOffset.UtcNow, stop.Token);

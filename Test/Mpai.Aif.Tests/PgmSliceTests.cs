@@ -70,9 +70,11 @@ public class PgmSliceTests
         Assert.True(missing.Count == 0, "No schema found for the Header of: " + string.Join(", ", missing));
     }
 
-    private static async Task<PgmRig> RunTextAsync(ILanguageModel model, string words)
+    // answerProcessActions: the stand-in of the M-Instance acknowledges the Process Action Requests, so that the words Basic Knowledge holds until the Process Actions are
+    // done (since 2026-11-17) come in a second Final Response.
+    private static async Task<PgmRig> RunTextAsync(ILanguageModel model, string words, bool answerProcessActions = false)
     {
-        var rig = new PgmRig(model);
+        var rig = new PgmRig(model) { AnswerProcessActions = answerProcessActions };
         rig.Write("PGM-HCM-V1.0", PgmRig.HumanCommand());
         rig.Write("OSD-BTO-V1.5", PgmAim.Text(words));
         await rig.RunAsync();
@@ -205,7 +207,7 @@ public class PgmSliceTests
             string verdict, said = "";
             try
             {
-                var rig = await RunTextAsync(model, "go and open the doors");
+                var rig = await RunTextAsync(model, "go and open the doors", answerProcessActions: true);
                 said = rig.Latest.TryGetValue("PGM-FRS-V1.0", out var frs) ? $" | said \"{PgmAim.TextOf(JsonNode.Parse(frs)?["Text"] as JsonObject)}\" | actions {string.Join(",", (JsonNode.Parse(frs)?["ProcessActions"]?["ProcessActions"] as JsonObject)?.Select(k => k.Key) ?? [])}" : "";
                 var bad = rig.Seen.Where(s => s.Verdict != "valid").Select(s => s.Verdict).Distinct().ToList();
                 var accepted = rig.At("PGM-HCM-V1.0").Any(x => (string?)x["ExecutionResult"] == "accepted");
