@@ -143,6 +143,10 @@ app.MapPost("/api/windows", () =>
 });
 
 app.MapGet("/", () => Results.File(Path.Combine(app.Environment.WebRootPath, "launcher.html"), "text/html; charset=utf-8"));
+// The four seasonal pictures of the Launcher (Sacra di San Michele, CC BY-SA 4.0) are kept in Access, with the data of the other standards: Access\THL\seasons.
+var seasons = Path.Combine(root, "Access", "THL", "seasons");
+if (Directory.Exists(seasons))
+    app.UseStaticFiles(new StaticFileOptions { FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(seasons), RequestPath = "/seasons" });
 app.UseStaticFiles();
 
 app.Lifetime.ApplicationStopping.Register(() => { foreach (var r in running.Values) r.Stop("Thalia closed"); });

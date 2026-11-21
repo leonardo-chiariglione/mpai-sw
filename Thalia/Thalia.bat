@@ -7,10 +7,8 @@ echo Building Thalia (only what changed)...
 dotnet build Thalia\Controller\ThaliaController.csproj -nologo -v q -clp:ErrorsOnly || goto failed
 dotnet build AIF\UserAgent\Clients\Browser\Host\RcaWeb.Host.csproj -nologo -v q -clp:ErrorsOnly || goto failed
 dotnet build Thalia\Core\Thalia.csproj -nologo -v q -clp:ErrorsOnly || goto failed
-rem DESIGN TIME: ?first=1 shows Thalia as on a first run, without Apps (remove it to show the real catalogue).
 rem Thalia fills the whole screen: an Edge kiosk window in its own profile (an Edge that is already open ignores the full-screen request).
-start "" msedge --user-data-dir="%LOCALAPPDATA%\Thalia\edge" --no-first-run --no-default-browser-check --kiosk http://localhost:5199/?first=1 --edge-kiosk-type=fullscreen
-if errorlevel 1 start "" http://localhost:5199/
+start "" msedge --user-data-dir="%LOCALAPPDATA%\Thalia\edge" --no-first-run --no-default-browser-check --kiosk http://localhost:5199/ --edge-kiosk-type=fullscreen
 dotnet Thalia\Core\bin\Debug\net10.0\Thalia.dll
 goto :eof
 :failed
