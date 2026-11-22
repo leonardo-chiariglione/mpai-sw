@@ -76,6 +76,9 @@ public sealed class PortDataCodecs
             // the Emotion an App gives a Module (CAE-USC Add Emotion to Speech): the JSON instance of its schema, inside and on the wire
             .Register(new JsonObjectCodec("MMC-EEM-V2.5"))
             .Register(new JsonObjectCodec("CAE-DLS-V2.5"))      // the Damaged List of the Speech Restoration System
+            // Television Media Analysis (OSD-TMA): the auxiliary text of a programme and the Multimodal Event Descriptors, the JSON instance of their schema, inside and on the wire.
+            .Register(new JsonObjectCodec("OSD-TXO-V1.5"))
+            .Register(new JsonObjectCodec("OSD-MEV-V1.5"))
             // Company Performance Prediction (MPAI-CUI CPP V2.1): the descriptors and statements are written and read as the JSON instance of their schema, inside and on the wire.
             .Register(new JsonObjectCodec("CUI-FND-V2.1"))
             .Register(new JsonObjectCodec("CUI-GVS-V2.1"))

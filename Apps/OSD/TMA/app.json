@@ -1,0 +1,14 @@
+{
+    "Name": "Television Media Analysis",
+    "Description": "Analyse a television programme: who speaks when, what is said and what is shown.",
+    "Icon": "icon.svg",
+    "Version": "1.0",
+    "Standard": "MPAI-OSD V1.5",
+    "UseCase": "TMA",
+    "Module": "1OSD-TMA-V1.5-I01",
+    "Keywords": ["television", "programme", "speakers", "faces", "transcript", "events"],
+    "Categories": ["Media"],
+    "Languages": ["en"],
+    "Asks": ["a video of the programme", "optionally, a text that says what the programme is about"],
+    "Keeps": "Nothing: the Multimodal Event Descriptors are written where the user says."
+}

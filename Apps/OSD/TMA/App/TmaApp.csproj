@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Television Media Analysis, the App: it is a User Agent. It runs OSD-TMA.orch and asks the Controller (TmaController, a program of its own) to start the Module. It splits a video as TV
+       Splitting would (its pictures, its sound), gives them to the Module and writes the Multimodal Event Descriptors the Module gives. -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>TmaApp</AssemblyName>
+    <RootNamespace>Mpai.Osd.Tma.App</RootNamespace>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\AIMs\Core\Mpai.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\AIF\ControllerApi\Mpai.Aif.Api.csproj" />
+    <!-- the Controller API of a Controller that is a program of its own (TmaController) -->
+    <ProjectReference Include="..\..\..\..\AIF\UserAgent\Remote\Mpai.Mas.Client.csproj" />
+    <ProjectReference Include="..\..\..\..\AIF\UserAgent\Ua\Mpai.Ua.csproj" />
+  </ItemGroup>
+
+</Project>
