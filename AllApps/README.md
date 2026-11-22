@@ -6,7 +6,7 @@ Each standard is a folder; the Apps of a standard are the files in it, named as 
 | Folder | App | What it does |
 |---|---|---|
 | `CAE` | `ASM` | Audio Scene Management by voice: speak or type to an audio scene; it starts Ollama itself (README: `Apps\CAE\ASM\README.md`) |
-| | `EAE`, `SRS`, `EES`, `ARP` | the Apps of CAE-USC, with dialogs to pick the files: EAE the audio of a microphone array, SRS restores damaged speech, EES adds emotion to speech, ARP preserves an open reel tape (results in `Downloads\MPAI USC`) |
+| | `EAE`, `SRS`, `AES`, `SME`, `ARP` | the Apps of CAE-USC, with dialogs to pick the files: EAE the audio of a microphone array, SRS restores damaged speech, AES adds an emotion you name to speech, SME gives speech the emotion of a model utterance, ARP preserves an open reel tape (results in `Downloads\MPAI USC`) |
 | | `EAE server (virtual room)` | a virtual room of real speech; open http://localhost:5190/ with headphones |
 | | `SRS demo (one click)` | restores a damaged recording with the voice of another speaker; plays original, damaged, restored |
 | `MMC` | `ACR`, `MAC`, `MCA`, `MTS`, `AMC`, `AMQ`, `NPR` | the standalone programs: access registration, access control, conversation with the avatar, translation, affective conversation, picture questions, newspaper reading |
