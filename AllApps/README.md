@@ -18,6 +18,7 @@ Each standard is a folder; the Apps of a standard are the files in it, named as 
 | `MMM` | `MMM demo`, `MMM world`, `MMM meeting`, `Stop the MMM meeting` | the metaverse meeting: the demo, a conference with people outside this network, personal links |
 | `AIH` | `HSP demo` | the first slice of AIH-HSP, narrated |
 | `AIF` | `Store service`, `Store app` | the repository of AIMs; submit an AIM |
+| `PGM` | `A-User door` | the A-User App of PGM-AUA (M3313): in the M-Instance of a room with one door you tell the A-User, by voice or in writing, to open the door when the bell rings and greet whoever is there; the Visitor rings, the A-User walks to the door, opens it and says welcome (it starts Ollama, the M-Instance and the Host, and opens the page; its User Agent is `MMM\Server\DoorUseCase.cs`, its Module `1PGM-ATU-V1.0-I01`) |
 | `MAS` | `MAS App desktop client`, `MAS App browser server`, `Stop the MAS App and the Service`, `MAS App local apps` | The MAS App, the MAS launcher: you choose an App in its window; `MAS App local apps` lets its icons start the standalone MMC Apps |
 | `_retired` | `ASM typed (old window)` | the first ASM window, typed commands; it cannot be built any more |
 
