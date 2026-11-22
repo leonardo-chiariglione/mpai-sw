@@ -16,7 +16,7 @@ Claude never deletes a request. A request that needs a decision from you is mark
 ## Requests
 
 
-ORDER FOR THE NIGHT OF 2026-11-22/23 (author, 2026-11-22: "run it as next night work"): N-45 FIRST (run the AIM that Implementer 2 published in the MPAI Store as a Module through Thalia), then the rest as listed below.
+ORDER FOR THE NIGHT OF 2026-11-22/23 (author, 2026-11-22: "run it as next night work"): N-45 FIRST (run the AIM that Implementer 2 published in the MPAI Store as a Module through Thalia), then N-46 (the launchers of AllApps, one by one), then the rest as listed below.
 ORDER FOR THE NIGHT OF 2026-11-20/21 (author, 2026-11-20: "put item 10 in tonight's night work"): N-44 FIRST (M3322, the figures to redraw: author, 2026-11-20 "producing the doc is night work"), then N-43 (the 30 old test failures, one by one), within the usual hours of the night job; what is not done by 09:00 is listed in the report. No other request tonight.
 
 ORDER FOR THE NIGHT OF 2026-11-19/20 (author, 2026-11-19: "run it tonight with all 10 seeds"; "add N-42 after N-41"; the PC is free until 11:00 on 2026-11-20): N-41 FIRST (UMAFall, then Erciyes, then M3322 with the results); then N-42 (the whole test run, report only). Author, 2026-11-19 late: "I need M3322 no matter what" (made without Word, see N-41) and "as a rule you should try and finish N-42": tonight N-41 and N-42 are finished, with no 07:00, 08:00, 09:00 or 10:15 limit; the author will ask to stop if needed. No other request tonight.
@@ -740,3 +740,17 @@ What is to build (each step testable alone; the order is the order):
 Rules (the author's): files only in Downloads (Claude-work, deleted after) and D:\AI; never touch the author's running Thalia (5199) or his Store data without need; do not register another Implementer; do not edit web pages (note what would change in MKG\pending-changes.md); commit and push only on the author's word (say what is uncommitted in the note).
 Done looks like: a Module started from Thalia runs the AIM of Implementer 2 obtained from the Store, verified (Same), and answers an Audit Request; the steps and checks in the night report; what could not be done, with the reason.
 Needs: nothing. The Store (port 5020) must be up: start it as above if it is not.
+
+### N-46 Test the Apps of AllApps through their launchers (2026-11-22)
+Status: todo
+Request (author, 2026-11-22: "test the other Apps through their launchers" - "add it to the night work as N-46"). Context: today the four Apps of Thalia (MTS, MCA, AMQ, NPR) were tested locally and on MPAI as a Service, and ACR and MAC through Thalia (after a fix of ThaliaController); the model tests of the MMC Apps pass (AppModulesTests, NprModuleTests). The Apps below are NOT in Thalia's catalogue: they start from AllApps\<standard>\<App>.bat (README: AllApps\README.md) and have not been tested through their launcher.
+Which, and how (start each as the author does - the .bat - then drive it, then stop it; one at a time; wait for the machine to be quiet between two):
+- MMC stand-alone: ACR, MAC, MCA, MTS, AMC, AMQ, NPR (AllApps\MMC): start the launcher, see that it builds/starts, and that the program answers a scripted turn (the inputs of Test\Data: question.wav, red.jpg, npr-page.png); stop.
+- MMC with an own Controller: CPS (port 5059), CAS (5061); OSD: TMA (5060): the launcher starts the Controller, a scripted run on a short clip/picture/WAV (Test\Data), answers in Downloads\MPAI MMC\CPS|CAS and Downloads\MPAI OSD\TMA (the Apps' own folders: leave them, say what is there).
+- CAE-USC: EAE, SRS, AES, SME, ARP and "SRS demo (one click)": they open file dialogs; drive the dialog by UI Automation (as the Store app was driven: Invoke the button from a detached script, then fill the File name box of the dialog and press Open) or run the App's program with the same files; results in Downloads\MPAI USC. CAE ASM (needs Ollama: the launcher starts it) and "EAE server (virtual room)" (http://localhost:5190/): start, answer, stop.
+- CAV (CAV, HCI): the simulation; ABV servers (the two): start, the page answers, stop; MMM (demo, world, meeting, stop): start, a scripted turn, stop; AIH "HSP demo": the narrated run; PGM "A-User door": Night\n37\drive.ps1 (bell, door, welcome).
+- AIF: Thalia and the Store are done (do not redo). MAS: "MAS App desktop client", "MAS App browser server", "Stop the MAS App and the Service", "MAS App local apps": start and answer only, and leave the Service on 5105 as it was found (the author's).
+What cannot be done at night without a person (microphone, camera, a real call between two people, listening to the voice): list it in the report as NOT TESTED with the reason; do not guess.
+Rules (the author's): files only in Downloads (Claude-work, deleted after) and D:\AI; never touch the author's Thalia (5199), his Store (5020) data or his MAS Service (5105) except to ask it; a launcher that fails is a finding: find the cause, fix it if it is small and in the Apps' own code, test, and say what changed; commit and push only on the author's word; do not edit web pages (note in MKG\pending-changes.md what would change).
+Done looks like: one line per launcher in the night report: started / answered / stopped, or the failure and its cause, and the fixes made (uncommitted, listed).
+Needs: nothing.
