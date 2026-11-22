@@ -96,9 +96,7 @@ internal static class Program
             using var api = new RemoteControllerApi(controller);
             var events = new Events();
             var devices = new DeviceRegistry()
-                .RegisterAcquire("OSD-BVO-V1.5", (bool viaVad, string? wanted) => Task.FromResult<string?>(visual))
-                .RegisterAcquire("OSD-BSO-V1.5", (bool viaVad, string? wanted) => Task.FromResult<string?>(speech))
-                .RegisterAcquire("OSD-TXO-V1.5", (bool viaVad, string? wanted) => Task.FromResult(auxiliary))
+                .RegisterDevice("Programme", new Programme(auxiliary, visual, speech))
                 .RegisterDevice("Events", events)
                 .RegisterPresent("file", d => { if (d.TryGetValue("Prompt", out var said)) Console.WriteLine(said); return Task.CompletedTask; });
 
@@ -170,6 +168,23 @@ internal static class Program
             lines.Add($"  {(who.Length > 0 ? who : "someone")}: {(said.Length > 0 ? said : "(no words)")}");
         }
         return string.Join(Environment.NewLine, lines);
+    }
+
+    // THE DEVICE THE WORKFLOW NAMES "Programme": TV Splitting's stand-in. It gives the auxiliary text (if there is one), the pictures and the sound of the programme, each once, to the Ports
+    // the workflow streams them to, and then waits until it is cancelled.
+    private sealed class Programme(string? auxiliary, string visual, string speech) : IDevice
+    {
+        public Task DeliverAsync(string dataType, string json, CancellationToken cancel) => Task.CompletedTask;
+
+        public async IAsyncEnumerable<(string DataType, string Json)> ReadAsync([EnumeratorCancellation] CancellationToken cancel)
+        {
+            if (auxiliary is not null) yield return ("OSD-TXO-V1.5", auxiliary);
+            yield return ("OSD-BVO-V1.5", visual);
+            yield return ("OSD-BSO-V1.5", speech);
+            try { await Task.Delay(Timeout.Infinite, cancel); } catch (OperationCanceledException) { }
+        }
+
+        public Task SafeStopAsync() => Task.CompletedTask;
     }
 
     // THE DEVICE THE WORKFLOW NAMES "Events": it is handed each Multimodal Event Descriptors the Module gives; the last is the whole.

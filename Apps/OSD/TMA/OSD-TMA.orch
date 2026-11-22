@@ -5,12 +5,13 @@
 #  One Controller, one Module. The User Agent offers the Controller data identified by
 #  Data Type and Port Number, and asks for data identified the same way. It names no AIM.
 #
-#  The Module is given a television programme as TV Splitting would give it: the pictures
-#  (a Basic Visual Object), the sound (a Basic Speech Object whose time is that of the
-#  programme) and, if there is one, an auxiliary text that says what the programme is about.
-#  The Module analyses the programme as long as it takes and gives the Multimodal Event
-#  Descriptors, which grow as the scenes arrive: the last holds them all. The device named
-#  "Events" is handed each of them as the Module gives it.
+#  The Module runs continuously. It is given a television programme as TV Splitting would
+#  give it by the device named "Programme": the auxiliary text, if there is one, the pictures
+#  (a Basic Visual Object) and the sound (a Basic Speech Object whose time is that of the
+#  programme), each written to its Port as the device gives it. The Module analyses the
+#  programme as long as it takes and gives the Multimodal Event Descriptors, which grow as
+#  the scenes arrive: the last holds them all. The device named "Events" is handed each of
+#  them as the Module gives it.
 #
 #  A step completes before the next begins.
 # =============================================================================
@@ -23,17 +24,11 @@ on Start:
 
     deliver MultimodalEventDescriptors (OSD-MEV-V1.5:1) to device "Events"
 
+    stream AuxiliaryText (OSD-TXO-V1.5:1) from device "Programme"
+    stream ProgrammeVideo (OSD-BVO-V1.5:1) from device "Programme"
+    stream ProgrammeSpeech (OSD-BSO-V1.5:1) from device "Programme"
+
     prompt "Television Media Analysis: give me a programme and I will tell you who speaks when, what is said and what is shown."
-
-    acquire AuxiliaryText (OSD-TXO-V1.5)
-    acquire ProgrammeVideo (OSD-BVO-V1.5)
-    acquire ProgrammeSpeech (OSD-BSO-V1.5)
-
-    branch on AuxiliaryText {
-        offer AuxiliaryText (OSD-TXO-V1.5:1)
-    }
-    offer ProgrammeVideo (OSD-BVO-V1.5:1)
-    offer ProgrammeSpeech (OSD-BSO-V1.5:1)
 
     loop until Stop:
         wait 2s
