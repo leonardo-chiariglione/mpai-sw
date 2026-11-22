@@ -91,6 +91,15 @@ public interface IContinuousModuleRunner
     (string? Json, string Outcome) Read(string moduleName, string key, int timeoutMs);
 }
 
+// A MODULE THAT CAN BE PAUSED AND RESUMED (MPAI_AIFU_MODULE_Pause and _Resume): every AIM of the Module completes what it is doing and waits, until Resume. Over MPAI-MAS the Pause and
+// Resume routes only change the state label, because one Module is shared by the Users of a Service and one of them must not stop it for the others. A server whose Controller serves one User
+// (ExclusiveControl, as Thalia's Controller of a local App does) has the runner do it, when the runner can. Returns null when done, or the reason it was not.
+public interface IPausableModuleRunner
+{
+    string? Pause(string moduleName);
+    string? Resume(string moduleName);
+}
+
 public sealed class RunResult
 {
     // Present when the run completed. Keyed "DataType#PortNumber".

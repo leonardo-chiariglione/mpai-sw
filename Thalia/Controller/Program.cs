@@ -57,7 +57,7 @@ internal static class Program
             if (failure is not null) { Console.WriteLine($"FATAL: the Module {module} did not start: {failure}"); return 2; }
         }
 
-        var server = new MasServer(runner, PortDataCodecs.Default(), url) { Catalogue = catalogue };
+        var server = new MasServer(runner, PortDataCodecs.Default(), url) { Catalogue = catalogue, ExclusiveControl = true };   // one App, one User: Pause and Resume act on the Module
         Console.WriteLine($"  Listening:   {url}");
         Console.WriteLine($"  AMDs:        {amds}");
         await server.RunAsync();

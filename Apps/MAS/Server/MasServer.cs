@@ -61,6 +61,9 @@ public sealed class MasServer
     // application can be handed one.
     public AppCatalogue Catalogue { get; init; } = AppCatalogue.Scan(null);
 
+    // A Controller that serves ONE User, whose Module nobody else shares (Thalia's local Controller of an App): Pause and Resume then act on the Module, not only on the state label.
+    public bool ExclusiveControl { get; init; }
+
     // WHICH APPS EACH COLLECTION SHOWS. Unless set, the catalogue's Apps are the
     // default collection and there are no others - today's behaviour exactly.
     private AppOffer? offer;
@@ -307,12 +310,16 @@ public sealed class MasServer
                 switch (segs[3])
                 {
                     case "Pause":
+                        if (ExclusiveControl && runner is IPausableModuleRunner pausable && pausable.Pause(module.Name) is { } notPaused)
+                        { await Write(ctx, 500, "text/plain", notPaused); return; }
                         module.State   = "PAUSED";
                         module.Changed = DateTimeOffset.UtcNow;
                         await WriteState(ctx, sci, module);
                         return;
 
                     case "Resume":
+                        if (ExclusiveControl && runner is IPausableModuleRunner resumable && resumable.Resume(module.Name) is { } notResumed)
+                        { await Write(ctx, 500, "text/plain", notResumed); return; }
                         module.State   = "ACTIVE";
                         module.Changed = DateTimeOffset.UtcNow;
                         await WriteState(ctx, sci, module);

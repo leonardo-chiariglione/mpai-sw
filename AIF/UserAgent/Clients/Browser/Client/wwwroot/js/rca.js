@@ -36,14 +36,31 @@ window.rca = (() => {
     }
   }
 
+  // THE DEVICE THE USER CHOSE IN THALIA (APP-7): named by its label in the address of the App (?mic=..., ?cam=...). A device identifier belongs to one origin, a label does not; labels are
+  // shown once the browser has let the page use a device. The default device when none is named or the one named is not there now.
+  async function chosenDevice(kind, param) {
+    const label = new URLSearchParams(location.search).get(param);
+    if (!label || !navigator.mediaDevices?.enumerateDevices) return null;
+    try {
+      let list = await navigator.mediaDevices.enumerateDevices();
+      if (!list.some(d => d.kind === kind && d.label)) {
+        const t = await navigator.mediaDevices.getUserMedia(kind === 'audioinput' ? { audio: true } : { video: true });
+        t.getTracks().forEach(x => x.stop());
+        list = await navigator.mediaDevices.enumerateDevices();
+      }
+      return list.find(d => d.kind === kind && d.label === label)?.deviceId || null;
+    } catch { return null; }
+  }
+
   // THE CLICK THAT OPENS THE WAY: sound may play and the microphone may open
   // only after the person has done something.
   async function unlock() {
     ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
     if (ctx.state === 'suspended') await ctx.resume();
     if (!mic) {
+      const micId = await chosenDevice('audioinput', 'mic');
       mic = await navigator.mediaDevices.getUserMedia(
-        { audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+        { audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true, ...(micId ? { deviceId: { exact: micId } } : {}) } });
       const source = ctx.createMediaStreamSource(mic);
       const node = ctx.createScriptProcessor(4096, 1, 1);
       node.onaudioprocess = e => {
@@ -130,7 +147,8 @@ window.rca = (() => {
   let frameWait = null;
   async function captureFrame(waitMs) {
     let timer = null;
-    const ask = navigator.mediaDevices.getUserMedia({ video: true });
+    const camId = await chosenDevice('videoinput', 'cam');
+    const ask = navigator.mediaDevices.getUserMedia({ video: camId ? { deviceId: { exact: camId } } : true });
     const gaveUp = new Promise(r => {
       timer = setTimeout(() => r(null), waitMs || 8000);
       frameWait = () => r(null);

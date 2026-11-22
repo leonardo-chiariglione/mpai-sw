@@ -18,7 +18,7 @@ namespace Mpai.Mas.Service;
 // PortNumber, Json); the MAS server speaks the boundary key "DataType#Number".
 // Neither had to change: the translation is here, in one class, and it is the
 // only code in the server half that knows an application exists.
-internal sealed class ControllerApiRunner : IModuleRunner, IContinuousModuleRunner
+internal sealed class ControllerApiRunner : IModuleRunner, IContinuousModuleRunner, IPausableModuleRunner
 {
     // A Module whose L3 says Execution Continuous is written to and read from as the Controller API has it, not run an exchange at a time.
     private readonly ConcurrentDictionary<string, bool> continuous = new(StringComparer.Ordinal);
@@ -67,6 +67,22 @@ internal sealed class ControllerApiRunner : IModuleRunner, IContinuousModuleRunn
 
     // THE MODULE_ID THE CONTROLLER RETURNED for each Module started (Basic API 2.2): every call after Start addresses the Module by it. -1 for one not started.
     private readonly ConcurrentDictionary<string, int> ids = new(StringComparer.Ordinal);
+    public string? Pause(string moduleName)
+    {
+        var id = IdOf(moduleName);
+        if (id < 0) return $"{moduleName} is not running.";
+        var error = north.Pause(id);
+        return error == AifError.OK ? null : error.ToString();
+    }
+
+    public string? Resume(string moduleName)
+    {
+        var id = IdOf(moduleName);
+        if (id < 0) return $"{moduleName} is not running.";
+        var error = north.Resume(id);
+        return error == AifError.OK ? null : error.ToString();
+    }
+
     public int IdOf(string moduleName) => ids.TryGetValue(moduleName, out var id) ? id : -1;
 
     // And the shared instance runs one exchange at a time: its AIMs' lifecycles

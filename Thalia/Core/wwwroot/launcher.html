@@ -47,6 +47,12 @@
   details { font-size:12.5px; color:var(--muted); }
   details summary { cursor:pointer; } details ul { margin:6px 0 0; padding-left:18px; }
   .empty { color:var(--muted); padding:20px 0; }
+  .tbl { width:100%; border-collapse:collapse; font-size:12px; margin-top:6px; } .tbl th { text-align:left; color:var(--muted); font-weight:600; padding:3px 8px 3px 0; } .tbl td { padding:3px 8px 3px 0; border-top:1px solid var(--line); vertical-align:top; }
+  .chip.update { color:var(--warn); border-color:var(--warn); } .chip.obtained, .chip.bundled { color:var(--ok); border-color:var(--ok); }
+  .storebar { display:flex; gap:10px; align-items:center; margin-bottom:10px; } .storebar input { flex:1; }
+  .detail { border-top:1px solid var(--line); padding-top:10px; display:flex; flex-direction:column; gap:8px; font-size:13px; } .detail h4 { margin:6px 0 2px; font-size:12.5px; color:var(--muted); font-weight:600; }
+  .detail label { display:flex; gap:8px; align-items:flex-start; color:var(--ink); } .detail .msg { padding:8px 12px; border-radius:8px; background:rgba(120,200,140,.18); } .detail .msg.bad { background:rgba(240,120,120,.2); }
+
   .seasons { display:flex; gap:6px; margin-right:8px; }
   .seasons button { all:unset; cursor:pointer; width:54px; height:32px; border-radius:7px; border:2px solid var(--line); background:center/cover #222; color:var(--ink); font-size:12px; text-align:center; line-height:28px; }
   .seasons button:hover { border-color:var(--muted); } .seasons button.on { border-color:var(--accent); } .seasons button.picked { outline:2px dashed var(--accent); outline-offset:1px; }
@@ -81,7 +87,7 @@
     <button class="ret" id="ret">Return to Windows</button>
   </div>
   <div class="body">
-    <nav class="rail"><button class="on" data-view="apps">Apps</button><button data-view="running">Running</button><button data-view="store">Store <span class="soon">soon</span></button><button data-view="settings">Settings <span class="soon">soon</span></button>
+    <nav class="rail"><button class="on" data-view="apps">Apps</button><button data-view="running">Running</button><button data-view="store">Store</button><button data-view="devices">Devices</button><button data-view="settings">Settings</button>
 <aside class="dock" aria-label="Thalia">
   <img class="face" src="/thalia.png?v=2" alt="Thalia">
   <div class="name">Thalia</div>
@@ -150,12 +156,13 @@ scope = P.scope || scope;
 const isRemote = () => catalogue && catalogue.profile === 'remote';   // a Remote Thalia: the Apps of MPAI as a Service only
 const wheres = () => isRemote() ? ['mas'] : ['local', 'mas'].filter(w => scope === 'both' || scope === w);
 
+let storeDrawn = false, storeQuery = '', storeOpen = null, devicesDrawn = false, settingsDrawn = false;
 function syncControls() {
   for (const s of document.querySelectorAll('#scope span')) s.classList.toggle('on', s.dataset.s === scope);
   for (const b of document.querySelectorAll('.rail button[data-view]')) b.classList.toggle('on', b.dataset.view === view);
 }
 for (const s of document.querySelectorAll('#scope span')) s.onclick = () => { scope = s.dataset.s; save(); };
-for (const b of document.querySelectorAll('.rail button[data-view]')) b.onclick = () => { view = b.dataset.view; save(); };
+for (const b of document.querySelectorAll('.rail button[data-view]')) b.onclick = () => { view = b.dataset.view; storeDrawn = false; devicesDrawn = false; settingsDrawn = false; save(); };
 $('#q').oninput = () => render();
 function save() { setPref('scope', scope); syncControls(); render(); }
 
@@ -194,13 +201,16 @@ function render() {
   if (!catalogue) return;
   const m = catalogue.machine;
   $('#scope').hidden = isRemote();
+  document.querySelector('.rail button[data-view="store"]').hidden = isRemote();      // a Remote Thalia runs the Apps of MPAI as a Service: it has no Store of its own
   $('#machine').textContent = isRemote() ? `Remote Thalia: the Apps of MPAI as a Service at ${new URL(catalogue.mas).hostname}` : `${m.os}, ${m.arch}; graphics: ${m.gpu}`;
   $('#notice').hidden = !(catalogue.masProblem && wheres().includes('mas'));
   $('#notice').textContent = catalogue.masProblem || '';
   $('#q').placeholder = view === 'apps' ? 'Search Apps' : 'Search running Apps';
 
-  $('.searchbar').hidden = view === 'store' || view === 'settings';
-  if (view === 'store' || view === 'settings') { $('#notice').hidden = true; section(view); return; }
+  $('.searchbar').hidden = view === 'store' || view === 'settings' || view === 'devices';
+  if (view === 'store') { $('#notice').hidden = true; if (!storeDrawn) storeView(); return; }
+  if (view === 'settings') { $('#notice').hidden = true; if (!settingsDrawn) settingsView(); return; }
+  if (view === 'devices') { $('#notice').hidden = true; if (!devicesDrawn) devicesView(); return; }
   if (!catalogue.apps.length) { welcome(); return; }
   const q = $('#q').value.trim().toLowerCase(), ws = wheres();
   const byId = new Map();
@@ -220,6 +230,7 @@ function render() {
     card.querySelector('.desc').textContent = a.description;
     for (const where of ws) card.appendChild(row(id, where, sides[where]));
     if (!isRemote()) card.appendChild(needs(sides.local || a));
+    if (!isRemote() && sides.local && sides.local.obtained) card.appendChild(obtainedFooter(sides.local));
     grid.appendChild(card); n++;
   }
   if (!n) view_.innerHTML = `<p class="empty">${view === 'running' ? 'No App is running here.' : 'No App matches.'}</p>`;
@@ -230,10 +241,10 @@ function render() {
 const FUNCTIONS = [
   ['Find an App', 'Search the Apps of this machine and of MPAI as a Service, by name or by what they do.', 'available'],
   ['Run and stop an App', 'Start an App here or on MPAI as a Service in the same way, and stop it.', 'available'],
-  ['Obtain an App', 'Get an App from the MPAI Store, with what its Module needs and the licences of the data it obtains shown before you accept.', 'coming'],
-  ['Pause, resume, update and remove', 'The rest of the life of an App on this machine.', 'coming'],
+  ['Obtain an App', 'Get an App from the MPAI Store, with what its Module needs and the licences of the data it obtains shown before you accept.', 'available'],
+  ['Pause, resume, update and remove', 'The rest of the life of an App on this machine: pause it and resume it, update it when the Store has a newer version, remove it (its Module stays with the Controller).', 'available'],
   ['Make your own Module', 'Combine Basic and Composite AIMs into a Composite AIM that does not exist yet, and submit it.', 'coming'],
-  ['Devices', 'Choose the microphone, the camera and the screens Thalia and its Apps use.', 'coming'],
+  ['Devices', 'Choose the microphone, the camera and the screen Thalia gives to the Apps, and see whether each works.', 'available'],
   ['Talk to Thalia', 'Ask her for an App, or to run it, by voice.', 'coming']
 ];
 // Store and Settings do not exist yet: each says what it would enable.
@@ -302,13 +313,229 @@ function welcome() {
   v.appendChild(list);
 }
 
+// ---- the Store: Apps to obtain, with what each needs shown before the User accepts (APP-2, APP-3, APP-4, APP-5) -------------------------------------
+async function storeView() {
+  storeDrawn = true;
+  const v = $('#view');
+  v.innerHTML = '<p class="empty">Asking the Store...</p>';
+  let r;
+  try { r = await (await fetch('/api/store/apps' + (storeQuery ? '?search=' + encodeURIComponent(storeQuery) : ''), { cache: 'no-store' })).json(); }
+  catch { v.innerHTML = '<p class="empty">Thalia does not answer.</p>'; storeDrawn = false; return; }
+  v.innerHTML = '';
+  const bar = document.createElement('div'); bar.className = 'storebar';
+  bar.innerHTML = '<input type="search" placeholder="Search the Store for an App" autocomplete="off"><button class="act secondary">Search</button>';
+  const input = bar.querySelector('input'); input.value = storeQuery;
+  const go = () => { storeQuery = input.value.trim(); storeOpen = null; storeView(); };
+  input.onkeydown = e => { if (e.key === 'Enter') go(); }; bar.querySelector('button').onclick = go;
+  v.appendChild(bar);
+  if (r.problem) { const n = document.createElement('div'); n.className = 'notice'; n.textContent = r.problem; v.appendChild(n); return; }
+  if (!r.apps.length) { const p = document.createElement('p'); p.className = 'empty'; p.textContent = storeQuery ? `The Store has no App for "${storeQuery}".` : 'The Store has no App yet.'; v.appendChild(p); return; }
+  const grid = document.createElement('div'); grid.className = 'grid';
+  for (const a of r.apps) grid.appendChild(storeCard(a));
+  v.appendChild(grid);
+  if (storeOpen) { const c = grid.querySelector(`[data-app="${storeOpen}"] .more`); if (c) c.click(); }
+}
+
+const STATE_TEXT = { available: 'to obtain', obtained: 'obtained', update: 'update available', bundled: 'comes with Thalia' };
+function storeCard(a) {
+  const card = document.createElement('section'); card.className = 'card'; card.dataset.app = a.id;
+  card.innerHTML = `<div class="fh" style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><div><h3 style="margin:0"></h3><div class="id"></div></div><span class="chip"></span></div><p class="desc"></p><div class="buttons" style="display:flex;gap:8px"><button class="act secondary more">Details</button></div><div class="detail" hidden></div>`;
+  card.querySelector('h3').textContent = a.name;
+  card.querySelector('.id').textContent = `${a.id} ${a.version} - Module ${a.module || '?'}${a.standard ? ' - ' + a.standard : ''}`;
+  card.querySelector('.desc').textContent = a.description;
+  const chip = card.querySelector('.chip'); chip.textContent = STATE_TEXT[a.state] || a.state; chip.classList.add(a.state);
+  const more = card.querySelector('.more'), box = card.querySelector('.detail');
+  more.onclick = async () => {
+    if (!box.hidden) { box.hidden = true; more.textContent = 'Details'; storeOpen = null; return; }
+    storeOpen = a.id; box.hidden = false; more.textContent = 'Hide'; box.textContent = 'Asking the Store what it needs...';
+    let d; try { d = await (await fetch(`/api/store/apps/${encodeURIComponent(a.id)}`, { cache: 'no-store' })).json(); } catch { box.textContent = 'Thalia does not answer.'; return; }
+    if (d.problem) { box.textContent = d.problem; return; }
+    fillDetail(box, a, d);
+  };
+  return card;
+}
+
+function fillDetail(box, a, d) {
+  const n = d.needs || {}, src = d.sources || [];
+  const licences = [...new Set(src.map(s => s.licence).filter(Boolean))];
+  const personal = src.some(s => s.personalData);
+  box.innerHTML = `
+    <h4>What the App is</h4><div>${esc(d.description)} Version ${esc(d.version)}${d.held ? `; you have ${esc(d.held.version)}` : ''}.</div>
+    <h4>What its Module needs</h4>
+    <div>Module ${esc(d.module)}: ${(n.aims || []).length} AIMs${(n.aims || []).length ? ' - ' + (n.aims || []).map(esc).join(', ') : ''}.</div>
+    <div>Resources: ${(n.resources || []).length ? n.resources.map(esc).join('; ') : 'none stated'}${(n.accelerators || []).length ? '. Builds by processing unit: ' + n.accelerators.map(esc).join('; ') : ''}.</div>
+    <div><b>This machine:</b> ${n.canRun ? '' : 'cannot run it - '}${esc(n.why || '')}</div>
+    <h4>What its AIMs obtain, and under which licence</h4>
+    ${src.length ? `<table class="tbl"><tr><th>AIM</th><th>What</th><th>From</th><th>Licence</th><th></th></tr>${src.map(s => `<tr><td>${esc(s.aim)}</td><td>${esc(s.name || '')}</td><td>${esc(s.from || '')}</td><td>${s.terms ? `<a href="${esc(s.terms)}" target="_blank" rel="noopener" style="color:var(--accent)">${esc(s.licence || 'terms')}</a>` : esc(s.licence || '?')}</td><td>${s.personalData ? 'personal data' : ''}</td></tr>`).join('')}</table>` : '<div>Nothing: its AIMs obtain nothing from outside.</div>'}
+    ${personal ? '<div class="notice">Some of this involves personal data: read its terms before you accept.</div>' : ''}
+    <label><input type="checkbox" class="acc"> <span>I accept the licences above${licences.length ? ' (' + licences.map(esc).join(', ') + ')' : ''}. The Controller obtains the AIMs of the Module, under their licences; Thalia obtains only the App.</span></label>
+    <div class="buttons" style="display:flex;gap:8px"><button class="act obtain" disabled></button></div><div class="out"></div>`;
+  const acc = box.querySelector('.acc'), btn = box.querySelector('.obtain'), out = box.querySelector('.out');
+  const verb = a.state === 'update' ? 'Update' : a.state === 'available' ? 'Obtain' : null;
+  if (!verb) { btn.textContent = a.state === 'bundled' ? 'Comes with Thalia' : 'You have the latest'; acc.parentElement.hidden = true; return; }
+  btn.textContent = verb;
+  acc.onchange = () => { btn.disabled = !acc.checked || (n.canRun === false); };
+  if (n.canRun === false) acc.parentElement.insertAdjacentHTML('afterend', '<div class="notice">This machine does not meet what the Module needs.</div>');
+  btn.onclick = async () => {
+    btn.disabled = true; out.innerHTML = '<div class="msg">Obtaining...</div>';
+    let r; try { r = await fetch(`/api/store/obtain/${encodeURIComponent(a.id)}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ accepted: true, version: d.version, licences }) }); } catch { out.innerHTML = '<div class="msg bad">Thalia does not answer.</div>'; return; }
+    const j = await r.json();
+    if (!r.ok) { out.innerHTML = `<div class="msg bad">${esc(j.error || 'It could not be obtained.')}</div>`; btn.disabled = false; return; }
+    out.innerHTML = `<div class="msg">${esc(a.name)} ${esc(j.version)} is on this machine. Controller: ${esc((j.controller && j.controller.state) || '')}. You find it in Apps.</div>`;
+    const chip = box.closest('.card').querySelector('.chip'); chip.textContent = STATE_TEXT.obtained; chip.className = 'chip obtained'; a.state = 'obtained'; btn.textContent = 'You have the latest'; acc.parentElement.hidden = true;
+    shown = ''; await load();
+  };
+}
+
+async function appAct(id, verb) {
+  const r = await fetch(`/api/${verb}/${encodeURIComponent(id)}`, { method: 'POST' });
+  if (!r.ok) { const j = await r.json().catch(() => ({})); $('#notice').hidden = false; $('#notice').textContent = j.error || `${verb} did not work.`; }
+  shown = ''; load();
+}
+
+// ---- the devices Thalia gives to the Apps (APP-7): the microphone, the camera and the screen the User chose, and whether each works --------------------
+async function devicesView() {
+  devicesDrawn = true;
+  const v = $('#view'); v.innerHTML = '';
+  const intro = document.createElement('section'); intro.className = 'card';
+  intro.innerHTML = '<h3 style="margin:0;font-size:20px">Devices</h3><p class="desc">The microphone, the camera and the screen that Thalia gives to the Apps. Your choice goes with each App when you Run it. A device that is not there when an App starts is replaced by the one your computer uses by default.</p><div class="buttons"><button class="act" id="seeDevices">Let Thalia see my devices</button></div><div id="seeNote" class="desc"></div>';
+  v.appendChild(intro);
+  let list = [];
+  try { list = await navigator.mediaDevices.enumerateDevices(); } catch { }
+  const named = list.some(d => d.label);
+  intro.querySelector('#seeDevices').hidden = named;
+  intro.querySelector('#seeDevices').onclick = async () => {
+    const note = intro.querySelector('#seeNote'); note.textContent = 'Your browser asks whether Thalia may use them: it opens them only to read their names.';
+    for (const c of [{ audio: true }, { video: true }]) { try { (await navigator.mediaDevices.getUserMedia(c)).getTracks().forEach(t => t.stop()); } catch { } }
+    devicesDrawn = false; render();
+  };
+  if (!named) { const n = document.createElement('div'); n.className = 'notice'; n.textContent = 'Thalia does not know the names of your devices yet: let it see them first.'; v.appendChild(n); }
+
+  const kinds = [
+    ['Microphone', 'audioinput', 'micLabel', 'mic'],
+    ['Camera', 'videoinput', 'camLabel', 'cam']
+  ];
+  for (const [title, kind, pref, what] of kinds) {
+    const devices = list.filter(d => d.kind === kind && d.label);
+    v.appendChild(deviceCard(title, devices.map(d => ({ label: d.label, id: d.deviceId })), pref, what));
+  }
+  // The screens: the browser tells them to a page that the User allows (window management); one screen when it does not.
+  let screens = [];
+  try { const det = await window.getScreenDetails(); screens = det.screens.map(x => ({ label: x.label || `Screen ${x.width}x${x.height}`, left: x.availLeft, top: x.availTop, width: x.availWidth, height: x.availHeight, primary: x.isPrimary })); } catch { }
+  if (!screens.length) screens = [{ label: `This screen (${screen.width}x${screen.height})`, left: screen.availLeft || 0, top: screen.availTop || 0, width: screen.availWidth, height: screen.availHeight, primary: true }];
+  v.appendChild(deviceCard('Screen', screens.map(x => ({ label: x.label, screen: x })), 'screenLabel', 'screen'));
+}
+
+function deviceCard(title, devices, pref, what) {
+  const c = document.createElement('section'); c.className = 'card';
+  c.innerHTML = `<div class="fh" style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0;font-size:17px"></h3><span class="chip"></span></div><div class="buttons" style="display:flex;gap:8px;align-items:center"><select style="flex:1;font:inherit;padding:5px;border-radius:7px;"></select><button class="act secondary">Test</button></div><div class="verdict desc"></div><div class="preview"></div>`;
+  c.querySelector('h3').textContent = title;
+  const sel = c.querySelector('select'), verdict = c.querySelector('.verdict'), chip = c.querySelector('.chip'), prev = c.querySelector('.preview');
+  if (!devices.length) { sel.innerHTML = '<option>none found</option>'; sel.disabled = true; c.querySelector('button').disabled = true; chip.textContent = 'none'; return c; }
+  sel.innerHTML = '<option value="">The default one</option>' + devices.map((d, i) => `<option value="${i}"></option>`).join('');
+  [...sel.options].slice(1).forEach((o, i) => { o.textContent = devices[i].label; });
+  const kept = P[pref]; const at = devices.findIndex(d => d.label === kept);
+  sel.value = at >= 0 ? String(at) : '';
+  chip.textContent = at >= 0 ? 'chosen' : 'default';
+  sel.onchange = () => { const d = sel.value === '' ? null : devices[+sel.value]; setPref(pref, d ? d.label : null); chip.textContent = d ? 'chosen' : 'default'; verdict.textContent = ''; prev.innerHTML = ''; };
+  c.querySelector('button').onclick = async () => {
+    const d = sel.value === '' ? null : devices[+sel.value];
+    verdict.textContent = 'Testing...'; prev.innerHTML = '';
+    try {
+      if (what === 'mic') verdict.textContent = await testMic(d && d.id, prev);
+      else if (what === 'cam') verdict.textContent = await testCam(d && d.id, prev);
+      else verdict.textContent = testScreen((d || devices.find(x => x.screen.primary) || devices[0]).screen);
+    } catch (e) { verdict.textContent = 'It does not work: ' + (e && e.message ? e.message : e); }
+  };
+  return c;
+}
+
+// Three seconds of the microphone: its level is drawn, and it is judged by the loudest it heard.
+async function testMic(id, into) {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: id ? { deviceId: { exact: id } } : true });
+  const ctx = new AudioContext(), src = ctx.createMediaStreamSource(stream), an = ctx.createAnalyser(); an.fftSize = 1024; src.connect(an);
+  const bar = document.createElement('div'); bar.style.cssText = 'height:10px;border-radius:5px;background:rgba(255,255,255,.15);overflow:hidden;margin-top:6px'; const fill = document.createElement('div'); fill.style.cssText = 'height:100%;width:0;background:var(--ok)'; bar.appendChild(fill); into.appendChild(bar);
+  const buf = new Float32Array(an.fftSize); let peak = 0; const t0 = performance.now();
+  await new Promise(res => { const tick = () => { an.getFloatTimeDomainData(buf); let m = 0; for (const x of buf) m = Math.max(m, Math.abs(x)); peak = Math.max(peak, m); fill.style.width = Math.min(100, m * 400) + '%'; if (performance.now() - t0 < 3000) requestAnimationFrame(tick); else res(); }; tick(); });
+  stream.getTracks().forEach(t => t.stop()); ctx.close();
+  return peak > 0.02 ? `It works: it heard sound (peak ${peak.toFixed(2)}). Say something while you test to see the bar move.` : 'It opens, but it heard almost nothing: is it muted, or far from you?';
+}
+
+async function testCam(id, into) {
+  const stream = await navigator.mediaDevices.getUserMedia({ video: id ? { deviceId: { exact: id } } : true });
+  const video = document.createElement('video'); video.srcObject = stream; video.muted = true; video.playsInline = true; video.style.cssText = 'width:220px;border-radius:8px;margin-top:6px';
+  into.appendChild(video); await video.play();
+  const s = stream.getVideoTracks()[0].getSettings();
+  await new Promise(r => setTimeout(r, 3000));
+  stream.getTracks().forEach(t => t.stop()); video.remove();
+  return `It works: it gives a picture of ${s.width || '?'}x${s.height || '?'}.`;
+}
+
+// A small window on the screen, for three seconds, saying which screen it is.
+function testScreen(sc) {
+  const w = window.open('', '_blank', `popup,left=${sc.left + 40},top=${sc.top + 40},width=420,height=180`);
+  if (!w) return 'The browser did not open the test window: allow pop-ups for Thalia.';
+  w.document.write(`<body style="margin:0;display:grid;place-items:center;height:100vh;font:20px Segoe UI,sans-serif;background:#1f3a5f;color:#fff">Thalia is on this screen<br>${sc.label.replace(/[<>&]/g, '')}</body>`);
+  setTimeout(() => w.close(), 3000);
+  return 'A window opened on that screen for a moment: did you see it there?';
+}
+
+// The App opens in a tab, or - when the User chose a screen other than this one - in a window on that screen (the click itself opens it, so no pop-up is blocked).
+let screenChoice = null;
+(async () => { try { if (P.screenLabel && window.getScreenDetails) { const det = await window.getScreenDetails(); screenChoice = det.screens.find(x => x.label === P.screenLabel) || null; } } catch { } })();
+function openApp(url) {
+  if (screenChoice && !screenChoice.isPrimary) window.open(url, '_blank', `popup,left=${screenChoice.availLeft},top=${screenChoice.availTop},width=${screenChoice.availWidth},height=${screenChoice.availHeight}`);
+  else window.open(url, '_blank');
+}
+
+// ---- Settings (APP-1): where Thalia looks -------------------------------------------------------------------------------------------------------------
+async function settingsView() {
+  settingsDrawn = true;
+  const v = $('#view'); v.innerHTML = '';
+  let st; try { st = await (await fetch('/api/settings', { cache: 'no-store' })).json(); } catch { v.innerHTML = '<p class="empty">Thalia does not answer.</p>'; settingsDrawn = false; return; }
+  const card = document.createElement('section'); card.className = 'card';
+  card.innerHTML = `<h3 style="margin:0;font-size:20px">Settings</h3><p class="desc">Where Thalia looks for Apps, and where it keeps what is yours.</p>`;
+  const field = (label, kind, value, hint, fixed) => {
+    const d = document.createElement('div'); d.className = 'detail'; d.style.borderTop = '0';
+    d.innerHTML = `<h4></h4><div class="buttons" style="display:flex;gap:8px"><input type="text" style="flex:1;font:inherit;padding:6px 8px;border-radius:7px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--ink)"><button class="act secondary t">Test</button><button class="act s">Keep</button></div><div class="out desc"></div>`;
+    d.querySelector('h4').textContent = label; const input = d.querySelector('input'); input.value = value || ''; input.placeholder = hint; input.disabled = !!fixed;
+    const out = d.querySelector('.out'); d.querySelector('.s').disabled = !!fixed;
+    d.querySelector('.t').onclick = async () => { out.textContent = 'Asking...'; const r = await (await fetch('/api/settings/test', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ kind, url: input.value.trim() }) })).json(); out.textContent = r.text; out.style.color = r.ok ? 'var(--ok)' : 'var(--bad)'; };
+    d.querySelector('.s').onclick = async () => {
+      const r = await fetch('/api/settings', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ [kind]: input.value.trim() }) });
+      const j = await r.json().catch(() => ({})); out.style.color = r.ok ? 'var(--ok)' : 'var(--bad)'; out.textContent = r.ok ? 'Kept. Thalia looks there from now on.' : (j.error || 'It could not be kept.'); shown = ''; storeDrawn = false; load();
+    };
+    return d;
+  };
+  card.appendChild(field('The MPAI as a Service instance you use', 'mas', st.mas, 'https://...', st.fixed));
+  if (!st.fixed) card.appendChild(field('The MPAI Store you use', 'store', st.store, 'http://...', false));
+  if (st.fixed) { const n = document.createElement('p'); n.className = 'desc'; n.textContent = 'This is a Remote Thalia: it uses the Service of its package.'; card.appendChild(n); }
+  const where = document.createElement('div'); where.className = 'detail';
+  where.innerHTML = `<h4>Where Thalia looks by default</h4><div class="seg" id="dscope"><span data-s="local">This machine</span><span data-s="mas">MPAI as a Service</span><span data-s="both">Both</span></div>`;
+  if (!st.fixed) {
+    card.appendChild(where);
+    const segs = where.querySelectorAll('#dscope span'); const mark = () => segs.forEach(x => x.classList.toggle('on', x.dataset.s === scope));
+    segs.forEach(x => x.onclick = () => { scope = x.dataset.s; save(); mark(); }); mark();
+  }
+  if (st.data) {
+    const d = document.createElement('div'); d.className = 'detail';
+    d.innerHTML = '<h4>Where your things are kept</h4><div class="desc"></div>'; d.querySelector('.desc').textContent = `Your Apps: ${st.apps}. Your choices, the Store and what you obtained: ${st.data}.`; card.appendChild(d);
+  }
+  if (P.welcomeHidden === true) {
+    const b = document.createElement('button'); b.className = 'act secondary'; b.style.alignSelf = 'flex-start'; b.textContent = 'Show the welcome again';
+    b.onclick = () => { setPref('welcomeHidden', false); b.disabled = true; b.textContent = 'The welcome is back'; };
+    card.appendChild(b);
+  }
+  v.appendChild(card);
+}
+
 function row(id, where, entry) {
   const div = document.createElement('div'); div.className = 'where';
   const label = where === 'local' ? 'On this machine' : 'MPAI as a Service';
   const run = runOf(id, where);
   let text, cls = '';
   if (!entry && !run) { text = where === 'mas' ? (catalogue.masProblem ? 'the Service is not running: Run starts it' : 'not offered by the Service') : 'not on this machine'; }
-  else if (run && run.phase === 'running') { text = 'running'; cls = 'ok'; }
+  else if (run && run.phase === 'running') { text = run.paused ? 'paused' : 'running'; cls = run.paused ? 'busy' : 'ok'; }
   else if (run && run.phase.startsWith('failed')) { text = run.phase; cls = 'bad'; }
   else if (run && run.phase.startsWith('stopped')) { text = run.phase; }
   else if (run) { text = run.phase + '...'; cls = 'busy'; }
@@ -322,11 +549,30 @@ function row(id, where, entry) {
   const go = document.createElement('button'); go.className = 'act'; go.textContent = 'Run';
   go.disabled = !!live || (where === 'local' && entry && !entry.canRun) || (!entry && where === 'local');
   // The App's tab is opened by the click itself (a tab opened later is blocked as a pop-up); it shows the start and becomes the App when ready.
-  go.onclick = async () => { go.disabled = true; window.open(`/wait.html?where=${where}&id=${encodeURIComponent(id)}`, '_blank'); await fetch(`/api/run/${where}/${id}`, { method: 'POST' }); load(); };
+  go.onclick = async () => { go.disabled = true; openApp(`/wait.html?where=${where}&id=${encodeURIComponent(id)}`); await fetch(`/api/run/${where}/${id}`, { method: 'POST' }); load(); };
   const stop = document.createElement('button'); stop.className = 'act secondary'; stop.textContent = 'Stop'; stop.disabled = !live;
   stop.onclick = async () => { stop.disabled = true; await fetch(`/api/stop/${where}/${id}`, { method: 'POST' }); load(); };
   b.appendChild(go); b.appendChild(stop);
+  if (where === 'local' && live && run.phase === 'running') {
+    const pr = document.createElement('button'); pr.className = 'act secondary'; pr.textContent = run.paused ? 'Resume' : 'Pause';
+    pr.title = run.paused ? 'Let the AIMs of its Module work again' : 'Every AIM of its Module completes what it is doing and waits';
+    pr.onclick = async () => { pr.disabled = true; await appAct(id, run.paused ? 'resume' : 'pause'); };
+    b.appendChild(pr);
+  }
   return div;
+}
+
+// An App the User obtained: its version, and Remove (the App only: its Module stays with the Controller, another App may use it).
+function obtainedFooter(a) {
+  const d = document.createElement('div'); d.className = 'where';
+  d.innerHTML = '<span class="label">Obtained</span><span class="status"></span><span class="buttons"></span>';
+  d.querySelector('.status').textContent = `version ${a.version || '?'}, from the Store at ${a.from ? new URL(a.from).host : '?'}`;
+  const rm = document.createElement('button'); rm.className = 'act secondary'; rm.textContent = 'Remove';
+  const live = runOf(a.id, 'local') && !runOf(a.id, 'local').phase.startsWith('failed') && !runOf(a.id, 'local').phase.startsWith('stopped');
+  rm.disabled = !!live; rm.title = live ? 'Stop it first' : 'Remove the App from this machine; its Module stays';
+  rm.onclick = async () => { if (!confirm(`Remove ${a.name} from this machine? Its Module and AIMs stay with the Controller.`)) return; rm.disabled = true; await appAct(a.id, 'remove'); };
+  d.querySelector('.buttons').appendChild(rm);
+  return d;
 }
 
 function needs(a) {

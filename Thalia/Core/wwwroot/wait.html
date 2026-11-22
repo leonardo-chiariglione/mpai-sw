@@ -24,7 +24,14 @@ async function poll() {
   try {
     const runs = await (await fetch('/api/runs', { cache: 'no-store' })).json();
     const r = runs.find(x => x.app === id && x.where === where);
-    if (r && r.url && r.phase === 'running') { location.replace(r.url); return; }
+    if (r && r.url && r.phase === 'running') {
+      // THE DEVICES THE USER CHOSE (APP-7) go with the App: the client opens that microphone and that camera.
+      let prefs = {}; try { prefs = await (await fetch('/api/prefs', { cache: 'no-store' })).json(); } catch { }
+      const u = new URL(r.url);
+      if (prefs.micLabel) u.searchParams.set('mic', prefs.micLabel);
+      if (prefs.camLabel) u.searchParams.set('cam', prefs.camLabel);
+      location.replace(u.toString()); return;
+    }
     const p = document.getElementById('phase');
     if (!r) { p.textContent = 'It is not running: it was stopped, or Thalia was closed.'; p.className = 'bad'; return; }
     p.textContent = r.phase + (r.phase.startsWith('failed') ? '' : '...');

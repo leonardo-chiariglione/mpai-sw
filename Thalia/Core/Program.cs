@@ -42,10 +42,21 @@ var app = builder.Build();
 
 var appsRoot = Path.Combine(root, "Apps");
 var amds     = Path.Combine(root, "AIMs", "AMDs");
-var masUrl   = new Uri(remoteService ?? builder.Configuration["Mas"] ?? "https://localhost:5105/");
+var thaliaData   = builder.Configuration["Data"] ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Thalia");     // --Data: another folder of the User's data (tests)
+var prefsFile = builder.Configuration["Prefs"] ?? Path.Combine(thaliaData, "preferences.json");
+JsonObject ReadPrefsEarly() { try { return File.Exists(prefsFile) ? (JsonNode.Parse(File.ReadAllText(prefsFile)) as JsonObject ?? new JsonObject()) : new JsonObject(); } catch { return new JsonObject(); } }
+var masUrl   = new Uri(remoteService ?? builder.Configuration["Mas"] ?? (!remote ? (string?)ReadPrefsEarly()["masUrl"] : null) ?? "https://localhost:5105/");
 var appIds   = (builder.Configuration["Apps"] ?? "MTS,MCA,AMQ,NPR").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 var logs     = Path.Combine(Path.GetTempPath(), "Thalia");
 Directory.CreateDirectory(logs);
+
+// THE APPS THE USER OBTAINED (APP-4): each in its own folder under Thalia's data of this User, apart from the Apps that come with the software (appsRoot); installed.json says where each came from.
+var userApps     = Path.Combine(thaliaData, "Apps");
+var installedFile = Path.Combine(thaliaData, "installed.json");
+Directory.CreateDirectory(userApps);
+var storeUrl = new Uri(builder.Configuration["Store"] ?? (string?)ReadPrefsEarly()["storeUrl"] ?? "http://127.0.0.1:5020/");
+var installed = new InstalledApps(installedFile);
+string[] AllIds() => appIds.Concat(installed.Ids()).Distinct().ToArray();
 
 var controllerDll = Path.Combine(root, "Thalia", "Controller", "bin", "Debug", "net10.0", "ThaliaController.dll");
 var hostProject   = remote ? Path.Combine(root, "Host") : Path.Combine(root, "AIF", "UserAgent", "Clients", "Browser", "Host");
@@ -56,26 +67,37 @@ var masConfig     = Path.Combine(root, "Apps", "MAS", "Service", "mas-server-AI.
 var ollamaExe     = Path.Combine(root, "Support", "Ollama", "bin", RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "ollama.exe" : "ollama");
 
 // A Service on this machine's loopback has a development certificate, accepted; any other Service must present a certificate that is valid for its name.
-var masHandler = new HttpClientHandler();
-if (masUrl.IsLoopback) masHandler.ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
+var masHandler = new HttpClientHandler { ServerCertificateCustomValidationCallback = (message, _, _, errors) => errors == System.Net.Security.SslPolicyErrors.None || (message.RequestUri?.IsLoopback ?? false) };
 var masHttp = new HttpClient(masHandler) { Timeout = TimeSpan.FromSeconds(10) };
 if (!string.IsNullOrEmpty(masToken)) masHttp.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", masToken);
 var running = new ConcurrentDictionary<string, Run>();
+var shownReset = 0;
 var gpu = Gpu.Probe();
 
 // ---- the catalogue (APP-2): local Apps and MAS-based Apps, each with the needs of its Module ----------------------------------------------------
 app.MapGet("/api/catalogue", async () =>
 {
     var local = remote ? AppCatalogue.Scan(null) : AppCatalogue.Scan(appsRoot, appIds);
+    var obtained = remote ? AppCatalogue.Scan(null) : AppCatalogue.Scan(userApps, installed.Ids());
     var items = new JsonArray();
     foreach (var e in local.Apps.OrderBy(a => Array.IndexOf(appIds, a.Id)))
-        items.Add(Item(e.Id, e.Name, e.Description, "local", e.Module, $"/api/icon/local/{e.Id}"));
+    {
+        var item = Item(e.Id, e.Name, e.Description, "local", e.Module, $"/api/icon/local/{e.Id}");
+        item["version"] = VersionOf(e); item["obtained"] = false;
+        items.Add(item);
+    }
+    foreach (var e in obtained.Apps.Where(o => !local.Apps.Any(l => l.Id == o.Id)))          // what the User obtained, after what comes with the software
+    {
+        var item = Item(e.Id, e.Name, e.Description, "local", e.Module, $"/api/icon/local/{e.Id}");
+        item["version"] = VersionOf(e); item["obtained"] = true; item["from"] = installed.Get(e.Id)?.From;
+        items.Add(item);
+    }
 
     string? masProblem = null;
     try
     {
         var list = JsonNode.Parse(await masHttp.GetStringAsync(new Uri(masUrl, "MPAI/AIFU/Apps")))!.AsArray();
-        foreach (var a in list.OfType<JsonObject>().Where(a => appIds.Contains((string?)a["id"])).OrderBy(a => Array.IndexOf(appIds, (string?)a["id"])))
+        foreach (var a in list.OfType<JsonObject>().Where(a => AllIds().Contains((string?)a["id"])).OrderBy(a => Array.IndexOf(AllIds(), (string?)a["id"])))
         {
             var id = (string)a["id"]!;
             items.Add(Item(id, (string?)a["name"] ?? id, (string?)a["description"] ?? "", "mas", local.Apps.FirstOrDefault(l => l.Id == id)?.Module, $"/api/icon/mas/{id}"));
@@ -100,7 +122,7 @@ app.MapGet("/api/icon/{where}/{id}", async (string where, string id) =>
 {
     if (where == "local")
     {
-        var e = AppCatalogue.Scan(appsRoot, new[] { id }).Apps.FirstOrDefault();
+        var e = AppCatalogue.Scan(appsRoot, new[] { id }).Apps.FirstOrDefault() ?? AppCatalogue.Scan(userApps, new[] { id }).Apps.FirstOrDefault();
         var f = e?.IconFile is { } name ? (Path.IsPathRooted(name) ? name : Path.Combine(e.Folder, name)) : null;
         if (f is not null && File.Exists(f)) return Results.File(f, f.EndsWith(".svg", StringComparison.OrdinalIgnoreCase) ? "image/svg+xml" : "image/png");
         return Results.NotFound();
@@ -116,7 +138,7 @@ app.MapGet("/api/icon/{where}/{id}", async (string where, string id) =>
 // ---- the App life cycle (APP-6): run and stop, local and MAS-based alike ------------------------------------------------------------------------
 app.MapPost("/api/run/{where}/{id}", async (string where, string id) =>
 {
-    if (!appIds.Contains(id)) return Results.BadRequest(new { error = $"{id} is not in the catalogue" });
+    if (!AllIds().Contains(id)) return Results.BadRequest(new { error = $"{id} is not in the catalogue" });
     if (remote && where != "mas") return Results.BadRequest(new { error = "this is a Remote Thalia: it runs the Apps of MPAI as a Service only" });
     var key = $"{where}:{id}";
     if (running.TryGetValue(key, out var already) && already.Alive) return Results.Json(already.Json());
@@ -132,13 +154,17 @@ app.MapPost("/api/stop/{where}/{id}", (string where, string id) =>
     return Results.Ok();
 });
 
+// PAUSE AND RESUME (APP-6): Thalia asks the local Controller of the App, through the Controller-User Agent API, to pause the Module - every AIM completes what it is doing and waits - and to resume it.
+// This Controller serves this one App for this one User, so the Module is theirs to pause. A MAS-based App's Module is the Service's, shared with others: its Pause is a label, not offered here.
+app.MapPost("/api/pause/{id}", (string id) => Control(id, "Pause"));
+app.MapPost("/api/resume/{id}", (string id) => Control(id, "Resume"));
+
 app.MapGet("/api/runs", () => Results.Json(new JsonArray(running.Values.Select(r => (JsonNode)r.Json()).ToArray())));
 app.MapGet("/api/log/{where}/{id}", (string where, string id) =>
     running.TryGetValue($"{where}:{id}", out var r) ? Results.Text(string.Join('\n', r.Lines.TakeLast(200))) : Results.NotFound());
 
 // The User's choices (season, side of the functions, search scope, welcome): one small file for this User on this machine, so that they stay whatever window shows Thalia.
-var prefsFile = builder.Configuration["Prefs"] ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Thalia", "preferences.json");
-var prefsKeys = new[] { "season", "side", "scope", "welcomeHidden" };
+var prefsKeys = new[] { "season", "side", "scope", "welcomeHidden", "micLabel", "camLabel", "screenLabel", "masUrl", "storeUrl" };
 var prefsLock = new object();
 JsonObject ReadPrefs() { try { return File.Exists(prefsFile) ? (JsonNode.Parse(File.ReadAllText(prefsFile)) as JsonObject ?? new JsonObject()) : new JsonObject(); } catch { return new JsonObject(); } }
 app.MapGet("/api/prefs", () => { lock (prefsLock) return Results.Json(ReadPrefs()); });
@@ -165,6 +191,69 @@ app.MapPost("/api/windows", () =>
     return Results.Ok();
 });
 
+// The Store: finding, obtaining, updating and removing Apps (APP-4, APP-5, APP-8). A Remote Thalia runs the Apps of MPAI as a Service only, and has no Store.
+StoreContext? storeContext = null;
+if (!remote)
+    StoreRoutes.Map(app, storeContext = new StoreContext
+    {
+        StoreUrl = storeUrl, Root = root, AppsRoot = appsRoot, UserApps = userApps, Data = thaliaData, Installed = installed, Amds = amds,
+        NeedsOf = Needs,
+        IsRunning = id => running.Values.Any(r => r.App == id && r.Alive),
+        IsBundled = id => appIds.Contains(id),
+        ModuleOfLocal = id => (AppCatalogue.Scan(appsRoot, new[] { id }).Apps.FirstOrDefault() ?? AppCatalogue.Scan(userApps, new[] { id }).Apps.FirstOrDefault())?.Module
+    });
+
+// SETTINGS (APP-1): where Thalia looks. The MPAI as a Service instance and the Store the User uses: the address of each, tested before it is kept. A Remote Thalia has the Service of its package.
+app.MapGet("/api/settings", () => Results.Json(new JsonObject
+{
+    ["profile"] = remote ? "remote" : "full", ["mas"] = masUrl.ToString(), ["store"] = remote ? null : storeUrl.ToString(),
+    ["data"] = remote ? null : thaliaData, ["apps"] = remote ? null : userApps, ["fixed"] = remote
+}));
+
+app.MapPost("/api/settings/test", async (HttpRequest req) =>
+{
+    JsonObject? body = null;
+    try { body = await JsonNode.ParseAsync(req.Body) as JsonObject; } catch { }
+    var kind = (string?)body?["kind"]; var text = (string?)body?["url"];
+    if (!Uri.TryCreate(text, UriKind.Absolute, out var u) || (u.Scheme != "http" && u.Scheme != "https")) return Results.Json(new { ok = false, text = "That is not an address (http:// or https://...)." });
+    try
+    {
+        using var r = await masHttp.GetAsync(new Uri(u, kind == "store" ? "MPAI/Store/App" : "MPAI/AIFU/Apps"));
+        if (!r.IsSuccessStatusCode) return Results.Json(new { ok = false, text = $"It answers, but not as {(kind == "store" ? "an MPAI Store" : "an MPAI as a Service instance")} does (HTTP {(int)r.StatusCode})." });
+        var n = JsonNode.Parse(await r.Content.ReadAsStringAsync()) is JsonArray a ? a.Count : 0;
+        return Results.Json(new { ok = true, text = kind == "store" ? $"It is an MPAI Store with {n} Apps." : $"It is an MPAI as a Service instance offering {n} Apps." });
+    }
+    catch (Exception ex) { return Results.Json(new { ok = false, text = "It does not answer: " + ex.GetBaseException().Message.Split('\n')[0] }); }
+});
+
+app.MapPost("/api/settings", async (HttpRequest req) =>
+{
+    if (remote) return Results.BadRequest(new { error = "A Remote Thalia uses the Service of its package." });
+    JsonObject? body = null;
+    try { body = await JsonNode.ParseAsync(req.Body) as JsonObject; } catch { }
+    if (body is null) return Results.BadRequest();
+    var changes = new JsonObject();
+    foreach (var (key, prefKey) in new[] { ("mas", "masUrl"), ("store", "storeUrl") })
+    {
+        if (!body.ContainsKey(key)) continue;
+        var text = (string?)body[key];
+        if (string.IsNullOrWhiteSpace(text)) { changes[prefKey] = null; continue; }                               // empty: the address Thalia came with
+        if (!Uri.TryCreate(text.Trim(), UriKind.Absolute, out var u) || (u.Scheme != "http" && u.Scheme != "https")) return Results.BadRequest(new { error = $"{key}: that is not an address." });
+        changes[prefKey] = u.ToString();
+    }
+    lock (prefsLock)
+    {
+        var now = ReadPrefs();
+        foreach (var (k, v) in changes) now[k] = v?.DeepClone();
+        Directory.CreateDirectory(Path.GetDirectoryName(prefsFile)!);
+        File.WriteAllText(prefsFile, now.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+    }
+    if (changes.ContainsKey("masUrl")) masUrl = new Uri((string?)changes["masUrl"] ?? builder.Configuration["Mas"] ?? "https://localhost:5105/");
+    if (changes.ContainsKey("storeUrl") && storeContext is not null) { storeUrl = new Uri((string?)changes["storeUrl"] ?? builder.Configuration["Store"] ?? "http://127.0.0.1:5020/"); storeContext.StoreUrl = storeUrl; }
+    shownReset++;
+    return Results.Json(new JsonObject { ["mas"] = masUrl.ToString(), ["store"] = storeUrl.ToString() });
+});
+
 app.MapGet("/", () => Results.File(Path.Combine(app.Environment.WebRootPath, "launcher.html"), "text/html; charset=utf-8"));
 // The four seasonal pictures of the Launcher (Sacra di San Michele, CC BY-SA 4.0) are kept in Access, with the data of the other standards: Access\THL\seasons.
 var seasons = Path.Combine(root, "Access", "THL", "seasons");
@@ -172,7 +261,7 @@ if (Directory.Exists(seasons))
     app.UseStaticFiles(new StaticFileOptions { FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(seasons), RequestPath = "/seasons" });
 app.UseStaticFiles();
 
-app.Lifetime.ApplicationStopping.Register(() => { foreach (var r in running.Values) r.Stop("Thalia closed"); });
+app.Lifetime.ApplicationStopping.Register(() => { foreach (var r in running.Values) r.Stop("Thalia closed"); try { if (Shared.Store is { HasExited: false }) Shared.Store.Kill(entireProcessTree: true); } catch { } });
 
 Console.WriteLine($"=== Thalia (MPAI-THL V1.0, {(remote ? "Remote" : "Full")} Profile, first version) ===");
 Console.WriteLine($"  Launcher:  {builder.Configuration["Urls"] ?? "http://localhost:5199"}");
@@ -198,10 +287,13 @@ async Task StartAsync(Run run)
             if (!File.Exists(controllerDll)) throw new InvalidOperationException($"the local Controller is not built: {controllerDll}");
             var port = FreePort();
             run.Phase = "starting its local Controller (its Module and AIMs load: up to a minute or two)";
-            var controller = run.Spawn("controller", "dotnet", $"\"{controllerDll}\" --listen http://127.0.0.1:{port} --app {run.App}", root, null);
+            // An App the User obtained is in the User's folder of Apps; the Controller is told where.
+            var appsArg = installed.Get(run.App) is not null && AppCatalogue.Scan(appsRoot, new[] { run.App }).Apps.Count == 0 ? $" --apps \"{userApps}\"" : "";
+            var controller = run.Spawn("controller", "dotnet", $"\"{controllerDll}\" --listen http://127.0.0.1:{port} --app {run.App}{appsArg}", root, null);
             if (!await run.WaitForAsync(controller, "[MAS] Listening", TimeSpan.FromMinutes(5)))
                 throw new InvalidOperationException("its local Controller did not come up: " + run.LastLine(controller));
             service = new Uri($"http://127.0.0.1:{port}/");
+            run.Controller = service;
         }
         else
         {
@@ -268,6 +360,33 @@ static int FreePort()
 {
     var l = new TcpListener(IPAddress.Loopback, 0); l.Start();
     var p = ((IPEndPoint)l.LocalEndpoint).Port; l.Stop(); return p;
+}
+
+async Task<IResult> Control(string id, string verb)
+{
+    if (!running.TryGetValue($"local:{id}", out var run) || !run.Alive || run.Controller is null || run.Phase != "running")
+        return Results.BadRequest(new { error = $"{id} is not running on this machine." });
+    var module = AppCatalogue.Scan(appsRoot, new[] { id }).Apps.FirstOrDefault()?.Module ?? AppCatalogue.Scan(userApps, new[] { id }).Apps.FirstOrDefault()?.Module;
+    if (module is null) return Results.BadRequest(new { error = $"{id} names no Module." });
+    try
+    {
+        using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+        var made = JsonNode.Parse(await (await http.PostAsync(new Uri(run.Controller, "MPAI/AIFU/Controller"), new StringContent("{}", System.Text.Encoding.UTF8, "application/json"))).Content.ReadAsStringAsync())!;
+        var cid = (string)made["id"]!;
+        var started = await http.PostAsync(new Uri(run.Controller, $"MPAI/AIFU/{cid}/MODULE/Start"), new StringContent(new JsonObject { ["module"] = module }.ToJsonString(), System.Text.Encoding.UTF8, "application/json"));
+        var mid = (string)JsonNode.Parse(await started.Content.ReadAsStringAsync())!["id"]!;
+        var r = await http.GetAsync(new Uri(run.Controller, $"MPAI/AIFU/{cid}/MODULE/{mid}/{verb}"));
+        if (!r.IsSuccessStatusCode) return Results.Json(new { error = $"The Controller did not {verb.ToLowerInvariant()} the Module: {(await r.Content.ReadAsStringAsync()).Trim()}" }, statusCode: 502);
+        run.Paused = verb == "Pause";
+        return Results.Json(run.Json());
+    }
+    catch (Exception ex) { return Results.Json(new { error = $"The Controller of {id} does not answer: {ex.GetBaseException().Message}" }, statusCode: 502); }
+}
+
+// The Version an App states in its descriptor (app.json).
+static string VersionOf(Mpai.Mas.Server.AppCatalogue.Entry e)
+{
+    try { return (string?)JsonNode.Parse(e.Descriptor)?["Version"] ?? ""; } catch { return ""; }
 }
 
 JsonObject Item(string id, string name, string description, string where, string? module, string icon)
@@ -346,7 +465,7 @@ sealed class Needs
     public string Why { get; set; } = "";
 }
 
-static class Shared { public static Process? Mas, Ollama; }
+static class Shared { public static Process? Mas, Ollama, Store; }
 
 sealed record GpuInfo(bool Present, string Text);
 static class Gpu
@@ -369,6 +488,8 @@ sealed class Run(string key, string app, string where)
     public string Key { get; } = key; public string App { get; } = app; public string Where { get; } = where;
     public volatile string Phase = "starting";
     public volatile string? Url;
+    public volatile bool Paused;
+    public Uri? Controller;                     // the local Controller of this App: where Thalia, as a User Agent, asks it to pause and resume
     public bool Cancelled { get; private set; }
     public bool Alive => !Cancelled && !Phase.StartsWith("failed", StringComparison.Ordinal);
     public ConcurrentQueue<string> Lines { get; } = new();
@@ -411,7 +532,7 @@ sealed class Run(string key, string app, string where)
                 if (!keep) try { if (!p.HasExited) p.Kill(entireProcessTree: true); } catch { }
     }
 
-    public JsonObject Json() => new() { ["key"] = Key, ["app"] = App, ["where"] = Where, ["phase"] = Phase, ["url"] = Url };
+    public JsonObject Json() => new() { ["key"] = Key, ["app"] = App, ["where"] = Where, ["phase"] = Phase, ["url"] = Url, ["paused"] = Paused };
 }
 
 static class NativeWindows

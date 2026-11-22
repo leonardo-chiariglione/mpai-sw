@@ -102,6 +102,11 @@
     <ProjectReference Include="..\..\Apps\XRV\LTP\VirtualVenue\Mpai.Xrv.VirtualVenue.csproj" />
   </ItemGroup>
 
+  <!-- The Apps shelf of the MPAI Store (Store\Service), tested as it is: Thalia obtains Apps from it. -->
+  <ItemGroup>
+    <Compile Include="..\..\Store\Service\AppShelf.cs" Link="Store\AppShelf.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>

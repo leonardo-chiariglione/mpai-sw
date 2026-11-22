@@ -13,6 +13,7 @@ using Mpai.StoreService;
 //   GET  /MPAI/Store/Implementer, POST /MPAI/Store/Implementer/{id}/approve   (admin key, header MPAI-Admin)
 //   A submission carries MPAI-Signature: the Implementer's signature of the L3 (or MPAI-Admin, for MPAI's own ID 1).
 //   POST /MPAI/Store/L3                      submit an L3: published with what was found, or refused
+//   GET  /MPAI/Store/App[?search=], /App/{id}, /App/{id}/package, POST /App/{id}   the Apps (a Workflow written against one Module; the Module is the Controller's to obtain)
 //   GET  /MPAI/Store/L3?name=...             approved L3s, latest versions (workflow step 6)
 //   GET  /MPAI/Store/L3/{id}[?version=n]     one L3 (workflow step 6)
 //   GET  /MPAI/Store/L3/{id}/versions        its published versions
@@ -55,6 +56,7 @@ var l2 = new L2Conformance(schemas, id =>
 var packages = new PackageCheck(builder.Configuration["Packages"]);
 var licences = new AIF.Store.LicenceBook(Path.Combine(root, "licences"));
 var trustAnchors = new TrustAnchorRegistry(root);
+var shelf = new AppShelf(root);                                        // the Apps of the Store (M3323, App life cycle)
 var markup = decimal.TryParse(builder.Configuration["MarkupPercent"], System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var percent) ? percent : 0m;
 var licenceIssuer = new AIF.Store.AimLicences.Issuer(storeKey.Key, StoreIdentity.KeyId, builder.Configuration["StoreId"] ?? "mpai-store", builder.Configuration["StatusMaxAge"] ?? "P7D",
                                                      (builder.Configuration["PublicUrl"] ?? urls).TrimEnd('/') + "/MPAI/Store/Licence", markup);
@@ -224,6 +226,32 @@ app.MapPost("/MPAI/Store/Implementer/{id}/approve", (HttpRequest request, string
     var refused = implementers.Approve(id, cii => storeKey.Issuer.IssueCredential(cii, "Implementer", id, "Implementer", DateTimeOffset.UtcNow, TimeSpan.FromDays(365)));
     if (refused is null) Console.WriteLine($"[Store] approved Implementer {id}");
     return refused is null ? Results.Json(new { implementerId = id, status = ImplementerRegistry.Approved }) : Results.Json(new { refused }, statusCode: 409);
+});
+
+// THE APPS (M3323, App life cycle): an App is a Workflow written against one Module, with its descriptor and icon; the Module and its AIMs are the Controller's to obtain (the L3 routes below).
+//   GET  /MPAI/Store/App[?search=...]         the Apps, latest versions
+//   GET  /MPAI/Store/App/{id}[?version=...]   one App: its descriptor (app.json), its versions
+//   GET  /MPAI/Store/App/{id}/package[?version=...]   the App as a package (zip: app.json, Workflow, icon)
+//   POST /MPAI/Store/App/{id}                 publish a package (header MPAI-Admin: the Store's operator, in this reference Store)
+app.MapGet("/MPAI/Store/App", (string? search) => Results.Json(shelf.Latest(search).Select(e => new
+    { id = e.Id, name = e.Name, description = e.Description, version = e.Version, module = e.Module, standard = e.Standard, useCase = e.UseCase, keywords = e.Keywords, size = e.Size })));
+
+app.MapGet("/MPAI/Store/App/{id}", (string id, string? version) =>
+    shelf.Get(id, version) is { } e
+        ? Results.Json(new { id = e.Id, name = e.Name, description = e.Description, version = e.Version, module = e.Module, versions = shelf.Versions(id), size = e.Size, descriptor = JsonNode.Parse(e.Descriptor) })
+        : Results.NotFound(new { missing = $"{id} is not an App of the Store." }));
+
+app.MapGet("/MPAI/Store/App/{id}/package", (string id, string? version) =>
+    shelf.Package(id, version) is { } bytes ? Results.File(bytes, "application/zip", $"{id}.zip") : Results.NotFound(new { missing = $"{id} is not an App of the Store." }));
+
+app.MapPost("/MPAI/Store/App/{id}", async (HttpRequest request, string id) =>
+{
+    if (!StoreIdentity.IsAdmin(request.Headers["MPAI-Admin"].ToString(), adminKey))
+        return Results.Json(new { refused = "The admin key of the Store is needed to publish an App (header MPAI-Admin)." }, statusCode: 401);
+    using var ms = new MemoryStream(); await request.Body.CopyToAsync(ms);
+    var refused = shelf.Publish(id, ms.ToArray(), out var version);
+    if (refused is null) Console.WriteLine($"[Store] published the App {id} {version}");
+    return refused is null ? Results.Json(new { id, version }, statusCode: 201) : Results.Json(new { refused }, statusCode: 409);
 });
 
 app.MapGet("/MPAI/Store/L3", (string? name) => Results.Json(repository.Latest(name)));
