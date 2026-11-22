@@ -12,7 +12,7 @@
   -Folder    where the L3s are (e.g. D:\BI\AIMs\AMDs). Required.
   -Ids       which L3s, by AIM Instance id; default: every *.json in -Folder
   -Store     the Store Service (default https://localhost:5020/)
-  -Packages  the folder holding all packages (default: none - URIs left as they are)
+  -Packages  the folder holding the packages, each a .zip named <ImplementationID>.zip or <ImplementationID>-<runtime>.zip (default: none - URIs left as they are; the Store refuses one that is not a .zip)
   -AdminKey  the admin key of the Store (MPAI's own Implementer ID 1 submits with it; the Store writes it in <Root>\admin-key.txt).
              Any other Implementer signs with its key: use the Store App.
 #>
@@ -51,7 +51,9 @@ foreach ($id in $order) {
     $doc = $l3[$id]
     if ($Packages -and -not (SubAims $doc)) {
         foreach ($impl in @($doc.Implementations)) {
-            $impl.ImplementationURI = [Uri]::new([IO.Path]::GetFullPath((Join-Path $Packages $doc.Identifier.ImplementationID)), [UriKind]::Absolute).AbsoluteUri + '/'
+            # The package is a zip (MPAI-GME V2.1, Operation, 5): <ImplementationID>.zip, or <ImplementationID>-<runtime>.zip as Build-Packages.ps1 -ZipTo makes it.
+            $zip = Get-ChildItem $Packages -Filter ($doc.Identifier.ImplementationID + '*.zip') -ErrorAction SilentlyContinue | Where-Object { $_.BaseName -eq $doc.Identifier.ImplementationID -or $_.BaseName -like ($doc.Identifier.ImplementationID + '-*') } | Select-Object -First 1
+            if ($zip) { $impl.ImplementationURI = [Uri]::new($zip.FullName, [UriKind]::Absolute).AbsoluteUri }
         }
     }
     $body = $doc | ConvertTo-Json -Depth 32

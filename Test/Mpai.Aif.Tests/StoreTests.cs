@@ -17,6 +17,36 @@ public class StoreTests
 {
     public const string Admin = "test-admin-key";
 
+    // MPAI-GME V2.1, Operation, 5: the package of an Implementation is a .zip. The Store refuses one that is a folder or an address that is not a .zip, and says so; a .zip is published.
+    [Fact]
+    public async Task APackageThatIsNotAZipIsRefused()
+    {
+        using var store = new RunningStore();
+        var l3 = JsonNode.Parse(File.ReadAllText(Path.Combine(Repository.Amds, "1MMC-ASR-V2.5-I01.json")))!;
+        foreach (var notZip in new[] { "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/MMC/V2.5/ASR", new Uri(Path.Combine(store.Packages, "asr") + Path.DirectorySeparatorChar).AbsoluteUri })
+        {
+            l3["Implementations"]![0]!["ImplementationURI"] = notZip;
+            var refused = await Submit(store.Http, l3, null, Admin);
+            Assert.Equal(HttpStatusCode.UnprocessableEntity, refused.Status);
+            Assert.Contains("zip", refused.Body);
+        }
+        l3["Implementations"]![0]!["ImplementationURI"] = Zip(store.Packages, "asr", ("Mpai.Mmc.Asr.dll", Encoding.UTF8.GetBytes("the binary")));
+        var published = await Submit(store.Http, l3, null, Admin);
+        Assert.True(published.Status == HttpStatusCode.Created, $"{published.Status} {published.Body}");
+    }
+
+    // A package is a zip (MPAI-GME V2.1, Operation, 5): this makes one in the packages folder, holding the given files, and returns its file: address.
+    public static string Zip(string packages, string name, params (string File, byte[] Bytes)[] files)
+    {
+        Directory.CreateDirectory(packages);
+        var path = Path.Combine(packages, name + ".zip");
+        if (File.Exists(path)) File.Delete(path);
+        using (var zip = System.IO.Compression.ZipFile.Open(path, System.IO.Compression.ZipArchiveMode.Create))
+            foreach (var (file, bytes) in files.Length > 0 ? files : [("package.txt", Encoding.UTF8.GetBytes(name))])
+            { using var s = zip.CreateEntry(file).Open(); s.Write(bytes); }
+        return new Uri(path).AbsoluteUri;
+    }
+
     // A running Store Service, its folder, its packages folder; stopped and removed at Dispose.
     public sealed class RunningStore : IDisposable
     {
@@ -115,6 +145,7 @@ public class StoreTests
         var me = await Implementer.Approved(http);
         var asr = JsonNode.Parse(File.ReadAllText(Path.Combine(Repository.Amds, "1MMC-ASR-V2.5-I01.json")))!;
         asr["Identifier"]!["ImplementerID"] = me.Id;
+        asr["Implementations"]![0]!["ImplementationURI"] = Zip(store.Packages, "asr-valid");      // the package is a zip (MPAI-GME V2.1, Operation, 5)
 
         // It validates: published, and checked against the L2 its Header names.
         var ok = await Submit(http, asr, me.Key);
@@ -149,12 +180,10 @@ public class StoreTests
     {
         using var store = new RunningStore();
         var http = store.Http;
-        var package = Path.Combine(store.Packages, "asr");
-        Directory.CreateDirectory(package);
-        File.WriteAllBytes(Path.Combine(package, "Mpai.Mmc.Asr.dll"), Encoding.UTF8.GetBytes("the binary of the Implementation"));
+        var package = Zip(store.Packages, "asr", ("Mpai.Mmc.Asr.dll", Encoding.UTF8.GetBytes("the binary of the Implementation")));
 
         var asr = JsonNode.Parse(File.ReadAllText(Path.Combine(Repository.Amds, "1MMC-ASR-V2.5-I01.json")))!;
-        asr["Implementations"]![0]!["ImplementationURI"] = new Uri(package + Path.DirectorySeparatorChar).AbsoluteUri;
+        asr["Implementations"]![0]!["ImplementationURI"] = package;
 
         // The pages are there, and an ID not assigned is not known.
         using (var page = await http.GetAsync("/MPAI/Store/Register")) Assert.Contains("Register as an Implementer", await page.Content.ReadAsStringAsync());

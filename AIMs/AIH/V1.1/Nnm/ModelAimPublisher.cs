@@ -93,6 +93,12 @@ public sealed class ModelAimPublisher
             var target = Path.Combine(_implementations, file);
             if (!File.Exists(target) || !File.ReadAllBytes(target).AsSpan().SequenceEqual(File.ReadAllBytes(source))) File.Copy(source, target, overwrite: true);
         }
+        // The package the L3 names is a zip (MPAI-GME V2.1, Operation, 5): the files of the package, in one archive.
+        var package = Path.Combine(_implementations, "Mpai.Aih.Nnm.zip");
+        if (File.Exists(package)) File.Delete(package);
+        using (var zip = System.IO.Compression.ZipFile.Open(package, System.IO.Compression.ZipArchiveMode.Create))
+            foreach (var (file, _) in AIF.Store.ImplementationFingerprints.PackageFiles(Path.GetFileName(built), n => File.Exists(Path.Combine(from, n)) ? File.ReadAllBytes(Path.Combine(from, n)) : null))
+                System.IO.Compression.ZipFileExtensions.CreateEntryFromFile(zip, Path.Combine(from, file), file.Replace('\\', '/'));
 
         var l3 = new JsonObject
         {
@@ -107,7 +113,7 @@ public sealed class ModelAimPublisher
                 new JsonObject { ["Name"] = "NNModelOut", ["Direction"] = "Output", ["DataType"] = "AIP-MLO-V1.0", ["Technology"] = "Software", ["Protocol"] = "", ["IsRemote"] = false }),
             ["SubAIMs"] = new JsonArray(), ["Topology"] = new JsonArray(),
             ["Implementations"] = new JsonArray(
-                new JsonObject { ["ImplementationURI"] = new Uri(code).AbsoluteUri, ["MASPort"] = 443, ["BinaryName"] = "Mpai.Aih.Nnm", ["Architecture"] = "x86-64", ["OperatingSystem"] = "Windows", ["Version"] = "1.1", ["Source"] = "AIMURL" }),
+                new JsonObject { ["ImplementationURI"] = new Uri(package).AbsoluteUri, ["MASPort"] = 443, ["BinaryName"] = "Mpai.Aih.Nnm", ["Architecture"] = "x86-64", ["OperatingSystem"] = "Windows", ["Version"] = "1.1", ["Source"] = "AIMURL" }),
             // The model: data of Access, by the URI where the Back End keeps it and its SHA-256, given to the AIM as the file of its ModelPath setting.
             ["AccessSources"] = new JsonArray(new JsonObject
             {

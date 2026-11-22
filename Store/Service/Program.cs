@@ -121,6 +121,14 @@ app.MapPost("/MPAI/Store/L3", async (HttpRequest request) =>
             return Results.Json(new { id, published = false, refused = refusal.Message }, statusCode: 422);
         }
 
+        // THE PACKAGE IS A ZIP (MPAI-GME V2.1, Operation, 5): an Implementation whose package is not a .zip archive is refused.
+        var notZip = PackageCheck.NotZip(l3);
+        if (notZip.Count > 0)
+        {
+            Console.WriteLine($"[Store] refused {id}: the package is not a zip ({string.Join(", ", notZip)})");
+            return Results.Json(new { id, published = false, refused = $"The package of an Implementation shall be a zip archive (MPAI-GME V2.1, Operation, 5). Not a .zip: {string.Join(", ", notZip)}. Zip the package and give the address of the .zip as the ImplementationURI.", notZip }, statusCode: 422);
+        }
+
         // WHAT IS SIGNALLED: the package the L3 names.
         var findings = new List<Finding>();
         findings.AddRange(await packages.CheckAsync(l3));

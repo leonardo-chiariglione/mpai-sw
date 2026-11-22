@@ -23,7 +23,7 @@ public class AihStoreServiceTests
     // MPAI submits the L3s of the Sub-AIMs of the Front End, which the Front End cannot be published without (the Store refuses a Composite AIM whose Sub-AIMs it does not have).
     private static async Task PublishSubAims(StoreTests.RunningStore store, JsonObject hfe)
     {
-        var package = new Uri(Path.Combine(store.Packages, "mpai") + Path.DirectorySeparatorChar).AbsoluteUri;
+        var package = StoreTests.Zip(store.Packages, "mpai");
         foreach (var sub in hfe["SubAIMs"]!.AsArray())
         {
             var name = (string)sub!["Identifier"]!["AIMInstID"]!;
@@ -72,7 +72,7 @@ public class AihStoreServiceTests
 
         // It publishes a Front End that has the AIM, as its own Implementation, and each new version after it; the Store keeps every version.
         var baseL3 = (JsonObject)hfe.DeepClone();
-        foreach (var impl in baseL3["Implementations"]!.AsArray()) impl!["ImplementationURI"] = new Uri(Path.Combine(store.Packages, "mpai") + Path.DirectorySeparatorChar).AbsoluteUri;
+        foreach (var impl in baseL3["Implementations"]!.AsArray()) impl!["ImplementationURI"] = StoreTests.Zip(store.Packages, "mpai");
         var version = publisher.PublishFrontEnd(baseL3.ToJsonString(), aim);
         Assert.Equal("1.2", version);
         var again = publisher.Upload(Model("model-2", 0.2f, 1));

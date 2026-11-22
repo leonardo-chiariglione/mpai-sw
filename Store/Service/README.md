@@ -31,6 +31,8 @@ submits with the admin key (header `MPAI-Admin`), as it is the Store; `Submit-L3
   leaves out is optional in the L2; each Sub-AIM of a composite is one of the L2's,
   or a composite containing one. An L3 that is not an instance of its L2 - or has no
   L2 - is **refused**, with its `nonconformities`.
+- **Its package a zip** (MPAI-GME V2.1, Operation, 5): the `ImplementationURI` of each `Implementations` entry of an AIM with code of its own
+  names a `.zip`; a folder, or any address that is not a `.zip`, is **refused** (422) and the reply says so. (A Composite AIM has no code of its own: its package only bundles L3s.)
 - **Its package looked for** at the `ImplementationURI` of each `Implementations`
   entry - present, with its `BinaryName`.dll: **signalled**, not refused.
 - **Its fingerprints recorded** (STR-3): the SHA-256 of `BinaryName`.dll in a package inside the packages folder

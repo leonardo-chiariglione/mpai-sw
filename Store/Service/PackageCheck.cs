@@ -32,6 +32,22 @@ public sealed class PackageCheck
         return full.StartsWith(packagesRoot, StringComparison.OrdinalIgnoreCase) ? full : null;
     }
 
+    // THE PACKAGE IS A ZIP (MPAI-GME V2.1, Operation, 5): the ImplementationURI of each Implementation of an AIM that has code of its own names a .zip archive.
+    // The ones that do not are returned, and the Store refuses the submission. A Composite AIM has no code of its own: its package only bundles L3s.
+    public static List<string> NotZip(JsonElement l3)
+    {
+        var bad = new List<string>();
+        if (l3.TryGetProperty("SubAIMs", out var subs) && subs.ValueKind == JsonValueKind.Array && subs.GetArrayLength() > 0) return bad;
+        if (!l3.TryGetProperty("Implementations", out var impls) || impls.ValueKind != JsonValueKind.Array) return bad;
+        foreach (var impl in impls.EnumerateArray())
+        {
+            if (!impl.TryGetProperty("ImplementationURI", out var v) || v.ValueKind != JsonValueKind.String || v.GetString() is not { Length: > 0 } uri) continue;
+            var path = Uri.TryCreate(uri, UriKind.Absolute, out var u) ? (u.IsFile ? u.LocalPath : u.AbsolutePath) : uri;
+            if (!path.TrimEnd('/', '\\').EndsWith(".zip", StringComparison.OrdinalIgnoreCase)) bad.Add(uri);
+        }
+        return bad;
+    }
+
     public async Task<List<Finding>> CheckAsync(JsonElement l3)
     {
         var found = new List<Finding>();

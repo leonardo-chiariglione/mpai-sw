@@ -29,7 +29,7 @@ public class StoreHttpSimulationTests
         File.WriteAllText(dll, "the Implementation, as the Implementer built it");
         var l3 = JsonNode.Parse(File.ReadAllText(Path.Combine(Repository.Amds, Aim + ".json")))!;
         l3["Identifier"]!["ImplementerID"] = me.Id;
-        l3["Implementations"]![0]!["ImplementationURI"] = new Uri(package + Path.DirectorySeparatorChar).AbsoluteUri;
+        l3["Implementations"]![0]!["ImplementationURI"] = StoreTests.Zip(store.Packages, "asr", (Binary + ".dll", File.ReadAllBytes(dll)));
         var submitted = await StoreTests.Submit(store.Http, l3, me.Key);
         Assert.True(submitted.Status == HttpStatusCode.Created, $"{submitted.Status} {submitted.Body}\n{store.Log}");
 
@@ -58,6 +58,7 @@ public class StoreHttpSimulationTests
 
         // THE IMPLEMENTATION CHANGES where the Implementer keeps it, after the Store approved it: another Controller does not keep what it obtains.
         File.WriteAllText(dll, "something else");
+        StoreTests.Zip(store.Packages, "asr", (Binary + ".dll", File.ReadAllBytes(dll)));      // the package is the zip the L3 names
         var second = new AimRepository(Path.Combine(store.Root, "controller-2"));
         var refused = Assert.Throws<InvalidOperationException>(() => second.Obtain(Aim, source));
         Assert.Contains("NOT_TRUSTED", refused.Message);
