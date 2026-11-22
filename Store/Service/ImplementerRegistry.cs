@@ -112,7 +112,8 @@ input,select{width:100%;padding:.4rem;box-sizing:border-box}button{margin-top:1r
 <script>
 document.getElementById('go').onclick = async () => {
   const err = document.getElementById('err'); err.textContent = '';
-  const body = { kind: kind.value, name: name.value.trim(), organisation: org.value.trim(), email: email.value.trim() };
+  const val = id => document.getElementById(id).value.trim();   // not the bare names: window.name is the name of the window, not the field
+  const body = { kind: val('kind'), name: val('name'), organisation: val('org'), email: val('email') };
   if (!body.name) { err.textContent = 'A name is needed.'; return; }
   try {
     const r = await fetch('/MPAI/Store/Implementer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
