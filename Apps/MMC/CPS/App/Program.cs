@@ -24,6 +24,7 @@ namespace Mpai.Mmc.Cps.App;
 // --text        what the person types in a turn, instead of the microphone
 // --speech      what the person says in a turn, a WAV file (16-bit PCM), instead of the microphone
 // --controller  the Controller this User Agent talks to (CpsController, started by whoever launches the App)
+// --quiet       the machine does not say its answer aloud (the speech is still made and kept as answer-N.wav)
 // --out         the folder where the Portable Avatar that answers each turn is written (avatar-1.json, avatar-2.json ...)
 //
 // Without the microphone the turns are the --text and --speech given, in the order they are given.
@@ -34,13 +35,14 @@ internal static class Program
         try
         {
             var faces = new List<string>(); var turns = new List<(bool Speech, string Value)>(); string? output = null; var controller = "http://127.0.0.1:5059";
-            var camera = false; var microphone = false; var turnLimit = 3;
+            var camera = false; var microphone = false; var quiet = false; var turnLimit = 3;
             for (var i = 0; i < args.Length; i++)
             {
                 switch (args[i])
                 {
                     case "--camera": camera = true; continue;
                     case "--microphone": microphone = true; continue;
+                    case "--quiet": quiet = true; continue;
                 }
                 if (i + 1 >= args.Length) throw new ArgumentException($"{args[i]} needs a value.");
                 var value = args[++i];
@@ -52,7 +54,7 @@ internal static class Program
                     case "--out": output = value; break;
                     case "--controller": controller = value; break;
                     case "--turns": turnLimit = int.TryParse(value, out var n) && n > 0 ? n : throw new ArgumentException("--turns takes a number above 0."); break;
-                    default: throw new ArgumentException($"I do not know {args[i - 1]}. The options are: --controller --camera --face --microphone --turns --text --speech --out.");
+                    default: throw new ArgumentException($"I do not know {args[i - 1]}. The options are: --controller --camera --face --microphone --turns --text --speech --quiet --out.");
                 }
             }
             if (!camera && faces.Count == 0) throw new ArgumentException("--camera or --face is needed.");
@@ -66,6 +68,7 @@ internal static class Program
             var total = microphone ? turnLimit : turns.Count;
 
             using var api = new RemoteControllerApi(controller);
+            using var voice = new Mpai.Mmc.Voice.MachineVoice(api, "MPAI as a Service");           // the machine's voice: the Module that makes speech from the words of the answer
 
             // THE SAME WORKFLOW AS FOR ANY CLIENT: the face, then what the person says, turn after turn. The face comes from the Camera Unit and the speech from the Microphone Unit, or from files or
             // typed words; the source of what does not come waits until the workflow abandons it. The workflow repeats until it is stopped: the App stops it when every turn is answered, or
@@ -120,7 +123,7 @@ internal static class Program
                     try { await Task.Delay(Timeout.Infinite, abandon); } catch (OperationCanceledException) { }
                     return null;
                 })
-                .RegisterPresent("file", d =>
+                .RegisterPresent("file", async d =>
                 {
                     if (d.TryGetValue("Prompt", out var said)) Console.WriteLine(said);
                     if (d.TryGetValue("PAF-PAV-V1.6", out var avatar))
@@ -130,9 +133,11 @@ internal static class Program
                         File.WriteAllText(file, avatar);
                         Console.WriteLine($"Turn {answered}: the Portable Avatar is in {file}");
                         Console.WriteLine(Said(avatar));
+                        // THE MACHINE SAYS ITS ANSWER: the words of the Portable Avatar are spoken (and the speech kept as answer-N.wav).
+                        if (Mpai.Aif.Api.AvatarUtterance.TextOfPortableAvatar(avatar) is { } words)
+                            if (await voice.SayAsync(words, Path.Combine(output, $"answer-{answered}.wav"), play: !quiet)) Console.WriteLine($"  Spoken: answer-{answered}.wav");
                         if (answered == total) done.Cancel();
                     }
-                    return Task.CompletedTask;
                 });
             Console.WriteLine("Talking...");
             try { new WorkflowRun(api, Path.Combine(Root(), "Apps", "MMC", "CPS", "MMC-CPS.orch"), devices, Environment.GetEnvironmentVariable("MPAI_DIAG") == "1" ? Console.WriteLine : null).Run(done.Token); }

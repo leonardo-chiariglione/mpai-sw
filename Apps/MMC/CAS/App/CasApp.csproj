@@ -14,6 +14,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- the machine's voice, shared with Conversation with Personal Status -->
+    <Compile Include="..\..\CPS\App\MachineVoice.cs" Link="MachineVoice.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\..\AIMs\Core\Mpai.Core.csproj" />
     <ProjectReference Include="..\..\..\..\AIF\ControllerApi\Mpai.Aif.Api.csproj" />
     <!-- the Controller API of a Controller that is a program of its own (CasController) -->
