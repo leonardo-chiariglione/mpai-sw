@@ -1,0 +1,14 @@
+{
+    "Name": "Conversation with Personal Status",
+    "Description": "Talk with the machine and it answers taking into account how you feel, from your face, your voice and your words.",
+    "Icon": "icon.svg",
+    "Version": "1.0",
+    "Standard": "MPAI-MMC V2.5",
+    "UseCase": "CPS",
+    "Module": "1MMC-CPS-V2.5-I01",
+    "Keywords": ["conversation", "personal status", "emotion", "face", "dialogue"],
+    "Categories": ["Conversation"],
+    "Languages": ["en"],
+    "Asks": ["a picture of your face", "what you say, typed or as a WAV file"],
+    "Keeps": "Nothing: the answers are written where the user says."
+}

@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- CpsController - THE CONTROLLER of Conversation with Personal Status, a program of its own. The App is a User Agent: it reads its workflow and the workflow asks this Controller, through the
+       Controller API, to start the Module (1MMC-CPS-V2.5-I01); this Controller starts the Module and its AIMs as the L3 says. The Controller API is carried over the routes of Mpai.Mas.Server,
+       on the loopback. It has a Controller of its own, and not the one of the other Apps of MPAI-MMC, because the AIMs of this Module are built by the providers of the Communicating Entities in
+       Context, whose instances of the same AIMs (the Entity Dialogue Processing, for one) are not those the other Apps use. -->
+
+  <PropertyGroup>
+    <AssemblyName>CpsController</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RootNamespace>Mpai.Mmc.Cps.Controller</RootNamespace>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="..\..\..\MAS\Service\src\ControllerApiRunner.cs" Link="ControllerApiRunner.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\AIF\Controller\AIF.Controller.csproj" />
+    <ProjectReference Include="..\..\..\..\Store\AIF.Store.csproj" />
+    <ProjectReference Include="..\..\..\..\AIF\Communication\GlobalStorage\AIF.GlobalStorage.csproj" />
+    <ProjectReference Include="..\..\..\..\AIMs\Core\Mpai.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\AIF\ControllerApi\Mpai.Aif.Api.csproj" />
+    <ProjectReference Include="..\..\..\..\AIF\PortData\Mpai.Aif.PortData.csproj" />
+    <ProjectReference Include="..\..\..\MAS\Server\Mpai.Mas.Server.csproj" />
+    <ProjectReference Include="..\Provider\Mpai.Mmc.Cps.csproj" />
+  </ItemGroup>
+
+</Project>

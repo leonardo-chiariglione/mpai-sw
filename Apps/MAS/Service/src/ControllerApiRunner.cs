@@ -114,7 +114,12 @@ internal sealed class ControllerApiRunner : IModuleRunner, IContinuousModuleRunn
         try
         {
             var error = north.StartFlow(moduleName, out var moduleId);
-            if (error != AifError.OK) return error.ToString();
+            if (error != AifError.OK)
+            {
+                var said = north.Controller.LastRefusal is { Length: > 0 } why ? $"{error}: {why}" : error.ToString();
+                Console.WriteLine($"[Controller] {moduleName} not started: {said}");
+                return said;
+            }
             ids[moduleName] = moduleId;
 
             lock (holders)
@@ -124,6 +129,7 @@ internal sealed class ControllerApiRunner : IModuleRunner, IContinuousModuleRunn
         }
         catch (Exception failure)
         {
+            Console.WriteLine($"[Controller] {moduleName} not started: {failure}");
             return failure.Message;
         }
     }

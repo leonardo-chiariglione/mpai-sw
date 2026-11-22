@@ -1,0 +1,46 @@
+# =============================================================================
+#  MMC-CPS.orch - Conversation with Personal Status (MPAI-MMC V2.5)
+#  Workflow Description Language v0.3, AIF V3.0
+#
+#  One Controller, one Module. The User Agent offers the Controller data identified by
+#  Data Type and Port Number, and asks for data identified the same way. It names no AIM.
+#
+#  Each turn gives the Module what the camera sees (the face of the person), what the
+#  person says (the microphone, or typed text), the Media Selector that says which of the
+#  two it is, and the machine's ID; the Module answers with the Portable Avatar that
+#  utters the reply, which takes into account the personal status of the person.
+#
+#  A step completes before the next begins.
+# =============================================================================
+
+workflow MMC-CPS over 1MMC-CPS-V2.5-I01
+
+on Start:
+
+    ask Controller to start
+
+    prompt "Conversation with Personal Status: talk with me, and I will answer taking into account how you feel, from your face, your voice and your words."
+
+    loop until Stop:
+
+        acquire Face (OSD-BVO-V1.5)
+
+        acquire UserAudio (OSD-BAO-V1.5) via VAD
+             or UserText  (OSD-BTO-V1.5)
+
+        offer Face (OSD-BVO-V1.5:1)
+        branch on UserText {
+            offer UserText (OSD-BTO-V1.5:1)
+            offer MediaSelector (OSD-SEL-V1.5:1) = { "Header": "OSD-SEL-V1.5", "InputMedia": "Text" }
+        } else {
+            offer UserAudio (OSD-BAO-V1.5:1)
+            offer MediaSelector (OSD-SEL-V1.5:1) = { "Header": "OSD-SEL-V1.5", "InputMedia": "Speech" }
+        }
+        offer MachineID (string:1) = "MPAI as a Service"
+
+        ask   MachinePortableAvatar (PAF-PAV-V1.6)
+        present MachinePortableAvatar
+
+on Stop:
+
+    ask Controller to stop

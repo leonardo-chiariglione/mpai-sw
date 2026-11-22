@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The provider of the Module of Conversation with Personal Status (1MMC-CPS-V2.5-I01): it builds the AIMs of the Module on the AIM host, with the providers that already build them
+       (the front end of the Communicating Entities in Context, the leaf AIMs, the Voice Command Interface). -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RootNamespace>Mpai.Mmc.Cps</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\AIF\Controller\AIF.Controller.csproj" />
+    <ProjectReference Include="..\..\..\..\Store\AIF.Store.csproj" />
+    <ProjectReference Include="..\..\..\..\AIMs\HMC\V2.2\Provider\Mpai.Hmc.Provider.csproj" />
+  </ItemGroup>
+
+</Project>
