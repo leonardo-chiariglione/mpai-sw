@@ -191,6 +191,23 @@ app.MapPost("/api/windows", () =>
     return Results.Ok();
 });
 
+// CLOSE: Thalia ends. The windows of the browser that show it (those titled Thalia) are closed, and Thalia stops with the Apps it started (ApplicationStopping below). Return to Windows only
+// hides the window; this ends Thalia.
+app.MapPost("/api/quit", () =>
+{
+    _ = Task.Run(async () =>
+    {
+        await Task.Delay(300);                                                              // the answer goes first
+        if (builder.Configuration["NoWindows"] != "true")                                    // --NoWindows true: a test instance leaves the windows alone
+          foreach (var name in new[] { "msedge", "chrome" })
+            foreach (var p in Process.GetProcessesByName(name))
+                try { if (p.MainWindowTitle.StartsWith("Thalia", StringComparison.Ordinal)) p.CloseMainWindow(); } catch { }
+        await Task.Delay(300);
+        app.Lifetime.StopApplication();
+    });
+    return Results.Ok();
+});
+
 // The Store: finding, obtaining, updating and removing Apps (APP-4, APP-5, APP-8). A Remote Thalia runs the Apps of MPAI as a Service only, and has no Store.
 StoreContext? storeContext = null;
 if (!remote)

@@ -84,7 +84,8 @@
     <div class="seasons" id="seasons" role="group" aria-label="Season of the picture"></div>
     <button class="ret" id="flip" title="Put the functions on the other side of the picture">Swap sides</button>
     <button class="ret" id="full" title="Fill the screen">Full screen</button>
-    <button class="ret" id="ret">Return to Windows</button>
+    <button class="ret" id="ret" title="Hide Thalia: it keeps running">Return to Windows</button>
+    <button class="ret" id="quit" title="End Thalia, and the Apps it started">Close</button>
   </div>
   <div class="body">
     <nav class="rail"><button class="on" data-view="apps">Apps</button><button data-view="running">Running</button><button data-view="store">Store</button><button data-view="devices">Devices</button><button data-view="settings">Settings</button>
@@ -178,6 +179,14 @@ applySide();
 const fullscreen = () => document.fullscreenElement || document.documentElement.requestFullscreen?.().catch(() => { });
 $('#full').onclick = fullscreen;
 $('#ret').onclick = async () => { if (document.fullscreenElement) await document.exitFullscreen().catch(() => { }); fetch('/api/windows', { method: 'POST' }); };
+// CLOSE ends Thalia: the window closes, the Apps it started stop. Where Apps run, the User is asked first.
+$('#quit').onclick = async () => {
+  let n = 0; try { n = (await (await fetch('/api/runs')).json()).length; } catch { }
+  if (n > 0 && !confirm(n === 1 ? 'Close Thalia? The App that is running will stop.' : `Close Thalia? The ${n} Apps that are running will stop.`)) return;
+  if (document.fullscreenElement) await document.exitFullscreen().catch(() => { });
+  fetch('/api/quit', { method: 'POST' }).catch(() => { });
+  setTimeout(() => { try { window.close(); } catch { } }, 1500);
+};
 document.addEventListener('click', () => fullscreen(), { once: true });   // the first click anywhere fills the screen (a browser allows it only on a click)
 document.addEventListener('fullscreenchange', () => { $('#full').hidden = !!document.fullscreenElement; });
 
