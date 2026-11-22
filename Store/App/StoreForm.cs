@@ -114,6 +114,9 @@ public sealed class StoreForm : Form
             if (r.TryGetProperty("published", out var p) && p.GetBoolean())
             {
                 Log($"    PUBLISHED {r.GetProperty("id").GetString()} as version {r.GetProperty("version").GetInt32()}");
+                if (r.TryGetProperty("approved", out var approved))
+                    foreach (var a in approved.EnumerateArray())
+                        Log($"    APPROVED  fingerprint recorded for {a.GetProperty("binary").GetString()} ({a.GetProperty("algorithm").GetString()}): {a.GetProperty("fingerprint").GetString()}");
                 await RefreshListAsync();
             }
             else

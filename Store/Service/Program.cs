@@ -169,14 +169,17 @@ app.MapPost("/MPAI/Store/L3", async (HttpRequest request) =>
         }
 
         // THE FINGERPRINTS (STR-3): what is approved is recorded with its SHA-256, as the Implementer submitted it.
-        findings.AddRange(await packages.RecordFingerprintsAsync(l3, id, fingerprints, repository.NextVersion(id).ToString()));
+        var recorded = new List<(string Binary, string Fingerprint)>();
+        findings.AddRange(await packages.RecordFingerprintsAsync(l3, id, fingerprints, repository.NextVersion(id).ToString(), recorded));
 
         var entry = repository.Publish(id, text, findings);
         // Who submitted it, and the signature, are kept with the version.
         File.WriteAllText(Path.Combine(repository.Root, "versions", id, $"{entry.Version}.submission.json"),
             new JsonObject { ["ImplementerID"] = implementerId, ["Signature"] = signature.Length > 0 ? signature : null, ["CredentialID"] = who.Credential?["InstanceCredentialID"]?.DeepClone(), ["Admin"] = implementerId == ImplementerRegistry.MpaiId }.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
         Console.WriteLine($"[Store] published {id} v{entry.Version}: {entry.Errors} error(s), {entry.Warnings} warning(s)");
-        return Results.Json(new { id, version = entry.Version, published = true, findings }, statusCode: 201);
+        // What the Store approved is said in the answer: the fingerprint of each Implementation it measured, with the algorithm.
+        var approved = recorded.Select(r => new { binary = r.Binary, algorithm = "SHA-256", fingerprint = r.Fingerprint }).ToList();
+        return Results.Json(new { id, version = entry.Version, published = true, approved, findings }, statusCode: 201);
     }
 });
 

@@ -33,6 +33,11 @@ public class StoreTests
         l3["Implementations"]![0]!["ImplementationURI"] = Zip(store.Packages, "asr", ("Mpai.Mmc.Asr.dll", Encoding.UTF8.GetBytes("the binary")));
         var published = await Submit(store.Http, l3, null, Admin);
         Assert.True(published.Status == HttpStatusCode.Created, $"{published.Status} {published.Body}");
+        // The answer says what the Store approved: the fingerprint of the binary it measured, with the algorithm.
+        var approved = JsonNode.Parse(published.Body)!["approved"]!.AsArray();
+        Assert.Single(approved);
+        Assert.Equal("SHA-256", (string)approved[0]!["algorithm"]!);
+        Assert.Matches("^[0-9a-f]{64}$", (string)approved[0]!["fingerprint"]!);
     }
 
     // A package is a zip (MPAI-GME V2.1, Operation, 5): this makes one in the packages folder, holding the given files, and returns its file: address.

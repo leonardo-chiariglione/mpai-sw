@@ -108,7 +108,7 @@ public sealed class PackageCheck
     // and records its SHA-256 as submitted and approved. The package is a folder, or a .zip, in the packages folder (a file: URI), or a .zip at an
     // http(s) address (fetched to be measured and not kept: the Store holds no code). A package it cannot reach or find the binary in records no fingerprint
     // and is signalled. A composite with no binary of its own has nothing to measure.
-    public async Task<List<Finding>> RecordFingerprintsAsync(JsonElement l3, string aimName, AIF.Store.ImplementationFingerprints fingerprints, string? version = null)
+    public async Task<List<Finding>> RecordFingerprintsAsync(JsonElement l3, string aimName, AIF.Store.ImplementationFingerprints fingerprints, string? version = null, List<(string Binary, string Fingerprint)>? recorded = null)
     {
         var found = new List<Finding>();
         if (!l3.TryGetProperty("Implementations", out var impls) || impls.ValueKind != JsonValueKind.Array) return found;
@@ -151,6 +151,7 @@ public sealed class PackageCheck
 
             if (fingerprint is null) { found.Add(new Finding("Fingerprint", "warning", $"{uri}: {binary}.dll is not in the package; no fingerprint recorded.")); continue; }
             fingerprints.Approve(aimName, binary, fingerprint, DateTimeOffset.UtcNow, version);
+            recorded?.Add((binary, fingerprint));
         }
         return found;
     }
