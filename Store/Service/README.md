@@ -35,9 +35,10 @@ submits with the admin key (header `MPAI-Admin`), as it is the Store; `Submit-L3
   names a `.zip`; a folder, or any address that is not a `.zip`, is **refused** (422) and the reply says so. (A Composite AIM has no code of its own: its package only bundles L3s.)
 - **Its package looked for** at the `ImplementationURI` of each `Implementations`
   entry - present, with its `BinaryName`.dll: **signalled**, not refused.
-- **Its fingerprints recorded** (STR-3): the SHA-256 of `BinaryName`.dll in a package inside the packages folder
-  (a `file:` URI) is recorded in `<Root>/approved/<AIMName>.json` as submitted and approved. A package anywhere else, or
-  at an `https:` address, is signalled and no fingerprint is recorded for it: only local packages are measured now. **The fingerprint is never given out**: a Controller measures what it obtained and\n  asks (`POST /MPAI/Store/L3/{id}/verify`), and the Store says Same, Different or NotRecorded (MPAI_AIFS_VerifyImplementation).
+- **Its fingerprints recorded** (STR-3): the Store obtains the zip at the `ImplementationURI` (a `file:` URI inside the packages folder, or an `https:` address), calculates the
+  fingerprint of its package as MPAI-GME V2.1, Operation, 5, says, and records it in `<Root>/approved/<AIMName>.json` as approved. A package it cannot obtain or measure is signalled and
+  has no fingerprint. **The fingerprint can be calculated from the package stored at the `ImplementationURI`**: a Controller calculates it from what it obtained and
+  asks (`POST /MPAI/Store/L3/{id}/verify`), and the Store says Same, Different or NotRecorded (MPAI_AIFS_VerifyImplementation): it says whether the one it was sent is the one it approved.
 - **Refused** if a Sub-AIM's L3 is in neither the composite's package (which carries
   the L3 of each AIM it bundles) nor the Store - or if the L3 has no `Identifier.AIMName`.
 

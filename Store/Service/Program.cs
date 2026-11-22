@@ -287,7 +287,7 @@ app.MapGet("/MPAI/Store/L3/{id}/findings", (string id, int? version) =>
 app.MapGet("/MPAI/Store/L3/{id}/implementations", (string id) =>
     repository.Versions(id).Count == 0 ? Results.NotFound(new { missing = $"{id} is not in the Store." }) : Results.Json(new { binaries = fingerprints.Binaries(id) }));
 
-// MPAI_AIFS_VerifyImplementation: a Controller measured what it obtained; the Store says whether that is the fingerprint it approved. The fingerprint is never given out.
+// MPAI_AIFS_VerifyImplementation: a Controller measured what it obtained; the Store says whether that is the fingerprint it approved. The fingerprint can be calculated from the package stored at the ImplementationURI (MPAI-GME V2.1, Operation, 5).
 app.MapPost("/MPAI/Store/L3/{id}/verify", async (HttpRequest request, string id) =>
 {
     if (repository.Versions(id).Count == 0) return Results.NotFound(new { missing = $"{id} is not in the Store." });

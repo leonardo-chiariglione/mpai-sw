@@ -10,7 +10,7 @@ namespace Mpai.Aif.Tests;
 
 // The MPAI Store of this repository: only an Implementer that MPAI approved may submit, and signs what it submits; the whole L3 is validated - against the AIM Metadata schema (L1),
 // then against its L2, the one its Header names - and one that is not an instance of its L2 is refused; the fingerprint of an Implementation in the packages folder is recorded
-// and never given out: it is asked about (verify). The Store runs from its own build output, on a free port, with a Store folder of its own that is deleted afterwards.
+// and asked about (verify): the Store says whether the fingerprint it is sent is the one it recorded. The Store runs from its own build output, on a free port, with a Store folder of its own that is deleted afterwards.
 [Trait("Group", "Fast")]
 [Trait("Blocks", "Yes")]
 public class StoreTests
@@ -250,7 +250,7 @@ public class StoreTests
         var approved = JsonNode.Parse(File.ReadAllText(Path.Combine(store.StoreFolder, "approved", "1MMC-ASR-V2.5-I01.json")))!;
         Assert.Equal(fingerprint, (string?)approved["Implementations"]!["Mpai.Mmc.Asr"]!["Fingerprint"]);
 
-        // ... and asked about: the Store says the same, different or not recorded - the fingerprint itself is not given out.
+        // ... and asked about: the Store says the same, different or not recorded - whether the fingerprint sent is the one it recorded.
         Assert.Equal("Same", await Verify(http, "1MMC-ASR-V2.5-I01", "Mpai.Mmc.Asr", fingerprint));
         Assert.Equal("Same", await Verify(http, "1MMC-ASR-V2.5-I01", "Mpai.Mmc.Asr", fingerprint.ToLowerInvariant()));
         Assert.Equal("Different", await Verify(http, "1MMC-ASR-V2.5-I01", "Mpai.Mmc.Asr", new string('0', 64)));
