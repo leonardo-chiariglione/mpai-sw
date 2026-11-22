@@ -47,7 +47,7 @@ internal static class Program
 
         using var north = new ControllerApi(amds, settings,
             s => new CompositeProvider(new AmcProvider(s), new McaProvider(s), new MtsProvider(s), new NprProvider(s), new AmqProvider(s),
-                new AcrApp.AcrProvider(s), new HciMac.MacProvider(s, MpaiPaths.Gallery)));
+                new AcrProvider(s), new MacProvider(s)));
         var runner = new ControllerApiRunner(north, store);
 
         if (entry?.Module is { Length: > 0 } module)

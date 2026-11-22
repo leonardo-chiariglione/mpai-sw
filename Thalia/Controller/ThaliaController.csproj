@@ -21,8 +21,6 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="..\..\Apps\MAS\Service\src\ControllerApiRunner.cs" Link="ControllerApiRunner.cs" />
-    <Compile Include="..\..\Apps\MMC\Controller\AcrProvider.cs" Link="AcrProvider.cs" />
-    <Compile Include="..\..\Apps\MMC\Controller\MacProvider.cs" Link="MacProvider.cs" />
   </ItemGroup>
 
   <ItemGroup>
