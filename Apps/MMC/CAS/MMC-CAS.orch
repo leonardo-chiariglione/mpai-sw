@@ -1,0 +1,38 @@
+# =============================================================================
+#  MMC-CAS.orch - Conversation About a Scene (MPAI-MMC V2.5)
+#  Workflow Description Language v0.3, AIF V3.0
+#
+#  One Controller, one Module. The User Agent offers the Controller data identified by
+#  Data Type and Port Number, and asks for data identified the same way. It names no AIM.
+#
+#  Each turn gives the Module what the camera sees (the scene), what the person says about
+#  it (the microphone) and the machine's ID; the Module answers with the Portable Avatar that
+#  utters the reply, which takes into account the scene the person speaks about and the object
+#  the person indicates in it.
+#
+#  A step completes before the next begins.
+# =============================================================================
+
+workflow MMC-CAS over 1MMC-CAS-V2.5-I01
+
+on Start:
+
+    ask Controller to start
+
+    prompt "Conversation About a Scene: show me a scene and talk with me about it, and about what you point at in it."
+
+    loop until Stop:
+
+        acquire Scene (OSD-BVO-V1.5)
+        acquire UserAudio (OSD-BAO-V1.5) via VAD
+
+        offer Scene (OSD-BVO-V1.5:1)
+        offer UserAudio (OSD-BAO-V1.5:1)
+        offer MachineID (string:1) = "MPAI as a Service"
+
+        ask   MachinePortableAvatar (PAF-PAV-V1.6)
+        present MachinePortableAvatar
+
+on Stop:
+
+    ask Controller to stop

@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <!-- Conversation with Personal Status, the App: it is a User Agent: it runs MMC-CPS.orch and asks the Controller (CpsController, a program of its own) to start the Module. It takes the face of the person
-       and, for each turn, what the person says (typed, or a WAV file), and writes the Portable Avatar that answers. -->
+       from the Camera Unit and what the person says from the Microphone Unit of the Physical Layer (or from files, or typed), and writes the Portable Avatar that answers each turn. -->
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AssemblyName>CpsApp</AssemblyName>
@@ -19,6 +19,8 @@
     <!-- the Controller API of a Controller that is a program of its own (CpsController) -->
     <ProjectReference Include="..\..\..\..\AIF\UserAgent\Remote\Mpai.Mas.Client.csproj" />
     <ProjectReference Include="..\..\..\..\AIF\UserAgent\Ua\Mpai.Ua.csproj" />
+    <!-- the Units of the Physical Layer: the Camera Unit and the Microphone Unit -->
+    <ProjectReference Include="..\..\..\..\AIF\UserAgent\PhysicalLayer\Mpai.PhysicalLayer.csproj" />
   </ItemGroup>
 
 </Project>

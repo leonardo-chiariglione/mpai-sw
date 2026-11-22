@@ -1,0 +1,14 @@
+{
+    "Name": "Conversation About a Scene",
+    "Description": "Show the machine a scene and talk with it about the scene and about what you point at in it.",
+    "Icon": "icon.svg",
+    "Version": "1.0",
+    "Standard": "MPAI-MMC V2.5",
+    "UseCase": "CAS",
+    "Module": "1MMC-CAS-V2.5-I01",
+    "Keywords": ["conversation", "scene", "picture", "objects", "dialogue"],
+    "Categories": ["Conversation"],
+    "Languages": ["en"],
+    "Asks": ["a picture of the scene", "what you say about it, as a WAV file"],
+    "Keeps": "Nothing: the answers are written where the user says."
+}

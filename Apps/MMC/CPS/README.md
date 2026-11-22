@@ -22,4 +22,4 @@ Each `--text` or `--speech` is one turn, in the order given; `--face` is the pic
 
 From `AllApps\MMC\CPS.bat`: dialogs pick the picture, ask for the words (typed, or a WAV file) and offer another turn; the answers go to `Downloads\MPAI MMC\CPS`.
 
-The App has no camera and no microphone: the face is a picture and what is said a file or typed words. The workflow is the same for a client that has them.
+With `--camera` the face is what the Camera Unit of the Physical Layer sees each turn, and with `--microphone` what is said is what the Microphone Unit hears (`--turns` at most, 3 by default; it waits for speech and ends when the speaker stops, and if nobody speaks the conversation ends). Without them the face is a picture and what is said a WAV file or typed words; the two are alternatives, not mixed. The App is a Windows program for this reason (the Units are Windows' devices).

@@ -11,6 +11,7 @@ Each standard is a folder; the Apps of a standard are the files in it, named as 
 | | `SRS demo (one click)` | restores a damaged recording with the voice of another speaker; plays original, damaged, restored |
 | `MMC` | `ACR`, `MAC`, `MCA`, `MTS`, `AMC`, `AMQ`, `NPR` | the standalone programs: access registration, access control, conversation with the avatar, translation, affective conversation, picture questions, newspaper reading |
 | | `CPS` | conversation with personal status: you pick a picture of your face and say what you say (typed, or a WAV file); the machine answers with a Portable Avatar, taking into account how you feel (answers in `Downloads\MPAI MMC\CPS`; it starts its own Controller on port 5059) |
+| | `CAS` | conversation about a scene: you pick a picture of a scene and a WAV file of what you say about it (as many turns as you like); the machine answers with a Portable Avatar (answers in `Downloads\MPAI MMC\CAS`; it starts its own Controller on port 5061) |
 | `OSD` | `TMA` | television media analysis: you pick the video of a programme (and how much of it); it tells who speaks when, what is said and what is shown (answers in `Downloads\MPAI OSD\TMA`; it starts its own Controller on port 5060) |
 | `CAV` | `CAV`, `HCI` | the connected autonomous vehicle; the passenger conversation with it |
 | `ABV` | `ABV server (this PC only)`, `ABV server (open to the network)` | the avatar videoconference |
