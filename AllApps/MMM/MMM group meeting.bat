@@ -11,10 +11,11 @@ set /p MAILMODE=Emails - ask, draft, send or none (Enter for ask):
 if "%GROUP%"=="" set GROUP=MMM
 if "%MAILMODE%"=="" set MAILMODE=ask
 rem SPOKEN: speech recognition (Whisper), the language model (Ollama) and the voices; WRITTEN: none of them, the participants write their requests to the Secretary.
-set VERSION=spoken
-set /p VERSION=Spoken or written (Enter for spoken): 
+rem (MMM_VERSION, not VERSION: MSBuild takes the variables of the environment as properties, and VERSION=spoken made the build of the server fail in its restore)
+set MMM_VERSION=spoken
+set /p MMM_VERSION=Spoken or written (Enter for spoken): 
 set WRITTEN=
-if /i "%VERSION%"=="written" set WRITTEN=-Written
-if /i "%VERSION%"=="w" set WRITTEN=-Written
+if /i "%MMM_VERSION%"=="written" set WRITTEN=-Written
+if /i "%MMM_VERSION%"=="w" set WRITTEN=-Written
 call "%~dp0Run-Meeting.bat" -Group %GROUP% -When "%WHEN%" -Mail %MAILMODE% %WRITTEN%
 pause

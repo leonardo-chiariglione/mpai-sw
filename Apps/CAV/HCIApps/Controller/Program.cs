@@ -32,7 +32,7 @@ internal static class Program
         PortDataSchema.Sink = (dataType, direction, complaint) => Console.WriteLine($"[SCHEMA] {dataType} {direction} {complaint}");
         var store = new AmdStore(amds);
         store.Scan();
-        using var north = new ControllerApi(amds, settings, s => new HciApp.HciProvider(s, MpaiPaths.Gallery));
+        using var north = new ControllerApi(amds, settings, s => new Mpai.Cav.Hci.HciProvider(s, MpaiPaths.Root));
         var runner = new ControllerApiRunner(north, store);
         var server = new MasServer(runner, PortDataCodecs.Default(), url);
         Console.WriteLine($"  Listening:   {url}");

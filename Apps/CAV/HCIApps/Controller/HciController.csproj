@@ -17,11 +17,12 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="..\..\..\MAS\Service\src\ControllerApiRunner.cs" Link="ControllerApiRunner.cs" />
-    <Compile Include="HciProvider.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\AIF\ControllerApi\Mpai.Aif.Api.csproj" />
+    <!-- the provider of the leaf AIMs of 1CAV-HCI-V2.0-I01, by the names its L3 gives them (the one the CAV tests use) -->
+    <ProjectReference Include="..\..\..\..\AIMs\CAV\V2.0\Hci\Mpai.Cav.Hci.csproj" />
     <ProjectReference Include="..\..\..\..\AIF\PortData\Mpai.Aif.PortData.csproj" />
     <ProjectReference Include="..\..\..\MAS\Server\Mpai.Mas.Server.csproj" />
     <ProjectReference Include="..\..\..\..\AIF\Controller\AIF.Controller.csproj" />

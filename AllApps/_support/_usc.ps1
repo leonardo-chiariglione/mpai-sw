@@ -35,7 +35,7 @@ try {
             $says = (Ask "What was said in each damaged section, in order?`n`nOne text for each section, apart by |" $title 'hello') -split '\|' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
             $arguments = @('--voice') + $voice + @('--damaged', $damaged, '--sections', $sections, '--out', (Join-Path $out 'restored.wav'))
             foreach ($t in $says) { $arguments += @('--say', $t) }
-            if (-not (Yes 'Speak in the voice of the speaker?`n`nYes: the voice engine makes the voice (it takes longer).`nNo: a stand-in tone, to test.' $title)) { $arguments += '--stand-in' }
+            if (-not (Yes "Speak in the voice of the speaker?`n`nYes: the voice engine makes the voice (it takes longer).`nNo: a stand-in tone, to test." $title)) { $arguments += '--stand-in' }
         }
         'AES' {
             $speech = Pick 'The emotionless speech' $wav
@@ -62,6 +62,7 @@ try {
             if (Yes "Make a demonstration capture first?`n`nYes: two real voices in a noisy simulated room (LibriSpeech clips in Test\Data\Speech of the tree).`nNo: you pick your own capture and array." $title) {
                 $libri = Join-Path $root 'Test\Data\Speech'
                 $clips = (Join-Path $libri 'clip1272.wav'), (Join-Path $libri 'clip1462.wav')
+                if (-not (Test-Path $exe)) { Write-Host "Building $title (a first build takes a while)..." -ForegroundColor Cyan; & dotnet build $project -nologo -v q 2>&1 | Out-Null }   # the demonstration room is made by the App itself
                 & $exe --demo $out --speech $clips[0] $clips[1]
                 $capture = Join-Path $out 'room.wav'; $array = Join-Path $out 'array.json'
             } else {

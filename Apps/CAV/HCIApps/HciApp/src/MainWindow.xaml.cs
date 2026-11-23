@@ -28,7 +28,7 @@ namespace HciApp;
 // Identify ok -> converse. "stop" -> pause. Start -> resume.
 public partial class MainWindow : Window
 {
-    private const string HciModule = "CAV-HCI-V2.0";
+    private const string HciModule = "1CAV-HCI-V2.0-I01";
     private const string RsrModule = "1PAF-RSR-V1.6-I01";
 
     private const string BAO = "OSD-BAO-V1.5";

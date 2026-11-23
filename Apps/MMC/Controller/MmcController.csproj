@@ -18,9 +18,6 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="..\..\MAS\Service\src\ControllerApiRunner.cs" Link="ControllerApiRunner.cs" />
-    <!-- the providers of the Apps that bind a gallery or their own leaves -->
-    <Compile Include="AcrProvider.cs" />
-    <Compile Include="MacProvider.cs" />
   </ItemGroup>
 
   <ItemGroup>
