@@ -1096,7 +1096,7 @@ public partial class MainWindow : Window
                 var had = await File.ReadAllBytesAsync(again);
                 _lastPicture = null;
                 return MpaiJson.ToJson(
-                    BasicVisualObject.FromFile(Path.GetFileName(again), had, "Object"));
+                    BasicVisualObject.FromFile(Path.GetFileName(again), had, "Visual Object"));
             }
 
             Instruct("Choose a picture.");
@@ -1113,7 +1113,7 @@ public partial class MainWindow : Window
 
             _lastPicture = null;
             var bytes = await File.ReadAllBytesAsync(chosen);
-            var got   = BasicVisualObject.FromFile(Path.GetFileName(chosen), bytes, "Object");
+            var got   = BasicVisualObject.FromFile(Path.GetFileName(chosen), bytes, "Visual Object");
             var have  = Path.GetExtension(chosen).ToLowerInvariant() is ".jpg" or ".jpeg" ? "JPEG"
                       : Path.GetExtension(chosen).ToLowerInvariant() is ".png"            ? "PNG"
                       : Path.GetExtension(chosen).ToLowerInvariant() is ".bmp"            ? "BMP"
@@ -1131,7 +1131,7 @@ public partial class MainWindow : Window
                 // again, which is why nothing is remembered on the ordinary path.
                 _lastPicture = chosen;
                 Status($"asked for {askedFor}; this is {have}");
-                var counter = BasicVisualObject.FromFile(Path.GetFileName(chosen), Array.Empty<byte>(), "Object");
+                var counter = BasicVisualObject.FromFile(Path.GetFileName(chosen), Array.Empty<byte>(), "Visual Object");
                 return MpaiJson.ToJson(counter);
             }
 

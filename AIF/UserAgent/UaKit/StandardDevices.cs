@@ -34,7 +34,7 @@ public static class StandardDevices
         });
         if (chosen is null) return null;
         var bytes = await File.ReadAllBytesAsync(chosen);
-        return MpaiJson.ToJson(BasicVisualObject.FromFile(Path.GetFileName(chosen), bytes, "Object"));
+        return MpaiJson.ToJson(BasicVisualObject.FromFile(Path.GetFileName(chosen), bytes, "Visual Object"));
     }
 
     // A PORTABLE AVATAR'S UTTERANCE, PRESENTED on the avatar; the step ends when she has finished speaking.

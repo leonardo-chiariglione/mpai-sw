@@ -53,7 +53,7 @@ public class NewspaperPagesTests
         {
             var r = api.Advance(moduleId, new[]
             {
-                new ControllerApi.Datum("OSD-BVO-V1.5", 1, MpaiJson.ToJson(BasicVisualObject.FromFile(Path.GetFileName(image), File.ReadAllBytes(image), "Object"))),
+                new ControllerApi.Datum("OSD-BVO-V1.5", 1, MpaiJson.ToJson(BasicVisualObject.FromFile(Path.GetFileName(image), File.ReadAllBytes(image), "Visual Object"))),
                 new ControllerApi.Datum("OSD-PNT-V1.5", 1, $"{{\"Header\":\"OSD-PNT-V1.5\",\"Coordinates\":{{\"X\":{point[0]},\"Y\":{point[1]}}}}}"),
                 new ControllerApi.Datum("string", 1, "\"MPAI as a Service\"")
             });

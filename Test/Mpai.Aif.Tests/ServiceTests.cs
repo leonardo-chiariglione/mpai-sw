@@ -258,7 +258,7 @@ public class ServiceTests
         new("OSD-BTO-V1.5", port, MpaiJson.ToJson(BasicTextObject.FromText(text)));
 
     private static ControllerApi.Datum Picture(string file) =>
-        new("OSD-BVO-V1.5", 1, MpaiJson.ToJson(BasicVisualObject.FromFile(file, File.ReadAllBytes(Data(file)), "Object")));
+        new("OSD-BVO-V1.5", 1, MpaiJson.ToJson(BasicVisualObject.FromFile(file, File.ReadAllBytes(Data(file)), "Visual Object")));
 
     private static ControllerApi.Datum Speech(string file) =>
         new("OSD-BSO-V1.5", 1, MpaiJson.ToJson(BasicSpeechObject.FromData(File.ReadAllBytes(Data(file)), new SpeechQualifier

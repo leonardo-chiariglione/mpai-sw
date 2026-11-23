@@ -49,7 +49,7 @@ public class AmqFromPackagesTests
         {
             Assert.Equal(AifError.OK, api.StartFlow(Module, out id));
             var picture = new ControllerApi.Datum("OSD-BVO-V1.5", 1, MpaiJson.ToJson(BasicVisualObject.FromFile("red.jpg",
-                File.ReadAllBytes(Path.Combine(Mpai.Core.MpaiPaths.TestData, "red.jpg")), "Object")));
+                File.ReadAllBytes(Path.Combine(Mpai.Core.MpaiPaths.TestData, "red.jpg")), "Visual Object")));
             var question = new ControllerApi.Datum("OSD-BTO-V1.5", 1, MpaiJson.ToJson(BasicTextObject.FromText("What color is the picture?")));
             var machine = new ControllerApi.Datum("string", 1, "\"MPAI as a Service\"");
             var r = api.Advance(id, new[] { picture, question, machine });

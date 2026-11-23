@@ -107,7 +107,7 @@ internal static class WarmUp
         ("OSD-BTO-V1.5#" + port, MpaiJson.ToJson(BasicTextObject.FromText(text)));
 
     private static string? Picture(string? path) =>
-        path is null ? null : MpaiJson.ToJson(BasicVisualObject.FromFile(Path.GetFileName(path), File.ReadAllBytes(path), "Object"));
+        path is null ? null : MpaiJson.ToJson(BasicVisualObject.FromFile(Path.GetFileName(path), File.ReadAllBytes(path), "Visual Object"));
 
     private static string? Speech(string? path) =>
         path is null ? null : MpaiJson.ToJson(BasicSpeechObject.FromData(File.ReadAllBytes(path), new SpeechQualifier

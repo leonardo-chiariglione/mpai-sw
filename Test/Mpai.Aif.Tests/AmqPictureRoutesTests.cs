@@ -43,7 +43,7 @@ public class AmqPictureRoutesTests
     {
         var path = Path.Combine(Images, "Monuments", "eiffel-tower", "01-pixabay-1853365.jpg");
         if (!File.Exists(path)) return;   // the test pictures are obtained separately
-        var own = Mpai.Core.BasicVisualObject.FromFile("my-photo.jpg", File.ReadAllBytes(path), "Object");
+        var own = Mpai.Core.BasicVisualObject.FromFile("my-photo.jpg", File.ReadAllBytes(path), "Visual Object");
 
         var turn = await AskAbout(own, "What is this?");
 

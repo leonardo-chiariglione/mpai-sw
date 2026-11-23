@@ -51,7 +51,7 @@ public class NprWorkflowTests
         var clicks = 0;
 
         var devices = new Mpai.Ua.DeviceRegistry()
-            .RegisterAcquire("OSD-BVO-V1.5", (_, _) => Task.FromResult<string?>(Mpai.Core.MpaiJson.ToJson(Mpai.Core.BasicVisualObject.FromFile("red.jpg", File.ReadAllBytes(Path.Combine(Repository.Root, "Test", "Data", "red.jpg")), "Object"))))
+            .RegisterAcquire("OSD-BVO-V1.5", (_, _) => Task.FromResult<string?>(Mpai.Core.MpaiJson.ToJson(Mpai.Core.BasicVisualObject.FromFile("red.jpg", File.ReadAllBytes(Path.Combine(Repository.Root, "Test", "Data", "red.jpg")), "Visual Object"))))
             .RegisterAcquire("OSD-PNT-V1.5", async (_, _, abandon) =>
             {
                 if (Interlocked.Increment(ref clicks) == 1)
