@@ -313,7 +313,7 @@ internal static partial class Program
             }
             var outcome = hfl.Outcomes.Count > 0 ? hfl.Outcomes[^1] : null;
             if (outcome is null || outcome.Round != round || !outcome.Accepted) { Say("   the result was refused: the Back End's model stays as it was"); continue; }
-            Say($"   accepted: {outcome.Updates} models averaged (the network and the final layer), weighted by their number of cases ({outcome.Cases}); on the fixed set: {Acc(hfl.CurrentModel!)} (the published model: {Acc(published)})");
+            Say($"   accepted: {outcome.Updates} models combined by federated averaging (FedAvg, McMahan et al. 2017; the network and the final layer), weighted by their number of cases ({outcome.Cases}); on the fixed set: {Acc(hfl.CurrentModel!)} (the published model: {Acc(published)})");
             var averaged = await wex.ProcessAsync(new Message { MessageId = "wex-avg-" + round, Ports = new Dictionary<string, string> {
                 [wexPorts.Input(NnwJson.Model)] = hfl.CurrentModel!.ToJsonString(), [wexPorts.Input(NnwJson.Key)] = key.ToJsonString(), [wexPorts.Input(NnwJson.Locator)] = locator.ToJsonString() } });
             Say($"   the averaged model: {JsonNode.Parse(averaged.Payload)?["DescrMetadata"]}");

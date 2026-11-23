@@ -250,7 +250,7 @@ public class AihFirstSliceTests : IDisposable
         Assert.Null(one.Acquire(HealthData("user-1", 190), Licence("user-1", "ahd-5", licenseTpu: false)));
         Assert.NotNull(two.Acquire(HealthData("user-2", 125), Licence("user-2", "ahd-6", licenseTpu: false)));
 
-        // The round: the Back End asks each Front End for the model its AIM holds and averages them.
+        // The round: the Back End asks each Front End for the model its AIM holds and combines them by federated averaging (FedAvg).
         var model = hbe.FederatedLearning("model-0", "hfe-1", "hfe-2");
         Assert.Equal("model-0-federated-1", model["MLModelObjectID"]!.ToString());
         var weights = new float[2];

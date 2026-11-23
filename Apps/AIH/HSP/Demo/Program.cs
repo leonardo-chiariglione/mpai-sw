@@ -131,7 +131,7 @@ internal static class Program
         one.Acquire(HealthData("user-1", 190), Licence("user-1", "ahd-5", licenseThirdParty: false));
         two.Acquire(HealthData("user-2", 125), Licence("user-2", "ahd-6", licenseThirdParty: false));
 
-        Step("A round of Federated Learning: the Back End asks each Front End for the model its Neural Network Model AIM holds, and averages them");
+        Step("A round of Federated Learning: the Back End asks each Front End for the model its Neural Network Model AIM holds, and combines them by federated averaging (FedAvg, McMahan et al. 2017): each model counts in proportion to the number of cases it learned from");
         var model = hbe.FederatedLearning("model-0", "hfe-1", "hfe-2");
         var weights = new float[2];
         Buffer.BlockCopy(Convert.FromBase64String(model["MLModelData"]![0]!["Data"]!.ToString()), 0, weights, 0, 8);
