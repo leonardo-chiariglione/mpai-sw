@@ -274,6 +274,13 @@ public static class MmmServer
                 return name is null ? Results.NotFound()
                     : Results.Json(new { name, kind, resume = m.Resume(name) is { } r ? new { token = r.Token, persona = r.Info } : null });
             });
+            // THE UNITS OF A BROWSER (AIF\UserAgent\PhysicalLayer\Browser\mpai-units.js): one file for every page, served from where it is, never copied.
+            app.MapGet("/viewer/mpai-units.js", (HttpContext ctx) =>
+            {
+                var units = Path.GetFullPath(Path.Combine(root, "..", "..", "..", "AIF", "UserAgent", "PhysicalLayer", "Browser", "mpai-units.js"));
+                ctx.Response.Headers.CacheControl = "no-store";
+                return File.Exists(units) ? Results.File(units, "text/javascript") : Results.NotFound();
+            });
             app.MapPost("/viewer/next", () => { onNext?.Invoke(); return Results.Ok(); });
             app.MapPost("/viewer/back", () => { onBack?.Invoke(); return Results.Ok(); });
             app.MapGet("/viewer/{**path}", (HttpContext ctx, string? path) =>

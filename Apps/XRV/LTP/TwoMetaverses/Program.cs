@@ -376,6 +376,7 @@ static class Video
                     }
                     string? file = path.StartsWith("lib/") ? Path.Combine(root, "AllApps", "MMM", "Viewer", path)
                                  : path.StartsWith("personae/") ? Path.Combine(root, "AllApps", "MMM", "Viewer", path)
+                                 : path == "mpai-units.js" ? Path.Combine(root, "AIF", "UserAgent", "PhysicalLayer", "Browser", "mpai-units.js")      // the Units of a browser: one file for every page, from where it is
                                  : path == "log.json" ? Path.Combine(outDir, "log.json")
                                  : path.StartsWith("sounds/") ? Path.Combine(root, "Test", "Data", "XRV", "LongerEvening", path[7..])
                                  : Path.Combine(stage, path.Length == 0 ? "index.html" : path);

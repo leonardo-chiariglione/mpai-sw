@@ -58,6 +58,13 @@ app.UseDefaultFiles();
 var types = new Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider(); types.Mappings[".glb"] = "model/gltf-binary"; types.Mappings[".mjs"] = "text/javascript";
 app.UseStaticFiles(new StaticFileOptions { ContentTypeProvider = types, OnPrepareResponse = c => c.Context.Response.Headers.CacheControl = "no-cache" });
 app.UseStaticFiles(new StaticFileOptions { FileProvider = new PhysicalFileProvider(avatarDir), RequestPath = "/avatars", ContentTypeProvider = types });
+// THE UNITS OF A BROWSER (AIF\UserAgent\PhysicalLayer\Browser\mpai-units.js): one file for every page, served from where it is, never copied.
+app.MapGet("/mpai-units.js", (HttpContext ctx) =>
+{
+    var units = Path.Combine(root, "AIF", "UserAgent", "PhysicalLayer", "Browser", "mpai-units.js");
+    ctx.Response.Headers.CacheControl = "no-store";
+    return File.Exists(units) ? Results.File(units, "text/javascript") : Results.NotFound();
+});
 
 // The join page's pictures: the first browser to render an avatar leaves its picture here (a PNG, as the body of the request), so that the next page opens with them at once.
 Directory.CreateDirectory(Path.Combine(siteRoot, "wwwroot", "thumbs"));

@@ -50,6 +50,7 @@
   .cap .note { margin-top: auto; font-size: 18px; color: #8691a1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #err { position: absolute; left: 40px; top: 300px; right: 40px; font: 20px Consolas, monospace; color: #ff8080; white-space: pre-wrap; }
 </style>
+<script src="mpai-units.js"></script>
 <script type="importmap">
 { "imports": { "three": "/lib/three/three.module.js", "three/addons/": "/lib/three/addons/" } }
 </script>
@@ -719,7 +720,7 @@ function startLive(url) {
     const want = new Map((list || []).map(s => [s.side + '/' + s.sound, s]));
     for (const [k, s] of want) {
       let a = players.get(k);
-      if (!a) { a = new Audio(new URL('sounds/' + s.sound, location.href)); a.loop = !!s.loop; players.set(k, a); a.play().catch(() => askForSound()); }
+      if (!a) { a = MpaiUnits.loudspeaker.sound(new URL('sounds/' + s.sound, location.href).href, { loop: !!s.loop }); players.set(k, a); a.play().catch(() => askForSound()); }     // the Loudspeaker Unit plays the sound
       a.volume = Math.max(0, Math.min(1, s.gain));
     }
     for (const [k, a] of players) if (!want.has(k)) { a.pause(); players.delete(k); }
@@ -729,7 +730,7 @@ function startLive(url) {
     b.style.cssText = 'position:absolute;z-index:99;border-radius:12px;border:2px solid #8fb7ff;background:#151a23;color:#e6e9ef;cursor:pointer;font-weight:700;' + css; document.body.appendChild(b); return b; };
   const startBtn = btn('▶  Start the show', 'left:760px;top:470px;width:400px;height:110px;font-size:38px;display:none', () => {
     fetch(new URL('go', location.href)).catch(() => {}); startBtn.remove();
-    const t = new Audio(new URL('sounds/applause.wav', location.href)); t.volume = 0; t.play().then(() => t.pause()).catch(() => {});   // sound allowed from now on
+    MpaiUnits.loudspeaker.unlockSound(new URL('sounds/applause.wav', location.href).href);   // sound allowed from now on
   });
   btn('✕  Close', 'right:250px;top:14px;width:150px;height:44px;font-size:20px', () => { fetch(new URL('quit', location.href)).catch(() => {}); setTimeout(() => window.close(), 300); });
   let frame = null; const onset = { theatre: new Map(), square: new Map() }, capAt = {}, capKey = {};

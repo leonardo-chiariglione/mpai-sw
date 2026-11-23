@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Diagnostics;
+using System.Drawing;
 using System.Drawing.Imaging;
 using System.Net;
 using System.Net.WebSockets;
@@ -13,7 +14,7 @@ namespace Mpai.Mmm.ScreenHelper;
 // machine of the sharer. The page of the meeting talks to it on http://127.0.0.1:7391:
 //   GET  /status                 -> {helper, sharing, title}
 //   POST /pick   {server, edit}  -> the sharer chooses, in a window of this program, the window or the screen to share; {ok, kind, title}. With edit, the window chosen is brought to the front.
-//   POST /share  {server, token, id} -> the picture goes to the M-Instance, as JPEG frames of the Visual Object `id` (WebSocket /ws/v2.2/screen/{id}), only when it changes
+//   POST /share  {server, token, id} -> the picture goes to the M-Instance, as compressed video (VP8, by ffmpeg) of the Visual Object `id` (WebSocket /ws/v2.2/screen/{id}); JPEG frames, only when it changes, if there is no ffmpeg
 //   POST /stop
 // Only the page that asked for the choice (its Origin is the server given) can start the sharing, and what is shared is what the sharer chose.
 // --auto screen | --auto "part of a window title": chooses without asking (for trying it).
@@ -82,7 +83,7 @@ internal sealed class Helper : ApplicationContext
             string Get(string name) => body.ValueKind == JsonValueKind.Object && body.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() ?? "" : "";
             object result = c.Request.Url!.AbsolutePath switch
             {
-                "/status" => new { helper = true, sharing = sharing is not null, title },
+                "/status" => new { helper = true, sharing = sharing is not null, title, video = Capture.Ffmpeg() is not null ? "vp8" : "jpeg" },
                 "/pick" => await Pick(origin, Get("server"), body.ValueKind == JsonValueKind.Object && body.TryGetProperty("edit", out var e) && e.ValueKind == JsonValueKind.True),
                 "/share" => await Share(origin, Get("server"), Get("token"), Get("id")),
                 "/stop" => Stopped(),
@@ -240,7 +241,107 @@ internal static class Capture
     [DllImport("dwmapi.dll")] private static extern int DwmGetWindowAttribute(IntPtr h, int attr, out RECT r, int size);
     [StructLayout(LayoutKind.Sequential)] private struct RECT { public int Left, Top, Right, Bottom; }
 
+    // THE SCREEN UNIT OF THIS COMPUTER (the native one: the browser's own is AIF/UserAgent/PhysicalLayer/Browser/mpai-units.js). The picture goes as COMPRESSED VIDEO, in the messages the browser's Screen Unit
+    // sends: 3 the configuration (JSON: codec, width, height), then 4 chunks (flags, bit 0 = key frame; the time in microseconds, float64; the compressed data). The encoder is ffmpeg (libvpx, VP8, a key frame
+    // every 2 s), found in MPAI_FFMPEG, the PATH or the winget package; with none, the picture goes as JPEG, as it did, and only when it changes.
     public static async Task Stream(Target t, ClientWebSocket ws, CancellationToken ct)
+    {
+        var ffmpeg = Ffmpeg();
+        if (ffmpeg is null) { await StreamJpeg(t, ws, ct); return; }
+        await StreamVideo(ffmpeg, t, ws, ct);
+    }
+
+    public static string? Ffmpeg()
+    {
+        var given = Environment.GetEnvironmentVariable("MPAI_FFMPEG");
+        if (!string.IsNullOrEmpty(given) && File.Exists(given)) return given;
+        foreach (var dir in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator))
+        {
+            try { var f = Path.Combine(dir.Trim('"'), "ffmpeg.exe"); if (File.Exists(f)) return f; } catch { }
+        }
+        var winget = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "WinGet", "Packages");
+        if (Directory.Exists(winget))
+            foreach (var package in Directory.EnumerateDirectories(winget, "*FFmpeg*"))
+                foreach (var f in Directory.EnumerateFiles(package, "ffmpeg.exe", SearchOption.AllDirectories)) return f;
+        return null;
+    }
+
+    private const int Fps = 10;
+
+    private static async Task StreamVideo(string ffmpeg, Target t, ClientWebSocket ws, CancellationToken ct)
+    {
+        Process? enc = null; Task? reader = null; int w = 0, h = 0;
+        var clock = Stopwatch.StartNew();
+        async Task Send(byte[] m) { if (ws.State == WebSocketState.Open) await ws.SendAsync(m, WebSocketMessageType.Binary, true, ct); }
+        void StopEncoder() { try { enc?.StandardInput.Close(); } catch { } try { if (enc is { HasExited: false }) enc.Kill(true); } catch { } enc?.Dispose(); enc = null; }
+        try
+        {
+            while (!ct.IsCancellationRequested && ws.State == WebSocketState.Open)
+            {
+                var tick = Task.Delay(1000 / Fps, ct);
+                if (!t.Screen && !IsWindow(t.Hwnd)) return;                                                   // the window was closed: the sharing is over
+                using var full = t.Screen ? Screenshot(-(int)(t.Hwnd.ToInt64()) - 1) : Window(t.Hwnd);
+                if (full is not null)
+                {
+                    var nw = Math.Min(1280, full.Width) & ~1; var nh = Math.Max(2, full.Height * nw / full.Width) & ~1;
+                    if (enc is null || nw != w || nh != h)                                                       // the first picture, or the window changed its size: the encoder starts again, with a configuration
+                    {
+                        StopEncoder(); w = Math.Max(2, nw); h = nh;
+                        enc = StartEncoder(ffmpeg, w, h);
+                        var cfg = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { codec = "vp8", width = w, height = h }));
+                        var m = new byte[1 + cfg.Length]; m[0] = 3; cfg.CopyTo(m, 1); await Send(m);
+                        reader = ReadIvf(enc.StandardOutput.BaseStream, Send, clock, ct);
+                    }
+                    using var scaled = new Bitmap(w, h, PixelFormat.Format32bppArgb);
+                    using (var g = Graphics.FromImage(scaled)) { g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic; g.DrawImage(full, 0, 0, w, h); }
+                    var data = scaled.LockBits(new Rectangle(0, 0, w, h), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+                    var raw = new byte[w * 4 * h];
+                    for (var y = 0; y < h; y++) Marshal.Copy(data.Scan0 + y * data.Stride, raw, y * w * 4, w * 4);
+                    scaled.UnlockBits(data);
+                    await enc.StandardInput.BaseStream.WriteAsync(raw, ct);
+                    await enc.StandardInput.BaseStream.FlushAsync(ct);
+                }
+                await tick;
+            }
+        }
+        finally { StopEncoder(); if (reader is not null) { try { await reader; } catch { } } }
+    }
+
+    private static Process StartEncoder(string ffmpeg, int w, int h)
+    {
+        var p = new ProcessStartInfo(ffmpeg) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardInput = true, RedirectStandardOutput = true, RedirectStandardError = true };
+        foreach (var a in new[] { "-hide_banner", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "bgra", "-video_size", $"{w}x{h}", "-framerate", Fps.ToString(), "-i", "pipe:0",
+                                  "-an", "-c:v", "libvpx", "-deadline", "realtime", "-cpu-used", "8", "-b:v", (w * h).ToString(), "-g", (Fps * 2).ToString(), "-auto-alt-ref", "0", "-lag-in-frames", "0",
+                                  "-error-resilient", "1", "-f", "ivf", "-flush_packets", "1", "pipe:1" }) p.ArgumentList.Add(a);
+        var enc = Process.Start(p) ?? throw new InvalidOperationException("ffmpeg did not start");
+        enc.ErrorDataReceived += (_, _) => { };                                                                // what ffmpeg says is not kept; it must be read, or it fills its pipe
+        enc.BeginErrorReadLine();
+        return enc;
+    }
+
+    // The encoder's output is an IVF file: a header of 32 bytes, then each frame with a header of 12 bytes (its size, its time) and its data. A VP8 frame is a key frame when bit 0 of its first byte is 0.
+    private static async Task ReadIvf(Stream s, Func<byte[], Task> send, Stopwatch clock, CancellationToken ct)
+    {
+        static async Task<bool> Fill(Stream s, byte[] buf, CancellationToken ct)
+        {
+            for (var got = 0; got < buf.Length;) { var n = await s.ReadAsync(buf.AsMemory(got), ct); if (n == 0) return false; got += n; }
+            return true;
+        }
+        var head = new byte[32]; if (!await Fill(s, head, ct)) return;
+        var fh = new byte[12];
+        while (await Fill(s, fh, ct))
+        {
+            var size = BitConverter.ToInt32(fh, 0); if (size <= 0 || size > 8_000_000) return;
+            var data = new byte[size]; if (!await Fill(s, data, ct)) return;
+            var m = new byte[10 + size]; m[0] = 4; m[1] = (byte)((data[0] & 1) == 0 ? 1 : 0);
+            BitConverter.TryWriteBytes(m.AsSpan(2, 8), clock.ElapsedTicks * 1e6 / Stopwatch.Frequency);
+            data.CopyTo(m, 10); await send(m);
+        }
+    }
+
+    // The picture as JPEG, when there is no encoder: a window is captured with PrintWindow, a screen by copying it; scaled to 1280 pixels across at most, and sent only when it has changed (and now and then, for who
+    // comes in): the message is a byte 1 and the JPEG.
+    private static async Task StreamJpeg(Target t, ClientWebSocket ws, CancellationToken ct)
     {
         var jpeg = ImageCodecInfo.GetImageEncoders().First(e => e.MimeType == "image/jpeg");
         var q = new EncoderParameters(1); q.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 72L);

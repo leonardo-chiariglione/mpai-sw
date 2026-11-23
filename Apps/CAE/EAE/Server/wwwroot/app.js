@@ -1,9 +1,10 @@
 // The browser client of the Enhanced Audioconference. A listener hears each speaker of the room, separated from the others and placed in the direction they are; the room
 // sends the audio of its microphone array. PROTOCOL.md says what is exchanged. Nothing here depends on how the server finds the speakers.
+// The microphone array is captured and the voices are played ONLY through the Units of the browser (AIF/UserAgent/PhysicalLayer/Browser/mpai-units.js).
 "use strict";
 const $ = id => document.getElementById(id);
-let ws = null, ctx = null, info = null, role = "", speakers = new Map(), seconds = 3;
-const voices = new Map();                                 // id -> { panner, next }
+const U = MpaiUnits;
+let ws = null, info = null, role = "", speakers = new Map(), seconds = 3;
 
 (async () => {
   info = await (await fetch("/api/info")).json();
@@ -20,8 +21,7 @@ $("leave").onclick = () => location.reload();
 async function join() {
   const name = $("name").value.trim(); role = $("role").value;
   if (!name) { $("error").textContent = "choose a name"; return; }
-  ctx = new (window.AudioContext || window.webkitAudioContext)();     // made on the click: the browser allows sound only after one
-  await ctx.resume();
+  await U.loudspeaker.context().resume();                              // made on the click: the browser allows sound only after one
   ws = new WebSocket((location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws");
   ws.binaryType = "arraybuffer";
   ws.onopen = () => ws.send(JSON.stringify({ t: "join", name, role, code: $("code").value }));
@@ -42,18 +42,13 @@ function text(m) {
     for (const s of m.speakers) {
       const old = speakers.get(s.id) || {};
       speakers.set(s.id, { ...s, until: s.speaking ? now + m.seconds * 1000 : (old.until || 0) });
-      const v = voice(s.id); place(v.panner, s.azimuth, s.elevation);
+      const v = U.loudspeaker.voice(s.id, { rolloff: 1 }); place(v.panner, s.azimuth, s.elevation);
     }
     $("status").textContent = `${m.speakers.length} speaker(s) found; the Module took ${m.processing} ms for ${m.seconds} s of the room.`;
   }
 }
 
-// A voice: a panner HRTF in the direction of the speaker. Room: x ahead, y to the left, z up; Web Audio: -z ahead, -x to the left, y up.
-function voice(id) {
-  let v = voices.get(id);
-  if (!v) { const panner = new PannerNode(ctx, { panningModel: "HRTF", distanceModel: "inverse", refDistance: 1 }); panner.connect(ctx.destination); v = { panner, next: 0 }; voices.set(id, v); }
-  return v;
-}
+// A voice of the Loudspeaker Unit: a panner HRTF in the direction of the speaker. Room: x ahead, y to the left, z up; Web Audio: -z ahead, -x to the left, y up.
 function place(p, az, el) {
   const a = az * Math.PI / 180, e = el * Math.PI / 180, r = 2;
   p.positionX.value = -r * Math.cos(e) * Math.sin(a); p.positionY.value = r * Math.sin(e); p.positionZ.value = -r * Math.cos(e) * Math.cos(a);
@@ -61,37 +56,17 @@ function place(p, az, el) {
 function audio(b) {                                       // 0x02, length of the id, the id, 16-bit PCM mono 16 kHz
   if (role !== "listener" || b[0] !== 2) return;
   const id = new TextDecoder().decode(b.subarray(2, 2 + b[1]));
-  const pcm = new Int16Array(b.buffer.slice(b.byteOffset + 2 + b[1], b.byteOffset + b.byteLength));
-  const buffer = ctx.createBuffer(1, pcm.length, 16000), data = buffer.getChannelData(0);
-  for (let i = 0; i < pcm.length; i++) data[i] = pcm[i] / 32768;
-  const v = voice(id), source = ctx.createBufferSource(); source.buffer = buffer; source.connect(v.panner);
-  v.next = Math.max(v.next, ctx.currentTime + 0.15); source.start(v.next); v.next += buffer.duration;
+  U.loudspeaker.voice(id, { rolloff: 1 });
+  U.loudspeaker.playPcm16(id, new DataView(b.buffer, b.byteOffset, b.byteLength), 2 + b[1], 0.15);
 }
 
-// The room: the channels of the microphone array, brought to 16 kHz, interleaved, in chunks of 100 ms.
+// The room: the channels of the microphone array (Microphone Unit), brought to 16 kHz, interleaved, in chunks of 100 ms.
 async function capture(channels, rate) {
-  let stream;
-  try { stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: { ideal: channels }, echoCancellation: false, noiseSuppression: false, autoGainControl: false } }); }
+  let mic;
+  try { mic = await U.microphone.array(channels, rate); }
   catch (e) { $("status").textContent = "no microphone: " + e.message; return; }
-  const got = stream.getAudioTracks()[0].getSettings().channelCount || 1;
-  if (got !== channels) { $("status").textContent = `The microphone gives ${got} channel(s) and the room's array has ${channels}: nothing is sent.`; return; }
-  const code = `class P extends AudioWorkletProcessor {
-    constructor() { super(); this.n = ${channels}; this.ratio = sampleRate / ${rate}; this.pos = 0; this.acc = new Float32Array(${channels}); this.cnt = 0; this.out = []; }
-    process(inputs) {
-      const inp = inputs[0]; if (!inp || inp.length < this.n) return true;
-      for (let i = 0; i < inp[0].length; i++) {
-        for (let c = 0; c < this.n; c++) this.acc[c] += inp[c][i];
-        this.cnt++; this.pos++;
-        if (this.pos >= this.ratio) { this.pos -= this.ratio; for (let c = 0; c < this.n; c++) this.out.push(Math.max(-1, Math.min(1, this.acc[c] / this.cnt)) * 32767); this.acc.fill(0); this.cnt = 0; }
-      }
-      if (this.out.length >= 1600 * this.n) { const a = Int16Array.from(this.out.splice(0, 1600 * this.n)); this.port.postMessage(a.buffer, [a.buffer]); }
-      return true;
-    } }
-    registerProcessor("array-capture", P);`;
-  await ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([code], { type: "text/javascript" })));
-  const node = new AudioWorkletNode(ctx, "array-capture", { channelCount: channels, channelCountMode: "explicit", numberOfOutputs: 0 });
-  node.port.onmessage = e => { if (ws.readyState === 1) { const f = new Uint8Array(1 + e.data.byteLength); f[0] = 1; f.set(new Uint8Array(e.data), 1); ws.send(f); } };
-  ctx.createMediaStreamSource(stream).connect(node);
+  if (mic.channels !== channels) { mic.close(); $("status").textContent = `The microphone gives ${mic.channels} channel(s) and the room's array has ${channels}: nothing is sent.`; return; }
+  mic.onChunk(buf => { if (ws.readyState === 1) { const f = new Uint8Array(1 + buf.byteLength); f[0] = 1; f.set(new Uint8Array(buf), 1); ws.send(f); } });
   $("status").textContent = `Capturing ${channels} channels.`;
 }
 

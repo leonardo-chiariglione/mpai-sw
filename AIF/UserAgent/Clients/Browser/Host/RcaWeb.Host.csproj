@@ -15,4 +15,10 @@
     <ProjectReference Include="..\Client\RcaWeb.Client.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- THE UNITS OF A BROWSER (AIF\UserAgent\PhysicalLayer\Browser\mpai-units.js): one file for every page of an App. Run from the repository the Host serves it from where it is; published, it
+         is beside the program (units\mpai-units.js). Never a second copy in the source. -->
+    <None Include="..\..\..\PhysicalLayer\Browser\mpai-units.js" Link="units\mpai-units.js" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

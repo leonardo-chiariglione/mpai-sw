@@ -809,6 +809,9 @@ public partial class MainWindow : Window
                     Dispatcher.Invoke(() => VideoFullScreen(StageVideo.CoreWebView2.ContainsFullScreenElement));
                 StageVideo.CoreWebView2.SetVirtualHostNameToFolderMapping("stagevideo.local", AssetsDir,
                     Microsoft.Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
+                // THE UNITS OF A BROWSER (AIF/UserAgent/PhysicalLayer/Browser/mpai-units.js): the page plays the video through them; one file, from where it is.
+                var unitsDir = System.IO.Path.GetFullPath(System.IO.Path.Combine(AssetsDir, "..", "PhysicalLayer", "Browser"));
+                if (Directory.Exists(unitsDir)) StageVideo.CoreWebView2.SetVirtualHostNameToFolderMapping("mpaiunits.local", unitsDir, Microsoft.Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
                 _videoReady = true;
             }
             StageVideo.CoreWebView2.WebMessageReceived += onMessage;
@@ -1093,7 +1096,7 @@ public partial class MainWindow : Window
                 var had = await File.ReadAllBytesAsync(again);
                 _lastPicture = null;
                 return MpaiJson.ToJson(
-                    BasicVisualObject.FromFile(Path.GetFileName(again), had, "Picture"));
+                    BasicVisualObject.FromFile(Path.GetFileName(again), had, "Object"));
             }
 
             Instruct("Choose a picture.");
@@ -1110,7 +1113,7 @@ public partial class MainWindow : Window
 
             _lastPicture = null;
             var bytes = await File.ReadAllBytesAsync(chosen);
-            var got   = BasicVisualObject.FromFile(Path.GetFileName(chosen), bytes, "Picture");
+            var got   = BasicVisualObject.FromFile(Path.GetFileName(chosen), bytes, "Object");
             var have  = Path.GetExtension(chosen).ToLowerInvariant() is ".jpg" or ".jpeg" ? "JPEG"
                       : Path.GetExtension(chosen).ToLowerInvariant() is ".png"            ? "PNG"
                       : Path.GetExtension(chosen).ToLowerInvariant() is ".bmp"            ? "BMP"
@@ -1128,7 +1131,7 @@ public partial class MainWindow : Window
                 // again, which is why nothing is remembered on the ordinary path.
                 _lastPicture = chosen;
                 Status($"asked for {askedFor}; this is {have}");
-                var counter = BasicVisualObject.FromFile(Path.GetFileName(chosen), Array.Empty<byte>(), "Picture");
+                var counter = BasicVisualObject.FromFile(Path.GetFileName(chosen), Array.Empty<byte>(), "Object");
                 return MpaiJson.ToJson(counter);
             }
 

@@ -332,57 +332,32 @@ function onScene(m) {
 }
 let mySeatInfo = null, typingUntil = 0;     // typingUntil: the secretary types until then (ms, performance.now)
 
-// ------------------------------------------------------------------ audio: playback (HRTF) and capture
-let actx = null; const speakers = new Map();   // id -> { panner, analyser, next, buf }
-function audio() { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume().catch(() => {}); return actx; }
-for (const ev of ['pointerdown', 'keydown', 'touchstart']) addEventListener(ev, () => { if (actx && actx.state === 'suspended') actx.resume().catch(() => {}); }, { passive: true });
+// ------------------------------------------------------------------ audio: playback (HRTF) and capture, ONLY through the Units of the browser (AIF/UserAgent/PhysicalLayer/Browser/mpai-units.js)
+const U = MpaiUnits, speakers = U.loudspeaker.voices;   // id -> { panner, analyser, next, ... }: the voices of the Loudspeaker Unit
+const audio = () => U.loudspeaker.context();
 function updateListener() {
-  if (!actx || !mySeatInfo) return;
-  const L = actx.listener, p = eyePos(mySeatInfo);
+  if (!mySeatInfo) return;
+  const p = eyePos(mySeatInfo);
   const th = Math.atan2(-Math.cos(mySeatInfo.yaw), Math.sin(mySeatInfo.yaw)) - turn;   // same as the camera
-  const f = new THREE.Vector3(-Math.sin(th), 0, -Math.cos(th));
-  if (L.positionX) {
-    L.positionX.value = p.x; L.positionY.value = p.y; L.positionZ.value = p.z;
-    L.forwardX.value = f.x; L.forwardY.value = 0; L.forwardZ.value = f.z; L.upX.value = 0; L.upY.value = 1; L.upZ.value = 0;
-  } else { L.setPosition(p.x, p.y, p.z); L.setOrientation(f.x, 0, f.z, 0, 1, 0); }
+  U.loudspeaker.placeListener(p, new THREE.Vector3(-Math.sin(th), 0, -Math.cos(th)));
 }
 function updatePanner(s) {
-  const sp = speakers.get(s.id); if (!sp) return;
   const p = toThree(s.x + Math.cos(s.yaw) * SEAT_FWD, s.y + Math.sin(s.yaw) * SEAT_FWD, 1.3);
-  if (sp.panner.positionX) { sp.panner.positionX.value = p.x; sp.panner.positionY.value = p.y; sp.panner.positionZ.value = p.z; }
-  else sp.panner.setPosition(p.x, p.y, p.z);
+  U.loudspeaker.placeVoice(s.id, p.x, p.y, p.z);
 }
 function speaker(id) {
-  let sp = speakers.get(id); if (sp) return sp;
-  const ctx = audio();
-  const panner = ctx.createPanner(); panner.panningModel = 'HRTF'; panner.distanceModel = 'inverse'; panner.refDistance = 1; panner.rolloffFactor = 0.6;
-  const analyser = ctx.createAnalyser(); analyser.fftSize = 512;
-  const gain = ctx.createGain(); gain.gain.value = 1;
-  gain.connect(analyser); gain.connect(panner); panner.connect(ctx.destination);
-  sp = { panner, analyser, gain, next: 0, td: new Float32Array(analyser.fftSize), lastData: 0 };
-  speakers.set(id, sp);
-  const s = seats.find(x => x.id === id); if (s) updatePanner(s);
+  const had = speakers.has(id), sp = U.loudspeaker.voice(id);
+  if (!had) { const s = seats.find(x => x.id === id); if (s) updatePanner(s); }
   return sp;
 }
 const stats = { played: 0, chunks: 0 };
 const diagInfo = { mic: 'not started', sent: 0, got: 0, worklet: '-' };
 function playChunk(id, dv, off) {
-  const ctx = audio(); const sp = speaker(id);
-  const n = (dv.byteLength - off) >> 1; if (n <= 0) return;
-  const buf = ctx.createBuffer(1, n, 16000), ch = buf.getChannelData(0);
-  for (let i = 0; i < n; i++) ch[i] = dv.getInt16(off + 2 * i, true) / 32768;
-  const src = ctx.createBufferSource(); src.buffer = buf; src.connect(sp.gain);
-  const now = ctx.currentTime;
-  if (sp.next < now + 0.01) sp.next = now + 0.12;       // jitter buffer
-  src.start(sp.next); sp.next += buf.duration; sp.lastData = performance.now();
-  stats.chunks++; stats.played += buf.duration;
+  speaker(id);
+  const seconds = U.loudspeaker.playPcm16(id, dv, off);
+  if (seconds > 0) { stats.chunks++; stats.played += seconds; }
 }
-function levelOf(id) {
-  const sp = speakers.get(id); if (!sp || !actx || actx.state !== 'running') return 0;
-  sp.analyser.getFloatTimeDomainData(sp.td);
-  let s = 0; for (let i = 0; i < sp.td.length; i++) s += sp.td[i] * sp.td[i];
-  return Math.sqrt(s / sp.td.length);
-}
+const levelOf = id => U.loudspeaker.level(id);
 
 
 // A browser keeps a page silent until the person has clicked on it: say so, and turn the sound on at any click.
@@ -391,13 +366,13 @@ soundBar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:50;backgro
 soundBar.textContent = 'No sound yet - click here (or anywhere) to turn the sound on';
 soundBar.onclick = () => audio();
 document.body.appendChild(soundBar);
-setInterval(() => { soundBar.style.display = (joined && actx && actx.state !== 'running') ? 'block' : 'none'; if (actx && actx.state === 'suspended') actx.resume().catch(() => {}); }, 500);
+setInterval(() => { soundBar.style.display = (joined && U.loudspeaker.state() !== 'none' && U.loudspeaker.state() !== 'running') ? 'block' : 'none'; }, 500);
 
 // WHAT THE PAGE KNOWS ABOUT SOUND, for whoever has to tell what is wrong: the sound of the page, the microphone, what was sent and what came.
 const diagEl = document.createElement('div');
 diagEl.style.cssText = 'position:fixed;left:0;bottom:0;z-index:40;background:#000a;color:#cfd6df;padding:3px 8px;font:12px ui-monospace,Consolas,monospace;max-width:70vw';
 document.body.appendChild(diagEl);
-setInterval(() => { diagEl.style.display = joined ? 'block' : 'none'; diagEl.textContent = `sound: ${actx ? actx.state : 'none'} | mic: ${diagInfo.mic} | sent ${diagInfo.sent} | received ${diagInfo.got}`; }, 700);
+setInterval(() => { diagEl.style.display = joined ? 'block' : 'none'; diagEl.textContent = `sound: ${U.loudspeaker.state()} | mic: ${diagInfo.mic} | sent ${diagInfo.sent} | received ${diagInfo.got}`; }, 700);
 let muted = false, micLevel = 0;
 function sendPcm(f32) {
   if (!ws || ws.readyState !== 1) return;
@@ -407,37 +382,16 @@ function sendPcm(f32) {
   micLevel = peak; diagInfo.sent++;
   ws.send(out.buffer);
 }
-const WORKLET = `class P extends AudioWorkletProcessor{constructor(){super();this.b=new Float32Array(1600);this.n=0;this.pos=0;this.last=0;}
-process(inp){const c=inp[0]&&inp[0][0];if(!c)return true;const r=sampleRate/16000;
-for(;;){const i=Math.floor(this.pos);if(i+1>=c.length)break;const f=this.pos-i;const a=i<0?this.last:c[i];this.b[this.n++]=a*(1-f)+c[i+1]*f;this.pos+=r;
-if(this.n===1600){this.port.postMessage(this.b.slice());this.n=0;}}
-this.pos-=c.length;this.last=c[c.length-1];return true;}}
-registerProcessor('p16',P);`;
 let micStream = null;
 async function startMic() {
-  const ctx = audio();
+  audio();
   diagInfo.mic = 'asking the browser...';
-  try { micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, channelCount: 1 } }); }
+  let mic;
+  try { mic = await U.microphone.open(); }                     // the Microphone Unit: 16 kHz mono blocks of 100 ms
   catch (e) { diagInfo.mic = 'REFUSED: ' + (e.name || '') + ' ' + (e.message || ''); throw e; }
-  diagInfo.mic = 'ok: ' + (micStream.getAudioTracks()[0]?.label || 'device') + ' (' + ctx.sampleRate + ' Hz)';
-  const src = ctx.createMediaStreamSource(micStream);
-  if (ctx.audioWorklet) {
-    const url = URL.createObjectURL(new Blob([WORKLET], { type: 'text/javascript' }));
-    try { await ctx.audioWorklet.addModule(url); diagInfo.worklet = 'ok'; } catch (e) { diagInfo.worklet = 'FAILED: ' + e.message; diagInfo.mic += ' - worklet failed'; throw e; }
-    const node = new AudioWorkletNode(ctx, 'p16', { numberOfOutputs: 0 });
-    node.port.onmessage = e => { if (!muted) sendPcm(e.data); };
-    src.connect(node);
-  } else {                                    // fallback
-    const sp = ctx.createScriptProcessor(4096, 1, 1), ratio = ctx.sampleRate / 16000; let pos = 0, buf = [];
-    sp.onaudioprocess = e => {
-      const c = e.inputBuffer.getChannelData(0);
-      for (; pos + 1 < c.length; pos += ratio) { const i = Math.floor(pos), f = pos - i; buf.push(c[i] * (1 - f) + c[i + 1] * f); }
-      pos -= c.length;
-      while (buf.length >= 1600 && !muted) sendPcm(Float32Array.from(buf.splice(0, 1600)));
-      if (muted) buf = [];
-    };
-    src.connect(sp); sp.connect(ctx.destination);
-  }
+  micStream = mic;
+  diagInfo.mic = 'ok: ' + mic.label + ' (' + mic.sampleRate + ' Hz)'; diagInfo.worklet = 'ok';
+  mic.onBlock(b => { if (!muted) sendPcm(b); });
 }
 // synthetic speech-like signal for ?bot=: bursts of band-limited noise, ~1 s on, ~2 s off
 function startBot() {
@@ -499,7 +453,7 @@ function start(name, avatar, withMic) {
 function sendChat() { const v = $('chatIn').value.trim(); if (v && ws?.readyState === 1) { ws.send(JSON.stringify({ t: 'chat', text: v })); $('chatIn').value = ''; } }
 $('chatBtn').onclick = sendChat;
 $('chatIn').addEventListener('keydown', e => { if (e.key === 'Enter') sendChat(); });
-$('leaveBtn').onclick = () => { try { ws?.close(); } catch {} try { micStream?.getTracks().forEach(t => t.stop()); } catch {} location.href = location.pathname; };
+$('leaveBtn').onclick = () => { try { ws?.close(); } catch {} try { micStream?.close(); } catch {} location.href = location.pathname; };
 $('muteBtn').onclick = () => { muted = !muted; $('muteBtn').textContent = muted ? 'Unmute' : 'Mute'; micStream?.getAudioTracks().forEach(t => t.enabled = !muted); };
 
 // ------------------------------------------------------------------ the frame

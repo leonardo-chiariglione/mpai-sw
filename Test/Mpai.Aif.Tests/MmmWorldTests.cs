@@ -258,6 +258,111 @@ public class MmmWorldTests
         Assert.False(w.M.ScreenLive("Screen-Anna"));
     }
 
+    // A SHARED SCREEN AS COMPRESSED VIDEO AND SOUND: the messages are the configuration of the video (3), its chunks (4: the second byte's bit 0 says a key frame), the configuration of the sound (5)
+    // and its chunks (6). The server decodes nothing: it keeps the configurations and the video since the last key frame, so that a watcher that comes late starts from a key frame, not from
+    // a picture that cannot be decoded; one that was there all the time has everything, in order.
+    [Fact]
+    public async Task CompressedVideoReachesWhoWatchesFromAKeyFrame()
+    {
+        await using var w = new Running();
+        await w.StartAsync(DateTimeOffset.UtcNow.AddHours(2));
+        var anna = await Arrive(w.Http, "Anna"); var bruno = await Arrive(w.Http, "Bruno");
+        await AskSeat(anna, w.Services); await AskSeat(bruno, w.Services);
+        foreach (var u in new[] { anna, bruno }) { Assert.Equal(200, (await Go(u, "MVS", Building)).Http); Assert.Equal(200, (await Go(u, Building, Wing)).Http); Assert.Equal(200, (await Go(u, Wing, Meeting.Room)).Http); }
+        var screen = new JsonObject
+        {
+            ["Header"] = "OSD-BVO-V1.5", ["MInstanceID"] = "MI1", ["BasicVisualObjectID"] = "Screen-V",
+            ["BasicVisualObjectData"] = new JsonArray(new JsonObject { ["DataURI"] = "ws://x/watch" })
+        };
+        Assert.Equal(200, (await anna.PerformAsync("MM-Add", Uc2.C("Screen-V", at: Meeting.Room, with: screen))).Http);
+        var ws = w.App!.Urls.First().Replace("http", "ws");
+        using var feed = new System.Net.WebSockets.ClientWebSocket();
+        await feed.ConnectAsync(new Uri($"{ws}/ws/v2.2/screen/Screen-V?token={w.M.TokenOf("Anna")}"), CancellationToken.None);
+        using var early = new System.Net.WebSockets.ClientWebSocket();
+        await early.ConnectAsync(new Uri($"{ws}/ws/v2.2/screen/Screen-V/watch?token={w.M.TokenOf("Bruno")}"), CancellationToken.None);
+
+        byte[] Chunk(byte kind, bool key, byte tag) => [kind, (byte)(key ? 1 : 0), 0, 0, 0, 0, 0, 0, 0, 0, tag, tag];
+        byte[] cfgV = [3, (byte)'{', (byte)'}'], cfgS = [5, (byte)'{', (byte)'}'];
+        var key1 = Chunk(4, true, 1); var delta1 = Chunk(4, false, 2); var key2 = Chunk(4, true, 3); var delta2 = Chunk(4, false, 4);
+        byte[] sound = [6, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9];
+        async Task<List<byte[]>> Read(System.Net.WebSockets.ClientWebSocket s, int count)
+        {
+            var list = new List<byte[]>(); using var limit = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            while (list.Count < count) { var got = new byte[64]; var r = await s.ReceiveAsync(got, limit.Token); list.Add(got.Take(r.Count).ToArray()); }
+            return list;
+        }
+        // A watcher that is there from the start and keeps up has everything, in order (one that falls behind is given the video from the last key frame, as the late one below).
+        var all = new List<byte[]>();
+        foreach (var m in new[] { cfgV, key1, delta1, cfgS, key2, delta2, sound })
+        {
+            await feed.SendAsync(m, System.Net.WebSockets.WebSocketMessageType.Binary, true, CancellationToken.None);
+            all.AddRange(await Read(early, 1));
+        }
+        Assert.Equal(7, all.Count);
+        int At(byte[] m) => all.FindIndex(x => x.SequenceEqual(m));
+        Assert.True(At(cfgV) < At(key1) && At(key1) < At(delta1) && At(delta1) < At(key2) && At(key2) < At(delta2));   // the video, in order, after its configuration
+        Assert.True(At(cfgS) >= 0 && At(sound) >= 0);
+
+        // A watcher that comes now has the configurations, and the video from the last key frame: not the first key frame and the delta after it.
+        using var late = new System.Net.WebSockets.ClientWebSocket();
+        await late.ConnectAsync(new Uri($"{ws}/ws/v2.2/screen/Screen-V/watch?token={w.M.TokenOf("Bruno")}"), CancellationToken.None);
+        var seen = await Read(late, 4);
+        Assert.Equal([cfgV, cfgS, key2, delta2], seen);
+    }
+
+    // THE SCREEN HELPER SENDS COMPRESSED VIDEO. Run by hand, on a desktop: start the helper with a window to share (dotnet Mpai.Mmm.ScreenHelper.dll --auto "part of a window title"), then set
+    // MPAI_SCREEN_HELPER_TEST=1 (and MPAI_SCREEN_HELPER_OUT to a file, to keep the messages: each as 4 bytes of length, then the message). Without them the test does nothing.
+    [Fact]
+    public async Task TheScreenHelperSendsCompressedVideo()
+    {
+        if (Environment.GetEnvironmentVariable("MPAI_SCREEN_HELPER_TEST") != "1") return;
+        await using var w = new Running();
+        await w.StartAsync(DateTimeOffset.UtcNow.AddHours(2));
+        var anna = await Arrive(w.Http, "Anna"); await AskSeat(anna, w.Services);
+        Assert.Equal(200, (await Go(anna, "MVS", Building)).Http); Assert.Equal(200, (await Go(anna, Building, Wing)).Http); Assert.Equal(200, (await Go(anna, Wing, Meeting.Room)).Http);
+        var screen = new JsonObject
+        {
+            ["Header"] = "OSD-BVO-V1.5", ["MInstanceID"] = "MI1", ["BasicVisualObjectID"] = "Screen-H",
+            ["BasicVisualObjectData"] = new JsonArray(new JsonObject { ["DataURI"] = "ws://x/watch" })
+        };
+        Assert.Equal(200, (await anna.PerformAsync("MM-Add", Uc2.C("Screen-H", at: Meeting.Room, with: screen))).Http);
+        var origin = w.App!.Urls.First().TrimEnd('/');
+        using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
+        async Task<string> Call(string path, string json)
+        {
+            var rq = new HttpRequestMessage(HttpMethod.Post, "http://127.0.0.1:7391" + path) { Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json") };
+            rq.Headers.TryAddWithoutValidation("Origin", origin);
+            return await (await http.SendAsync(rq)).Content.ReadAsStringAsync();
+        }
+        Assert.Contains("\"ok\":true", await Call("/pick", $"{{\"server\":\"{origin}\",\"edit\":false}}"));
+        Assert.Contains("\"ok\":true", await Call("/share", $"{{\"server\":\"{origin}\",\"token\":\"{w.M.TokenOf("Anna")}\",\"id\":\"Screen-H\"}}"));
+        var ws = origin.Replace("http", "ws");
+        using var watch = new System.Net.WebSockets.ClientWebSocket();
+        await watch.ConnectAsync(new Uri($"{ws}/ws/v2.2/screen/Screen-H/watch?token={w.M.TokenOf("Anna")}"), CancellationToken.None);
+        var messages = new List<byte[]>(); using var limit = new CancellationTokenSource(TimeSpan.FromSeconds(6));
+        try
+        {
+            while (true)
+            {
+                var all = new List<byte>(); var buf = new byte[64 * 1024]; System.Net.WebSockets.WebSocketReceiveResult r;
+                do { r = await watch.ReceiveAsync(buf, limit.Token); all.AddRange(buf.AsSpan(0, r.Count).ToArray()); } while (!r.EndOfMessage);
+                messages.Add(all.ToArray());
+            }
+        }
+        catch (OperationCanceledException) { }
+        await Call("/stop", "{}");
+        Assert.Equal(3, messages[0][0]);                                                                   // the configuration comes first
+        Assert.Contains("\"codec\":\"vp8\"", System.Text.Encoding.UTF8.GetString(messages[0], 1, messages[0].Length - 1));
+        var chunks = messages.Where(m => m[0] == 4).ToList();
+        Assert.True(chunks.Count >= 10, "video chunks: " + chunks.Count);
+        Assert.Equal(1, chunks[0][1] & 1);                                                                 // the first is a key frame
+        if (Environment.GetEnvironmentVariable("MPAI_SCREEN_HELPER_OUT") is { Length: > 0 } outFile)
+        {
+            using var f = File.Create(outFile);
+            foreach (var m in messages) { f.Write(BitConverter.GetBytes(m.Length)); f.Write(m); }
+        }
+    }
+
     // REGISTER, with an Account Level: one of those the M-Instance offers (no other is accepted); a Visitor Account has no seat in a meeting - only a Participant Account is given the rights
     // to the wing and the room, if the chair invited it - and the Account says its level and its Items (the Personae).
     [Fact]

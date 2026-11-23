@@ -61,6 +61,13 @@ if (!bisect.Contains("nomiddleware"))
     app.UseDefaultFiles();
     app.UseStaticFiles(new StaticFileOptions { OnPrepareResponse = c => c.Context.Response.Headers.CacheControl = "no-cache" });
 }
+// THE UNITS OF A BROWSER (AIF\UserAgent\PhysicalLayer\Browser\mpai-units.js): one file for every page, served from where it is, never copied.
+app.MapGet("/mpai-units.js", (HttpContext ctx) =>
+{
+    var units = Path.Combine(root, "AIF", "UserAgent", "PhysicalLayer", "Browser", "mpai-units.js");
+    ctx.Response.Headers.CacheControl = "no-store";
+    return File.Exists(units) ? Results.File(units, "text/javascript") : Results.NotFound();
+});
 app.MapGet("/api/info", () => Results.Json(new { codeRequired = code.Length > 0, channels = conference.Channels, rate = conference.Rate, segment }));
 
 app.Map("/ws", async context =>

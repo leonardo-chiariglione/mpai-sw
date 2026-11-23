@@ -18,4 +18,10 @@
     <ProjectReference Include="..\..\Apps\MAS\Server\Mpai.Mas.Server.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- THE UNITS OF A BROWSER (AIF\UserAgent\PhysicalLayer\Browser\mpai-units.js): one file for every page. Run from the repository, Thalia serves it from where it is; in a published or Remote package it is
+         beside the program (units\mpai-units.js). Never a second copy in the source. -->
+    <None Include="..\..\AIF\UserAgent\PhysicalLayer\Browser\mpai-units.js" Link="units\mpai-units.js" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

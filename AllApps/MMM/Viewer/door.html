@@ -46,6 +46,7 @@
 </div>
 <script>if (location.protocol === 'file:') document.write('<div style="position:fixed;inset:0;z-index:9;background:#1d2126;color:#fff;display:flex;align-items:center;justify-content:center;font:18px Segoe UI,Arial;text-align:center;padding:20px">This page works only from the demo server.<br>Start MMM\\Run-Door.ps1, then open<br><a style="color:#9cc7ff" href="http://127.0.0.1:7101/viewer/door.html">http://127.0.0.1:7101/viewer/door.html</a></div>');</script>
 <div id="start"><div style="display:flex;flex-direction:column;gap:12px;align-items:center"><button id="demoGo">Start the demo</button><button id="go" class="alt" style="font-size:14px;padding:8px 14px">Just enter the room</button></div></div>
+<script src="mpai-units.js"></script>
 <script type="module">
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -238,22 +239,20 @@ async function behavioursOf(id) {
 }
 
 // ---------------------------------------------------------------- sound: what is heard in the room
-let ctx = null; const played = new Set();
+// The sound is delivered through the Loudspeaker Unit (MpaiUnits, AIF\UserAgent\PhysicalLayer\Browser): the page never opens a sound device itself.
+let soundOn = false; const played = new Set();
 async function play(id, x, y, speaker) {
-  if (played.has(id) || !ctx) return; played.add(id);
+  if (played.has(id) || !soundOn) return; played.add(id);
   const r = await fetch('/door/sound/' + encodeURIComponent(id)); if (!r.ok) return;
-  const buf = await ctx.decodeAudioData(await r.arrayBuffer());
+  const buf = await MpaiUnits.loudspeaker.decode(await r.arrayBuffer());
   // A Persona's speech: the mouth from its visemes; the wave and the nod from the Behaviours of the Body Descriptors, at their times in the speech.
   const frames = speaker ? visemesOf(buf) : null, acts = speaker ? await behavioursOf(id) : [];
-  const src = ctx.createBufferSource(); src.buffer = buf;
-  const pan = ctx.createStereoPanner(); pan.pan.value = Math.max(-1, Math.min(1, (x ?? 0) / 4));
-  src.connect(pan); pan.connect(ctx.destination);
-  const t0 = ctx.currentTime; src.start(t0);
+  const played1 = MpaiUnits.loudspeaker.playBuffer(buf, { pan: (x ?? 0) / 4 }), src = played1.src;
   if (speaker) {
     speaker.acts = acts;
     const during = (name, t) => acts.some(a => a.name === name && t >= a.start - 0.15 && t <= Math.max(a.end, a.start + 0.9) + 0.3);
     const tick = () => {
-      const t = ctx.currentTime - t0;
+      const t = played1.now();
       speaker.vtarget = src.ended ? [0, 0] : frames[Math.floor(t / 0.016)] ?? [0, 0];
       speaker.waving = during('Wave', t) || during('Point', t); speaker.swing = during('Wave', t); speaker.nod = during('Nod', t) ? 1 : 0;
       if (!src.ended || speaker.waving) requestAnimationFrame(tick); else { speaker.nod = 0; }
@@ -321,7 +320,7 @@ renderer.setAnimationLoop(() => {
 });
 
 // ---------------------------------------------------------------- the human's controls
-$('go').onclick = () => { ctx = new AudioContext(); $('start').remove(); };
+$('go').onclick = () => { MpaiUnits.loudspeaker.context(); soundOn = true; $('start').remove(); };
 $('send').onclick = () => fetch('/door/command', { method: 'POST', body: $('cmd').value });
 $('ring').onclick = () => fetch('/door/visitor?sound=bell', { method: 'POST' });
 $('knock').onclick = () => fetch('/door/visitor?sound=knock', { method: 'POST' });
@@ -329,12 +328,9 @@ $('reset').onclick = () => fetch('/door/reset', { method: 'POST' });
 let rec = null;
 $('mic').onclick = async () => {
   if (rec) { const r = rec; rec = null; $('mic').textContent = 'Speak'; $('mic').className = 'alt'; r.stop(); return; }
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  const c = new AudioContext({ sampleRate: 16000 }); const srcN = c.createMediaStreamSource(stream); const proc = c.createScriptProcessor(4096, 1, 1); const chunks = [];
-  proc.onaudioprocess = e => chunks.push(new Float32Array(e.inputBuffer.getChannelData(0))); srcN.connect(proc); proc.connect(c.destination);
+  const taking = await MpaiUnits.microphone.record();           // the Microphone Unit: audio until stop(), 16 kHz mono PCM
   rec = { stop: async () => {
-    proc.disconnect(); stream.getTracks().forEach(t => t.stop()); await c.close();
-    const n = chunks.reduce((a, b) => a + b.length, 0), pcm = new Int16Array(n); let o = 0; for (const ch of chunks) for (const v of ch) pcm[o++] = Math.max(-1, Math.min(1, v)) * 32767;
+    const pcm = taking.stop();
     const text = await (await fetch('/door/speak', { method: 'POST', body: pcm.buffer })).text(); if (text) $('cmd').value = text;
   } };
   $('mic').textContent = 'Stop'; $('mic').className = 'rec';
@@ -347,33 +343,18 @@ async function waitFor(test, ms) { const end = Date.now() + ms; while (Date.now(
 // the microphone until the human stops speaking (1 s of silence), or 10 s
 async function listen() {
   // no answer to the microphone permission within 10 s: no microphone
-  const stream = await Promise.race([navigator.mediaDevices.getUserMedia({ audio: true }), sleep(10000).then(() => { throw new Error('no microphone'); })]);
-  const c = new AudioContext({ sampleRate: 16000 }); const srcN = c.createMediaStreamSource(stream); const proc = c.createScriptProcessor(4096, 1, 1); const chunks = [];
-  let spoke = false, quiet = 0; const t0 = Date.now();
-  await new Promise(done => {
-    proc.onaudioprocess = e => {
-      const d = new Float32Array(e.inputBuffer.getChannelData(0)); chunks.push(d);
-      const rms = Math.sqrt(d.reduce((a, v) => a + v * v, 0) / d.length);
-      if (rms > 0.02) { spoke = true; quiet = 0; } else if (spoke) quiet += d.length / 16000;
-      if ((spoke && quiet >= 1) || Date.now() - t0 > 10000 || (!spoke && Date.now() - t0 > 7000)) done();
-    };
-    srcN.connect(proc); proc.connect(c.destination);
-  });
-  proc.disconnect(); stream.getTracks().forEach(t => t.stop()); await c.close();
-  if (!spoke) return null;
-  const n = chunks.reduce((a, b) => a + b.length, 0), pcm = new Int16Array(n); let o = 0; for (const ch of chunks) for (const v of ch) pcm[o++] = Math.max(-1, Math.min(1, v)) * 32767;
-  return pcm;
+  return await Promise.race([MpaiUnits.microphone.acquireSpeech({ startLevel: 0.02, pauseMs: 1000, maxMs: 10000, noSpeechMs: 7000 }), sleep(10000).then(() => { throw new Error('no microphone'); })]);
 }
 let demoRunning = false;
 async function startDemo() {
   if (demoRunning) return; demoRunning = true; $('demoSide').disabled = true;
   try {
-    if (!ctx) ctx = new AudioContext(); $('start')?.remove();
+    if (!soundOn) { MpaiUnits.loudspeaker.context(); soundOn = true; } $('start')?.remove();
     tell('Starting a new scene...');
     await fetch('/door/reset', { method: 'POST' }); await sleep(800);
     if (!await waitFor(l => l.ready && !l.resetting, 60000)) { tell('The A-User is not ready. Press Start the demo again.', '#f88'); return; }
     let text = '';
-    if ((await logNow()).asr && navigator.mediaDevices?.getUserMedia) {
+    if ((await logNow()).asr && MpaiUnits.microphone.available()) {
       tell('Say: "Open the door when the bell rings"', '#8fd18f');
       try { const pcm = await listen(); if (pcm) { tell('Understanding what you said...'); text = (await (await fetch('/door/speak', { method: 'POST', body: pcm.buffer })).text()).trim(); } }
       catch (e) { console.warn(e); }

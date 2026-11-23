@@ -67,6 +67,16 @@ app.UseStaticFiles();
 if (File.Exists(Path.Combine(AppContext.BaseDirectory, $"{builder.Environment.ApplicationName}.staticwebassets.endpoints.json")))
     app.MapStaticAssets();
 
+// THE UNITS OF A BROWSER (AIF\UserAgent\PhysicalLayer\Browser\mpai-units.js): one file for every page of an App, served from where it is in the repository, or, published, from units\ beside this program.
+app.MapGet("/units/mpai-units.js", (HttpContext ctx) =>
+{
+    var inRepository = Path.Combine(root, "AIF", "UserAgent", "PhysicalLayer", "Browser", "mpai-units.js");
+    var beside = Path.Combine(AppContext.BaseDirectory, "units", "mpai-units.js");
+    var file = File.Exists(inRepository) ? inRepository : beside;
+    ctx.Response.Headers.CacheControl = "no-store";
+    return File.Exists(file) ? Results.File(file, "text/javascript") : Results.NotFound();
+});
+
 // THE AVATAR PAGE, AS A BROWSER NEEDS IT. Its model and lighting are fetched from
 // here instead of WebView2's virtual host, and a few lines give it the
 // chrome.webview messaging it listens to, carried by the browser's own
@@ -91,7 +101,7 @@ const string WebViewShim = """
 app.MapGet("/avatar/cav-webview.html", async () =>
 {
     var html = await File.ReadAllTextAsync(Path.Combine(assets, "cav-webview.html"));
-    html = html.Replace("https://cavapp.local/", "/avatar/");
+    html = html.Replace("https://cavapp.local/", "/avatar/").Replace("https://mpaiunits.local/", "/units/");
     var head = html.IndexOf("<head>", StringComparison.OrdinalIgnoreCase);
     html = head >= 0 ? html.Insert(head + "<head>".Length, "\n" + WebViewShim) : WebViewShim + html;
     return Results.Content(html, "text/html; charset=utf-8");
@@ -103,7 +113,11 @@ var avatarFiles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCas
     ["studio.hdr"]     = "application/octet-stream"
 };
 // The page that plays the video of a Basic AudioVisual Object on the stage (the client shows it in a frame).
-app.MapGet("/avatar/stage-video.html", () => Results.File(Path.Combine(assets, "stage-video.html"), "text/html; charset=utf-8"));
+app.MapGet("/avatar/stage-video.html", async () =>
+{
+    var html = (await File.ReadAllTextAsync(Path.Combine(assets, "stage-video.html"))).Replace("https://mpaiunits.local/", "/units/");
+    return Results.Content(html, "text/html; charset=utf-8");
+});
 
 app.MapGet("/avatar/{file}", (string file) =>
     avatarFiles.TryGetValue(file, out var type) && File.Exists(Path.Combine(assets, file))

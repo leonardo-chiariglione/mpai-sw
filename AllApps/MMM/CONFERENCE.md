@@ -52,7 +52,7 @@ and turning away shows the real room. Their places never change, and the camera 
 **No browser bar.** The browser shows its own blue "Stop sharing" bar when a page captures a screen, and a page cannot remove it. The sharer therefore starts the **Screen Helper** on its PC
 (`Run-ScreenHelper.cmd`, in `Downloads\MMM-ScreenHelper`; a tray program that listens at 127.0.0.1:7391): the sharer chooses a window in the helper's own window and the helper sends the pictures to the M-Instance,
 with no browser capture at all. If the helper is not running, the page falls back to the browser's capture and the bar appears (the page says so). *Edit slides* shares the window of the slides and takes the sharer to it.
-A shared screen is a Visual Object (OSD-BVO) that is a stream, placed in the room by MM-Add; whoever has an Item in the room sees it; it is sent as JPEG frames over a WebSocket, only when the picture changes. The helper sends no sound.
+A shared screen is a Visual Object (OSD-BVO) that is a stream, placed in the room by MM-Add; whoever has an Item in the room sees it; it is sent over a WebSocket as compressed video (VP9, else VP8, else H.264; a key frame at least every 2 s; the Screen Unit of the browser compresses it, AIF/UserAgent/PhysicalLayer/Browser/mpai-units.js) and, if the sharer shares it, compressed sound (Opus); a watcher that comes in is given the video from the last key frame. The Screen Helper, a program outside the browser, sends the same compressed video (VP8, encoded by ffmpeg, found in MPAI_FFMPEG, the PATH or the winget package) and no sound; where there is no ffmpeg it sends JPEG frames, only when the picture changes, and the viewers show those too.
 
 ## The summary is for the participants
 
@@ -71,7 +71,7 @@ The Secretary (a machine Process with the Persona of Persona2) takes a seat and 
 
 ## Not in the standard
 
-- A shared screen as a Visual Object stream, and the Right to place it (MMAdd at the room), are not in MMM-TEC; the frames are JPEG, and the sound raw PCM, over a WebSocket (a first byte says which).
+- A shared screen as a Visual Object stream, and the Right to place it (MMAdd at the room), are not in MMM-TEC; the messages over the WebSocket begin with a byte that says what they are: 3 video configuration (JSON: codec, width, height), 4 video chunk (flags, bit 0 = key frame; the time in microseconds, float64; the compressed data), 5 sound configuration (JSON: codec, sampleRate, numberOfChannels), 6 sound chunk (the time, float64; the compressed data, Opus), 1 a JPEG picture (the Screen Helper), 2 raw 16-bit PCM at 24 kHz (older). The server decodes nothing; it keeps the configurations and the video since the last key frame (Mpai.Mmm.Server.ScreenStreams).
 - `RightsTime` is used as the period the Rights are valid for; MMM-TEC does not say what it means.
 - `PersonaChoice` in the Personal Profile is not in MMM-TEC (Register lets a human name or bring a Persona; here it is chosen from the catalogue of the M-Instance).
 - The room's Location Object (`OSD-BLC`) is a minimal one (not validated against the schema); a building's 3D shape is a glTF file named by the Location (`Model`), not yet a 3D Model Object Item.

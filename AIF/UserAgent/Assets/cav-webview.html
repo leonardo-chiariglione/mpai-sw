@@ -40,11 +40,11 @@
     <div id="loading">Loading the Face…</div>
   </div>
   <div id="panel">
-  <audio id="responseAudio" preload="auto"></audio>
     <div class="hint">The realistic 3D face is driven by our FACS Action Units (emotion -> EM-FACS -> AU -> ARKit blendshapes). Drag to rotate.</div>
   </div>
 </div>
 
+<script src="https://mpaiunits.local/mpai-units.js"></script>
 <script type="importmap">
 { "imports": {
   "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
@@ -494,6 +494,8 @@ const status = document.getElementById('status');
 // ---- FDO timeline playback: load the FDO (response-fdo.json) + speech (response-speech.wav),
 //      play the audio, and animate the face through the timeline frames synced to audio time. ----
 let responseFrames = null;   // [{ t, targets: {arkitName: weight} }]
+// HER VOICE is the Loudspeaker Unit's (mpai-units.js): a speech with a clock, which the mouth and the body follow. The page opens no sound of its own.
+let speech = MpaiUnits.loudspeaker.speech(null);
 
 // Receive the CAV response (FDO timeline + speech WAV) from the host app via a
 // WebView message (window.chrome.webview), instead of fetching files.
@@ -505,8 +507,7 @@ function receiveResponse(fdoJson, speechWavBase64, bdoJson) {
   // mouth had nothing to move to. The speech is set up first and plays whether
   // or not a face came with it; a still mouth saying the answer is better than
   // a moving one saying nothing.
-  const audio = document.getElementById('responseAudio');
-  if (speechWavBase64) audio.src = 'data:audio/wav;base64,' + speechWavBase64;
+  if (speechWavBase64) { speech.stop(); speech = MpaiUnits.loudspeaker.speech(speechWavBase64); }   // a new answer takes the place of the one still being said
 
   responseFrames = faceFrames(fdoJson);
   playResponse();
@@ -545,12 +546,16 @@ function faceFrames(fdoJson) {
 }
 
 window.cavReceive = receiveResponse;   // what a 'render' message does, for a host that calls it directly
+// THE AVATAR FALLS SILENT: what she is saying is cut off at once, and her mouth and body go back to rest. A host asks for it with a 'silence' message, or calls this.
+function silence() { speech.stop(); }
+window.cavSilence = silence;
 
 // Listen for messages from the host app (the C# WebView3DModelDelivery device).
 if (window.chrome && window.chrome.webview) {
   window.chrome.webview.addEventListener('message', ev => {
     const m = ev.data;
     if (m && m.Kind === 'render') receiveResponse(m.FaceDescriptors, m.SpeechWavBase64, m.BodyDescriptors);
+    if (m && m.Kind === 'silence') silence();
     if (m && m.Kind === 'environment') setEnvironment(m.Descriptors);
     if (m && m.Kind === 'pointOfView') setPointOfView(m.PointOfView);
     if (m && m.Kind === 'scene') { setModelScene(m.Scene); if (m.PointOfView) setPointOfView(m.PointOfView); }
@@ -580,12 +585,10 @@ function applyResponseFrame(timeSec) {
 let playing = false;
 async function playResponse() {
   if (!responseFrames) return;
-  const audio = document.getElementById('responseAudio');
   playing = true;
   (document.getElementById('status')||{}).textContent = 'CAV speaking...';
-  audio.currentTime = 0;
-  await audio.play();
-  audio.onended = () => { playing = false; fadeSmileToTrace(1000, 0.3); (document.getElementById('status')||{}).textContent = 'CALMNESS / calm'; };
+  await speech.play();
+  speech.onended = () => { playing = false; fadeSmileToTrace(1000, 0.3); (document.getElementById('status')||{}).textContent = 'CALMNESS / calm'; };
 }
 
 
@@ -621,11 +624,10 @@ window.cavFrames = {
 function loop() {
   requestAnimationFrame(loop);
   if (offline) return;
-  if (playing) { const audio = document.getElementById('responseAudio'); applyResponseFrame(audio.currentTime); }
+  if (playing) applyResponseFrame(speech.currentTime);
   // The body: the utterance's motion while she speaks, breathing otherwise.
   if (Object.keys(body.bones).length) {
-    const audio = document.getElementById('responseAudio');
-    applyBody(playing && body.motion ? bodyFrame(body.motion, audio.currentTime) : breathe(performance.now() / 1000));
+    applyBody(playing && body.motion ? bodyFrame(body.motion, speech.currentTime) : breathe(performance.now() / 1000));
   }
   controls.update();
   renderer.render(scene, camera);

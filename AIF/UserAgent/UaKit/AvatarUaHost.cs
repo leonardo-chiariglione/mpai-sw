@@ -83,6 +83,9 @@ public sealed class AvatarUaHost
         _web.CoreWebView2.IsMuted = false;   // never mute the avatar's voice
         _web.CoreWebView2.SetVirtualHostNameToFolderMapping(
             _assetsHost, _assetsDir, CoreWebView2HostResourceAccessKind.Allow);
+        // THE UNITS OF A BROWSER (AIF/UserAgent/PhysicalLayer/Browser/mpai-units.js): the avatar page plays her voice through them, as every page does; one file, from where it is.
+        var unitsDir = System.IO.Path.GetFullPath(System.IO.Path.Combine(_assetsDir, "..", "PhysicalLayer", "Browser"));
+        if (System.IO.Directory.Exists(unitsDir)) _web.CoreWebView2.SetVirtualHostNameToFolderMapping("mpaiunits.local", unitsDir, CoreWebView2HostResourceAccessKind.Allow);
         if (Diagnose is { } log) await WatchAsync(log);
         // The page and the Face are local files: nothing to keep in the disk cache. A damaged cache (net::ERR_CACHE_READ_FAILURE)
         // left the page without its scripts and the Face did not load (ASM, 2026-11-17), so the cache is emptied before every start.
@@ -132,7 +135,7 @@ public sealed class AvatarUaHost
         try
         {
             _ = _ui.InvokeAsync(() => _web.CoreWebView2?.ExecuteScriptAsync(
-                "(function(){var a=document.getElementById('responseAudio'); if(a){a.pause(); a.currentTime=0;}})()"));
+                "(function(){ if (window.cavSilence) window.cavSilence(); })()"));
         }
         catch { }
     }

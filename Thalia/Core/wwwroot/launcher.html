@@ -107,6 +107,7 @@
   </div>
 </div>
 <div class="credit" id="credit"></div>
+<script src="mpai-units.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 
@@ -410,12 +411,12 @@ async function devicesView() {
   intro.innerHTML = '<h3 style="margin:0;font-size:20px">Devices</h3><p class="desc">The microphone, the camera and the screen that Thalia gives to the Apps. Your choice goes with each App when you Run it. A device that is not there when an App starts is replaced by the one your computer uses by default.</p><div class="buttons"><button class="act" id="seeDevices">Let Thalia see my devices</button></div><div id="seeNote" class="desc"></div>';
   v.appendChild(intro);
   let list = [];
-  try { list = await navigator.mediaDevices.enumerateDevices(); } catch { }
+  try { list = await MpaiUnits.devices.list(); } catch { }                 // the devices are the Units' to tell
   const named = list.some(d => d.label);
   intro.querySelector('#seeDevices').hidden = named;
   intro.querySelector('#seeDevices').onclick = async () => {
     const note = intro.querySelector('#seeNote'); note.textContent = 'Your browser asks whether Thalia may use them: it opens them only to read their names.';
-    for (const c of [{ audio: true }, { video: true }]) { try { (await navigator.mediaDevices.getUserMedia(c)).getTracks().forEach(t => t.stop()); } catch { } }
+    await MpaiUnits.devices.reveal();
     devicesDrawn = false; render();
   };
   if (!named) { const n = document.createElement('div'); n.className = 'notice'; n.textContent = 'Thalia does not know the names of your devices yet: let it see them first.'; v.appendChild(n); }
@@ -461,22 +462,18 @@ function deviceCard(title, devices, pref, what) {
 
 // Three seconds of the microphone: its level is drawn, and it is judged by the loudest it heard.
 async function testMic(id, into) {
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: id ? { deviceId: { exact: id } } : true });
-  const ctx = new AudioContext(), src = ctx.createMediaStreamSource(stream), an = ctx.createAnalyser(); an.fftSize = 1024; src.connect(an);
   const bar = document.createElement('div'); bar.style.cssText = 'height:10px;border-radius:5px;background:rgba(255,255,255,.15);overflow:hidden;margin-top:6px'; const fill = document.createElement('div'); fill.style.cssText = 'height:100%;width:0;background:var(--ok)'; bar.appendChild(fill); into.appendChild(bar);
-  const buf = new Float32Array(an.fftSize); let peak = 0; const t0 = performance.now();
-  await new Promise(res => { const tick = () => { an.getFloatTimeDomainData(buf); let m = 0; for (const x of buf) m = Math.max(m, Math.abs(x)); peak = Math.max(peak, m); fill.style.width = Math.min(100, m * 400) + '%'; if (performance.now() - t0 < 3000) requestAnimationFrame(tick); else res(); }; tick(); });
-  stream.getTracks().forEach(t => t.stop()); ctx.close();
+  const peak = await MpaiUnits.microphone.test(id, m => { fill.style.width = Math.min(100, m * 400) + '%'; }, 3000);          // the Microphone Unit: three seconds, its level drawn
   return peak > 0.02 ? `It works: it heard sound (peak ${peak.toFixed(2)}). Say something while you test to see the bar move.` : 'It opens, but it heard almost nothing: is it muted, or far from you?';
 }
 
 async function testCam(id, into) {
-  const stream = await navigator.mediaDevices.getUserMedia({ video: id ? { deviceId: { exact: id } } : true });
-  const video = document.createElement('video'); video.srcObject = stream; video.muted = true; video.playsInline = true; video.style.cssText = 'width:220px;border-radius:8px;margin-top:6px';
-  into.appendChild(video); await video.play();
-  const s = stream.getVideoTracks()[0].getSettings();
+  const cam = await MpaiUnits.camera.preview(id), video = cam.video;                               // the Camera Unit
+  video.style.cssText = 'width:220px;border-radius:8px;margin-top:6px';
+  into.appendChild(video); await cam.start();
+  const s = cam.settings;
   await new Promise(r => setTimeout(r, 3000));
-  stream.getTracks().forEach(t => t.stop()); video.remove();
+  cam.close();
   return `It works: it gives a picture of ${s.width || '?'}x${s.height || '?'}.`;
 }
 
