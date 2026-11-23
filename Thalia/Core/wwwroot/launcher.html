@@ -89,7 +89,7 @@
     <button class="ret" id="quit" title="End Thalia, and the Apps it started">Close</button>
   </div>
   <div class="body">
-    <nav class="rail"><button class="on" data-view="home">Home</button><button data-view="apps">Apps</button><button data-view="running">Running</button><button data-view="store">Store</button><button data-view="devices">Devices</button><button data-view="settings">Settings</button>
+    <nav class="rail"><button class="on" data-view="home">Home</button><button data-view="apps">Apps</button><button data-view="running">Running</button><button data-view="devices">Devices</button><button data-view="settings">Settings</button>
 <aside class="dock" aria-label="Thalia">
   <img class="face" src="/thalia.png?v=2" alt="Thalia">
   <div class="name">Thalia</div>
@@ -100,7 +100,7 @@
     <main class="content">
       <div class="searchbar">
         <input type="search" id="q" placeholder="Search Apps" autocomplete="off">
-        <div class="seg" id="scope"><span class="on" data-s="local">This machine</span><span data-s="store">MPAI Store</span><span data-s="mas">MPAI as a Service</span><span data-s="both">All three</span></div>
+        <div class="seg" id="scope"><span data-s="local">This machine</span><span data-s="store">MPAI Store</span><span data-s="mas">MPAI as a Service</span></div>
       </div>
       <div class="notice" id="notice" hidden></div>
       <div id="view"></div>
@@ -154,20 +154,34 @@ function applySeason() {
 }
 
 // ---- state: what is shown is the scope of the search (this machine / the Service / both), limited by the two switches under her face ---------------------
-let catalogue = null, shown = '', view = 'home', scope = 'local';      // Thalia comes up on what a User can do (Home); the Apps are one click away
-scope = P.scope || scope;
+let catalogue = null, shown = '', view = 'home', scope = '';      // Thalia comes up on what a User can do (Home), with no place chosen to look for Apps in: no App is shown before the User says where, or what, to look for
+const searching = () => !!(scope || $('#q').value.trim());
+const effScope = () => scope || 'both';          // a search with no place chosen looks in the three
 const isRemote = () => catalogue && catalogue.profile === 'remote';   // a Remote Thalia: the Apps of MPAI as a Service only
-const wheres = () => isRemote() ? ['mas'] : ['local', 'mas'].filter(w => scope === 'both' || scope === w);
+const wheres = () => isRemote() ? ['mas'] : ['local', 'mas'].filter(w => effScope() === 'both' || effScope() === w);
 
 let storeDrawn = false, storeQuery = '', storeOpen = null, devicesDrawn = false, settingsDrawn = false;
 function syncControls() {
   for (const s of document.querySelectorAll('#scope span')) s.classList.toggle('on', s.dataset.s === scope);
   for (const b of document.querySelectorAll('.rail button[data-view]')) b.classList.toggle('on', b.dataset.view === view);
 }
-for (const s of document.querySelectorAll('#scope span')) s.onclick = () => { scope = s.dataset.s; save(); };
-for (const b of document.querySelectorAll('.rail button[data-view]')) b.onclick = () => { view = b.dataset.view; storeDrawn = false; devicesDrawn = false; settingsDrawn = false; save(); };
-$('#q').oninput = () => { if (view === 'home' && $('#q').value.trim()) { view = 'apps'; syncControls(); } render(); };      // typing in the search of Apps leaves Home for the Apps
-function save() { setPref('scope', scope); syncControls(); render(); }
+for (const s of document.querySelectorAll('#scope span')) s.onclick = () => {      // a place; the same place again takes it back
+  scope = scope === s.dataset.s ? '' : s.dataset.s;
+  if (view !== 'running') view = searching() ? 'apps' : 'home';
+  syncControls(); render();
+};
+for (const b of document.querySelectorAll('.rail button[data-view]')) b.onclick = () => {
+  view = b.dataset.view; storeDrawn = false; devicesDrawn = false; settingsDrawn = false;
+  if (view === 'home') { scope = ''; $('#q').value = ''; }                 // Home: the functions, with no place chosen
+  else if (view === 'apps' && !scope) scope = 'local';                      // the Apps of this machine
+  save();
+};
+$('#q').oninput = () => {
+  if (view === 'home' && searching()) { view = 'apps'; syncControls(); }                     // typing leaves Home for the results
+  else if (view === 'apps' && !searching()) { view = 'home'; syncControls(); }               // nothing left to look for, no place chosen: Home
+  render();
+};
+function save() { syncControls(); render(); }
 
 // ---- the side of the functions: each picture has the side that leaves its abbey free; the User can swap it (kept in this browser) --------------------
 let sideChoice = null;                                   // 'left' | 'right' | null = the picture's own
@@ -209,29 +223,29 @@ async function load() {
 function runOf(id, where) { return (catalogue.running || []).find(r => r.app === id && r.where === where); }
 
 function render() {
-  if (!catalogue) { if (view === 'home') welcome(); return; }          // Home does not wait for the catalogue: what a User can do is shown at once
+  if (!catalogue) { if (view === 'home' && !searching()) welcome(); return; }          // Home does not wait for the catalogue: what a User can do is shown at once
   const m = catalogue.machine;
   $('#scope').hidden = isRemote();
-  document.querySelector('.rail button[data-view="store"]').hidden = isRemote();      // a Remote Thalia runs the Apps of MPAI as a Service: it has no Store of its own
   $('#machine').textContent = isRemote() ? `Remote Thalia: the Apps of MPAI as a Service at ${new URL(catalogue.mas).hostname}` : `${m.os}, ${m.arch}; graphics: ${m.gpu}`;
-  $('#notice').hidden = !(catalogue.masProblem && wheres().includes('mas'));
+  $('#notice').hidden = view === 'home' || !(catalogue.masProblem && wheres().includes('mas'));        // said where the User looks in that place, not on Home
   $('#notice').textContent = catalogue.masProblem || '';
-  $('#q').placeholder = view === 'apps' ? 'Search Apps by name or by what they do' : 'Search running Apps';
+  $('#q').placeholder = view === 'running' ? 'Search running Apps' : 'Search Apps by name or by what they do';
 
-  $('.searchbar').hidden = view === 'home' || view === 'store' || view === 'settings' || view === 'devices';
+  $('.searchbar').hidden = view === 'store' || view === 'settings' || view === 'devices';       // Home has it: it is where the User says where, and what, to look for
   if (view === 'store') { $('#notice').hidden = true; if (!storeDrawn) storeView(); return; }
   if (view === 'settings') { $('#notice').hidden = true; if (!settingsDrawn) settingsView(); return; }
   if (view === 'devices') { $('#notice').hidden = true; if (!devicesDrawn) devicesView(); return; }
-  if (view === 'home' || !catalogue.apps.length) { welcome(); return; }
+  if (view === 'home') { welcome(); return; }
   const q = $('#q').value.trim().toLowerCase(), ws = wheres();
   const byId = new Map();
   for (const a of catalogue.apps) { if (!byId.has(a.id)) byId.set(a.id, {}); byId.get(a.id)[a.where] = a; }
   const view_ = $('#view'); view_.innerHTML = '';
   const grid = document.createElement('div'); grid.className = 'grid';
-  const showStore = view === 'apps' && !isRemote() && (scope === 'store' || scope === 'both');      // the third place to look: the MPAI Store
+  const showStore = view === 'apps' && !isRemote() && (effScope() === 'store' || effScope() === 'both');      // the third place to look: the MPAI Store
   let n = 0;
   for (const [id, sides] of byId) {
     const a = sides.local || sides.mas;
+    if (!ws.some(w => sides[w])) continue;                                   // an App that is not in the place(s) chosen is not shown
     if (q && !`${a.name} ${id} ${a.description} ${a.module || ''}`.toLowerCase().includes(q)) continue;
     if (view === 'running' && !ws.some(w => { const r = runOf(id, w); return r && !r.phase.startsWith('failed') && !r.phase.startsWith('stopped'); })) continue;
     if (!ws.length) continue;
@@ -256,15 +270,11 @@ function render() {
 
 // What Thalia offers, and how much of it exists today: what Thalia comes up on (Home). A function that exists opens the place where it is done.
 const FUNCTIONS = [
-  ['Find an App', 'Search by name or by what they do the Apps on this machine, the Apps in the MPAI Store and the Apps in an MPAI as a Service instance.', 'available'],
-  ['Run and stop an App', 'Start an App here or on MPAI as a Service in the same way, and stop it.', 'available'],
-  ['Obtain an App', 'Get an App from the MPAI Store, with what its Module needs and the licences of the data it obtains shown before you accept.', 'available'],
-  ['Pause, resume, update and remove', 'The rest of the life of an App on this machine: pause it and resume it, update it when the Store has a newer version, remove it (its Module stays with the Controller).', 'available'],
-  ['Make your own Module', 'Combine Basic and Composite AIMs into a Composite AIM that does not exist yet, and submit it.', 'coming'],
-  ['Devices', 'Choose the microphone, the camera and the screen Thalia gives to the Apps, and see whether each works.', 'available'],
-  ['Talk to Thalia', 'Ask her for an App, or to run it, by voice.', 'coming']
+  ['Find an App', 'Search, by name or by what they do, the Apps on this machine, the Apps in the MPAI Store and the Apps in an MPAI as a Service instance: choose a place above, or type what you look for. An App found in the Store is obtained from the result, with what its Module needs and the licences of the data it obtains shown before you accept.', 'available'],
+  ['Run and manage an App', 'Run an App on this machine or on MPAI as a Service, and stop it; pause it and resume it; update it when the Store has a newer version; remove it (its Module stays with the Controller). The microphone, the camera and the screen it uses are the ones you chose in Devices.', 'available'],
+  ['Make your own Module', 'Combine Basic and Composite AIMs into a Composite AIM that does not exist yet, and submit it.', 'coming']
 ];
-const GOES = { 'Find an App': 'apps', 'Run and stop an App': 'apps', 'Obtain an App': 'store', 'Pause, resume, update and remove': 'apps', 'Devices': 'devices' };
+const GOES = { 'Run and manage an App': 'apps' };
 // Store and Settings do not exist yet: each says what it would enable.
 const SECTIONS = {
   store: {
@@ -328,7 +338,8 @@ function welcome() {
     c.querySelector('b').textContent = name; c.querySelector('.chip').textContent = state === 'available' ? 'available' : 'coming';
     c.querySelector('.desc').textContent = text; list.appendChild(c);
     const go = GOES[name];
-    if (go && state === 'available') { c.style.cursor = 'pointer'; c.title = 'Open it'; c.onclick = () => { view = go; if (name === 'Find an App') { scope = 'both'; setPref('scope', 'both'); } storeDrawn = false; devicesDrawn = false; settingsDrawn = false; save(); }; }
+    if (name === 'Find an App') { c.style.cursor = 'pointer'; c.title = 'Choose a place, or type, above'; c.onclick = () => $('#q').focus(); }
+    else if (go && state === 'available') { c.style.cursor = 'pointer'; c.title = 'Open it'; c.onclick = () => { view = go; if (!scope) scope = 'local'; storeDrawn = false; devicesDrawn = false; settingsDrawn = false; save(); }; }
   }
   v.appendChild(list);
 }
