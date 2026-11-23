@@ -1,5 +1,5 @@
 # "OPEN THE DOOR WHEN THE BELL RINGS" (M3313), one command:
-#   AllApps\MMM\Run-Door.ps1
+#   AllApps\_support\Run-Door.ps1
 # Starts the M-Instance of the room and the door, with the Host User (an A-User App: User Agent + the A-User Module of
 # PGM-AUA on the AIF Controller) and the Visitor, and opens its page in the default browser. On the page: "Enter the room",
 # then send (or speak) the command when the page says "The A-User is ready.", then let the Visitor knock or ring.
@@ -18,4 +18,4 @@ Start-Job {
     for ($i = 0; $i -lt 240; $i++) { try { Invoke-WebRequest "$using:url/door/log" -UseBasicParsing -TimeoutSec 2 | Out-Null; break } catch { Start-Sleep -Milliseconds 500 } }
     Start-Process "$using:url/viewer/door.html"
 } | Out-Null
-& $dotnet run --project (Join-Path $PSScriptRoot 'Server\Mpai.Mmm.Server.csproj') -- $url --door --llm $Llm
+& $dotnet run --project (Join-Path $PSScriptRoot '..\MMM\Server\Mpai.Mmm.Server.csproj') -- $url --door --llm $Llm

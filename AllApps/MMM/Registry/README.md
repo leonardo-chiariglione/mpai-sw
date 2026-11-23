@@ -10,5 +10,5 @@ the others - `AIF-Room`, `AIH-Room`, ... one for each group - have no meeting se
 { "Email": "anna@example.org", "Name": "Anna Rossi", "Groups": ["MMM", "AIF"], "Chair": ["MMM"] }
 ```
 
-A group meeting is started with `AllApps\MMM\Run-Meeting.ps1 -Group MMM -When "Thursday 22 October, 17:00 CEST"`: the people of the group get a personal link each, by an email composed
+A group meeting is started with `AllApps\_support\Run-Meeting.ps1 -Group MMM -When "Thursday 22 October, 17:00 CEST"`: the people of the group get a personal link each, by an email composed
 through Outlook. The emails are sent only after you confirm at the console (or saved as Outlook drafts with `-Mail draft`).

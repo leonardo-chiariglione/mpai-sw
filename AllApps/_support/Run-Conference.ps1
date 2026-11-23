@@ -1,6 +1,6 @@
 # A CONFERENCE IN THE MMM WORLD, with people who are not on this network:
 #   AllApps\MMM\Run-Conference.bat                      asks for the names of the participants (the convener first)
-#   AllApps\MMM\Run-Conference.ps1 -Names Leonardo,Anna,Bruno,Carla,Dario
+#   AllApps\_support\Run-Conference.ps1 -Names Leonardo,Anna,Bruno,Carla,Dario
 # It starts the M-Instance with its world (the Metaverse Square, the MPAI building with its meeting room, a library and a cafe), closed with a MEETING CODE, and a Cloudflare quick
 # tunnel that gives it a public https address (no account). The server stays closed to the network: only the tunnel leads to it, and nobody gets in without the code.
 # The guests open the address, type their name (as it is in the list) and the code, allow the microphone, and walk to the MPAI Hall (W/S walk, A/D turn). Close both windows when
@@ -8,7 +8,7 @@
 # The rights of the participants are for the meeting: -Until 19:00 (or -Hours 3, the default) is when it ends; they end with it, or when the convener ends it with the button.
 param([string]$Names = '', [string]$Models = '', [string]$Until = '', [double]$Hours = 3)
 
-$here = $PSScriptRoot
+$here = (Resolve-Path (Join-Path $PSScriptRoot "..\MMM")).Path
 $port = 7099
 $local = "http://127.0.0.1:$port"
 if (-not $Names) { $Names = Read-Host 'Names of the participants, the convener first, separated by commas (for example Leonardo,Anna,Bruno,Carla,Dario)' }

@@ -1,6 +1,6 @@
 ﻿# A MEETING IN THE MMM WORLD: the guests install nothing, each opens a personal link.
-#   AllApps\MMM\Run-Meeting.ps1 -Chair Leonardo -Guests Anna,Bruno,Carla -Until 19:00
-#   AllApps\MMM\Run-Meeting.ps1 -Chair Leonardo -Guests Anna,Bruno,Carla -Via cloudflare
+#   AllApps\_support\Run-Meeting.ps1 -Chair Leonardo -Guests Anna,Bruno,Carla -Until 19:00
+#   AllApps\_support\Run-Meeting.ps1 -Chair Leonardo -Guests Anna,Bruno,Carla -Via cloudflare
 # It starts the M-Instance with its world (the Metaverse Square, the MPAI building: a public atrium and the wings of rooms) and puts it on the internet at an https address (the microphone needs
 # https): -Via funnel (Tailscale Funnel, a stable address on this PC's Tailscale name; needs Tailscale logged in, Serve and Funnel enabled in its console) or -Via cloudflare (the default: a Cloudflare
 # quick tunnel: no account, a new address each time; cloudflared.exe).
@@ -19,7 +19,7 @@
 param([string]$Chair = '', [string]$Guests = '', [string]$Until = '', [double]$Hours = 3, [int]$Port = 7099, [ValidateSet('funnel', 'cloudflare')][string]$Via = 'cloudflare', [switch]$Visitors,
       [string]$Group = '', [string]$When = '', [string]$Officers = '', [string]$HostName = '', [ValidateSet('ask', 'draft', 'send', 'none')][string]$Mail = 'ask', [switch]$Preview, [switch]$Stay, [switch]$Written, [ValidateSet('funnel', 'none')][string]$Join = 'funnel', [string]$Llm = 'llama3.2:3b')
 
-$here = $PSScriptRoot
+$here = (Resolve-Path (Join-Path $PSScriptRoot "..\MMM")).Path
 $local = "http://127.0.0.1:$Port"
 $people = @{}      # the name in the M-Instance -> the person (Email, Name), for the emails
 if ($Group) {
