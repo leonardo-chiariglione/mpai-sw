@@ -548,7 +548,7 @@ public partial class RcaShell : ComponentBase
             using var stopped = stop.Register(() => tcs.TrySetResult(null));
             var chosen = await tcs.Task;
             choosingPicture = false; Refresh();
-            return chosen is not { } c ? null : MpaiJson.ToJson(BasicVisualObject.FromFile(c.Name, c.Data, "Picture"));
+            return chosen is not { } c ? null : MpaiJson.ToJson(BasicVisualObject.FromFile(c.Name, c.Data, "Object"));
         });
 
         // A POINT ON THE PICTURE SHOWN: the person clicks on the stage; the pixel of the picture under the click is the Point (OSD-PNT-V1.5,

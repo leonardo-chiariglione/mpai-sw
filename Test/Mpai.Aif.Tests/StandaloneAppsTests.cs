@@ -159,7 +159,7 @@ public class StandaloneAppsTests
         Assert.Equal(AifError.OK, api.StartFlow(module, out var id));
         try
         {
-            var page = BasicVisualObject.FromFile("page.png", File.ReadAllBytes(Path.Combine(folder, "page.png")), "Picture");
+            var page = BasicVisualObject.FromFile("page.png", File.ReadAllBytes(Path.Combine(folder, "page.png")), "Object");
             var point = string.Create(System.Globalization.CultureInfo.InvariantCulture,
                 $"{{\"Header\":\"OSD-PNT-V1.5\",\"Coordinates\":{{\"X\":{at[0].GetDouble():0.#},\"Y\":{at[1].GetDouble():0.#}}}}}");
             var r = api.Advance(id, new[] { new ControllerApi.Datum("OSD-BVO-V1.5", 1, MpaiJson.ToJson(page)), new ControllerApi.Datum("OSD-PNT-V1.5", 1, point), Machine });

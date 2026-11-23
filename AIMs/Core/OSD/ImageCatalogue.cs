@@ -74,6 +74,6 @@ public sealed class ImageCatalogue
         if (full is null) return null;
         var path = Path.GetFullPath(Path.Combine(_root, full));
         if (!path.StartsWith(_root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)) return null;
-        return BasicVisualObject.FromFile(Path.GetFileName(path), File.ReadAllBytes(path), "Picture");
+        return BasicVisualObject.FromFile(Path.GetFileName(path), File.ReadAllBytes(path), "Object");
     }
 }

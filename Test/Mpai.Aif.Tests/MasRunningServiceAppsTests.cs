@@ -56,7 +56,7 @@ public class MasRunningServiceAppsTests
     public void AmqAnswersAboutThePictureOnTheService()
     {
         using var api = Service();
-        var picture = new ControllerApi.Datum("OSD-BVO-V1.5", 1, MpaiJson.ToJson(BasicVisualObject.FromFile("red.jpg", File.ReadAllBytes(Path.Combine(Repository.Root, "Test", "Data", "red.jpg")), "Picture")));
+        var picture = new ControllerApi.Datum("OSD-BVO-V1.5", 1, MpaiJson.ToJson(BasicVisualObject.FromFile("red.jpg", File.ReadAllBytes(Path.Combine(Repository.Root, "Test", "Data", "red.jpg")), "Object")));
         var r = Turn(api, "1MMC-AMQ-V2.5-I01", picture, Text(1, "What color is the picture?"), MachineId);
         Assert.True(r.Ok, $"AMQ on the Service: {r.Error}");
         var said = AvatarUtterance.TextOfPortableAvatar(r.ByType("PAF-PAV-V1.6")) ?? "";

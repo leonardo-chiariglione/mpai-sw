@@ -39,7 +39,7 @@ public class NprModuleTests
     {
         var inputs = new List<ControllerApi.Datum>
         {
-            new("OSD-BVO-V1.5", 1, MpaiJson.ToJson(BasicVisualObject.FromFile("npr-page.png", File.ReadAllBytes(Path.Combine(Folder, "npr-page.png")), "Picture"))),
+            new("OSD-BVO-V1.5", 1, MpaiJson.ToJson(BasicVisualObject.FromFile("npr-page.png", File.ReadAllBytes(Path.Combine(Folder, "npr-page.png")), "Object"))),
             new("string", 1, "\"MPAI as a Service\"")
         };
         if (x is not null)
@@ -102,7 +102,7 @@ public class NprModuleTests
         using var api = Controller();
         using var done = new CancellationTokenSource(TimeSpan.FromMinutes(3));
         string? shown = null, staged = null;
-        var page = MpaiJson.ToJson(BasicVisualObject.FromFile("npr-page.png", File.ReadAllBytes(Path.Combine(Folder, "npr-page.png")), "Picture"));
+        var page = MpaiJson.ToJson(BasicVisualObject.FromFile("npr-page.png", File.ReadAllBytes(Path.Combine(Folder, "npr-page.png")), "Object"));
 
         var devices = new Mpai.Ua.DeviceRegistry()
             .RegisterAcquire("OSD-BVO-V1.5", (_, _) => Task.FromResult<string?>(page))
@@ -143,7 +143,7 @@ public class NprModuleTests
         {
             var r = api.Advance(moduleId, new[]
             {
-                new ControllerApi.Datum("OSD-BVO-V1.5", 1, MpaiJson.ToJson(BasicVisualObject.FromFile("npr-page.png", File.ReadAllBytes(Path.Combine(Folder, "npr-page.png")), "Picture"))),
+                new ControllerApi.Datum("OSD-BVO-V1.5", 1, MpaiJson.ToJson(BasicVisualObject.FromFile("npr-page.png", File.ReadAllBytes(Path.Combine(Folder, "npr-page.png")), "Object"))),
                 new ControllerApi.Datum("OSD-PNT-V1.5", 1, "{\"Header\":\"OSD-PNT-V1.5\",\"Coordinates\":{\"X\":560,\"Y\":472}}"),
                 new ControllerApi.Datum("string", 1, "\"MPAI as a Service\"")
             });
@@ -168,7 +168,7 @@ public class NprModuleTests
         {
             var r = api.Advance(moduleId, new[]
             {
-                new ControllerApi.Datum("OSD-BVO-V1.5", 1, MpaiJson.ToJson(BasicVisualObject.FromFile("page.png", File.ReadAllBytes(page), "Picture"))),
+                new ControllerApi.Datum("OSD-BVO-V1.5", 1, MpaiJson.ToJson(BasicVisualObject.FromFile("page.png", File.ReadAllBytes(page), "Object"))),
                 new ControllerApi.Datum("OSD-PNT-V1.5", 1, "{\"Header\":\"OSD-PNT-V1.5\",\"Coordinates\":{\"X\":596,\"Y\":994}}"),
                 new ControllerApi.Datum("string", 1, "\"MPAI as a Service\"")
             });
@@ -194,7 +194,7 @@ public class NprModuleTests
         {
             var r = api.Advance(moduleId, new[]
             {
-                new ControllerApi.Datum("OSD-BVO-V1.5", 1, MpaiJson.ToJson(BasicVisualObject.FromFile("npr-page.png", File.ReadAllBytes(Path.Combine(Folder, "npr-page.png")), "Picture"))),
+                new ControllerApi.Datum("OSD-BVO-V1.5", 1, MpaiJson.ToJson(BasicVisualObject.FromFile("npr-page.png", File.ReadAllBytes(Path.Combine(Folder, "npr-page.png")), "Object"))),
                 new ControllerApi.Datum("OSD-PNT-V1.5", 1, "{\"Header\":\"OSD-PNT-V1.5\",\"Coordinates\":{\"X\":560,\"Y\":1500}}"),
                 new ControllerApi.Datum("string", 1, "\"MPAI as a Service\"")
             });
@@ -217,7 +217,7 @@ public class NprModuleTests
         {
             var r = api.Advance(moduleId, new[]
             {
-                new ControllerApi.Datum("OSD-BVO-V1.5", 1, MpaiJson.ToJson(BasicVisualObject.FromFile("page.jpg", File.ReadAllBytes(page), "Picture"))),
+                new ControllerApi.Datum("OSD-BVO-V1.5", 1, MpaiJson.ToJson(BasicVisualObject.FromFile("page.jpg", File.ReadAllBytes(page), "Object"))),
                 new ControllerApi.Datum("OSD-PNT-V1.5", 1, "{\"Header\":\"OSD-PNT-V1.5\",\"Coordinates\":{\"X\":1662,\"Y\":1431}}"),
                 new ControllerApi.Datum("string", 1, "\"MPAI as a Service\"")
             });

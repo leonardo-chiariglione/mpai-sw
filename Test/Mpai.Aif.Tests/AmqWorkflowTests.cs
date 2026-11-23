@@ -24,7 +24,7 @@ public class AmqWorkflowTests
             .RegisterAcquire("OSD-BVO-V1.5", (_, wanted) =>
             {
                 lock (log) log.Add("picture " + (wanted ?? "").Contains("JPEG"));
-                return Task.FromResult<string?>(Mpai.Core.MpaiJson.ToJson(Mpai.Core.BasicVisualObject.FromFile("red.jpg", File.ReadAllBytes(Path.Combine(Repository.Root, "Test", "Data", "red.jpg")), "Picture")));
+                return Task.FromResult<string?>(Mpai.Core.MpaiJson.ToJson(Mpai.Core.BasicVisualObject.FromFile("red.jpg", File.ReadAllBytes(Path.Combine(Repository.Root, "Test", "Data", "red.jpg")), "Object")));
             })
             .RegisterAcquire("OSD-BSO-V1.5", (_, _, abandon) => AppWorkflow.NothingUntil(abandon, stop.Token))
             .RegisterAcquire("OSD-BTO-V1.5", (_, wanted, _) =>
