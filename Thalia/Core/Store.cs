@@ -59,6 +59,9 @@ static class StoreRoutes
 {
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(20) };
     private static readonly SemaphoreSlim Starting = new(1, 1);
+    // The Apps Thalia can run on this machine today: those whose Modules the local Controller of Thalia builds (the Apps of MPAI-MMC and MPAI-OSD that run in a browser client). The other Apps of the Store have
+    // clients of their own (they start from AllApps): the Store lists them, and Thalia says it does not run them yet.
+    public static readonly HashSet<string> RunsHere = new(StringComparer.Ordinal) { "AMC", "MCA", "MTS", "NPR", "AMQ", "ACR", "MAC" };
 
     public static void Map(WebApplication app, StoreContext c)
     {
@@ -77,6 +80,7 @@ static class StoreRoutes
                 var bundled = c.IsBundled(id) && held is null;
                 a["state"] = held is not null ? (Newer(storeVersion, held.Version) ? "update" : "obtained") : bundled ? "bundled" : "available";
                 a["installedVersion"] = held?.Version;
+                a["runsHere"] = RunsHere.Contains(id);
             }
             return Results.Json(new JsonObject { ["problem"] = null, ["apps"] = list, ["store"] = c.StoreUrl.ToString() });
         });
@@ -91,7 +95,8 @@ static class StoreRoutes
             catch (Exception ex) { return Results.Json(new { problem = $"The Store has no App {id}: {ex.GetBaseException().Message}" }, statusCode: 404); }
             var module = (string?)detail["module"];
             var needs = c.NeedsOf(module);
-            detail["needs"] = new JsonObject { ["aims"] = needs.Aims.DeepClone(), ["licences"] = needs.Licences.DeepClone(), ["resources"] = needs.Resources.DeepClone(), ["accelerators"] = needs.Accelerators.DeepClone(), ["canRun"] = needs.CanRun, ["why"] = needs.Why };
+            detail["needs"] = new JsonObject { ["aims"] = needs.Aims.DeepClone(), ["licences"] = needs.Licences.DeepClone(), ["resources"] = needs.Resources.DeepClone(), ["accelerators"] = needs.Accelerators.DeepClone(), ["canRun"] = needs.CanRun && RunsHere.Contains(id),
+                ["why"] = RunsHere.Contains(id) ? needs.Why : "Thalia does not run this App yet: it has a client of its own, which starts from AllApps. " + needs.Why };
             detail["sources"] = Sources(c, module, needs);
             detail["held"] = c.Installed.Get(id) is { } h ? new JsonObject { ["version"] = h.Version, ["at"] = h.At } : null;
             return Results.Json(detail);
@@ -248,20 +253,19 @@ static class StoreRoutes
         catch { return false; }
     }
 
-    // A Store with no App is given the Apps that come with the software (once), as its operator would publish them.
+    // A Store is given the Apps that come with the software and are not on its shelf yet (every folder of Apps with an app.json that names a Standard and a Workflow), as its operator would publish them.
     static async Task SeedAsync(StoreContext c, string data)
     {
         try
         {
-            if (JsonNode.Parse(await Http.GetStringAsync(new Uri(c.StoreUrl, "MPAI/Store/App")))!.AsArray().Count > 0) return;
+            var onShelf = JsonNode.Parse(await Http.GetStringAsync(new Uri(c.StoreUrl, "MPAI/Store/App")))!.AsArray().Select(a => (string?)a?["id"]).Where(i => i is not null).ToHashSet();
             var keyFile = Path.Combine(data, "admin-key.txt");
             if (!File.Exists(keyFile)) return;
             var key = (await File.ReadAllTextAsync(keyFile)).Trim();
-            // The Apps Thalia can run on this machine today: those whose Modules the local Controller of Thalia builds (the Apps of MPAI-MMC and MPAI-OSD that run in a browser client). The others have clients of their own.
-            string[] runnable = ["AMC", "MCA", "MTS", "NPR", "AMQ", "ACR", "MAC"];
-            foreach (var folder in Directory.EnumerateDirectories(c.AppsRoot).SelectMany(Directory.EnumerateDirectories).Where(f => runnable.Contains(Path.GetFileName(f))))
+            foreach (var folder in Directory.EnumerateDirectories(c.AppsRoot).SelectMany(Directory.EnumerateDirectories).Where(f => !onShelf.Contains(Path.GetFileName(f))))
             {
                 if (!File.Exists(Path.Combine(folder, "app.json")) || !Directory.EnumerateFiles(folder, "*.orch").Any()) continue;
+                try { if ((string?)JsonNode.Parse(File.ReadAllText(Path.Combine(folder, "app.json")))?["Standard"] is null) continue; } catch { continue; }          // the descriptors of the MAS App itself are not Apps of a standard
                 using var ms = new MemoryStream();
                 using (var zip = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
                     foreach (var f in Directory.EnumerateFiles(folder).Where(f => Path.GetFileName(f) == "app.json" || new[] { ".orch", ".svg", ".png", ".jpg" }.Contains(Path.GetExtension(f).ToLowerInvariant())))

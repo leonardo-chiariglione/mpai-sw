@@ -22,6 +22,7 @@
   .body.flip { grid-template-columns:1fr var(--rail); } .flip .rail { order:2; border-right:0; border-left:1px solid var(--line); } .flip .content { order:1; margin-left:0; margin-right:auto; }
   .content { scrollbar-color:rgba(255,255,255,.35) transparent; scrollbar-width:thin; padding:18px 24px 24px; overflow:auto; width:min(600px, 100%); margin-left:auto; padding-bottom:24px; }   /* a column on the right: the abbey, left of centre in the pictures, stays visible */
   .searchbar { display:flex; gap:12px; align-items:center; margin-bottom:6px; }
+  .searchbar[hidden] { display:none; }
   input[type=search] { flex:1; font:inherit; padding:9px 14px; border-radius:9px; border:1px solid var(--line); background:var(--panel2); color:var(--ink); }
   input[type=search]::placeholder { color:var(--muted); }
   .seg { display:inline-flex; border:1px solid var(--line); border-radius:9px; overflow:hidden; background:var(--panel2); }
@@ -88,7 +89,7 @@
     <button class="ret" id="quit" title="End Thalia, and the Apps it started">Close</button>
   </div>
   <div class="body">
-    <nav class="rail"><button class="on" data-view="apps">Apps</button><button data-view="running">Running</button><button data-view="store">Store</button><button data-view="devices">Devices</button><button data-view="settings">Settings</button>
+    <nav class="rail"><button class="on" data-view="home">Home</button><button data-view="apps">Apps</button><button data-view="running">Running</button><button data-view="store">Store</button><button data-view="devices">Devices</button><button data-view="settings">Settings</button>
 <aside class="dock" aria-label="Thalia">
   <img class="face" src="/thalia.png?v=2" alt="Thalia">
   <div class="name">Thalia</div>
@@ -99,7 +100,7 @@
     <main class="content">
       <div class="searchbar">
         <input type="search" id="q" placeholder="Search Apps" autocomplete="off">
-        <div class="seg" id="scope"><span class="on" data-s="local">This machine</span><span data-s="mas">MPAI as a Service</span><span data-s="both">Both</span></div>
+        <div class="seg" id="scope"><span class="on" data-s="local">This machine</span><span data-s="store">MPAI Store</span><span data-s="mas">MPAI as a Service</span><span data-s="both">All three</span></div>
       </div>
       <div class="notice" id="notice" hidden></div>
       <div id="view"></div>
@@ -153,7 +154,7 @@ function applySeason() {
 }
 
 // ---- state: what is shown is the scope of the search (this machine / the Service / both), limited by the two switches under her face ---------------------
-let catalogue = null, shown = '', view = 'apps', scope = 'local';
+let catalogue = null, shown = '', view = 'home', scope = 'local';      // Thalia comes up on what a User can do (Home); the Apps are one click away
 scope = P.scope || scope;
 const isRemote = () => catalogue && catalogue.profile === 'remote';   // a Remote Thalia: the Apps of MPAI as a Service only
 const wheres = () => isRemote() ? ['mas'] : ['local', 'mas'].filter(w => scope === 'both' || scope === w);
@@ -165,7 +166,7 @@ function syncControls() {
 }
 for (const s of document.querySelectorAll('#scope span')) s.onclick = () => { scope = s.dataset.s; save(); };
 for (const b of document.querySelectorAll('.rail button[data-view]')) b.onclick = () => { view = b.dataset.view; storeDrawn = false; devicesDrawn = false; settingsDrawn = false; save(); };
-$('#q').oninput = () => render();
+$('#q').oninput = () => { if (view === 'home' && $('#q').value.trim()) { view = 'apps'; syncControls(); } render(); };      // typing in the search of Apps leaves Home for the Apps
 function save() { setPref('scope', scope); syncControls(); render(); }
 
 // ---- the side of the functions: each picture has the side that leaves its abbey free; the User can swap it (kept in this browser) --------------------
@@ -208,25 +209,26 @@ async function load() {
 function runOf(id, where) { return (catalogue.running || []).find(r => r.app === id && r.where === where); }
 
 function render() {
-  if (!catalogue) return;
+  if (!catalogue) { if (view === 'home') welcome(); return; }          // Home does not wait for the catalogue: what a User can do is shown at once
   const m = catalogue.machine;
   $('#scope').hidden = isRemote();
   document.querySelector('.rail button[data-view="store"]').hidden = isRemote();      // a Remote Thalia runs the Apps of MPAI as a Service: it has no Store of its own
   $('#machine').textContent = isRemote() ? `Remote Thalia: the Apps of MPAI as a Service at ${new URL(catalogue.mas).hostname}` : `${m.os}, ${m.arch}; graphics: ${m.gpu}`;
   $('#notice').hidden = !(catalogue.masProblem && wheres().includes('mas'));
   $('#notice').textContent = catalogue.masProblem || '';
-  $('#q').placeholder = view === 'apps' ? 'Search Apps' : 'Search running Apps';
+  $('#q').placeholder = view === 'apps' ? 'Search Apps by name or by what they do' : 'Search running Apps';
 
-  $('.searchbar').hidden = view === 'store' || view === 'settings' || view === 'devices';
+  $('.searchbar').hidden = view === 'home' || view === 'store' || view === 'settings' || view === 'devices';
   if (view === 'store') { $('#notice').hidden = true; if (!storeDrawn) storeView(); return; }
   if (view === 'settings') { $('#notice').hidden = true; if (!settingsDrawn) settingsView(); return; }
   if (view === 'devices') { $('#notice').hidden = true; if (!devicesDrawn) devicesView(); return; }
-  if (!catalogue.apps.length) { welcome(); return; }
+  if (view === 'home' || !catalogue.apps.length) { welcome(); return; }
   const q = $('#q').value.trim().toLowerCase(), ws = wheres();
   const byId = new Map();
   for (const a of catalogue.apps) { if (!byId.has(a.id)) byId.set(a.id, {}); byId.get(a.id)[a.where] = a; }
   const view_ = $('#view'); view_.innerHTML = '';
   const grid = document.createElement('div'); grid.className = 'grid';
+  const showStore = view === 'apps' && !isRemote() && (scope === 'store' || scope === 'both');      // the third place to look: the MPAI Store
   let n = 0;
   for (const [id, sides] of byId) {
     const a = sides.local || sides.mas;
@@ -243,13 +245,18 @@ function render() {
     if (!isRemote() && sides.local && sides.local.obtained) card.appendChild(obtainedFooter(sides.local));
     grid.appendChild(card); n++;
   }
-  if (!n) view_.innerHTML = `<p class="empty">${view === 'running' ? 'No App is running here.' : 'No App matches.'}</p>`;
-  else view_.appendChild(grid);
+  if (n) view_.appendChild(grid);
+  else if (!showStore) view_.innerHTML = `<p class="empty">${view === 'running' ? 'No App is running here.' : 'No App matches.'}</p>`;
+  if (showStore) {
+    const h = document.createElement('h2'); h.className = 'sec'; h.textContent = 'In the MPAI Store'; view_.appendChild(h);
+    const box = document.createElement('div'); box.className = 'storefind'; view_.appendChild(box);
+    clearTimeout(findTimer); findTimer = setTimeout(() => findInStore(box, $('#q').value.trim()), q ? 250 : 0);
+  }
 }
 
-// What Thalia offers, and how much of it exists today: shown when there is no App yet (the first time a User runs Thalia).
+// What Thalia offers, and how much of it exists today: what Thalia comes up on (Home). A function that exists opens the place where it is done.
 const FUNCTIONS = [
-  ['Find an App', 'Search the Apps of this machine and of MPAI as a Service, by name or by what they do.', 'available'],
+  ['Find an App', 'Search by name or by what they do the Apps on this machine, the Apps in the MPAI Store and the Apps in an MPAI as a Service instance.', 'available'],
   ['Run and stop an App', 'Start an App here or on MPAI as a Service in the same way, and stop it.', 'available'],
   ['Obtain an App', 'Get an App from the MPAI Store, with what its Module needs and the licences of the data it obtains shown before you accept.', 'available'],
   ['Pause, resume, update and remove', 'The rest of the life of an App on this machine: pause it and resume it, update it when the Store has a newer version, remove it (its Module stays with the Controller).', 'available'],
@@ -257,6 +264,7 @@ const FUNCTIONS = [
   ['Devices', 'Choose the microphone, the camera and the screen Thalia gives to the Apps, and see whether each works.', 'available'],
   ['Talk to Thalia', 'Ask her for an App, or to run it, by voice.', 'coming']
 ];
+const GOES = { 'Find an App': 'apps', 'Run and stop an App': 'apps', 'Obtain an App': 'store', 'Pause, resume, update and remove': 'apps', 'Devices': 'devices' };
 // Store and Settings do not exist yet: each says what it would enable.
 const SECTIONS = {
   store: {
@@ -319,6 +327,8 @@ function welcome() {
     c.innerHTML = `<div class="fh"><b></b><span class="chip"></span></div><p class="desc"></p>`;
     c.querySelector('b').textContent = name; c.querySelector('.chip').textContent = state === 'available' ? 'available' : 'coming';
     c.querySelector('.desc').textContent = text; list.appendChild(c);
+    const go = GOES[name];
+    if (go && state === 'available') { c.style.cursor = 'pointer'; c.title = 'Open it'; c.onclick = () => { view = go; if (name === 'Find an App') { scope = 'both'; setPref('scope', 'both'); } storeDrawn = false; devicesDrawn = false; settingsDrawn = false; save(); }; }
   }
   v.appendChild(list);
 }
@@ -346,6 +356,23 @@ async function storeView() {
   if (storeOpen) { const c = grid.querySelector(`[data-app="${storeOpen}"] .more`); if (c) c.click(); }
 }
 
+// FIND AN APP in the MPAI Store: the same search, shown under the Apps of this machine and of MPAI as a Service; an App found there is obtained as in the Store.
+let findTimer = null, findNo = 0;
+async function findInStore(box, q) {
+  const mine = ++findNo;
+  box.innerHTML = '<p class="empty">Asking the MPAI Store...</p>';
+  let r;
+  try { r = await (await fetch('/api/store/apps' + (q ? '?search=' + encodeURIComponent(q) : ''), { cache: 'no-store' })).json(); }
+  catch { if (mine === findNo) box.innerHTML = '<p class="empty">The Store does not answer.</p>'; return; }
+  if (mine !== findNo) return;                                  // a later search has taken the place of this one
+  box.innerHTML = '';
+  if (r.problem) { const n = document.createElement('div'); n.className = 'notice'; n.textContent = r.problem; box.appendChild(n); return; }
+  if (!r.apps.length) { const p = document.createElement('p'); p.className = 'empty'; p.textContent = q ? `The MPAI Store has no App for "${q}".` : 'The MPAI Store has no App yet.'; box.appendChild(p); return; }
+  const grid = document.createElement('div'); grid.className = 'grid';
+  for (const a of r.apps) grid.appendChild(storeCard(a));
+  box.appendChild(grid);
+}
+
 const STATE_TEXT = { available: 'to obtain', obtained: 'obtained', update: 'update available', bundled: 'comes with Thalia' };
 function storeCard(a) {
   const card = document.createElement('section'); card.className = 'card'; card.dataset.app = a.id;
@@ -353,7 +380,7 @@ function storeCard(a) {
   card.querySelector('h3').textContent = a.name;
   card.querySelector('.id').textContent = `${a.id} ${a.version} - Module ${a.module || '?'}${a.standard ? ' - ' + a.standard : ''}`;
   card.querySelector('.desc').textContent = a.description;
-  const chip = card.querySelector('.chip'); chip.textContent = STATE_TEXT[a.state] || a.state; chip.classList.add(a.state);
+  const chip = card.querySelector('.chip'); chip.textContent = (STATE_TEXT[a.state] || a.state) + (a.runsHere === false && a.state === 'available' ? ' - not run by Thalia yet' : ''); chip.classList.add(a.state);
   const more = card.querySelector('.more'), box = card.querySelector('.detail');
   more.onclick = async () => {
     if (!box.hidden) { box.hidden = true; more.textContent = 'Details'; storeOpen = null; return; }
@@ -385,7 +412,7 @@ function fillDetail(box, a, d) {
   if (!verb) { btn.textContent = a.state === 'bundled' ? 'Comes with Thalia' : 'You have the latest'; acc.parentElement.hidden = true; return; }
   btn.textContent = verb;
   acc.onchange = () => { btn.disabled = !acc.checked || (n.canRun === false); };
-  if (n.canRun === false) acc.parentElement.insertAdjacentHTML('afterend', '<div class="notice">This machine does not meet what the Module needs.</div>');
+  if (n.canRun === false) acc.parentElement.insertAdjacentHTML('afterend', `<div class="notice">${a.runsHere === false ? 'Thalia does not run this App yet: it has a client of its own, which starts from AllApps.' : 'This machine does not meet what the Module needs.'}</div>`);
   btn.onclick = async () => {
     btn.disabled = true; out.innerHTML = '<div class="msg">Obtaining...</div>';
     let r; try { r = await fetch(`/api/store/obtain/${encodeURIComponent(a.id)}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ accepted: true, version: d.version, licences }) }); } catch { out.innerHTML = '<div class="msg bad">Thalia does not answer.</div>'; return; }
@@ -590,6 +617,7 @@ function needs(a) {
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 
 syncControls();
+render();
 load();
 setInterval(load, 2000);
 </script>

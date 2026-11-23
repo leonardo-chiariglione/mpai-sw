@@ -1,6 +1,8 @@
 # Thalia
 
 Thalia is the environment, designed for MPAI-AIF and MPAI-MAS, in which a User finds, obtains, runs and stops MPAI Apps (MPAI-THL; M3323). This is its reference implementation. `Thalia.bat` builds what changed and opens it
+
+`Thalia-demo.bat` is Thalia with its three places to look for an App all answering: the Apps on this machine, the Apps in the MPAI Store and the Apps of an MPAI as a Service instance. It starts the instance of this machine (it takes about a minute to load its models) and Thalia with a Store and data of its own (`%LOCALAPPDATA%\Thalia-demo`), whose shelf is given every App that comes with the software; your own Thalia, Store and Apps are not touched. Thalia comes up on Home, which shows the functions a User can perform; Find an App searches the three places at once.
 full screen; "Return to Windows" brings the desktop back.
 
 ## What it does today

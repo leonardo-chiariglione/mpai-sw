@@ -99,10 +99,14 @@ app.MapGet("/api/catalogue", async () =>
     try
     {
         var list = JsonNode.Parse(await masHttp.GetStringAsync(new Uri(masUrl, "MPAI/AIFU/Apps")))!.AsArray();
-        foreach (var a in list.OfType<JsonObject>().Where(a => AllIds().Contains((string?)a["id"])).OrderBy(a => Array.IndexOf(AllIds(), (string?)a["id"])))
+        // EVERY App the instance offers (the User looks for an App there too), those of this Thalia's list first, in its order, then the others by name. The Module is known where the App is also in the software.
+        var offered = list.OfType<JsonObject>().Where(a => (string?)a["id"] is not null).ToList();
+        var known = remote ? local : AppCatalogue.Scan(appsRoot, offered.Select(a => (string)a["id"]!).ToArray());
+        int Rank(string id) { var i = Array.IndexOf(AllIds(), id); return i < 0 ? int.MaxValue : i; }
+        foreach (var a in offered.OrderBy(a => Rank((string)a["id"]!)).ThenBy(a => (string?)a["name"] ?? "", StringComparer.CurrentCultureIgnoreCase))
         {
             var id = (string)a["id"]!;
-            items.Add(Item(id, (string?)a["name"] ?? id, (string?)a["description"] ?? "", "mas", local.Apps.FirstOrDefault(l => l.Id == id)?.Module, $"/api/icon/mas/{id}"));
+            items.Add(Item(id, (string?)a["name"] ?? id, (string?)a["description"] ?? "", "mas", known.Apps.FirstOrDefault(l => l.Id == id)?.Module, $"/api/icon/mas/{id}"));
         }
     }
     catch (Exception ex) { masProblem = remote
