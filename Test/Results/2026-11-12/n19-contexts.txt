@@ -1,0 +1,59 @@
+﻿Test run for D:\AI\Test\Mpai.Aif.Tests\bin\Debug\net10.0\Mpai.Aif.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+D:\AI\Test\Mpai.Aif.Tests\bin\Debug\net10.0\Mpai.Aif.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.14]   Discovering: Mpai.Aif.Tests
+[xUnit.net 00:00:00.36]   Discovered:  Mpai.Aif.Tests
+[xUnit.net 00:00:00.38]   Starting:    Mpai.Aif.Tests
+[xUnit.net 00:02:20.07]   Finished:    Mpai.Aif.Tests
+  Passed Mpai.Aif.Tests.CavDrivingContextsTests.EveryContextRunsWithoutACollision [2 m 19 s]
+  Standard Output Messages:
+ 1-following-a-car-that-brakes/v14-gap25-brake4: arrived 105.6 s, closest 0.46 m, worst inference error at 3 s 22.7 m
+ 1-following-a-car-that-brakes/v22-gap35-brake6: arrived 78.7 s, closest 0.10 m, worst inference error at 3 s 34.2 m
+ 1-following-a-car-that-brakes/v28-gap45-brake8: arrived 70.5 s, closest 0.10 m, worst inference error at 3 s 43.6 m
+ 1-following-a-car-that-brakes/v22-gap15-brake8: arrived 79.2 s, closest 0.23 m, worst inference error at 3 s 41.0 m
+ 2-car-cutting-in/gap20-slower8-in3.0s: arrived 50.7 s, closest 1.64 m, worst inference error at 3 s 3.5 m
+ 2-car-cutting-in/gap12-slower5-in2.5s: arrived 50.1 s, closest 1.65 m, worst inference error at 3 s 3.5 m
+ 2-car-cutting-in/gap8-slower3-in2.0s: arrived 49.8 s, closest 1.65 m, worst inference error at 3 s 3.5 m
+ 2-car-cutting-in/gap5-slower0-in1.5s: arrived 50.2 s, closest 1.65 m, worst inference error at 3 s 3.5 m
+ 3-merging-from-on-ramp/spacing60-v25: arrived 48.5 s, closest 1.65 m, worst inference error at 3 s 14.1 m
+ 3-merging-from-on-ramp/spacing40-v22: arrived 53.9 s, closest 1.65 m, worst inference error at 3 s 19.4 m
+ 3-merging-from-on-ramp/spacing25-v22: stopped (time out) 90.1 s, closest 0.29 m, worst inference error at 3 s 18.2 m
+ 3-merging-from-on-ramp/spacing30-v12-trucks: arrived 73.5 s, closest 1.65 m, worst inference error at 3 s 13.1 m
+ 4-traffic-jam-stop-and-go/period20-mean4: arrived 81.1 s, closest 0.50 m, worst inference error at 3 s 26.7 m
+ 4-traffic-jam-stop-and-go/period12-mean3: arrived 120.8 s, closest 0.47 m, worst inference error at 3 s 22.8 m
+ 4-traffic-jam-stop-and-go/period30-mean5-left-faster: arrived 68.2 s, closest 0.34 m, worst inference error at 3 s 15.1 m
+ 5-lane-closed-by-roadworks/no-traffic: arrived 43.8 s, closest 0.63 m, worst inference error at 3 s 0.2 m
+ 5-lane-closed-by-roadworks/traffic-every50m: arrived 45.8 s, closest 0.81 m, worst inference error at 3 s 11.4 m
+ 5-lane-closed-by-roadworks/traffic-every30m: arrived 48.5 s, closest 0.58 m, worst inference error at 3 s 13.9 m
+ 5-lane-closed-by-roadworks/traffic-every18m: stopped (time out) 120.1 s, closest 0.31 m, worst inference error at 3 s 12.5 m
+ 6-oncoming-car-turning-left/turns-gives-way-indicator: arrived 40.4 s, closest 1.66 m, worst inference error at 3 s 11.5 m
+ 6-oncoming-car-turning-left/turns-no-give-way-indicator: arrived 44.8 s, closest 4.03 m, worst inference error at 3 s 7.5 m
+ 6-oncoming-car-turning-left/turns-no-give-way-no-indicator: arrived 44.8 s, closest 4.03 m, worst inference error at 3 s 8.5 m
+ 6-oncoming-car-turning-left/turns-no-give-way-late: arrived 40.4 s, closest 1.65 m, worst inference error at 3 s 12.9 m
+ 6-oncoming-car-turning-left/goes-straight: arrived 41.2 s, closest 1.65 m, worst inference error at 3 s 1.3 m
+ 7-roundabout/empty-right-turn: arrived 25.3 s, closest NaN m, worst inference error at 3 s 0.0 m
+ 7-roundabout/stream-from-west-every35m-straight: arrived 92.5 s, closest 0.59 m, worst inference error at 3 s 24.1 m
+ 7-roundabout/stream-from-west-every20m-right-turn: arrived 109.6 s, closest 0.59 m, worst inference error at 3 s 25.6 m
+ 7-roundabout/stream-from-west-every50m-left-turn: arrived 97.3 s, closest 0.17 m, worst inference error at 3 s 24.6 m
+ 7-roundabout/stream-from-north-every30m-left-turn: arrived 37.0 s, closest 3.37 m, worst inference error at 3 s 22.2 m
+ 8-pedestrian-behind-parked-van/steps-out-at-20m: arrived 39.2 s, closest 1.46 m, worst inference error at 3 s 3.8 m
+ 8-pedestrian-behind-parked-van/steps-out-at-12m: arrived 40.0 s, closest 1.28 m, worst inference error at 3 s 4.6 m
+ 8-pedestrian-behind-parked-van/child-runs-at-25m: arrived 35.7 s, closest 1.75 m, worst inference error at 3 s 7.1 m
+ 8-pedestrian-behind-parked-van/steps-out-at-8m: arrived 40.7 s, closest 0.89 m, worst inference error at 3 s 4.6 m
+ 8-pedestrian-behind-parked-van/no-pedestrian: arrived 35.5 s, closest 1.75 m, worst inference error at 3 s 0.5 m
+ 9-cyclist-narrow-road/no-oncoming: arrived 63.2 s, closest 1.69 m, worst inference error at 3 s 1.7 m
+ 9-cyclist-narrow-road/oncoming-every150m: stopped (time out) 180.1 s, closest 1.14 m, worst inference error at 3 s 14.8 m
+ 9-cyclist-narrow-road/oncoming-every70m: arrived 99.8 s, closest 1.15 m, worst inference error at 3 s 11.9 m
+ 9-cyclist-narrow-road/slow-cyclist-oncoming-every100m: arrived 113.2 s, closest 0.16 m, worst inference error at 3 s 11.9 m
+ 10-broken-down-vehicle-around-bend/after-bend-no-oncoming: arrived 40.9 s, closest 1.05 m, worst inference error at 3 s 1.4 m
+ 10-broken-down-vehicle-around-bend/after-bend-oncoming-every150m: arrived 120.1 s, closest 0.24 m, worst inference error at 3 s 6.7 m
+ 10-broken-down-vehicle-around-bend/after-bend-oncoming-every80m: stopped (time out) 150.1 s, closest 0.29 m, worst inference error at 3 s 10.8 m
+ 10-broken-down-vehicle-around-bend/in-bend-oncoming-every150m: arrived 39.8 s, closest 0.80 m, worst inference error at 3 s 19.5 m
+
+
+
+Test Run Successful.
+Total tests: 1
+     Passed: 1
+ Total time: 2.3518 Minutes

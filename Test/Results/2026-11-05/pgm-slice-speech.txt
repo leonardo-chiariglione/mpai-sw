@@ -26,3 +26,4 @@
 2026-11-16T14:51:52	1.94 s	ASR heard: "Go and open the doors."	51 data seen	invalid: 0
 2026-11-16T14:58:41	3.23 s	ASR heard: "Go and open the doors."	51 data seen	invalid: 0
 2026-11-16T15:01:48	2.27 s	ASR heard: "Go and open the doors."	51 data seen	invalid: 0
+2026-11-23T02:30:13	3.97 s	ASR heard: "Go and open the doors."	51 data seen	invalid: 0

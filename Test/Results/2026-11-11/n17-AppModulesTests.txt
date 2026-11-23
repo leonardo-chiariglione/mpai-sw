@@ -1,0 +1,77 @@
+﻿Test run for D:\AI\Test\Mpai.Aif.Tests\bin\Debug\net10.0\Mpai.Aif.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.13]   Discovering: Mpai.Aif.Tests
+[xUnit.net 00:00:00.34]   Discovered:  Mpai.Aif.Tests
+[xUnit.net 00:00:00.36]   Starting:    Mpai.Aif.Tests
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTS-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-GFD-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.AppModulesTests.TheConversationKeepsItsMemoryFromTurnToTurn(app: "MCA") [2 s]
+[AIF] 1MMC-AMC-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-AMC-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-AMC-V2.5-I01: flow '1MMC-NLU-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[ONNX] model.onnx: CPU (CUDA unavailable: Unable to find an entry point named 'OrtSessionOptionsAppendExecutionProvider_CUDA' in DLL 'onnxruntime'.)
+[ONNX] hsemotion_enet_b0_8_va_mtl.onnx: CPU
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-EDP-V2.5] emotion CALMNESS, attitude friendly
+[MMC-EDP-V2.5] emotion NEUTRAL, attitude neutral
+  Passed Mpai.Aif.Tests.AppModulesTests.TheConversationKeepsItsMemoryFromTurnToTurn(app: "AMC") [9 s]
+[ONNX] blip_vision_model.onnx: CPU
+[ONNX] blip_text_encoder_wrapper.onnx: CPU
+[ONNX] blip_decoder_context_dynamic.onnx: CPU
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.AppModulesTests.TheStandaloneAmqProgramAnswersAndTheAnswerSpeaks [14 s]
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTS-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-GFD-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[ASR] ports in: OSD-BSO-V1.5#1; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+[MMC-ASR-V2.5] whisper-server ready on port 58261: 307D12F9ABEBF672F37F80B3DD2E2B37.data kept loaded
+[MMC-ASR-V2.5] heard 11 words
+  Passed Mpai.Aif.Tests.AppModulesTests.McaAnswersASpokenTurn [2 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.AppModulesTests.AmqAppAnswersThroughItsWorkflow [2 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.AppModulesTests.TheStandaloneProgramSpeaksItsPromptThroughRsr(app: "MAC") [229 ms]
+  Passed Mpai.Aif.Tests.AppModulesTests.TheStandaloneProgramSpeaksItsPromptThroughRsr(app: "ACR") [229 ms]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.AppModulesTests.AmqAnswersAQuestionAboutAPicture [2 s]
+[AIF] 1MMC-MTS-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-TTT-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-TTT-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow '1MMC-TTT-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTS-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow '1MMC-TTT-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[ONNX] encoder_model.onnx: CPU
+[ONNX] decoder_model.onnx: CPU
+[ONNX] decoder_with_past_model.onnx: CPU
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-TTT-V2.5] en -> fr
+  Passed Mpai.Aif.Tests.AppModulesTests.MtsTranslatesATypedTurn [30 s]
+[AIF] 1MMC-AMC-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-AMC-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-AMC-V2.5-I01: flow '1MMC-NLU-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[ASR] ports in: OSD-BSO-V1.5#1; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+[MMC-ASR-V2.5] heard 11 words
+[MMC-EDP-V2.5] emotion NEUTRAL, attitude confident
+  Passed Mpai.Aif.Tests.AppModulesTests.AmcAnswersASpokenTurnWithTheFace [8 s]
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTS-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-GFD-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[xUnit.net 00:01:16.06]   Finished:    Mpai.Aif.Tests
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+  Passed Mpai.Aif.Tests.AppModulesTests.McaAnswersATypedTurn [642 ms]
+
+Test Run Successful.
+Total tests: 11
+     Passed: 11
+ Total time: 1.2792 Minutes

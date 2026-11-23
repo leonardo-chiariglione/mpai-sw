@@ -1,0 +1,36 @@
+﻿Test run for D:\AI\Test\Mpai.Aif.Tests\bin\Debug\net10.0\Mpai.Aif.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.22]   Discovering: Mpai.Aif.Tests
+[xUnit.net 00:00:00.44]   Discovered:  Mpai.Aif.Tests
+[xUnit.net 00:00:00.46]   Starting:    Mpai.Aif.Tests
+  Passed Mpai.Aif.Tests.AccessProcessTests.AnUpdateIsANewVersionAndASourceIsNeverBroughtBack [8 s]
+  Passed Mpai.Aif.Tests.AccessProcessTests.OpenlyPublishedDataIsObtainedByItsHashAlone [4 s]
+  Passed Mpai.Aif.Tests.AccessProcessTests.ASourceNoModuleDeclaresLeavesAccessAndADeclaredOneDoesNot [33 ms]
+  Passed Mpai.Aif.Tests.AccessProcessTests.TheDataOfAnAdmittedProviderIsKept [2 s]
+  Passed Mpai.Aif.Tests.AccessProcessTests.AProviderThatIsNotAdmittedOrWhoseDataIsNotTheDataNamedGivesNothing [6 s]
+dotnet : [xUnit.net 00:00:33.17]     Mpai.Aif.Tests.ExternalAuthorityTests.AControllerJoinsByAnnouncementInRange [FAIL]
+At line:1 char:332
++ ... .Aif.Tests; dotnet test --no-build --filter "FullyQualifiedName~Acces ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([xUnit.net 00:0...tInRange [FAIL]:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[xUnit.net 00:00:33.17]       no announcement of the Authority was heard in range
+[xUnit.net 00:00:33.17]       Stack Trace:
+[xUnit.net 00:00:33.17]         D:\AI\Test\Mpai.Aif.Tests\ExternalAuthorityTests.cs(458,0): at Mpai.Aif.Tests.ExternalAuthorityTests.AControllerJoinsByAnnouncementInRange()
+[xUnit.net 00:00:33.17]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:33.17]   Finished:    Mpai.Aif.Tests
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+  Failed Mpai.Aif.Tests.ExternalAuthorityTests.AControllerJoinsByAnnouncementInRange [11 s]
+  Error Message:
+   no announcement of the Authority was heard in range
+  Stack Trace:
+     at Mpai.Aif.Tests.ExternalAuthorityTests.AControllerJoinsByAnnouncementInRange() in D:\AI\Test\Mpai.Aif.Tests\ExternalAuthorityTests.cs:line 458
+--- End of stack trace from previous location ---
+
+Test Run Failed.
+Total tests: 6
+     Passed: 5
+     Failed: 1
+ Total time: 33.9899 Seconds

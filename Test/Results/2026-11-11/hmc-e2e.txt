@@ -1,0 +1,34 @@
+﻿Test run for D:\AI\Test\Mpai.Aif.Tests\bin\Debug\net10.0\Mpai.Aif.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+D:\AI\Test\Mpai.Aif.Tests\bin\Debug\net10.0\Mpai.Aif.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.12]   Discovering: Mpai.Aif.Tests
+[xUnit.net 00:00:00.33]   Discovered:  Mpai.Aif.Tests
+[xUnit.net 00:00:00.36]   Starting:    Mpai.Aif.Tests
+[AIF] 1HMC-CEC-V2.2-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1HMC-ECU-V2.2-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1HMC-ECU-V2.2-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TST-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1HMC-ECU-V2.2-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I03 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1MMC-TST-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I03 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1MMC-EDP-V2.5-I03.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTT-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1MMC-TTT-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[ONNX] yamnet.onnx: CPU (CUDA unavailable: Unable to find an entry point named 'OrtSessionOptionsAppendExecutionProvider_CUDA' in DLL 'onnxruntime'.)
+[ONNX] scrfd_10g_bnkps.onnx: CPU
+[ONNX] yolox_s.onnx: CPU
+[ONNX] yamnet.onnx: CPU
+[ONNX] go_emotions_roberta_base.onnx: CPU
+[ONNX] model.onnx: CPU
+[ONNX] hsemotion_enet_b0_8_va_mtl.onnx: CPU
+[ONNX] pose_estimation_mediapipe_2023mar.onnx: CPU
+[ONNX] encoder_model.onnx: CPU
+[ONNX] decoder_model.onnx: CPU
+[ONNX] decoder_with_past_model.onnx: CPU
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[AIF] 1MMC-PTI-V2.5-I01: DEGRADED (it returned an error: MMC-PTI-V2.5: The Text Descriptors Object is of format '(none)': this interpretation takes 'GoEmotions Scores (RoBERTa-base, 28-d)'.); 1MMC-PSE-V2.5-I02 OnDegraded Continue
+[MMC-TTT-V2.5] en -> fr
+[xUnit.net 00:00:23.61]   Finished:    Mpai.Aif.Tests
+  Passed Mpai.Aif.Tests.HmcEndToEndTests.ATypedTurnWithAFaceIsAnsweredWithAPortableAvatar [23 s]
+
+Test Run Successful.
+Total tests: 1
+     Passed: 1
+ Total time: 24.1498 Seconds

@@ -1,0 +1,65 @@
+﻿Test run for D:\AI\Test\Mpai.Aif.Tests\bin\Debug\net10.0\Mpai.Aif.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+D:\AI\Test\Mpai.Aif.Tests\bin\Debug\net10.0\Mpai.Aif.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.15]   Discovering: Mpai.Aif.Tests
+[xUnit.net 00:00:00.38]   Discovered:  Mpai.Aif.Tests
+[xUnit.net 00:00:00.40]   Starting:    Mpai.Aif.Tests
+[AIF] 1HMC-CEC-V2.2-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1HMC-ECU-V2.2-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1HMC-ECU-V2.2-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TST-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1HMC-ECU-V2.2-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I03 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1MMC-TST-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I03 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1MMC-EDP-V2.5-I03.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTT-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1MMC-TTT-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[ONNX] yamnet.onnx: CPU (CUDA unavailable: Unable to find an entry point named 'OrtSessionOptionsAppendExecutionProvider_CUDA' in DLL 'onnxruntime'.)
+[ONNX] scrfd_10g_bnkps.onnx: CPU
+[ONNX] yolox_s.onnx: CPU
+[ONNX] yamnet.onnx: CPU
+[ONNX] go_emotions_roberta_base.onnx: CPU
+[ONNX] model.onnx: CPU
+[ONNX] hsemotion_enet_b0_8_va_mtl.onnx: CPU
+[ONNX] pose_estimation_mediapipe_2023mar.onnx: CPU
+[ONNX] encoder_model.onnx: CPU
+[ONNX] decoder_model.onnx: CPU
+[ONNX] decoder_with_past_model.onnx: CPU
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[ASR] ports in: OSD-BSO-V1.5#3; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+[MMC-ASR-V2.5] whisper-server ready on port 61123: 307D12F9ABEBF672F37F80B3DD2E2B37.data kept loaded
+[MMC-ASR-V2.5] heard 11 words
+[AIF] 1MMC-PTI-V2.5-I01: DEGRADED (it returned an error: MMC-PTI-V2.5: The Text Descriptors Object is of format '(none)': this interpretation takes 'GoEmotions Scores (RoBERTa-base, 28-d)'.); 1MMC-PSE-V2.5-I02 OnDegraded Continue
+[ASR] ports in: OSD-BSO-V1.5#1; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+[MMC-ASR-V2.5] whisper-server ready on port 61126: 307D12F9ABEBF672F37F80B3DD2E2B37.data kept loaded
+[MMC-ASR-V2.5] heard 11 words
+[MMC-TTT-V2.5] en -> fr
+[xUnit.net 00:00:20.96]   Finished:    Mpai.Aif.Tests
+  Passed Mpai.Aif.Tests.HmcEndToEndTests.ASpokenTurnWithAFaceIsAnsweredWithAPortableAvatar [20 s]
+  Standard Output Messages:
+ Machine text: {"Header":"OSD-BTO-V1.5","BasicTextObjectID":"51b6aa81-76c0-4626-a544-54fe85bc5510","BasicTextData":[{"Data":"The person spoke French and the Response Hint reflects this."}]}
+ 1OSD-BAS-V1.5-I01: in [OSD-BAO-V1.5#1] -> out [OSD-BAS-V1.5#1]
+ 1OSD-BVS-V1.5-I01: in [OSD-BVO-V1.5#1] -> out [OSD-BVS-V1.5#1]
+ 1OSD-MAL-V1.5-I01: in [OSD-BAS-V1.5#1, OSD-BVS-V1.5#1] -> out [OSD-BAS-V1.5#1, OSD-BVS-V1.5#1, OSD-BAG-V1.5#1, OSD-BVG-V1.5#1, OSD-BMS-V1.5#1]
+ 1CAE-ASI-V2.5-I01: in [OSD-EAD-V1.5#1] -> out [OSD-BSO-V1.5#1]
+ 1CVE-VSI-V1.0-I01: in [OSD-BVS-V1.5#1] -> out [OSD-BVO-V1.5#1]
+ 1MMC-ASR-V2.5-I02: in [OSD-BSO-V1.5#3] -> out [OSD-BTO-V1.5#1]
+ 1CVE-VII-V1.0-I01: in [OSD-BVS-V1.5#1] -> out [OSD-BVS-V1.5#1]
+ 1CAE-AII-V2.5-I01: in [OSD-BAS-V1.5#1] -> out [OSD-BAS-V1.5#1]
+ 1MMC-NLU-V2.5-I01: in [OSD-BTO-V1.5#2, OSD-SEL-V1.5#1] -> out [MMC-TDO-V2.5#1, OSD-BTO-V1.5#1, MMC-TPS-V2.5#1]
+ 1MMC-ESD-V2.5-I03: in [OSD-BSO-V1.5#1] -> out [MMC-SDO-V2.5#1]
+ 1PAF-EFD-V1.6-I02: in [OSD-BVO-V1.5#1] -> out [PAF-FDO-V1.6#1]
+ 1MMC-PTI-V2.5-I01: in [MMC-TDO-V2.5#2] -> ERROR MMC-PTI-V2.5: The Text Descriptors Object is of format '(none)': this interpretation takes 'GoEmotions Scores (RoBERTa-base, 28-d)'.
+ 1MMC-PSI-V2.5-I01: in [MMC-SDO-V2.5#1] -> out [MMC-SPS-V2.5#1]
+ 1PAF-PFI-V1.6-I01: in [PAF-FDO-V1.6#1] -> out [MMC-FPS-V2.5#1]
+ 1MMC-PMX-V2.5-I01: in [MMC-SPS-V2.5#1, MMC-FPS-V2.5#1] -> out [MMC-EPS-V2.5#1]
+ 1OSD-MSM-V1.5-I01: in [OSD-BAS-V1.5#1, OSD-BVS-V1.5#1] -> out [OSD-BMS-V1.5#1]
+ 1MMC-ASR-V2.5-I01: in [OSD-BSO-V1.5#1] -> out [OSD-BTO-V1.5#1]
+ 1MMC-TTT-V2.5-I01: in [OSD-BTO-V1.5#1, OSD-BTO-V1.5#2, OSD-SEL-V1.5#1, OSD-SEL-V1.5#2] -> out [OSD-BTO-V1.5#1]
+ 1MMC-TTS-V2.5-I01: in [OSD-BTO-V1.5#1] -> out [OSD-BSO-V1.5#1]
+ 1MMC-EDP-V2.5-I03: in [OSD-BTO-V1.5#1, MMC-EPS-V2.5#1, OSD-BMS-V1.5#1, OSD-BTO-V1.5#3] -> out [OSD-BTO-V1.5#1, MMC-SUM-V2.5#1]
+ 1PAF-PMX-V1.6-I01: in [string#1, OSD-BTO-V1.5#2] -> out [PAF-PAV-V1.6#1]
+
+
+
+Test Run Successful.
+Total tests: 1
+     Passed: 1
+ Total time: 21.4850 Seconds

@@ -1,0 +1,54 @@
+﻿Test run for D:\AI\Test\Mpai.Aif.Tests\bin\Debug\net10.0\Mpai.Aif.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.13]   Discovering: Mpai.Aif.Tests
+[xUnit.net 00:00:00.33]   Discovered:  Mpai.Aif.Tests
+[xUnit.net 00:00:00.36]   Starting:    Mpai.Aif.Tests
+  Passed Mpai.Aif.Tests.XrvCommonTests.ADerivedStatusHasTheElementsOfTheDescriptorsAndValidates [600 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.WhenNoConditionIsMetTheEngineWaits [613 ms]
+  Passed Mpai.Aif.Tests.XrvCommonTests.EveryFileOfTheMiniShowValidatesAgainstItsSchema [35 ms]
+  Passed Mpai.Aif.Tests.XrvCommonTests.TheIdsAreBasicTextObjects [7 ms]
+  Passed Mpai.Aif.Tests.XrvCommonTests.ADatumThatTheSchemaDoesNotAllowIsNotRead [31 ms]
+  Passed Mpai.Aif.Tests.XrvCommonTests.TheScriptHasThreeCuesOfTheThreeKinds [17 ms]
+  Passed Mpai.Aif.Tests.XrvCommonTests.TheDescriptorsAndTheStatusesOfAnyOfTheSixKindsValidate [24 ms]
+  Passed Mpai.Aif.Tests.XrvCommonTests.EveryFileReadsBackUnchanged [18 ms]
+  Passed Mpai.Aif.Tests.XrvCommonTests.EveryActionTheCuesNameIsInTheActionTableAndHasAnAssociation [13 ms]
+  Passed Mpai.Aif.Tests.XrvCommonTests.AStatusMeetsATargetWhenTheElementsTheTargetNamesAreEqual [< 1 ms]
+  Passed Mpai.Aif.Tests.XrvCommonTests.TheCueListAsItsOwnDataTypeIsTheListOfTheScript [11 ms]
+  Passed Mpai.Aif.Tests.XrvCommonTests.TheVenueSpecificationsHaveTwoDmxFixturesAndOneVirtualLamp [8 ms]
+  Passed Mpai.Aif.Tests.XrvLtpTests.TheMiniShowRunsThroughTheLiveTheatricalPerformance [2 s]
+  Passed Mpai.Aif.Tests.XrvLtpTests.TheParticipantDataLeavesUnchanged [114 ms]
+  Passed Mpai.Aif.Tests.XrvLtpTests.TheEnvironmentDescriptionTellsPerformersParticipantsAndObjectsByTheAssociations [20 ms]
+  Passed Mpai.Aif.Tests.XrvLtpTests.TheExperienceGenerationGivesTheCommandsOfAnActionAsTheVenueCanTakeThem [10 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.TheOperatorControlsTheShowThroughTheOperatorDescriptors [2 s]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.TheCuePointIdPortHasDepthOneAndDropOldestAndTheDescriptorsDropOldest [2 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.TheWholeRecordingWrittenAtOnceGivesTheSameSequence [942 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.TheModuleGivesTheExpectedActionIdsForTheRecordedMiniShow [1 s]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.TheMixedCueNeedsTheConditionsOfBothSides [9 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.ACueWhoseConditionsAreNeverMetWaitsForAGoOrASkip [2 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.TheMiniShowGivesTheExpectedSequenceOfActionIds [4 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.TheL3OfEachAimIsAnInstanceOfItsL2 [42 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.AShowWithNoOperatorRunsFromTheFirstToTheLastCue [3 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.ANewCueForgetsTheStatusesOfTheCueBefore [4 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.BackReturnsToTheCueBefore [2 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.AnInterpretationAimIgnoresTheParticipantData(aim: "1XRV-PTI-V1.0-I01") [183 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.AnInterpretationAimIgnoresTheParticipantData(aim: "1XRV-PFI-V1.0-I01") [182 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.AnInterpretationAimIgnoresTheParticipantData(aim: "1XRV-OSI-V1.0-I01") [329 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.GoStartsTheShowAndHoldHoldsIt [4 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.GoInARunningShowFiresTheWaitingCue [2 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.ConditionsOnDescriptorsAreNotEvaluated [3 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.AHeldShowGoesOnWhereItWasOnGo [2 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.OfTheCuePointIdsThatWaitOnThePortTheAimReadsTheLast [1 s]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.ParticipantDataPassesThroughActionGenerationUnchanged [736 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.ASkipOrABackOfAHeldShowTellsTheCuePointOnGo [1 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.ACueWithSeveralGroupsBranchesToTheRightNextCue [7 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.TheVirtualCueOfTheMiniShowHasTwoWaysOn [2 ms]
+[xUnit.net 00:00:11.17]   Finished:    Mpai.Aif.Tests
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.TheModuleWaitsWhenNoConditionIsMet [1 s]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.TheL3sLoadInTheControllerWithThePortsOfTheirL2 [32 ms]
+
+Test Run Successful.
+Total tests: 41
+     Passed: 41
+ Total time: 11.7997 Seconds

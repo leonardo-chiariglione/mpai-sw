@@ -1,0 +1,11 @@
+EssStage1Tests  285s  Total tests: 5 | Passed: 5
+AmsStage1Tests  386s  Total tests: 7 | Passed: 5 | Failed: 2
+MasEndToEndTests  289s  Total tests: 1 | Failed: 1
+HighwayBaselineTests  265s  Total tests: 2 | Passed: 1
+HighwayOvertakingTests  455s  Total tests: 7 | Passed: 7
+HighwayIntersectionTests  661s  Total tests: 7 | Passed: 7
+HighwayJunctionOvertakeTests  269s  Total tests: 4 | Passed: 3
+CaoTests  1291s  Total tests: 3 | Failed: 3
+CaoWorkflowTests  420s  Total tests: 2 | Passed: 1 | Failed: 1
+HighwayDetectionTests  88s  Total tests: 1 | Passed: 1
+ALL DONE

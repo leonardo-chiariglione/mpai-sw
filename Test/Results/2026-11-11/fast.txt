@@ -1,0 +1,59 @@
+﻿Test run for D:\AI\Test\Mpai.Aif.Tests\bin\Debug\net10.0\Mpai.Aif.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:11.11]     Mpai.Aif.Tests.ReferenceDatabasesTests.TheControllerObtainsTheDatabasesAndDoesNotDownloadThemAgain [SKIP]
+  Skipped Mpai.Aif.Tests.ReferenceDatabasesTests.TheControllerObtainsTheDatabasesAndDoesNotDownloadThemAgain [< 1 ms]
+dotnet : [xUnit.net 00:00:25.36]     Mpai.Aif.Tests.VciTests.WhatIsSaidBecomesACommandAndTheResponseIsSaid [FAIL]
+At line:1 char:342
++ ... .Aif.Tests; dotnet test --no-build --filter "Group=Fast" --logger "tr ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([xUnit.net 00:0...seIsSaid [FAIL]:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Failed Mpai.Aif.Tests.VciTests.WhatIsSaidBecomesACommandAndTheResponseIsSaid [4 s]
+  Error Message:
+   NotProduced
+  Stack Trace:
+     at Mpai.Aif.Tests.VciTests.WhatIsSaidBecomesACommandAndTheResponseIsSaid() in D:\AI\Test\Mpai.Aif.Tests\VciTests.cs:line 112
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:52.85]     Mpai.Aif.Tests.AsmVoiceWorkflowTests.WhatIsSaidEditsTheSceneAndTheMachineAnswers [FAIL]
+  Failed Mpai.Aif.Tests.AsmVoiceWorkflowTests.WhatIsSaidEditsTheSceneAndTheMachineAnswers [35 s]
+  Error Message:
+   System.InvalidOperationException : Sequence contains no elements
+  Stack Trace:
+     at System.Linq.ThrowHelper.ThrowNoElementsException()
+   at System.Linq.Enumerable.First[TSource](IEnumerable`1 source)
+   at Mpai.Aif.Tests.AsmVoiceWorkflowTests.WhatIsSaidEditsTheSceneAndTheMachineAnswers() in D:\AI\Test\Mpai.Aif.Tests\AsmVoiceWorkflowTests.cs:line 320
+--- End of stack trace from previous location ---
+[xUnit.net 00:05:04.30]     Mpai.Aif.Tests.PgmSliceTests.OpenTheDoorsWithOllama [SKIP]
+  Skipped Mpai.Aif.Tests.PgmSliceTests.OpenTheDoorsWithOllama [5 m]
+[xUnit.net 01:00:35.17]     Mpai.Aif.Tests.AccessProcessTests.AnUpdateIsANewVersionAndASourceIsNeverBroughtBack [FAIL]
+  Failed Mpai.Aif.Tests.AccessProcessTests.AnUpdateIsANewVersionAndASourceIsNeverBroughtBack [1 h]
+  Error Message:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stack Trace:
+     at Mpai.Aif.Tests.AccessProcessTests.AnUpdateIsANewVersionAndASourceIsNeverBroughtBack() in D:\AI\Test\Mpai.Aif.Tests\AccessProcessTests.cs:line 206
+   at Mpai.Aif.Tests.AccessProcessTests.AnUpdateIsANewVersionAndASourceIsNeverBroughtBack() in D:\AI\Test\Mpai.Aif.Tests\AccessProcessTests.cs:line 230
+--- End of stack trace from previous location ---
+[xUnit.net 02:02:15.23]     Mpai.Aif.Tests.AccessProcessTests.OpenlyPublishedDataIsObtainedByItsHashAlone [FAIL]
+  Failed Mpai.Aif.Tests.AccessProcessTests.OpenlyPublishedDataIsObtainedByItsHashAlone [1 h 1 m]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: OK
+Actual:   NotFound
+  Stack Trace:
+     at Mpai.Aif.Tests.AccessProcessTests.OpenlyPublishedDataIsObtainedByItsHashAlone() in D:\AI\Test\Mpai.Aif.Tests\AccessProcessTests.cs:line 187
+   at Mpai.Aif.Tests.AccessProcessTests.OpenlyPublishedDataIsObtainedByItsHashAlone() in D:\AI\Test\Mpai.Aif.Tests\AccessProcessTests.cs:line 188
+--- End of stack trace from previous location ---
+[xUnit.net 02:05:38.96]     Mpai.Aif.Tests.ExternalAuthorityTests.AControllerJoinsByAnnouncementInRange [FAIL]
+  Failed Mpai.Aif.Tests.ExternalAuthorityTests.AControllerJoinsByAnnouncementInRange [11 s]
+  Error Message:
+   no announcement of the Authority was heard in range
+  Stack Trace:
+     at Mpai.Aif.Tests.ExternalAuthorityTests.AControllerJoinsByAnnouncementInRange() in D:\AI\Test\Mpai.Aif.Tests\ExternalAuthorityTests.cs:line 458
+--- End of stack trace from previous location ---
+Results File: D:\AI\Test\Results\2026-11-11\fast.trx
+
+Failed!  - Failed:     5, Passed:   861, Skipped:     2, Total:   868, Duration: 2 h 7 m - Mpai.Aif.Tests.dll (net10.0)

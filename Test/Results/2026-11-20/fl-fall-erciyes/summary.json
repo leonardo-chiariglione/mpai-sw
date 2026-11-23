@@ -1,0 +1,277 @@
+{
+ "local": {
+  "seeds": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10
+  ],
+  "seconds": 71,
+  "Local PrAuc": [
+   0.9963,
+   0.0008
+  ],
+  "Local RocAuc": [
+   0.9989,
+   0.0005
+  ],
+  "Local F1": [
+   0.9786,
+   0.0041
+  ],
+  "Local MissRate": [
+   0.0228,
+   0.0024
+  ],
+  "Local FalseAlarmRate": [
+   0.0028,
+   0.001
+  ],
+  "Global PrAuc": [
+   0.9008,
+   0.0529
+  ],
+  "Global RocAuc": [
+   0.9746,
+   0.0074
+  ],
+  "Global F1": [
+   0.8174,
+   0.0386
+  ],
+  "Global MissRate": [
+   0.0884,
+   0.0188
+  ],
+  "Global FalseAlarmRate": [
+   0.0412,
+   0.0125
+  ]
+ },
+ "central": {
+  "seeds": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10
+  ],
+  "seconds": 396,
+  "Local PrAuc": [
+   0.998,
+   0.0006
+  ],
+  "Local RocAuc": [
+   0.9997,
+   0.0001
+  ],
+  "Local F1": [
+   0.9816,
+   0.0033
+  ],
+  "Local MissRate": [
+   0.0225,
+   0.0049
+  ],
+  "Local FalseAlarmRate": [
+   0.0018,
+   0.0008
+  ],
+  "Global PrAuc": [
+   0.9836,
+   0.0246
+  ],
+  "Global RocAuc": [
+   0.9965,
+   0.0054
+  ],
+  "Global F1": [
+   0.952,
+   0.0243
+  ],
+  "Global MissRate": [
+   0.0409,
+   0.0192
+  ],
+  "Global FalseAlarmRate": [
+   0.007,
+   0.0063
+  ]
+ },
+ "fedavg": {
+  "seeds": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10
+  ],
+  "seconds": 391,
+  "Local PrAuc": [
+   0.9969,
+   0.0007
+  ],
+  "Local RocAuc": [
+   0.9994,
+   0.0001
+  ],
+  "Local F1": [
+   0.9819,
+   0.0018
+  ],
+  "Local MissRate": [
+   0.0216,
+   0.0029
+  ],
+  "Local FalseAlarmRate": [
+   0.0019,
+   0.0003
+  ],
+  "Global PrAuc": [
+   0.9719,
+   0.0267
+  ],
+  "Global RocAuc": [
+   0.9941,
+   0.0058
+  ],
+  "Global F1": [
+   0.9166,
+   0.0374
+  ],
+  "Global MissRate": [
+   0.0486,
+   0.0178
+  ],
+  "Global FalseAlarmRate": [
+   0.0156,
+   0.0102
+  ]
+ },
+ "addlearn": {
+  "seeds": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10
+  ],
+  "seconds": 372,
+  "Local PrAuc": [
+   0.9928,
+   0.0028
+  ],
+  "Local RocAuc": [
+   0.9985,
+   0.0006
+  ],
+  "Local F1": [
+   0.9717,
+   0.0046
+  ],
+  "Local MissRate": [
+   0.0281,
+   0.0079
+  ],
+  "Local FalseAlarmRate": [
+   0.0038,
+   0.0013
+  ],
+  "Global PrAuc": [
+   0.2898,
+   0.2428
+  ],
+  "Global RocAuc": [
+   0.5379,
+   0.2853
+  ],
+  "Global F1": [
+   0.2188,
+   0.2029
+  ],
+  "Global MissRate": [
+   0.2312,
+   0.3663
+  ],
+  "Global FalseAlarmRate": [
+   0.7464,
+   0.3976
+  ]
+ },
+ "teacher": {
+  "seeds": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10
+  ],
+  "seconds": 431,
+  "Local PrAuc": [
+   0.9958,
+   0.0012
+  ],
+  "Local RocAuc": [
+   0.9985,
+   0.0007
+  ],
+  "Local F1": [
+   0.9786,
+   0.0029
+  ],
+  "Local MissRate": [
+   0.0228,
+   0.0019
+  ],
+  "Local FalseAlarmRate": [
+   0.0027,
+   0.0007
+  ],
+  "Global PrAuc": [
+   0.945,
+   0.0348
+  ],
+  "Global RocAuc": [
+   0.9877,
+   0.0061
+  ],
+  "Global F1": [
+   0.8314,
+   0.0718
+  ],
+  "Global MissRate": [
+   0.0647,
+   0.0302
+  ],
+  "Global FalseAlarmRate": [
+   0.0408,
+   0.026
+  ]
+ }
+}

@@ -1,0 +1,217 @@
+--- 2026-11-05T23:59:59: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+--- 2026-11-06T00:31:12: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 121.2 s
+Event Descriptors: 6 scenes: 0 of speech, 0 of pictures
+valid against the schema: OSD-MEV-V1.5 not valid: : Some properties did not match the required schema: ["MultimodalSceneDescriptors"]; /MultimodalSceneDescriptors: Some items do not match the required schema; failing indexes: [0,1,2,3,4,5]; /MultimodalSceneDescriptors/0: Expected 1 matching subschema but found 0
+faces: 
+voices: 
+texts: 
+users: 
+--- 2026-11-06T00:33:31: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 121.3 s
+Event Descriptors: 6 scenes: 0 of speech, 0 of pictures
+valid against the schema: OSD-MEV-V1.5 not valid: : Some properties did not match the required schema: ["MultimodalSceneDescriptors"]; /MultimodalSceneDescriptors: Some items do not match the required schema; failing indexes: [0,1,2,3,4,5]; /MultimodalSceneDescriptors/0: Expected 1 matching subschema but found 0
+faces: 
+voices: 
+texts: 
+users: 
+--- 2026-11-06T00:35:37: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 121.3 s
+Event Descriptors: 6 scenes: 0 of speech, 0 of pictures
+valid against the schema: OSD-MEV-V1.5 not valid: : Some properties did not match the required schema: ["MultimodalSceneDescriptors"]; /MultimodalSceneDescriptors: Some items do not match the required schema; failing indexes: [0,1,2,3,4,5]; /MultimodalSceneDescriptors/0: Expected 1 matching subschema but found 0
+faces: 
+voices: 
+texts: 
+users: 
+--- 2026-11-06T09:11:35: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 121.2 s
+Event Descriptors: 6 scenes: 0 of speech, 0 of pictures
+valid against the schema: OSD-MEV-V1.5 not valid: : Some properties did not match the required schema: ["MultimodalSceneDescriptors"]; /MultimodalSceneDescriptors: Some items do not match the required schema; failing indexes: [0,1,2,3,4,5]; /MultimodalSceneDescriptors/0: Expected 1 matching subschema but found 0
+faces: 
+voices: 
+texts: 
+users: 
+--- 2026-11-06T09:15:16: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 121.2 s
+Event Descriptors: 6 scenes: 0 of speech, 0 of pictures
+valid against the schema: OSD-MEV-V1.5 not valid: : Some properties did not match the required schema: ["MultimodalSceneDescriptors"]; /MultimodalSceneDescriptors: Some items do not match the required schema; failing indexes: [0,1,2,3,4,5]; /MultimodalSceneDescriptors/0: Expected 1 matching subschema but found 0
+faces: 
+voices: 
+texts: 
+users: 
+--- 2026-11-06T09:59:46: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 122.4 s
+Event Descriptors: 11 scenes: 5 of speech, 6 of pictures
+valid against the schema: valid
+faces: face (1.00) | face (1.00) | face (1.00) | face (1.00) | face (1.00) | face (1.00)
+voices: Angelina_Jolie (0.79) | speech (1.00) | Arnold_Schwarzenegger (0.63) | Bill_Clinton (0.50) | Arnold_Schwarzenegger (0.57)
+texts:  |  |  |  | 
+users: person | person | person | person | person
+--- 2026-11-06T10:06:04: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 122.7 s
+Event Descriptors: 6 scenes: 5 of speech, 1 of pictures
+valid against the schema: valid
+faces: Angelina_Jolie (0.66)
+voices: Angelina_Jolie (0.79) | speech (1.00) | Arnold_Schwarzenegger (0.63) | Bill_Clinton (0.50) | Arnold_Schwarzenegger (0.57)
+texts: Better than those belonging to different nations, even when they... | "All perfect, all beautiful" or rather when people | And his lance leaning against a tree. | And in all hidden away, I'm short. | Completely defenseless.
+users: Angelina_Jolie
+--- 2026-11-06T10:08:35: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 122.9 s
+Event Descriptors: 11 scenes: 5 of speech, 6 of pictures
+valid against the schema: valid
+faces: Angelina_Jolie (0.66) | Bill_Clinton (0.48) | Angelina_Jolie (0.66) | Arnold_Schwarzenegger (0.72) | Bill_Clinton (0.48) | Arnold_Schwarzenegger (0.73)
+voices: Angelina_Jolie (0.79) | speech (1.00) | Arnold_Schwarzenegger (0.63) | Bill_Clinton (0.50) | Arnold_Schwarzenegger (0.57)
+texts: Better than those belonging to different nations, even when they... | "All perfect, all beautiful" or rather when people | And his lance leaning against a tree. | And in all hidden away, I'm short. | Completely defenseless.
+users: Angelina_Jolie | person | person | person | person
+--- 2026-11-07T19:39:39: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 124.4 s
+Event Descriptors: 11 scenes: 5 of speech, 6 of pictures
+valid against the schema: valid
+faces: Angelina_Jolie (0.66) | Bill_Clinton (0.48) | Angelina_Jolie (0.66) | Arnold_Schwarzenegger (0.72) | Bill_Clinton (0.48) | Arnold_Schwarzenegger (0.73)
+voices: Angelina_Jolie (0.79) | speech (1.00) | Arnold_Schwarzenegger (0.63) | Bill_Clinton (0.50) | Arnold_Schwarzenegger (0.57)
+texts: Better than those belonging to different nations, even when they... | "All perfect, all beautiful" or rather when people | And his lance leaning against a tree. | And in all hidden away, I'm short. | Completely defenseless.
+users: Angelina_Jolie | person | person | person | person
+--- 2026-11-08T00:25:03: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 131.0 s
+Event Descriptors: 11 scenes: 5 of speech, 6 of pictures
+valid against the schema: valid
+faces: Angelina_Jolie (0.66) | Bill_Clinton (0.48) | Angelina_Jolie (0.66) | Arnold_Schwarzenegger (0.72) | Bill_Clinton (0.48) | Arnold_Schwarzenegger (0.73)
+voices: Angelina_Jolie (0.79) | speech (1.00) | Arnold_Schwarzenegger (0.63) | Bill_Clinton (0.50) | Arnold_Schwarzenegger (0.57)
+texts: Better than those belonging to different nations, even when they... | "All perfect, all beautiful" or rather when people | And his lance leaning against a tree. | And in all hidden away, I'm short. | Completely defenseless.
+users: Angelina_Jolie | person | person | person | person
+--- 2026-11-09T01:44:03: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 127.6 s
+Event Descriptors: 11 scenes: 5 of speech, 6 of pictures
+valid against the schema: valid
+faces: Angelina_Jolie (0.66) | Bill_Clinton (0.48) | Angelina_Jolie (0.66) | Arnold_Schwarzenegger (0.72) | Bill_Clinton (0.48) | Arnold_Schwarzenegger (0.73)
+voices: Angelina_Jolie (0.79) | speech (1.00) | Arnold_Schwarzenegger (0.63) | Bill_Clinton (0.50) | Arnold_Schwarzenegger (0.57)
+texts: 
+users: Angelina_Jolie | person | person | person | person
+--- 2026-11-09T19:20:37: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 123.0 s
+Event Descriptors: 11 scenes: 5 of speech, 6 of pictures
+valid against the schema: valid
+faces: Angelina_Jolie (0.66) | Bill_Clinton (0.48) | Angelina_Jolie (0.66) | Arnold_Schwarzenegger (0.72) | Bill_Clinton (0.48) | Arnold_Schwarzenegger (0.73)
+voices: Angelina_Jolie (0.79) | speech (1.00) | Arnold_Schwarzenegger (0.63) | Bill_Clinton (0.50) | Arnold_Schwarzenegger (0.57)
+texts: Better than those belonging to different nations, even when they... | "All perfect, all beautiful" or rather when people | And his lance leaning against a tree. | And in all hidden away, I'm short. | Completely defenseless.
+users: Angelina_Jolie | person | person | person | person
+--- 2026-11-11T00:07:11: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 122.6 s
+Event Descriptors: 11 scenes: 5 of speech, 6 of pictures
+valid against the schema: valid
+faces: Angelina_Jolie (0.66) | Bill_Clinton (0.48) | Angelina_Jolie (0.66) | Arnold_Schwarzenegger (0.72) | Bill_Clinton (0.48) | Arnold_Schwarzenegger (0.73)
+voices: Angelina_Jolie (0.79) | speech (1.00) | Arnold_Schwarzenegger (0.63) | Bill_Clinton (0.50) | Arnold_Schwarzenegger (0.57)
+texts: Better than those belonging to different nations, even when they... | "All perfect, all beautiful" or rather when people | And his lance leaning against a tree. | And in all hidden away, I'm short. | Completely defenseless.
+users: Angelina_Jolie | person | person | person | person
+--- 2026-11-11T00:12:59: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 122.8 s
+Event Descriptors: 11 scenes: 5 of speech, 6 of pictures
+valid against the schema: valid
+faces: Angelina_Jolie (0.66) | Bill_Clinton (0.48) | Angelina_Jolie (0.66) | Arnold_Schwarzenegger (0.72) | Bill_Clinton (0.48) | Arnold_Schwarzenegger (0.73)
+voices: Angelina_Jolie (0.79) | speech (1.00) | Arnold_Schwarzenegger (0.63) | Bill_Clinton (0.50) | Arnold_Schwarzenegger (0.57)
+texts: Better than those belonging to different nations, even when they... | "All perfect, all beautiful" or rather when people | And his lance leaning against a tree. | And in all hidden away, I'm short. | Completely defenseless.
+users: Angelina_Jolie | person | person | person | person
+--- 2026-11-12T02:32:17: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 123.1 s
+Event Descriptors: 11 scenes: 5 of speech, 6 of pictures
+valid against the schema: valid
+faces: Angelina_Jolie (0.66) | Bill_Clinton (0.48) | Angelina_Jolie (0.66) | Arnold_Schwarzenegger (0.72) | Bill_Clinton (0.48) | Arnold_Schwarzenegger (0.73)
+voices: Angelina_Jolie (0.79) | speech (1.00) | Arnold_Schwarzenegger (0.63) | Bill_Clinton (0.50) | Arnold_Schwarzenegger (0.57)
+texts: Better than those belonging to different nations, even when they... | "All perfect, all beautiful" or rather when people
+users: Angelina_Jolie | person | person | person | person
+--- 2026-11-14T01:26:58: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 126.6 s
+Event Descriptors: 11 scenes: 5 of speech, 6 of pictures
+valid against the schema: valid
+faces: Angelina_Jolie (0.66) | Bill_Clinton (0.48) | Angelina_Jolie (0.66) | Arnold_Schwarzenegger (0.72) | Bill_Clinton (0.48) | Arnold_Schwarzenegger (0.73)
+voices: Angelina_Jolie (0.79) | speech (1.00) | Arnold_Schwarzenegger (0.63) | Bill_Clinton (0.50) | Arnold_Schwarzenegger (0.57)
+texts: 
+users: Angelina_Jolie | person | person | person | person
+--- 2026-11-15T00:24:01: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 124.1 s
+Event Descriptors: 11 scenes: 5 of speech, 6 of pictures
+valid against the schema: valid
+faces: Angelina_Jolie (0.66) | Bill_Clinton (0.48) | Angelina_Jolie (0.66) | Arnold_Schwarzenegger (0.72) | Bill_Clinton (0.48) | Arnold_Schwarzenegger (0.73)
+voices: Angelina_Jolie (0.79) | speech (1.00) | Arnold_Schwarzenegger (0.63) | Bill_Clinton (0.50) | Arnold_Schwarzenegger (0.57)
+texts: Better than those belonging to different nations, even when they... | "All perfect, all beautiful" or rather when people
+users: Angelina_Jolie | person | person | person | person
+--- 2026-11-17T03:35:00: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 193.1 s
+Event Descriptors: 11 scenes: 5 of speech, 6 of pictures
+valid against the schema: OSD-MEV-V1.5 not valid: : Some properties did not match the required schema: ["MultimodalSceneDescriptors"]; /MultimodalSceneDescriptors: Some items do not match the required schema; failing indexes: [6,7,8,9,10]; /MultimodalSceneDescriptors/6: Expected 1 matching subschema but found 0
+faces: Angelina_Jolie (0.66) | Bill_Clinton (0.48) | Angelina_Jolie (0.66) | Arnold_Schwarzenegger (0.72) | Bill_Clinton (0.48) | Arnold_Schwarzenegger (0.73)
+voices: Angelina_Jolie (0.79) | speech (1.00) | Arnold_Schwarzenegger (0.63) | Bill_Clinton (0.50) | Arnold_Schwarzenegger (0.57)
+texts: Better than those belonging to different nations, even when they... | "All perfect, all beautiful" or rather when people | And his lance leaning against a tree. | And in all hidden away, I'm short. | Completely defenseless.
+users: 
+--- 2026-11-18T03:12:30: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 260.4 s
+Event Descriptors: 11 scenes: 5 of speech, 6 of pictures
+valid against the schema: valid
+faces: 
+voices: Angelina_Jolie (0.79) | speech (1.00) | Arnold_Schwarzenegger (0.63) | Bill_Clinton (0.50) | Arnold_Schwarzenegger (0.57)
+texts: Better than those belonging to different nations, even when they... | "All perfect, all beautiful" or rather when people | And his lance leaning against a tree. | And in all hidden away, I'm short. | Completely defenseless.
+users: 
+--- 2026-11-18T09:15:45: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 357.6 s
+Event Descriptors: 11 scenes: 5 of speech, 6 of pictures
+valid against the schema: valid
+faces: 
+voices: Angelina_Jolie (0.79) | speech (1.00) | Arnold_Schwarzenegger (0.63) | Bill_Clinton (0.50) | Arnold_Schwarzenegger (0.57)
+texts: Better than those belonging to different nations, even when they... | "All perfect, all beautiful" or rather when people | And his lance leaning against a tree. | And in all hidden away, I'm short. | Completely defenseless.
+users: 
+--- 2026-11-19T00:21:20: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 350.6 s
+Event Descriptors: 11 scenes: 5 of speech, 6 of pictures
+valid against the schema: valid
+faces: 
+voices: Angelina_Jolie (0.79) | speech (1.00) | Arnold_Schwarzenegger (0.63) | Bill_Clinton (0.50) | Arnold_Schwarzenegger (0.57)
+texts: Better than those belonging to different nations, even when they... | "All perfect, all beautiful" or rather when people | And his lance leaning against a tree. | And in all hidden away, I'm short. | Completely defenseless.
+users: 
+--- 2026-11-19T02:50:26: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 162.9 s
+Event Descriptors: 11 scenes: 5 of speech, 6 of pictures
+valid against the schema: valid
+faces: 
+voices: Angelina_Jolie (0.79) | speech (1.00) | Arnold_Schwarzenegger (0.63) | Bill_Clinton (0.50) | Arnold_Schwarzenegger (0.57)
+texts: Better than those belonging to different nations, even when they... | "All perfect, all beautiful" or rather when people | And his lance leaning against a tree. | And in all hidden away, I'm short. | Completely defenseless.
+users: 
+--- 2026-11-20T05:56:30: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 168.0 s
+Event Descriptors: 11 scenes: 5 of speech, 6 of pictures
+valid against the schema: valid
+faces: 
+voices: Angelina_Jolie (0.79) | speech (1.00) | Arnold_Schwarzenegger (0.63) | Bill_Clinton (0.50) | Arnold_Schwarzenegger (0.57)
+texts: Better than those belonging to different nations, even when they... | "All perfect, all beautiful" or rather when people | And his lance leaning against a tree. | And in all hidden away, I'm short. | Completely defenseless.
+users: 
+--- 2026-11-21T01:03:55: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 141.4 s
+Event Descriptors: 11 scenes: 5 of speech, 6 of pictures
+valid against the schema: valid
+faces: 
+voices: Angelina_Jolie (0.79) | speech (1.00) | Arnold_Schwarzenegger (0.63) | Bill_Clinton (0.50) | Arnold_Schwarzenegger (0.57)
+texts: Better than those belonging to different nations, even when they... | "All perfect, all beautiful" or rather when people | And his lance leaning against a tree. | And in all hidden away, I'm short. | Completely defenseless.
+users: 
+--- 2026-11-21T01:33:36: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 139.3 s
+Event Descriptors: 11 scenes: 5 of speech, 6 of pictures
+valid against the schema: valid
+faces: Angelina_Jolie (0.68) | Angelina_Jolie (0.69) | Bill_Clinton (0.46) | Bill_Clinton (0.45) | Arnold_Schwarzenegger (0.63)
+voices: Angelina_Jolie (0.79) | speech (1.00) | Arnold_Schwarzenegger (0.63) | Bill_Clinton (0.50) | Arnold_Schwarzenegger (0.57)
+texts: Better than those belonging to different nations, even when they... | "All perfect, all beautiful" or rather when people | And his lance leaning against a tree. | And in all hidden away, I'm short. | Completely defenseless.
+users: 
+--- 2026-11-21T02:03:49: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 156.3 s
+Event Descriptors: 11 scenes: 5 of speech, 6 of pictures
+valid against the schema: valid
+faces: Angelina_Jolie (0.68) | Angelina_Jolie (0.69) | Bill_Clinton (0.46) | Bill_Clinton (0.45) | Arnold_Schwarzenegger (0.63)
+voices: Angelina_Jolie (0.79) | speech (1.00) | Arnold_Schwarzenegger (0.63) | Bill_Clinton (0.50) | Arnold_Schwarzenegger (0.57)
+texts: Better than those belonging to different nations, even when they... | "All perfect, all beautiful" or rather when people | And his lance leaning against a tree. | And in all hidden away, I'm short. | Completely defenseless.
+users: 
+--- 2026-11-23T02:56:33: 16.5 s, turns: Angelina_Jolie 0.0-3.0; Bill_Clinton 3.0-6.0; Angelina_Jolie 5.0-8.0; Arnold_Schwarzenegger 8.0-11.0; Bill_Clinton 10.0-13.0; Arnold_Schwarzenegger 13.0-16.0
+run: 175.7 s
+Event Descriptors: 11 scenes: 5 of speech, 6 of pictures
+valid against the schema: valid
+faces: Angelina_Jolie (0.68) | Angelina_Jolie (0.69) | Bill_Clinton (0.46) | Bill_Clinton (0.45) | Arnold_Schwarzenegger (0.63)
+voices: Angelina_Jolie (0.79) | speech (1.00) | Arnold_Schwarzenegger (0.63) | Bill_Clinton (0.50) | Arnold_Schwarzenegger (0.57)
+texts: Better than those belonging to different nations, even when they... | "All perfect, all beautiful" or rather when people | And his lance leaning against a tree. | And in all hidden away, I'm short. | Completely defenseless.
+users: 

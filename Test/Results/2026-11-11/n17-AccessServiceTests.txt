@@ -1,0 +1,44 @@
+﻿Test run for D:\AI\Test\Mpai.Aif.Tests\bin\Debug\net10.0\Mpai.Aif.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.13]   Discovering: Mpai.Aif.Tests
+[xUnit.net 00:00:00.34]   Discovered:  Mpai.Aif.Tests
+[xUnit.net 00:00:00.36]   Starting:    Mpai.Aif.Tests
+dotnet : [xUnit.net 00:00:18.69]     Mpai.Aif.Tests.AccessServiceTests.Step3OfferedByTheService [FAIL]
+At line:1 char:698
++ ... emTests') { dotnet test --no-build --filter "FullyQualifiedName~Mpai. ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([xUnit.net 00:0...eService [FAIL]:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[xUnit.net 00:00:18.69]       access-service.json: 2 difference(s) from the recorded state. A new failure is a regression; a new success is accepted with MPAI_UPDATE_EXPECTED=1.
+  registered, then checked
+    expected: in the gallery; access granted
+    now:      OK; kept False; granted True
+  then
+    expected: access refused
+    now:      access not refused
+[xUnit.net 00:00:18.69]       Stack Trace:
+[xUnit.net 00:00:18.69]         D:\AI\Test\Mpai.Aif.Tests\Expected.cs(52,0): at Mpai.Aif.Tests.Expected.Match(String file, IReadOnlyDictionary`2 actual)
+[xUnit.net 00:00:18.69]         D:\AI\Test\Mpai.Aif.Tests\AccessServiceTests.cs(99,0): at Mpai.Aif.Tests.AccessServiceTests.Step3OfferedByTheService()
+[xUnit.net 00:00:18.69]         --- End of stack trace from previous location ---
+[xUnit.net 00:00:18.71]   Finished:    Mpai.Aif.Tests
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+  Failed Mpai.Aif.Tests.AccessServiceTests.Step3OfferedByTheService [18 s]
+  Error Message:
+   access-service.json: 2 difference(s) from the recorded state. A new failure is a regression; a new success is accepted with MPAI_UPDATE_EXPECTED=1.
+  registered, then checked
+    expected: in the gallery; access granted
+    now:      OK; kept False; granted True
+  then
+    expected: access refused
+    now:      access not refused
+  Stack Trace:
+     at Mpai.Aif.Tests.Expected.Match(String file, IReadOnlyDictionary`2 actual) in D:\AI\Test\Mpai.Aif.Tests\Expected.cs:line 52
+   at Mpai.Aif.Tests.AccessServiceTests.Step3OfferedByTheService() in D:\AI\Test\Mpai.Aif.Tests\AccessServiceTests.cs:line 99
+--- End of stack trace from previous location ---
+
+Test Run Failed.
+Total tests: 1
+     Failed: 1
+ Total time: 19.3758 Seconds

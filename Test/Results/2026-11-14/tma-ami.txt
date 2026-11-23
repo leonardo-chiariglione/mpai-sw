@@ -1,0 +1,168 @@
+--- 2026-11-14T14:59:29: AMI IS1009c 10:00 +30 s, 150 frames at 5/s, 30.0 s of sound
+run: 182.6 s
+AIMs: 1CAE-AUS-V1.0-I01 Alive; 1CVE-VCD-V1.0-I01 Alive; 1MMC-ASR-V2.5-I02 Alive; 1MMC-SIR-V2.5-I02 Alive; 1OSD-BSS-V1.5-I01 Alive; 1OSD-BVS-V1.5-I01 Alive; 1OSD-FBO-V1.5-I01 Alive; 1OSD-IDR-V1.5-I01 Alive; 1OSD-MED-V1.5-I01 Alive; 1OSD-MSM-V1.5-I01 Alive; 1PAF-FIR-V1.6-I02 Alive
+exceptions/errors of AIMs: 0
+Event Descriptors: 3 scenes: 2 of speech, 1 of pictures
+faces given by FIR: 1; voices given by SIR: 2
+texts: Now this is an interface for a remote which a child can use.
+This is user friendly, it's very attractive and children can use it as well as they can
+play with it.
+And this comes with different colors, different shapes. | And this child interface has minimized.
+valid against the schema: valid
+--- 2026-11-15T00:19:59: AMI IS1009c 10:00 +30 s, 150 frames at 5/s, 30.0 s of sound
+run: 186.8 s
+AIMs: 1CAE-AUS-V1.0-I01 Alive; 1CVE-VCD-V1.0-I01 Alive; 1MMC-ASR-V2.5-I02 Alive; 1MMC-SIR-V2.5-I02 Alive; 1OSD-BSS-V1.5-I01 Alive; 1OSD-BVS-V1.5-I01 Alive; 1OSD-FBO-V1.5-I01 Alive; 1OSD-IDR-V1.5-I01 Alive; 1OSD-MED-V1.5-I01 Alive; 1OSD-MSM-V1.5-I01 Alive; 1PAF-FIR-V1.6-I02 Alive
+exceptions/errors of AIMs: 0
+Event Descriptors: 3 scenes: 2 of speech, 1 of pictures
+faces given by FIR: 1; voices given by SIR: 2
+texts: Now this is an interface for a remote which a child can use.
+This is user friendly, it's very attractive and children can use it as well as they can
+play with it.
+And this comes with different colors, different shapes.
+valid against the schema: valid
+--- 2026-11-15T05:32:08: AMI IS1009c 10:00 +300 s, 1500 frames at 5/s, 300.0 s of sound
+run: 199.1 s
+AIMs: 1CAE-AUS-V1.0-I01 Alive; 1CVE-VCD-V1.0-I01 Alive; 1MMC-ASR-V2.5-I02 Alive; 1MMC-SIR-V2.5-I02 Alive; 1OSD-BSS-V1.5-I01 Alive; 1OSD-BVS-V1.5-I01 Alive; 1OSD-FBO-V1.5-I01 Alive; 1OSD-IDR-V1.5-I01 Alive; 1OSD-MED-V1.5-I01 Alive; 1OSD-MSM-V1.5-I01 Alive; 1PAF-FIR-V1.6-I02 Alive
+exceptions/errors of AIMs: 0
+Event Descriptors: 18 scenes: 17 of speech, 1 of pictures
+faces given by FIR: 1; voices given by SIR: 17
+texts: Now this is an interface for a remote which a child can use.
+This is user friendly, it's very attractive and children can use it as well as they can
+play with it.
+And this comes with different colors, different shapes. | And this child interface has minimum buttons and all the important buttons are there in
+this small compact attractive child interface. | Now this is a big oversized remote which cannot be misplaced or it's impossible to misplace anywhere.
+You don't know me. I could lose that in a minute.
+This is a very big, you cannot misplace it anywhere.
+So this is a jumbo universal remote control and it's impossible to misplace or lose.
+This is one such interface which can be created. | And the personal preference would be to incorporate speech recognizes which will respond to user's voice for a particular function. | Thank you. | - Mm-hmm. |  | Okay, thank you very much any comments on her presentation | Well, looks like we still have quite a choice of things out
+there.
+No suggestion is bad.
+But we're going to have to narrow it down a little more.
+I don't think that we can get--
+the t-shape is good, the child one is good.
+It's too big to misplace.
+I think it's just funny.
+I don't think that's going to be our impulse purchase
+at the checkout counter.
+It's going to be a little bit too un-wieldy.
+These are her presentations, but as far as the decision
+making, we're getting to that after.
+But I just wanted to know whether anybody had anything
+to add to her presentation.
+No, I think her presentation was good,
+and she really explored all the options.
+Who wants to go next? | Okay, and you | - Okay. | the components design. | this time I'm going to | concentrate more on the components and the technical side of the remote controller design. | I have just briefed down a few components which we require for the remote control construction.
+The first one is that we need to have a remote control system that has a remote control function. | keep all the components like integrated circuit, battery etc etc it's like it can be a plastic
+one hard plastic so that it can be strong even if you just you know if you if it falls
+down then it doesn't break so it should be strong and there are no harmful materials
+used in that and it should be recyclable. | And also using of colouring components like if we want to have different colours, blue, red, green.
+So we have to use some colouring components.
+The second important thing is integrated circuit.
+We can use a highly sophisticated one because it's like the heart of the remote controller.
+If it is not efficient then everything is going to be less efficient.
+So we should have a highly sophisticated one and it should be resistant to high as well as low temperatures.
+Suppose if it is 38 degrees outside, 40 degrees outside, it should be able to resist the high temperature and low temperatures.
+and it should be equipped with a timer and alarm.
+valid against the schema: valid
+--- 2026-11-17T03:29:52: AMI IS1009c 10:00 +30 s, 150 frames at 5/s, 30.0 s of sound
+run: 301.8 s
+AIMs: 1CAE-AUS-V1.0-I01 Alive; 1CVE-VCD-V1.0-I01 Alive; 1MMC-ASR-V2.5-I02 Alive; 1MMC-SIR-V2.5-I02 Alive; 1OSD-BSS-V1.5-I01 Alive; 1OSD-BVS-V1.5-I01 Alive; 1OSD-FBO-V1.5-I01 Alive; 1OSD-IDR-V1.5-I01 Alive; 1OSD-MED-V1.5-I01 Alive; 1OSD-MSM-V1.5-I01 Alive; 1PAF-FIR-V1.6-I02 Alive
+exceptions/errors of AIMs: 0
+Event Descriptors: 3 scenes: 2 of speech, 1 of pictures
+faces given by FIR: 1; voices given by SIR: 2
+texts: Now this is an interface for a remote which a child can use.
+This is user friendly, it's very attractive and children can use it as well as they can
+play with it.
+And this comes with different colors, different shapes. | And this child interface has minimized.
+valid against the schema: OSD-MEV-V1.5 not valid: : Some properties did not match the required schema: ["MultimodalSceneDescriptors"]; /MultimodalSceneDescriptors: Some items do not match the required schema; failing indexes: [1,2]; /MultimodalSceneDescriptors/1: Expected 1 matching subschema but found 0
+--- 2026-11-18T03:03:08: AMI IS1009c 10:00 +30 s, 150 frames at 5/s, 30.0 s of sound
+run: 426.1 s
+AIMs: 1CAE-AUS-V1.0-I01 Alive; 1CVE-VCD-V1.0-I01 Alive; 1MMC-ASR-V2.5-I02 Alive; 1MMC-SIR-V2.5-I02 Alive; 1OSD-BSS-V1.5-I01 Alive; 1OSD-BVS-V1.5-I01 Alive; 1OSD-FBO-V1.5-I01 Alive; 1OSD-IDR-V1.5-I01 Alive; 1OSD-MED-V1.5-I01 Alive; 1OSD-MSM-V1.5-I01 Alive; 1PAF-FIR-V1.6-I02 Alive
+exceptions/errors of AIMs: 0
+Event Descriptors: 3 scenes: 2 of speech, 1 of pictures
+voices given by SIR: 2
+faces in the MEV: 119; by person: unregistered-2 57, unregistered-1 30, unregistered-3 30, unregistered-4 2
+utterances: 2; with their time: 2; with a speaker: 2; with their words: 2; with a position: 0; voice-face alignments: 0
+texts: Now this is an interface for a remote which a child can use.
+This is user friendly, it's very attractive and children can use it as well as they can
+play with it.
+And this comes with different colors, different shapes. | And this child interface has minimized.
+valid against the schema: valid
+--- 2026-11-18T09:09:08: AMI IS1009c 10:00 +30 s, 150 frames at 5/s, 30.0 s of sound
+run: 366.0 s
+AIMs: 1CAE-AUS-V1.0-I01 Alive; 1CVE-VCD-V1.0-I01 Alive; 1MMC-ASR-V2.5-I02 Alive; 1MMC-SIR-V2.5-I02 Alive; 1OSD-BSS-V1.5-I01 Alive; 1OSD-BVS-V1.5-I01 Alive; 1OSD-FBO-V1.5-I01 Alive; 1OSD-IDR-V1.5-I01 Alive; 1OSD-MED-V1.5-I01 Alive; 1OSD-MSM-V1.5-I01 Alive; 1PAF-FIR-V1.6-I02 Alive
+exceptions/errors of AIMs: 0
+Event Descriptors: 3 scenes: 2 of speech, 1 of pictures
+voices given by SIR: 2
+faces in the MEV: 119; by person: unregistered-2 57, unregistered-1 30, unregistered-3 30, unregistered-4 2
+utterances: 2; with their time: 2; with a speaker: 2; with their words: 2; with a position: 0; voice-face alignments: 0
+texts: Now this is an interface for a remote which a child can use.
+This is user friendly, it's very attractive and children can use it as well as they can
+play with it.
+And this comes with different colors, different shapes. | And this child interface has minimized.
+valid against the schema: valid
+--- 2026-11-19T00:15:25: AMI IS1009c 10:00 +30 s, 150 frames at 5/s, 30.0 s of sound
+run: 311.1 s
+AIMs: 1CAE-AUS-V1.0-I01 Alive; 1CVE-VCD-V1.0-I01 Alive; 1MMC-ASR-V2.5-I02 Alive; 1MMC-SIR-V2.5-I02 Alive; 1OSD-BSS-V1.5-I01 Alive; 1OSD-BVS-V1.5-I01 Alive; 1OSD-FBO-V1.5-I01 Alive; 1OSD-IDR-V1.5-I01 Alive; 1OSD-MED-V1.5-I01 Alive; 1OSD-MSM-V1.5-I01 Alive; 1PAF-FIR-V1.6-I02 Alive
+exceptions/errors of AIMs: 0
+Event Descriptors: 3 scenes: 2 of speech, 1 of pictures
+voices given by SIR: 2
+faces in the MEV: 119; by person: unregistered-2 57, unregistered-1 30, unregistered-3 30, unregistered-4 2
+utterances: 2; with their time: 2; with a speaker: 2; with their words: 2; with a position: 0; voice-face alignments: 0
+texts: Now this is an interface for a remote which a child can use.
+This is user friendly, it's very attractive and children can use it as well as they can
+play with it.
+And this comes with different colors, different shapes. | And this child interface has minimized.
+valid against the schema: valid
+--- 2026-11-19T02:44:08: AMI IS1009c 10:00 +30 s, 150 frames at 5/s, 30.0 s of sound
+run: 366.3 s
+AIMs: 1CAE-AUS-V1.0-I01 Alive; 1CVE-VCD-V1.0-I01 Alive; 1MMC-ASR-V2.5-I02 Alive; 1MMC-SIR-V2.5-I02 Alive; 1OSD-BSS-V1.5-I01 Alive; 1OSD-BVS-V1.5-I01 Alive; 1OSD-FBO-V1.5-I01 Alive; 1OSD-IDR-V1.5-I01 Alive; 1OSD-MED-V1.5-I01 Alive; 1OSD-MSM-V1.5-I01 Alive; 1PAF-FIR-V1.6-I02 Alive
+exceptions/errors of AIMs: 0
+Event Descriptors: 3 scenes: 2 of speech, 1 of pictures
+voices given by SIR: 2
+faces in the MEV: 119; by person: unregistered-2 57, unregistered-1 30, unregistered-3 30, unregistered-4 2
+utterances: 2; with their time: 2; with a speaker: 2; with their words: 2; with a position: 0; voice-face alignments: 0
+texts: Now this is an interface for a remote which a child can use.
+This is user friendly, it's very attractive and children can use it as well as they can
+play with it.
+And this comes with different colors, different shapes. | And this child interface has minimized.
+valid against the schema: valid
+--- 2026-11-20T05:51:49: AMI IS1009c 10:00 +30 s, 150 frames at 5/s, 30.0 s of sound
+run: 265.5 s
+AIMs: 1CAE-AUS-V1.0-I01 Alive; 1CVE-VCD-V1.0-I01 Alive; 1MMC-ASR-V2.5-I02 Alive; 1MMC-SIR-V2.5-I02 Alive; 1OSD-BSS-V1.5-I01 Alive; 1OSD-BVS-V1.5-I01 Alive; 1OSD-FBO-V1.5-I01 Alive; 1OSD-IDR-V1.5-I01 Alive; 1OSD-MED-V1.5-I01 Alive; 1OSD-MSM-V1.5-I01 Alive; 1PAF-FIR-V1.6-I02 Alive
+exceptions/errors of AIMs: 0
+Event Descriptors: 3 scenes: 2 of speech, 1 of pictures
+voices given by SIR: 2
+faces in the MEV: 119; by person: unregistered-2 57, unregistered-1 30, unregistered-3 30, unregistered-4 2
+utterances: 2; with their time: 2; with a speaker: 2; with their words: 2; with a position: 0; voice-face alignments: 0
+texts: Now this is an interface for a remote which a child can use.
+This is user friendly, it's very attractive and children can use it as well as they can
+play with it.
+And this comes with different colors, different shapes. | And this child interface has minimized.
+valid against the schema: valid
+--- 2026-11-21T01:58:24: AMI IS1009c 10:00 +30 s, 150 frames at 5/s, 30.0 s of sound
+run: 317.0 s
+AIMs: 1CAE-AUS-V1.0-I01 Alive; 1CVE-VCD-V1.0-I01 Alive; 1MMC-ASR-V2.5-I02 Alive; 1MMC-SIR-V2.5-I02 Alive; 1OSD-BSS-V1.5-I01 Alive; 1OSD-BVS-V1.5-I01 Alive; 1OSD-FBO-V1.5-I01 Alive; 1OSD-IDR-V1.5-I01 Alive; 1OSD-MED-V1.5-I01 Alive; 1OSD-MSM-V1.5-I01 Alive; 1PAF-FIR-V1.6-I02 Alive
+exceptions/errors of AIMs: 0
+Event Descriptors: 3 scenes: 2 of speech, 1 of pictures
+voices given by SIR: 2
+faces in the MEV: 119; by person: unregistered-2 57, unregistered-1 30, unregistered-3 30, unregistered-4 2
+utterances: 2; with their time: 2; with a speaker: 2; with their words: 2; with a position: 0; voice-face alignments: 0
+texts: Now this is an interface for a remote which a child can use.
+This is user friendly, it's very attractive and children can use it as well as they can
+play with it.
+And this comes with different colors, different shapes. | And this child interface has minimized.
+valid against the schema: valid
+--- 2026-11-23T02:47:54: AMI IS1009c 10:00 +30 s, 150 frames at 5/s, 30.0 s of sound
+run: 459.0 s
+AIMs: 1CAE-AUS-V1.0-I01 Alive; 1CVE-VCD-V1.0-I01 Alive; 1MMC-ASR-V2.5-I02 Alive; 1MMC-SIR-V2.5-I02 Alive; 1OSD-BSS-V1.5-I01 Alive; 1OSD-BVS-V1.5-I01 Alive; 1OSD-FBO-V1.5-I01 Alive; 1OSD-IDR-V1.5-I01 Alive; 1OSD-MED-V1.5-I01 Alive; 1OSD-MSM-V1.5-I01 Alive; 1PAF-FIR-V1.6-I02 Alive
+exceptions/errors of AIMs: 0
+Event Descriptors: 3 scenes: 2 of speech, 1 of pictures
+voices given by SIR: 2
+faces in the MEV: 46; by person: unregistered-2 23, unregistered-1 12, unregistered-3 11
+utterances: 2; with their time: 2; with a speaker: 2; with their words: 1; with a position: 0; voice-face alignments: 0
+texts: Now this is an interface for a remote which a child can use.
+This is user friendly, it's very attractive and children can use it as well as they can
+play with it.
+And this comes with different colors, different shapes. | And this child interface has minimized.
+valid against the schema: valid

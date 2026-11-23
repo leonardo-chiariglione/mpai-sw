@@ -1,0 +1,46 @@
+﻿Test run for D:\AI\Test\Mpai.Aif.Tests\bin\Debug\net10.0\Mpai.Aif.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.12]   Discovering: Mpai.Aif.Tests
+[xUnit.net 00:00:00.33]   Discovered:  Mpai.Aif.Tests
+[xUnit.net 00:00:00.36]   Starting:    Mpai.Aif.Tests
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-NLU-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-NLU-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+dotnet : [xUnit.net 00:00:01.01]     Mpai.Aif.Tests.SystemTests.Loops [FAIL]
+At line:1 char:698
++ ... emTests') { dotnet test --no-build --filter "FullyQualifiedName~Mpai. ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([xUnit.net 00:0...ts.Loops [FAIL]:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[xUnit.net 00:00:01.01]       loops.json: 1 difference(s) from the recorded state. A new failure is a regression; a new success is accepted with MPAI_UPDATE_EXPECTED=1.
+  1XRV-LTP-V1.0-I01
+    expected: (absent)
+    now:      1XRV-ACG-V1.0-I01 -> 1XRV-OSI-V1.0-I01 -> 1XRV-ACG-V1.0-I01
+[xUnit.net 00:00:01.01]       Stack Trace:
+[xUnit.net 00:00:01.01]         D:\AI\Test\Mpai.Aif.Tests\Expected.cs(52,0): at Mpai.Aif.Tests.Expected.Match(String file, IReadOnlyDictionary`2 actual)
+[xUnit.net 00:00:01.01]         D:\AI\Test\Mpai.Aif.Tests\SystemTests.cs(35,0): at Mpai.Aif.Tests.SystemTests.Loops()
+[xUnit.net 00:00:01.01]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.01]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:01.02]   Finished:    Mpai.Aif.Tests
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+  Passed Mpai.Aif.Tests.SystemTests.CavStatus [590 ms]
+  Failed Mpai.Aif.Tests.SystemTests.Loops [25 ms]
+  Error Message:
+   loops.json: 1 difference(s) from the recorded state. A new failure is a regression; a new success is accepted with MPAI_UPDATE_EXPECTED=1.
+  1XRV-LTP-V1.0-I01
+    expected: (absent)
+    now:      1XRV-ACG-V1.0-I01 -> 1XRV-OSI-V1.0-I01 -> 1XRV-ACG-V1.0-I01
+  Stack Trace:
+     at Mpai.Aif.Tests.Expected.Match(String file, IReadOnlyDictionary`2 actual) in D:\AI\Test\Mpai.Aif.Tests\Expected.cs:line 52
+   at Mpai.Aif.Tests.SystemTests.Loops() in D:\AI\Test\Mpai.Aif.Tests\SystemTests.cs:line 35
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Test Run Failed.
+Total tests: 2
+     Passed: 1
+     Failed: 1
+ Total time: 1.6927 Seconds

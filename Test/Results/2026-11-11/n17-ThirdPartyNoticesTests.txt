@@ -1,0 +1,16 @@
+﻿Test run for D:\AI\Test\Mpai.Aif.Tests\bin\Debug\net10.0\Mpai.Aif.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.13]   Discovering: Mpai.Aif.Tests
+[xUnit.net 00:00:00.34]   Discovered:  Mpai.Aif.Tests
+[xUnit.net 00:00:00.36]   Starting:    Mpai.Aif.Tests
+[xUnit.net 00:00:00.63]   Finished:    Mpai.Aif.Tests
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+  Passed Mpai.Aif.Tests.ThirdPartyNoticesTests.ThePageOfTheModelsListsTheSameModelsWithTheirSourcesAndLicences [47 ms]
+  Passed Mpai.Aif.Tests.ThirdPartyNoticesTests.TheNoticesListEveryModelAndEveryPieceOfDataTheMetadataDeclares [44 ms]
+  Passed Mpai.Aif.Tests.ThirdPartyNoticesTests.EverySourceFileThatUsesAModelOrDataSaysSoInItsFirstLines [146 ms]
+
+Test Run Successful.
+Total tests: 3
+     Passed: 3
+ Total time: 1.3026 Seconds

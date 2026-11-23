@@ -1,0 +1,42 @@
+﻿Test run for D:\AI\Test\Mpai.Aif.Tests\bin\Debug\net10.0\Mpai.Aif.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+D:\AI\Test\Mpai.Aif.Tests\bin\Debug\net10.0\Mpai.Aif.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.14]   Discovering: Mpai.Aif.Tests
+[xUnit.net 00:00:00.35]   Discovered:  Mpai.Aif.Tests
+[xUnit.net 00:00:00.38]   Starting:    Mpai.Aif.Tests
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[ONNX] encoder_model.onnx: CPU (CUDA unavailable: Unable to find an entry point named 'OrtSessionOptionsAppendExecutionProvider_CUDA' in DLL 'onnxruntime'.)
+[ONNX] decoder_model.onnx: CPU
+[ONNX] decoder_with_past_model.onnx: CPU
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-SOE-V2.5] open welcome
+[MMC-SOE-V2.5] translating welcome from en-US into it
+[ASR] ports in: OSD-BSO-V1.5#1; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+[MMC-ASR-V2.5] whisper-server ready on port 62933: 307D12F9ABEBF672F37F80B3DD2E2B37.data kept loaded
+[MMC-ASR-V2.5] heard 7 words
+[MMC-TTT-V2.5] en -> it
+[MMC-SOE-V2.5] welcome replaced by its translation into it: welcome-trans
+[xUnit.net 00:00:18.75]   Finished:    Mpai.Aif.Tests
+Data collector 'Blame' message: All tests finished running, Sequence file will not be generated.
+  Passed Mpai.Aif.Tests.AsmTranslationInItsOwnPoolTests.ASpeechSegmentTranslatedInAsmIsInTheTargetLanguageAndTheVciDoesNotAnswerIt [18 s]
+  Standard Output Messages:
+ 1MMC-SSE-V2.5-I01: in [OSD-SPO-V1.5#1] -> out []
+ 1MMC-JSI-V2.5-I02: in [CAE-UCM-V1.0#1] -> out []
+ 1MMC-SOE-V2.5-I01: in [CAE-UCM-V1.0#1] -> out [OSD-BSO-V1.5#2, OSD-SEL-V1.5#1, OSD-SPO-V1.5#1]
+ 1MMC-SSE-V2.5-I01: in [OSD-SPO-V1.5#1] -> out []
+ 1MMC-TST-V2.5-I01/1MMC-ASR-V2.5-I01: in [OSD-BSO-V1.5#1] -> out [OSD-BTO-V1.5#1] "Good morning. The concert starts at eight."
+ 1MMC-TTT-V2.5-I01: in [OSD-BTO-V1.5#2, OSD-SEL-V1.5#1] -> out [OSD-BTO-V1.5#1] "Buongiorno, il concerto inizia alle otto."
+ 1MMC-TST-V2.5-I01/1MMC-TTS-V2.5-I01: in [OSD-BTO-V1.5#1] -> out [OSD-BSO-V1.5#1]
+ 1MMC-SOE-V2.5-I01: in [OSD-BSO-V1.5#2] -> out [CAE-UCM-V1.0#1, OSD-SPO-V1.5#1]
+ 1MMC-JSI-V2.5-I02: in [CAE-UCM-V1.0#1] -> out []
+ 1MMC-SSE-V2.5-I01: in [OSD-SPO-V1.5#1] -> out []
+ Translated text: Buongiorno, il concerto inizia alle otto.
+
+
+
+Test Run Successful.
+Total tests: 1
+     Passed: 1
+ Total time: 19.5202 Seconds

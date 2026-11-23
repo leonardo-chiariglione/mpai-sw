@@ -1,0 +1,6 @@
+== CavSchemaTests (2 s) Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 587 ms - Mpai.Aif.Tests.dll (net10.0)
+== EssSpecificationTests (3 s) Passed!  - Failed:     0, Passed:     3, Skipped:     0, Total:     3, Duration: 849 ms - Mpai.Aif.Tests.dll (net10.0)
+== CavStage1Tests (62 s) Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 1 m - Mpai.Aif.Tests.dll (net10.0)
+== HighwayTests (5 s) Passed!  - Failed:     0, Passed:     9, Skipped:     0, Total:     9, Duration: 3 s - Mpai.Aif.Tests.dll (net10.0)
+== MasStage1Tests (28 s) Passed!  - Failed:     0, Passed:     6, Skipped:     0, Total:     6, Duration: 25 s - Mpai.Aif.Tests.dll (net10.0)
+== MasEndToEndTests (1 s) 

@@ -1,0 +1,194 @@
+﻿Test run for D:\AI\Test\Mpai.Aif.Tests\bin\Debug\net10.0\Mpai.Aif.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.12]   Discovering: Mpai.Aif.Tests
+[xUnit.net 00:00:00.33]   Discovered:  Mpai.Aif.Tests
+[xUnit.net 00:00:00.36]   Starting:    Mpai.Aif.Tests
+dotnet : [xUnit.net 00:00:00.54]     Mpai.Aif.Tests.MetadataTests.Conformance [FAIL]
+At line:1 char:616
++ ... Failed): '; dotnet test --no-build --filter "FullyQualifiedName~Metad ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([xUnit.net 00:0...formance [FAIL]:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[xUnit.net 00:00:00.54]       conformance.json: 4 difference(s) from the recorded state. A new failure is a regression; a new success is accepted with MPAI_UPDATE_EXPECTED=1.
+  1XRV-END-V1.0-I01
+    expected: (absent)
+    now:      conforms
+  1XRV-LTP-V1.0-I01
+    expected: (absent)
+    now:      conforms
+  1XRV-REG-V1.0-I01
+    expected: (absent)
+    now:      conforms
+  1XRV-VEG-V1.0-I01
+    expected: (absent)
+    now:      conforms
+[xUnit.net 00:00:00.54]       Stack Trace:
+[xUnit.net 00:00:00.54]         D:\AI\Test\Mpai.Aif.Tests\Expected.cs(52,0): at Mpai.Aif.Tests.Expected.Match(String file, IReadOnlyDictionary`2 actual)
+[xUnit.net 00:00:00.54]         D:\AI\Test\Mpai.Aif.Tests\MetadataTests.cs(89,0): at Mpai.Aif.Tests.MetadataTests.Conformance()
+[xUnit.net 00:00:00.54]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.54]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-NLU-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-NLU-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1HMC-ECU-V2.2-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1HMC-ECU-V2.2-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TST-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1HMC-ECU-V2.2-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I03 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1MMC-TST-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I03 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1MMC-EDP-V2.5-I03.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTT-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1MMC-TTT-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-AMC-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-AMC-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-AMC-V2.5-I01: flow '1MMC-NLU-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTS-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-GFD-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-TTT-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-TTT-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow '1MMC-TTT-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTS-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow '1MMC-TTT-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[xUnit.net 00:00:00.65]     Mpai.Aif.Tests.MetadataTests.Connections [FAIL]
+[xUnit.net 00:00:00.65]       connections.json: 1 difference(s) from the recorded state. A new failure is a regression; a new success is accepted with MPAI_UPDATE_EXPECTED=1.
+  1XRV-LTP-V1.0-I01
+    expected: (absent)
+    now:      (boundary) XRV-ATB-V1.0#1 -> 1XRV-ACG-V1.0-I01 XRV-ATB-V1.0#1; (boundary) XRV-ATB-V1.0#1 -> 1XRV-END-V1.0-I01 XRV-ATB-V1.0#1; (boundary) XRV-ATB-V1.0#1 -> 1XRV-OSI-V1.0-I01 XRV-ATB-V1.0#1; (boundary) XRV-ATB-V1.0#1 -> 1XRV-PFI-V1.0-I01 XRV-ATB-V1.0#1; (boundary) XRV-ATB-V1.0#1 -> 1XRV-PTI-V1.0-I01 XRV-ATB-V1.0#1; (boundary) XRV-ATB-V1.0#1 -> 1XRV-REG-V1.0-I01 XRV-ATB-V1.0#1; (boundary) XRV-ATB-V1.0#1 -> 1XRV-VEG-V1.0-I01 XRV-ATB-V1.0#1; (boundary) XRV-PTD-V1.0#1 -> 1XRV-ACG-V1.0-I01 XRV-PTD-V1.0#1; (boundary) XRV-PTD-V1.0#1 -> 1XRV-END-V1.0-I01 XRV-PTD-V1.0#1; (boundary) XRV-PTD-V1.0#1 -> 1XRV-OSI-V1.0-I01 XRV-PTD-V1.0#1; (boundary) XRV-PTD-V1.0#1 -> 1XRV-PFI-V1.0-I01 XRV-PTD-V1.0#1; (boundary) XRV-PTD-V1.0#1 -> 1XRV-PTI-V1.0-I01 XRV-PTD-V1.0#1; (boundary) XRV-PTD-V1.0#1 -> 1XRV-REG-V1.0-I01 XRV-PTD-V1.0#1; (boundary) XRV-PTD-V1.0#1 -> 1XRV-VEG-V1.0-I01 XRV-PTD-V1.0#1; (boundary) XRV-RDI-V1.0#1 -> 1XRV-END-V1.0-I01 XRV-RDI-V1.0#1; (boundary) XRV-RVS-V1.0#1 -> 1XRV-END-V1.0-I01 XRV-RVS-V1.0#1; (boundary) XRV-RVS-V1.0#1 -> 1XRV-REG-V1.0-I01 XRV-RVS-V1.0#1; (boundary) XRV-SCR-V1.0#1 -> 1XRV-ACG-V1.0-I01 XRV-SCR-V1.0#1; (boundary) XRV-SCR-V1.0#1 -> 1XRV-END-V1.0-I01 XRV-SCR-V1.0#1; (boundary) XRV-SCR-V1.0#1 -> 1XRV-OSI-V1.0-I01 XRV-SCR-V1.0#1; (boundary) XRV-SCR-V1.0#1 -> 1XRV-PFI-V1.0-I01 XRV-SCR-V1.0#1; (boundary) XRV-SCR-V1.0#1 -> 1XRV-PTI-V1.0-I01 XRV-SCR-V1.0#1; (boundary) XRV-SCR-V1.0#1 -> 1XRV-REG-V1.0-I01 XRV-SCR-V1.0#1; (boundary) XRV-SCR-V1.0#1 -> 1XRV-VEG-V1.0-I01 XRV-SCR-V1.0#1; (boundary) XRV-SVA-V1.0#1 -> 1XRV-ACG-V1.0-I01 XRV-SVA-V1.0#1; (boundary) XRV-SVA-V1.0#1 -> 1XRV-END-V1.0-I01 XRV-SVA-V1.0#1; (boundary) XRV-SVA-V1.0#1 -> 1XRV-OSI-V1.0-I01 XRV-SVA-V1.0#1; (boundary) XRV-SVA-V1.0#1 -> 1XRV-PFI-V1.0-I01 XRV-SVA-V1.0#1; (boundary) XRV-SVA-V1.0#1 -> 1XRV-PTI-V1.0-I01 XRV-SVA-V1.0#1; (boundary) XRV-SVA-V1.0#1 -> 1XRV-REG-V1.0-I01 XRV-SVA-V1.0#1; (boundary) XRV-SVA-V1.0#1 -> 1XRV-VEG-V1.0-I01 XRV-SVA-V1.0#1; (boundary) XRV-VDI-V1.0#1 -> 1XRV-END-V1.0-I01 XRV-VDI-V1.0#1; (boundary) XRV-VVS-V1.0#1 -> 1XRV-END-V1.0-I01 XRV-VVS-V1.0#1; (boundary) XRV-VVS-V1.0#1 -> 1XRV-VEG-V1.0-I01 XRV-VVS-V1.0#1; 1XRV-ACG-V1.0-I01 OSD-BTO-V1.5#1 -> 1XRV-REG-V1.0-I01 OSD-BTO-V1.5#1; 1XRV-ACG-V1.0-I01 OSD-BTO-V1.5#2 -> 1XRV-VEG-V1.0-I01 OSD-BTO-V1.5#1; 1XRV-ACG-V1.0-I01 OSD-BTO-V1.5#3 -> 1XRV-OSI-V1.0-I01 OSD-BTO-V1.5#1; 1XRV-ACG-V1.0-I01 OSD-BTO-V1.5#3 -> 1XRV-PFI-V1.0-I01 OSD-BTO-V1.5#1; 1XRV-ACG-V1.0-I01 OSD-BTO-V1.5#3 -> 1XRV-PTI-V1.0-I01 OSD-BTO-V1.5#1; 1XRV-ACG-V1.0-I01 XRV-PTD-V1.0#1 -> (boundary) XRV-PTD-V1.0#1; 1XRV-END-V1.0-I01 XRV-RFD-V1.0#1 -> 1XRV-PFI-V1.0-I01 XRV-RFD-V1.0#1; 1XRV-END-V1.0-I01 XRV-ROD-V1.0#1 -> 1XRV-OSI-V1.0-I01 XRV-ROD-V1.0#1; 1XRV-END-V1.0-I01 XRV-RTD-V1.0#1 -> 1XRV-PTI-V1.0-I01 XRV-RTD-V1.0#1; 1XRV-END-V1.0-I01 XRV-SHD-V1.0#1 -> 1XRV-REG-V1.0-I01 XRV-SHD-V1.0#1; 1XRV-END-V1.0-I01 XRV-SHD-V1.0#1 -> 1XRV-VEG-V1.0-I01 XRV-SHD-V1.0#1; 1XRV-END-V1.0-I01 XRV-VFD-V1.0#1 -> 1XRV-PFI-V1.0-I01 XRV-VFD-V1.0#1; 1XRV-END-V1.0-I01 XRV-VOD-V1.0#1 -> 1XRV-OSI-V1.0-I01 XRV-VOD-V1.0#1; 1XRV-END-V1.0-I01 XRV-VTD-V1.0#1 -> 1XRV-PTI-V1.0-I01 XRV-VTD-V1.0#1; 1XRV-OSI-V1.0-I01 XRV-ROS-V1.0#1 -> 1XRV-ACG-V1.0-I01 XRV-ROS-V1.0#1; 1XRV-OSI-V1.0-I01 XRV-VOS-V1.0#1 -> 1XRV-ACG-V1.0-I01 XRV-VOS-V1.0#1; 1XRV-PFI-V1.0-I01 XRV-RFS-V1.0#1 -> 1XRV-ACG-V1.0-I01 XRV-RFS-V1.0#1; 1XRV-PFI-V1.0-I01 XRV-VFS-V1.0#1 -> 1XRV-ACG-V1.0-I01 XRV-VFS-V1.0#1; 1XRV-PTI-V1.0-I01 XRV-RTS-V1.0#1 -> 1XRV-ACG-V1.0-I01 XRV-RTS-V1.0#1; 1XRV-PTI-V1.0-I01 XRV-VTS-V1.0#1 -> 1XRV-ACG-V1.0-I01 XRV-VTS-V1.0#1; 1XRV-REG-V1.0-I01 XRV-RDO-V1.0#1 -> (boundary) XRV-RDO-V1.0#1; 1XRV-VEG-V1.0-I01 XRV-VDO-V1.0#1 -> (boundary) XRV-VDO-V1.0#1
+[xUnit.net 00:00:00.65]       Stack Trace:
+[xUnit.net 00:00:00.65]         D:\AI\Test\Mpai.Aif.Tests\Expected.cs(52,0): at Mpai.Aif.Tests.Expected.Match(String file, IReadOnlyDictionary`2 actual)
+[xUnit.net 00:00:00.65]         D:\AI\Test\Mpai.Aif.Tests\MetadataTests.cs(240,0): at Mpai.Aif.Tests.MetadataTests.Connections()
+[xUnit.net 00:00:00.65]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.65]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Mpai.Aif.Tests.MetadataTests.Conformance [144 ms]
+  Error Message:
+   conformance.json: 4 difference(s) from the recorded state. A new failure is a regression; a new success is accepted with MPAI_UPDATE_EXPECTED=1.
+  1XRV-END-V1.0-I01
+    expected: (absent)
+    now:      conforms
+  1XRV-LTP-V1.0-I01
+    expected: (absent)
+    now:      conforms
+  1XRV-REG-V1.0-I01
+    expected: (absent)
+    now:      conforms
+  1XRV-VEG-V1.0-I01
+    expected: (absent)
+    now:      conforms
+  Stack Trace:
+     at Mpai.Aif.Tests.Expected.Match(String file, IReadOnlyDictionary`2 actual) in D:\AI\Test\Mpai.Aif.Tests\Expected.cs:line 52
+   at Mpai.Aif.Tests.MetadataTests.Conformance() in D:\AI\Test\Mpai.Aif.Tests\MetadataTests.cs:line 89
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Mpai.Aif.Tests.MetadataTests.Connections [112 ms]
+  Error Message:
+   connections.json: 1 difference(s) from the recorded state. A new failure is a regression; a new success is accepted with MPAI_UPDATE_EXPECTED=1.
+  1XRV-LTP-V1.0-I01
+    expected: (absent)
+    now:      (boundary) XRV-ATB-V1.0#1 -> 1XRV-ACG-V1.0-I01 XRV-ATB-V1.0#1; (boundary) XRV-ATB-V1.0#1 -> 1XRV-END-V1.0-I01 XRV-ATB-V1.0#1; (boundary) XRV-ATB-V1.0#1 -> 1XRV-OSI-V1.0-I01 XRV-ATB-V1.0#1; (boundary) XRV-ATB-V1.0#1 -> 1XRV-PFI-V1.0-I01 XRV-ATB-V1.0#1; (boundary) XRV-ATB-V1.0#1 -> 1XRV-PTI-V1.0-I01 XRV-ATB-V1.0#1; (boundary) XRV-ATB-V1.0#1 -> 1XRV-REG-V1.0-I01 XRV-ATB-V1.0#1; (boundary) XRV-ATB-V1.0#1 -> 1XRV-VEG-V1.0-I01 XRV-ATB-V1.0#1; (boundary) XRV-PTD-V1.0#1 -> 1XRV-ACG-V1.0-I01 XRV-PTD-V1.0#1; (boundary) XRV-PTD-V1.0#1 -> 1XRV-END-V1.0-I01 XRV-PTD-V1.0#1; (boundary) XRV-PTD-V1.0#1 -> 1XRV-OSI-V1.0-I01 XRV-PTD-V1.0#1; (boundary) XRV-PTD-V1.0#1 -> 1XRV-PFI-V1.0-I01 XRV-PTD-V1.0#1; (boundary) XRV-PTD-V1.0#1 -> 1XRV-PTI-V1.0-I01 XRV-PTD-V1.0#1; (boundary) XRV-PTD-V1.0#1 -> 1XRV-REG-V1.0-I01 XRV-PTD-V1.0#1; (boundary) XRV-PTD-V1.0#1 -> 1XRV-VEG-V1.0-I01 XRV-PTD-V1.0#1; (boundary) XRV-RDI-V1.0#1 -> 1XRV-END-V1.0-I01 XRV-RDI-V1.0#1; (boundary) XRV-RVS-V1.0#1 -> 1XRV-END-V1.0-I01 XRV-RVS-V1.0#1; (boundary) XRV-RVS-V1.0#1 -> 1XRV-REG-V1.0-I01 XRV-RVS-V1.0#1; (boundary) XRV-SCR-V1.0#1 -> 1XRV-ACG-V1.0-I01 XRV-SCR-V1.0#1; (boundary) XRV-SCR-V1.0#1 -> 1XRV-END-V1.0-I01 XRV-SCR-V1.0#1; (boundary) XRV-SCR-V1.0#1 -> 1XRV-OSI-V1.0-I01 XRV-SCR-V1.0#1; (boundary) XRV-SCR-V1.0#1 -> 1XRV-PFI-V1.0-I01 XRV-SCR-V1.0#1; (boundary) XRV-SCR-V1.0#1 -> 1XRV-PTI-V1.0-I01 XRV-SCR-V1.0#1; (boundary) XRV-SCR-V1.0#1 -> 1XRV-REG-V1.0-I01 XRV-SCR-V1.0#1; (boundary) XRV-SCR-V1.0#1 -> 1XRV-VEG-V1.0-I01 XRV-SCR-V1.0#1; (boundary) XRV-SVA-V1.0#1 -> 1XRV-ACG-V1.0-I01 XRV-SVA-V1.0#1; (boundary) XRV-SVA-V1.0#1 -> 1XRV-END-V1.0-I01 XRV-SVA-V1.0#1; (boundary) XRV-SVA-V1.0#1 -> 1XRV-OSI-V1.0-I01 XRV-SVA-V1.0#1; (boundary) XRV-SVA-V1.0#1 -> 1XRV-PFI-V1.0-I01 XRV-SVA-V1.0#1; (boundary) XRV-SVA-V1.0#1 -> 1XRV-PTI-V1.0-I01 XRV-SVA-V1.0#1; (boundary) XRV-SVA-V1.0#1 -> 1XRV-REG-V1.0-I01 XRV-SVA-V1.0#1; (boundary) XRV-SVA-V1.0#1 -> 1XRV-VEG-V1.0-I01 XRV-SVA-V1.0#1; (boundary) XRV-VDI-V1.0#1 -> 1XRV-END-V1.0-I01 XRV-VDI-V1.0#1; (boundary) XRV-VVS-V1.0#1 -> 1XRV-END-V1.0-I01 XRV-VVS-V1.0#1; (boundary) XRV-VVS-V1.0#1 -> 1XRV-VEG-V1.0-I01 XRV-VVS-V1.0#1; 1XRV-ACG-V1.0-I01 OSD-BTO-V1.5#1 -> 1XRV-REG-V1.0-I01 OSD-BTO-V1.5#1; 1XRV-ACG-V1.0-I01 OSD-BTO-V1.5#2 -> 1XRV-VEG-V1.0-I01 OSD-BTO-V1.5#1; 1XRV-ACG-V1.0-I01 OSD-BTO-V1.5#3 -> 1XRV-OSI-V1.0-I01 OSD-BTO-V1.5#1; 1XRV-ACG-V1.0-I01 OSD-BTO-V1.5#3 -> 1XRV-PFI-V1.0-I01 OSD-BTO-V1.5#1; 1XRV-ACG-V1.0-I01 OSD-BTO-V1.5#3 -> 1XRV-PTI-V1.0-I01 OSD-BTO-V1.5#1; 1XRV-ACG-V1.0-I01 XRV-PTD-V1.0#1 -> (boundary) XRV-PTD-V1.0#1; 1XRV-END-V1.0-I01 XRV-RFD-V1.0#1 -> 1XRV-PFI-V1.0-I01 XRV-RFD-V1.0#1; 1XRV-END-V1.0-I01 XRV-ROD-V1.0#1 -> 1XRV-OSI-V1.0-I01 XRV-ROD-V1.0#1; 1XRV-END-V1.0-I01 XRV-RTD-V1.0#1 -> 1XRV-PTI-V1.0-I01 XRV-RTD-V1.0#1; 1XRV-END-V1.0-I01 XRV-SHD-V1.0#1 -> 1XRV-REG-V1.0-I01 XRV-SHD-V1.0#1; 1XRV-END-V1.0-I01 XRV-SHD-V1.0#1 -> 1XRV-VEG-V1.0-I01 XRV-SHD-V1.0#1; 1XRV-END-V1.0-I01 XRV-VFD-V1.0#1 -> 1XRV-PFI-V1.0-I01 XRV-VFD-V1.0#1; 1XRV-END-V1.0-I01 XRV-VOD-V1.0#1 -> 1XRV-OSI-V1.0-I01 XRV-VOD-V1.0#1; 1XRV-END-V1.0-I01 XRV-VTD-V1.0#1 -> 1XRV-PTI-V1.0-I01 XRV-VTD-V1.0#1; 1XRV-OSI-V1.0-I01 XRV-ROS-V1.0#1 -> 1XRV-ACG-V1.0-I01 XRV-ROS-V1.0#1; 1XRV-OSI-V1.0-I01 XRV-VOS-V1.0#1 -> 1XRV-ACG-V1.0-I01 XRV-VOS-V1.0#1; 1XRV-PFI-V1.0-I01 XRV-RFS-V1.0#1 -> 1XRV-ACG-V1.0-I01 XRV-RFS-V1.0#1; 1XRV-PFI-V1.0-I01 XRV-VFS-V1.0#1 -> 1XRV-ACG-V1.0-I01 XRV-VFS-V1.0#1; 1XRV-PTI-V1.0-I01 XRV-RTS-V1.0#1 -> 1XRV-ACG-V1.0-I01 XRV-RTS-V1.0#1; 1XRV-PTI-V1.0-I01 XRV-VTS-V1.0#1 -> 1XRV-ACG-V1.0-I01 XRV-VTS-V1.0#1; 1XRV-REG-V1.0-I01 XRV-RDO-V1.0#1 -> (boundary) XRV-RDO-V1.0#1; 1XRV-VEG-V1.0-I01 XRV-VDO-V1.0#1 -> (boundary) XRV-VDO-V1.0#1
+  Stack Trace:
+     at Mpai.Aif.Tests.Expected.Match(String file, IReadOnlyDictionary`2 actual) in D:\AI\Test\Mpai.Aif.Tests\Expected.cs:line 52
+   at Mpai.Aif.Tests.MetadataTests.Connections() in D:\AI\Test\Mpai.Aif.Tests\MetadataTests.cs:line 240
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed Mpai.Aif.Tests.MetadataTests.Schema [2 s]
+  Passed Mpai.Aif.Tests.MetadataTests.ResourcePolicies [23 ms]
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-NLU-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-NLU-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1HMC-ECU-V2.2-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1HMC-ECU-V2.2-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TST-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1HMC-ECU-V2.2-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I03 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1MMC-TST-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I03 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1MMC-EDP-V2.5-I03.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTT-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1MMC-TTT-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-AMC-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-AMC-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-AMC-V2.5-I01: flow '1MMC-NLU-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTS-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-GFD-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-TTT-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-TTT-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow '1MMC-TTT-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTS-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow '1MMC-TTT-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[xUnit.net 00:00:03.05]     Mpai.Aif.Tests.MetadataTests.L3Load [FAIL]
+[xUnit.net 00:00:03.05]       l3-load.json: 4 difference(s) from the recorded state. A new failure is a regression; a new success is accepted with MPAI_UPDATE_EXPECTED=1.
+  1XRV-END-V1.0-I01
+    expected: (absent)
+    now:      loads
+  1XRV-LTP-V1.0-I01
+    expected: (absent)
+    now:      loads (composite)
+  1XRV-REG-V1.0-I01
+    expected: (absent)
+    now:      loads
+  1XRV-VEG-V1.0-I01
+    expected: (absent)
+    now:      loads
+[xUnit.net 00:00:03.05]       Stack Trace:
+[xUnit.net 00:00:03.05]         D:\AI\Test\Mpai.Aif.Tests\Expected.cs(52,0): at Mpai.Aif.Tests.Expected.Match(String file, IReadOnlyDictionary`2 actual)
+[xUnit.net 00:00:03.05]         D:\AI\Test\Mpai.Aif.Tests\MetadataTests.cs(39,0): at Mpai.Aif.Tests.MetadataTests.L3Load()
+[xUnit.net 00:00:03.05]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:03.05]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Mpai.Aif.Tests.MetadataTests.L3Load [86 ms]
+  Error Message:
+   l3-load.json: 4 difference(s) from the recorded state. A new failure is a regression; a new success is accepted with MPAI_UPDATE_EXPECTED=1.
+  1XRV-END-V1.0-I01
+    expected: (absent)
+    now:      loads
+  1XRV-LTP-V1.0-I01
+    expected: (absent)
+    now:      loads (composite)
+  1XRV-REG-V1.0-I01
+    expected: (absent)
+    now:      loads
+  1XRV-VEG-V1.0-I01
+    expected: (absent)
+    now:      loads
+  Stack Trace:
+     at Mpai.Aif.Tests.Expected.Match(String file, IReadOnlyDictionary`2 actual) in D:\AI\Test\Mpai.Aif.Tests\Expected.cs:line 52
+   at Mpai.Aif.Tests.MetadataTests.L3Load() in D:\AI\Test\Mpai.Aif.Tests\MetadataTests.cs:line 39
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed Mpai.Aif.Tests.MetadataTests.AccessOfTheL2IsDeclaredByTheL3 [37 ms]
+  Passed Mpai.Aif.Tests.MetadataTests.PortNumbersMatch [34 ms]
+  Passed Mpai.Aif.Tests.MetadataTests.Addressing [1 s]
+  Passed Mpai.Aif.Tests.MetadataTests.OptionalAgreement [88 ms]
+  Passed Mpai.Aif.Tests.MetadataTests.Combination [270 ms]
+  Passed Mpai.Aif.Tests.MetadataTests.NewFields [2 s]
+[AIF] CAV-HCI-V2.0: flow 'MMC-ASR-V2.5.OSD-BTO-V1.5:1' declares Output 1, but MMC-NLU-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] CAV-HCI-V2.0: flow 'MMC-NLU-V2.5.OSD-BTO-V1.5' declares Output 1, but MMC-EDP-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] CAV-HCI-V2.0: flow 'MMC-ASR-V2.5.OSD-BTO-V1.5:1' declares Output 1, but MMC-NLU-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] CAV-HCI-V2.0: flow 'MMC-NLU-V2.5.OSD-BTO-V1.5' declares Output 1, but MMC-EDP-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] HMC-CEC-V2.2: flow 'OSD-BTO-V1.5:1' declares Output 1, but HMC-ECU-V2.2 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] HMC-CEC-V2.2: flow 'HMC-ECU-V2.2.OSD-BTO-V1.5' declares Output 1, but MMC-TST-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] HMC-CEC-V2.2: flow 'HMC-ECU-V2.2.OSD-BTO-V1.5' declares Output 1, but MMC-EDP-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] HMC-CEC-V2.2: flow 'MMC-TST-V2.5.OSD-BTO-V1.5' declares Output 1, but MMC-EDP-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] HMC-CEC-V2.2: flow 'MMC-EDP-V2.5.OSD-BTO-V1.5' declares Output 1, but MMC-TTT-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] HMC-CEC-V2.2: flow 'MMC-TTT-V2.5.OSD-BTO-V1.5' declares Output 1, but PAF-PMX-V1.6 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-AMC-V2.5: flow 'OSD-BTO-V1.5:1' declares Output 1, but MMC-NLU-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-AMC-V2.5: flow 'MMC-ASR-V2.5.OSD-BTO-V1.5:1' declares Output 1, but MMC-NLU-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-AMC-V2.5: flow 'MMC-NLU-V2.5.OSD-BTO-V1.5' declares Output 1, but MMC-EDP-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-MCA-V2.5: flow 'MMC-ASR-V2.5.OSD-BTO-V1.5:1' declares Output 1, but MMC-EDP-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-MCA-V2.5: flow 'OSD-BTO-V1.5:1' declares Output 1, but MMC-EDP-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-MCA-V2.5: flow 'MMC-EDP-V2.5.OSD-BTO-V1.5' declares Output 1, but MMC-TTS-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-MCA-V2.5: flow 'MMC-EDP-V2.5.OSD-BTO-V1.5' declares Output 1, but PAF-GFD-V1.6 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-MCA-V2.5: flow 'MMC-EDP-V2.5.OSD-BTO-V1.5' declares Output 1, but PAF-PMX-V1.6 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-MTS-V2.5: flow 'MMC-ASR-V2.5.OSD-BTO-V1.5:1' declares Output 1, but MMC-TTT-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-MTS-V2.5: flow 'OSD-BTO-V1.5:1' declares Output 1, but MMC-TTT-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-MTS-V2.5: flow 'MMC-TTT-V2.5.OSD-BTO-V1.5' declares Output 1, but MMC-TTS-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-MTS-V2.5: flow 'MMC-TTT-V2.5.OSD-BTO-V1.5' declares Output 1, but PAF-PMX-V1.6 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[xUnit.net 00:00:06.76]   Finished:    Mpai.Aif.Tests
+  Passed Mpai.Aif.Tests.MetadataTests.L2Topology [201 ms]
+  Passed Mpai.Aif.Tests.MetadataTests.NoNameReachesProcessing [42 ms]
+
+Test Run Failed.
+Total tests: 13
+     Passed: 10
+     Failed: 3
+ Total time: 7.1870 Seconds

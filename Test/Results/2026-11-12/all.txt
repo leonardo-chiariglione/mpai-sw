@@ -1,0 +1,1997 @@
+﻿Test run for D:\AI\Test\Mpai.Aif.Tests\bin\Debug\net10.0\Mpai.Aif.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.13]   Discovering: Mpai.Aif.Tests
+[xUnit.net 00:00:00.34]   Discovered:  Mpai.Aif.Tests
+[xUnit.net 00:00:00.53]   Starting:    Mpai.Aif.Tests
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.VoiceLanguageTests.TheTextsAreToldApartByHowAlikeTheyAre [8 ms]
+  Passed Mpai.Aif.Tests.AihBlockchainTests.AnOperationIsAllowedToWhomTheContractAllows(requester: "tpu-1", process: "Auditing", allowed: False) [20 ms]
+  Passed Mpai.Aif.Tests.AihBlockchainTests.AnOperationIsAllowedToWhomTheContractAllows(requester: "hbe-1", process: "LicenceChange", allowed: False) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihBlockchainTests.AnOperationIsAllowedToWhomTheContractAllows(requester: "hbe-1", process: "DeIDAndAnonym", allowed: True) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihBlockchainTests.AnOperationIsAllowedToWhomTheContractAllows(requester: "tpu-2", process: "AIHDataProcessing", allowed: False) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihBlockchainTests.AnOperationIsAllowedToWhomTheContractAllows(requester: "user-1", process: "AIHDataProcessing", allowed: True) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihBlockchainTests.AnOperationIsAllowedToWhomTheContractAllows(requester: "tpu-1", process: "Store", allowed: False) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihBlockchainTests.AnOperationIsAllowedToWhomTheContractAllows(requester: "user-1", process: "Auditing", allowed: True) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihBlockchainTests.AnOperationIsAllowedToWhomTheContractAllows(requester: "hbe-1", process: "Store", allowed: True) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihBlockchainTests.AnOperationIsAllowedToWhomTheContractAllows(requester: "tpu-1", process: "AIHDataProcessing", allowed: True) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihBlockchainTests.WithoutAContractNothingIsAllowed [< 1 ms]
+  Passed Mpai.Aif.Tests.AihBlockchainTests.ASmartContractIsMadeOfALicenceAndLooksLikeOne [27 ms]
+  Passed Mpai.Aif.Tests.AihBlockchainTests.ANewLicenceReplacesTheOneBefore [< 1 ms]
+  Passed Mpai.Aif.Tests.ReferenceFeaturesTests.TheReferenceFeaturesTheL3NamesAreReadThroughAccess(l3: "1MMC-SIR-V2.5-I01.json", name: "reference-voices", kind: "voice", people: 40) [50 ms]
+  Passed Mpai.Aif.Tests.ReferenceFeaturesTests.TheReferenceFeaturesTheL3NamesAreReadThroughAccess(l3: "1PAF-FIR-V1.6-I01.json", name: "reference-faces", kind: "face", people: 5749) [1 ms]
+  Passed Mpai.Aif.Tests.AihBlockchainTests.TheLedgerRecordsWhatHappenedAndHoldsTogether [5 ms]
+[ONNX] yamnet.onnx: CPU (CUDA unavailable: Unable to find an entry point named 'OrtSessionOptionsAppendExecutionProvider_CUDA' in DLL 'onnxruntime'.)
+  Passed Mpai.Aif.Tests.AihBlockchainTests.ALicenceThatIsNotOfThatAihDataOrNamesNoOneIsNotAContract [< 1 ms]
+  Passed Mpai.Aif.Tests.ReferenceFeaturesTests.ATruncatedOrInvalidFileIsRefused [20 ms]
+  Passed Mpai.Aif.Tests.ReferenceFeaturesTests.AReferencePopulationIsMatchedLikeTheEnrolledAndTheEnrolledOneWins [7 ms]
+  Passed Mpai.Aif.Tests.OsdMalBmsTests.ItGivesTheBasicMultimodalSceneDescriptorsOfAllTheScenesItWasGivenInTheOrderAudioSpeechVisual [336 ms]
+  Passed Mpai.Aif.Tests.LanguageDetectorTests.TooLittleOrTooUncertainGivesNothing(text: "Do reolt anss les e") [121 ms]
+  Passed Mpai.Aif.Tests.LanguageDetectorTests.TooLittleOrTooUncertainGivesNothing(text: "") [< 1 ms]
+  Passed Mpai.Aif.Tests.LanguageDetectorTests.TooLittleOrTooUncertainGivesNothing(text: "Pour ou contre") [< 1 ms]
+  Passed Mpai.Aif.Tests.LanguageDetectorTests.TheLanguageIsFound(expected: "de", text: "Der Kaiser hat heute die Abgeordneten des Landes e"···) [6 ms]
+  Passed Mpai.Aif.Tests.LanguageDetectorTests.TheLanguageIsFound(expected: "zh", text: "今天上海的街上有很多人在看報紙，他們說這件事情是昨天發生的。") [< 1 ms]
+  Passed Mpai.Aif.Tests.LanguageDetectorTests.TheLanguageIsFound(expected: "ja", text: "今日は東京の新聞に大きな記事が出ていて、みんながそれを読んでいます。") [< 1 ms]
+  Passed Mpai.Aif.Tests.LanguageDetectorTests.TheLanguageIsFound(expected: "it", text: "Il giornale della città ha pubblicato ieri che gli"···) [< 1 ms]
+  Passed Mpai.Aif.Tests.LanguageDetectorTests.TheLanguageIsFound(expected: "el", text: "Η εφημερίδα της πόλης δημοσίευσε χθες ότι οι κάτοι"···) [< 1 ms]
+  Passed Mpai.Aif.Tests.LanguageDetectorTests.TheLanguageIsFound(expected: "en", text: "Here is what NPR needs, in the order I would do it"···) [< 1 ms]
+  Passed Mpai.Aif.Tests.LanguageDetectorTests.TheLanguageIsFound(expected: "es", text: "El periódico de la ciudad publicó ayer que los vec"···) [< 1 ms]
+[xUnit.net 00:00:01.52]     Mpai.Aif.Tests.BuildReferenceFeatures.ReferenceFacesFromLabeledFacesInTheWild [SKIP]
+[xUnit.net 00:00:01.52]       A tool: set MPAI_BUILD_REFERENCE=1 to run it.
+[xUnit.net 00:00:01.53]     Mpai.Aif.Tests.ReferenceDatabasesTests.TheControllerObtainsTheDatabasesAndDoesNotDownloadThemAgain [SKIP]
+[xUnit.net 00:00:01.53]       Downloads 180 MB and 338 MB: set MPAI_FETCH_DATABASES=1.
+[CAE-AOE-V1.0] open violin
+[CAE-AOE-V1.0] open drums
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTS-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-GFD-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[AIM host] 1CAE-ASE-V1.0-I01 placed for M#1
+[AIM host] M#1 released
+  Passed Mpai.Aif.Tests.LanguageDetectorTests.TheLanguageIsFound(expected: "pt", text: "O jornal da cidade publicou ontem que os moradores"···) [< 1 ms]
+  Passed Mpai.Aif.Tests.LanguageDetectorTests.TheLanguageIsFound(expected: "fr", text: "Le suffrage universel n'aime pas les programmes co"···) [< 1 ms]
+  Skipped Mpai.Aif.Tests.BuildReferenceFeatures.ReferenceFacesFromLabeledFacesInTheWild [453 ms]
+  Skipped Mpai.Aif.Tests.ReferenceDatabasesTests.TheControllerObtainsTheDatabasesAndDoesNotDownloadThemAgain [< 1 ms]
+  Passed Mpai.Aif.Tests.ReferenceDatabasesTests.TheDatabasesAreDeclaredWithTheirSourceHashAndTerms [20 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25AiiAsiTests.AudioInstanceIdentificationGivesTheTopClassOfTheSound [1 s]
+speech:  Speech 0.97, Narration, monologue 0.01, Speech synthesizer 0.01, Clicking 0.00, Tick-tock 0.00
+music:   Music 0.99, Plucked string instrument 0.53, Guitar 0.52, Musical instrument 0.47, Acoustic guitar 0.31
+silence: Silence 1.00, Speech 0.00, Child speech, kid speaking 0.00, Conversation 0.00, Narration, monologue 0.00
+tone:    Sine wave 0.86, Electronic tuner 0.12, Dial tone 0.11, Busy signal 0.10, Telephone 0.09
+  Passed Mpai.Aif.Tests.CaeUscV25AiiAsiTests.TheClassesTheModelGives [196 ms]
+  Passed Mpai.Aif.Tests.AifAccessTests.OnAnAimHost [1 s]
+  Passed Mpai.Aif.Tests.AifAccessTests.AnAimReadsWhatItDeclares [40 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25AiiAsiTests.AudioSceneIdentificationSplitsSpeechFromOtherSounds [485 ms]
+  Passed Mpai.Aif.Tests.AvatarSchemaTests.AvatarsAsTheSchemasSayThem [2 s]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeSdsTests.EachSourceIsInAChannelOfItsOwnWithTheOtherMuchReduced [370 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeSdsTests.NoL3AndNoSchemaOfTheEnhancedAudioconferenceExperienceTakesTheGeometryOrTheReferenceAtAPort(l3: "1CAE-EAE-V2.5-I01", schema: "EnhancedAudioconferenceExperience") [3 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeSdsTests.NoL3AndNoSchemaOfTheEnhancedAudioconferenceExperienceTakesTheGeometryOrTheReferenceAtAPort(l3: "1CAE-SDS-V2.5-I01", schema: "SpeechDetectionAndSeparation") [< 1 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeSdsTests.NoL3AndNoSchemaOfTheEnhancedAudioconferenceExperienceTakesTheGeometryOrTheReferenceAtAPort(l3: "1CAE-SFD-V2.5-I01", schema: "SoundFieldDescription") [< 1 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeSdsTests.NoL3AndNoSchemaOfTheEnhancedAudioconferenceExperienceTakesTheGeometryOrTheReferenceAtAPort(l3: "1CAE-NCM-V2.5-I01", schema: "NoiseCancellationModule") [< 1 ms]
+  Passed Mpai.Aif.Tests.AsmFeaturesTests.ARenameIsTheSameObjectUnderANewNameThatStaysUnique [3 s]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeSdsTests.ASilentRoomAndCoefficientsThatAreNotWholeOrdersAreSaidSo [226 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeModuleTests.TwoSourcesInANoisyRoomComeBackAsAnAudioSceneWithTheAudioOfEach [2 s]
+  Passed Mpai.Aif.Tests.AihAimsTests.WithNothingToJudgeTheRiskIsBlue [230 ms]
+[CAE-AOE-V1.0] open violin
+[CAE-AOE-V1.0] open drums
+[MMC-ASR-V2.5] whisper-server ready on port 60448: 307D12F9ABEBF672F37F80B3DD2E2B37.data kept loaded
+[MMC-SOE-V2.5] open hello
+  Passed Mpai.Aif.Tests.AihAimsTests.ModelLicensingMakesAihDataThatTheSchemaAccepts [160 ms]
+  Passed Mpai.Aif.Tests.AsmFeaturesTests.TheListOfAnObjectSaysItsKindDurationChildrenAndVersion [705 ms]
+  Passed Mpai.Aif.Tests.AihAimsTests.TheRiskFollowsTheHeartRate(risk: "Green", intervals: [0.80000000000000004, 0.80000000000000004, 0.80000000000000004, 0.80000000000000004, 0.80000000000000004, ···]) [170 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeSdsTests.TheAudioSceneReferenceComesFromTheSettingAndABadOneIsRefused [760 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeSdsTests.TheL3DeclaresTheAudioSceneReferenceInItsAccessSourcesAndTheControllerGivesItUnderItsSetting(l3: "1CAE-NCM-V2.5-I01") [13 ms]
+  Passed Mpai.Aif.Tests.AihAimsTests.TheRiskFollowsTheHeartRate(risk: "Yellow", intervals: [0.80000000000000004, 0.40000000000000002, 0.80000000000000004, 1.2, 0.80000000000000004, ···]) [151 ms]
+  Passed Mpai.Aif.Tests.StandInTests.MasAppModules [1 s]
+[CAE-AOE-V1.0] open violin
+[CAE-AOE-V1.0] open drums
+  Passed Mpai.Aif.Tests.CaeUscV25EaeSdsTests.TheL3DeclaresTheAudioSceneReferenceInItsAccessSourcesAndTheControllerGivesItUnderItsSetting(l3: "1CAE-SDS-V2.5-I01") [14 ms]
+  Passed Mpai.Aif.Tests.AihAimsTests.TheRiskFollowsTheHeartRate(risk: "Red", intervals: [2, 2, 2, 2, 2, ···]) [195 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EesModuleTests.TheNeuralPathwayGivesTheEmotionlessSpeechTheFeaturesOfTheEmotion [2 s]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeSdsTests.TwoSourcesAreFoundWhereTheyAreAndWhenTheyAreActive [422 ms]
+  Passed Mpai.Aif.Tests.AihAimsTests.TheRiskFollowsTheHeartRate(risk: "Red", intervals: [0.29999999999999999, 0.29999999999999999, 0.29999999999999999, 0.29999999999999999, 0.29999999999999999, ···]) [274 ms]
+  Passed Mpai.Aif.Tests.AsmFeaturesTests.ANameThatIsNoFeatureAndAValueThatIsNoNumberAreRejected [684 ms]
+[CAE-AOE-V1.0] open violin
+[CAE-AOE-V1.0] open drums
+  Passed Mpai.Aif.Tests.AihHdpTests.AnUploadHasItsSmartContractMadeBeforeItIsAccepted [502 ms]
+  Passed Mpai.Aif.Tests.AppModulesTests.TheConversationKeepsItsMemoryFromTurnToTurn(app: "MCA") [4 s]
+  Passed Mpai.Aif.Tests.AihAimsTests.ModelLicensingRefusesALicenceOfAnotherEndUser [228 ms]
+  Passed Mpai.Aif.Tests.AihHdpTests.TheFrontEndGivesBackTheAihDataOfItsEndUserOnly [207 ms]
+  Passed Mpai.Aif.Tests.AihHdpTests.TheBackEndRegistersAnEndUserAndGivesTokens [163 ms]
+  Passed Mpai.Aif.Tests.AihHdpTests.AThirdPartyUserIsAnsweredWhenTheLicenceConfirmsAndRefusedWhenItDoesNot [166 ms]
+[AIF] 1MMC-AMC-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-AMC-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-AMC-V2.5-I01: flow '1MMC-NLU-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[ONNX] model.onnx: CPU
+  Passed Mpai.Aif.Tests.AihFrontEndModuleTests.ForAThirdPartyUserTheFrontEndKeepsNoAihDataAndRefusesWhatIsNotProcessing [5 s]
+  Passed Mpai.Aif.Tests.CaeUscV25EesTests.TheProsodicPathwayMovesTheSpeechToTheModelUtterance [500 ms]
+  Passed Mpai.Aif.Tests.AihHdpTests.ARequestWithoutTheTokenIsRefused [160 ms]
+  Passed Mpai.Aif.Tests.AihHdpTests.ARegistrationOfNothingThatMayBeGrantedFails [151 ms]
+  Passed Mpai.Aif.Tests.AihHdpTests.TheFrontEndForwardsAndKeepsWhatIsFound [147 ms]
+  Passed Mpai.Aif.Tests.AsmFeaturesTests.EachFeatureOfABasicAudioObjectIsChangedByAValue [1 s]
+[CAE-AOE-V1.0] open violin
+[CAE-AOE-V1.0] open drums
+[MMC-SOE-V2.5] open hello
+  Passed Mpai.Aif.Tests.AsmFeaturesTests.APositionStatesItsCoordinates [11 ms]
+  Passed Mpai.Aif.Tests.AihHdpTests.AThirdPartyUserIsGivenOnlyWhatAThirdPartyMayAsk [158 ms]
+  Passed Mpai.Aif.Tests.AihHdpTests.TheBackEndKeepsWhatItUploadsAndGivesItToItsEndUserAndToTheBackEnd [171 ms]
+  Passed Mpai.Aif.Tests.CaeUscAifConformanceTests.TheBinaryTheProviderReportsForEachAimIsTheOneItsL3Names [5 ms]
+  Passed Mpai.Aif.Tests.CaeUscAifConformanceTests.TheAppsNameNoAimAndTheDeploymentReadsNoMetadataOfTheModule [53 ms]
+  Passed Mpai.Aif.Tests.CaeUscAifConformanceTests.EveryAccessSourceStatesItsTermsAndNamesAreOnceAndAUriHasOneSha256 [4 ms]
+  Passed Mpai.Aif.Tests.CaeUscAifConformanceTests.NoAimReadsOrWritesAFile [24 ms]
+  Passed Mpai.Aif.Tests.CaeUscAifConformanceTests.EveryCaeWorkflowIsReadAndOffersToAndAsksOfPortsItsModuleDeclares [169 ms]
+[ONNX] hsemotion_enet_b0_8_va_mtl.onnx: CPU
+  Passed Mpai.Aif.Tests.CaeUscAifConformanceTests.AModuleWhoseTopologyHasALoopDeclaresContinuousExecution [7 ms]
+  Passed Mpai.Aif.Tests.AsmFeaturesTests.ASceneIsListedWithItsMembersAndTheirPoV [778 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EesModuleTests.TheProsodicPathwayGivesTheEmotionlessSpeechTheProsodyOfTheModelUtterance [1 s]
+  Passed Mpai.Aif.Tests.CaeUscV25EesTests.ADegreeStrengthensOrWeakensTheEmotionAndNoDegreeIsMedium [1 s]
+  Passed Mpai.Aif.Tests.ThirdPartyNoticesTests.ThePageOfTheModelsListsTheSameModelsWithTheirSourcesAndLicences [120 ms]
+  Passed Mpai.Aif.Tests.CaeUscAifConformanceTests.EveryL3ValidatesAgainstTheAimMetadataSchemaAndIsAnInstanceOfItsL2 [503 ms]
+[CAE-AOE-V1.0] open violin
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[CAE-AOE-V1.0] open drums
+  Passed Mpai.Aif.Tests.CaeUscAifConformanceTests.PortsAreIdentifiedByDataTypeAndPortNumberAndNoTopologyEndRoutesByAName [4 ms]
+  Passed Mpai.Aif.Tests.ThirdPartyNoticesTests.TheNoticesListEveryModelAndEveryPieceOfDataTheMetadataDeclares [81 ms]
+  Passed Mpai.Aif.Tests.AihFrontEndModuleTests.RegistrationAndRequestsGoToTheBackEndAndItsAnswersComeBack [1 s]
+  Passed Mpai.Aif.Tests.AsmFeaturesTests.EachFeatureOfAnAudioObjectIsChangedByAValueAndItsChildrenAreNamed [614 ms]
+  Passed Mpai.Aif.Tests.ThirdPartyNoticesTests.EverySourceFileThatUsesAModelOrDataSaysSoInItsFirstLines [384 ms]
+  Passed Mpai.Aif.Tests.ExternalBindingTests.WhatIsSignedAndRecordedIsValidAgainstThePtfSchemas [34 ms]
+[MMC-ASR-V2.5] heard 5 words
+  Passed Mpai.Aif.Tests.ExternalBindingTests.TheBindingCannotBeStrippedOrChangedInsideTheMessage [18 ms]
+  Passed Mpai.Aif.Tests.ExternalBindingTests.ASignedMessageIsBoundToItsPortAndItsStamp [17 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EesTests.TheNeuralPathwayRaisesThePitchLevelAndRateForHappinessAndLowersThemForSadness [866 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EesTests.AnEmotionOfNoCategoryLeavesTheFeaturesWhereTheyAre [237 ms]
+  Passed Mpai.Aif.Tests.PgmSpeechSliceTests.OpenTheDoorsWithSpeech [7 s]
+  Passed Mpai.Aif.Tests.CaeUscV25EesTests.TheEmotionListSaysHowFarTheProsodicPathwayGoes [545 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EesTests.ASubAimThatLacksAnInputOrIsGivenWhatItDoesNotKnowSaysSo [25 ms]
+[CAE-AOE-V1.0] open violin
+[CAE-AOE-V1.0] open drums
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.PlannerTests.AnOncomingVehicleThatTurnsAcrossTheWayIsNotHit(earlierBy: 2, turn: Right) [1 s]
+  Passed Mpai.Aif.Tests.CaeUscV25AppTests.AudioRecordingPreservationRefusesWhatItCannotUse [1 s]
+[MMC-EDP-V2.5] emotion NEUTRAL, attitude friendly
+  Passed Mpai.Aif.Tests.CaeUscV25AppTests.SpeechRestorationSystemSaysWhatIsWrongWithWhatItWasGiven [1 s]
+  Passed Mpai.Aif.Tests.AihFrontEndModuleTests.HealthDataAndALicenceMakeAihDataThatIsCheckedKeptAndRaisesTheAlert [3 s]
+[xUnit.net 00:00:12.72]     Mpai.Aif.Tests.AsmVoiceThroughControllerTests.TheControllerStartsTheModuleWithItsVoice [SKIP]
+[xUnit.net 00:00:12.72]       The vocal interface is not part of the ASM Module now; it returns as an extension.
+  Passed Mpai.Aif.Tests.PackageFingerprintTests.AnAlteredPackageIsRefusedAndTheOnesSubmittedAreApproved [6 s]
+  Passed Mpai.Aif.Tests.SimpleTimeSchemaTests.AModeLeftOutIsSingleAndNeedsOnlyTheOneAccuracy [4 ms]
+  Passed Mpai.Aif.Tests.SimpleTimeSchemaTests.TheModesStillNeedTheirOwnFields [1 ms]
+  Passed Mpai.Aif.Tests.TrustVerificationTests.Modules [4 s]
+  Passed Mpai.Aif.Tests.TrustVerificationTests.Pipeline [268 ms]
+  Passed Mpai.Aif.Tests.AihFrontEndModuleTests.ARegularRateIsGreen [1 s]
+  Skipped Mpai.Aif.Tests.AsmVoiceThroughControllerTests.TheControllerStartsTheModuleWithItsVoice [1 ms]
+[xUnit.net 00:00:12.73]     Mpai.Aif.Tests.AsmVoiceThroughControllerTests.WhatThePersonSaysMovesTheObjectThroughTheController [SKIP]
+[xUnit.net 00:00:12.73]       The vocal interface is not part of the ASM Module now; it returns as an extension.
+[MMC-EDP-V2.5] emotion CALMNESS, attitude friendly
+[ONNX] encoder_model.onnx: CPU
+[MMC-ASR-V2.5] heard 7 words
+  Skipped Mpai.Aif.Tests.AsmVoiceThroughControllerTests.WhatThePersonSaysMovesTheObjectThroughTheController [1 ms]
+  Passed Mpai.Aif.Tests.AppModulesTests.TheConversationKeepsItsMemoryFromTurnToTurn(app: "AMC") [8 s]
+[ONNX] blip_vision_model.onnx: CPU
+  Passed Mpai.Aif.Tests.PlannerTests.AnOncomingVehicleThatTurnsAcrossTheWayIsNotHit(earlierBy: -1.5, turn: Left) [5 s]
+  Passed Mpai.Aif.Tests.TrustIdentityTests.Module [2 s]
+  Passed Mpai.Aif.Tests.TrustIdentityTests.Chain [60 ms]
+  Passed Mpai.Aif.Tests.TrustIdentityTests.Refused [29 ms]
+  Passed Mpai.Aif.Tests.TrustIdentityTests.Identities [29 ms]
+  Passed Mpai.Aif.Tests.StoreLicenceServiceTests.TheStoreGivesItsPublicKeyAndNobodyElses [2 s]
+[MMC-ASR-V2.5] heard 8 words
+  Passed Mpai.Aif.Tests.StoreHttpSimulationTests.AnImplementerSubmitsAndAControllerObtainsAndVerifiesWhatItObtainsOverHttp [8 s]
+  Passed Mpai.Aif.Tests.KeepStorageTests.TheWorkflowSaysWhereTheStorageIs [< 1 ms]
+  Passed Mpai.Aif.Tests.KeepStorageTests.ALineTheNotationDoesNotKnowIsRefused [< 1 ms]
+[ONNX] blip_text_encoder_wrapper.onnx: CPU
+  Passed Mpai.Aif.Tests.StoreLicenceServiceTests.AnOfferThatDoesNotAllowTheStoreToSublicenseIsRefusedWithItsReason [3 s]
+[MMC-ASR-V2.5] heard 7 words
+  Passed Mpai.Aif.Tests.PlannerTests.AnOncomingVehicleThatTurnsAcrossTheWayIsNotHit(earlierBy: 0, turn: Left) [4 s]
+  Passed Mpai.Aif.Tests.StoreTests.RefusesWhatDoesNotValidate [2 s]
+  Passed Mpai.Aif.Tests.StoreLicenceServiceTests.TheStoresAnswerToAVerificationIsSignedAndIsTheAnswerToThatQuestion [2 s]
+  Passed Mpai.Aif.Tests.StoreTests.OnlyAnApprovedImplementerSubmits_AndTheFingerprintIsRecordedAndVerified [1 s]
+  Passed Mpai.Aif.Tests.BoutTests.Accept_RefusesAWrongPortAStaleStampAndAReusedBoutID [57 ms]
+  Passed Mpai.Aif.Tests.BoutTests.PublishedVectors_Chain_DeliverEachSegmentWhenItsSignatureVerifies [70 ms]
+  Passed Mpai.Aif.Tests.BoutTests.PublishedVectors_ChainWithAMissingInstance_RefusesTheSegment [3 ms]
+  Passed Mpai.Aif.Tests.BoutTests.PublishedVectors_TamperedBoutSignature_IsRefused [1 ms]
+  Passed Mpai.Aif.Tests.BoutTests.Credential_IsIssuedOnAFreshIdentity_AndItsHolderMayGiveUntilRevoked [39 ms]
+  Passed Mpai.Aif.Tests.BoutTests.Accept_RefusesAnUnknownSignerAndASchemaViolation [4 ms]
+  Passed Mpai.Aif.Tests.BoutTests.PublishedVectors_NotCanonicalOrChanged_AreRefused [10 ms]
+  Passed Mpai.Aif.Tests.BoutTests.PublishedVectors_ReplayedInstance_IsRefused [5 ms]
+  Passed Mpai.Aif.Tests.BoutTests.AsyncKey_AWholeFlowSignedAndVerifiedAsynchronously [28 ms]
+  Passed Mpai.Aif.Tests.BoutTests.Flow_FrameLargerThanMaxInstanceLength_IsRefusedBeforeDecompressing [5 ms]
+  Passed Mpai.Aif.Tests.BoutTests.Flow_EachInstance_RoundTripsExactly [23 ms]
+  Passed Mpai.Aif.Tests.BoutTests.PublishedVectors_CutBytes_AreTheRebuiltBytes [3 ms]
+  Passed Mpai.Aif.Tests.BoutTests.Credential_IsRefusedOnAStaleOrTamperedIdentity [5 ms]
+  Passed Mpai.Aif.Tests.BoutTests.Flow_InstancesAfterCloseBout_AreRefused [9 ms]
+  Passed Mpai.Aif.Tests.BoutTests.PublishedVectors_EachInstance_AreAcceptedAndDecompressExactly [8 ms]
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-NLU-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-NLU-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1HMC-ECU-V2.2-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1HMC-ECU-V2.2-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TST-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1HMC-ECU-V2.2-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I03 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1MMC-TST-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I03 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1MMC-EDP-V2.5-I03.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTT-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1MMC-TTT-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-AMC-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-AMC-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-AMC-V2.5-I01: flow '1MMC-NLU-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTS-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-GFD-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-TTT-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-TTT-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow '1MMC-TTT-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTS-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow '1MMC-TTT-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+  Passed Mpai.Aif.Tests.BoutTests.Flow_Chain_TheTailIsVerifiedByCloseBout [9 ms]
+  Passed Mpai.Aif.Tests.MetadataTests.Conformance [83 ms]
+  Passed Mpai.Aif.Tests.MetadataTests.Connections [69 ms]
+  Passed Mpai.Aif.Tests.StoreLicenceServiceTests.ThePriceIsQuotedBeforeTheLicenceAndTheOffersLimitOnControllersIsKept [1 s]
+  Passed Mpai.Aif.Tests.PlannerTests.AnOncomingVehicleThatTurnsAcrossTheWayIsNotHit(earlierBy: 1.5, turn: Left) [3 s]
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-NLU-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-NLU-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1HMC-ECU-V2.2-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1HMC-ECU-V2.2-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TST-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1HMC-ECU-V2.2-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I03 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1MMC-TST-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I03 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1MMC-EDP-V2.5-I03.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTT-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1MMC-TTT-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-AMC-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-AMC-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-AMC-V2.5-I01: flow '1MMC-NLU-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTS-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-GFD-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-TTT-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-TTT-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow '1MMC-TTT-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTS-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow '1MMC-TTT-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[MMC-ASR-V2.5] heard 8 words
+  Passed Mpai.Aif.Tests.MetadataTests.Schema [2 s]
+  Passed Mpai.Aif.Tests.MetadataTests.ResourcePolicies [26 ms]
+  Passed Mpai.Aif.Tests.MetadataTests.L3Load [82 ms]
+  Passed Mpai.Aif.Tests.MetadataTests.AccessOfTheL2IsDeclaredByTheL3 [47 ms]
+  Passed Mpai.Aif.Tests.MetadataTests.PortNumbersMatch [44 ms]
+  Passed Mpai.Aif.Tests.StoreLicenceServiceTests.TheStatusSaysValidUntilTheOperatorRevokesAndARevokedLicenceIsRefused [2 s]
+  Passed Mpai.Aif.Tests.MetadataTests.Addressing [1 s]
+  Passed Mpai.Aif.Tests.MetadataTests.OptionalAgreement [61 ms]
+  Passed Mpai.Aif.Tests.MetadataTests.Combination [286 ms]
+  Passed Mpai.Aif.Tests.StoreLicenceServiceTests.AnAimWithoutAnAimLicenceNeedsNoneAndWhatIsNotInTheStoreHasNone [1 s]
+[AIF] CAV-HCI-V2.0: flow 'MMC-ASR-V2.5.OSD-BTO-V1.5:1' declares Output 1, but MMC-NLU-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] CAV-HCI-V2.0: flow 'MMC-NLU-V2.5.OSD-BTO-V1.5' declares Output 1, but MMC-EDP-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] CAV-HCI-V2.0: flow 'MMC-ASR-V2.5.OSD-BTO-V1.5:1' declares Output 1, but MMC-NLU-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] CAV-HCI-V2.0: flow 'MMC-NLU-V2.5.OSD-BTO-V1.5' declares Output 1, but MMC-EDP-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] HMC-CEC-V2.2: flow 'OSD-BTO-V1.5:1' declares Output 1, but HMC-ECU-V2.2 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] HMC-CEC-V2.2: flow 'HMC-ECU-V2.2.OSD-BTO-V1.5' declares Output 1, but MMC-TST-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] HMC-CEC-V2.2: flow 'HMC-ECU-V2.2.OSD-BTO-V1.5' declares Output 1, but MMC-EDP-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] HMC-CEC-V2.2: flow 'MMC-TST-V2.5.OSD-BTO-V1.5' declares Output 1, but MMC-EDP-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] HMC-CEC-V2.2: flow 'MMC-EDP-V2.5.OSD-BTO-V1.5' declares Output 1, but MMC-TTT-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] HMC-CEC-V2.2: flow 'MMC-TTT-V2.5.OSD-BTO-V1.5' declares Output 1, but PAF-PMX-V1.6 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-AMC-V2.5: flow 'OSD-BTO-V1.5:1' declares Output 1, but MMC-NLU-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-AMC-V2.5: flow 'MMC-ASR-V2.5.OSD-BTO-V1.5:1' declares Output 1, but MMC-NLU-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-AMC-V2.5: flow 'MMC-NLU-V2.5.OSD-BTO-V1.5' declares Output 1, but MMC-EDP-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-MCA-V2.5: flow 'MMC-ASR-V2.5.OSD-BTO-V1.5:1' declares Output 1, but MMC-EDP-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-MCA-V2.5: flow 'OSD-BTO-V1.5:1' declares Output 1, but MMC-EDP-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-MCA-V2.5: flow 'MMC-EDP-V2.5.OSD-BTO-V1.5' declares Output 1, but MMC-TTS-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-MCA-V2.5: flow 'MMC-EDP-V2.5.OSD-BTO-V1.5' declares Output 1, but PAF-GFD-V1.6 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-MCA-V2.5: flow 'MMC-EDP-V2.5.OSD-BTO-V1.5' declares Output 1, but PAF-PMX-V1.6 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-MTS-V2.5: flow 'MMC-ASR-V2.5.OSD-BTO-V1.5:1' declares Output 1, but MMC-TTT-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-MTS-V2.5: flow 'OSD-BTO-V1.5:1' declares Output 1, but MMC-TTT-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-MTS-V2.5: flow 'MMC-TTT-V2.5.OSD-BTO-V1.5' declares Output 1, but MMC-TTS-V2.5 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] MMC-MTS-V2.5: flow 'MMC-TTT-V2.5.OSD-BTO-V1.5' declares Output 1, but PAF-PMX-V1.6 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+  Passed Mpai.Aif.Tests.SyntheticDriveTests.Drive [26 s]
+  Passed Mpai.Aif.Tests.MetadataTests.NewFields [489 ms]
+  Passed Mpai.Aif.Tests.PlannerTests.AnOncomingVehicleThatTurnsAcrossTheWayIsNotHit(earlierBy: -3, turn: Left) [4 s]
+  Passed Mpai.Aif.Tests.PlannerTests.AnOncomingVehicleThatTurnsAcrossTheWayIsNotHit(earlierBy: 0, turn: Right) [800 ms]
+  Passed Mpai.Aif.Tests.MetadataTests.L2Topology [1 s]
+  Passed Mpai.Aif.Tests.MetadataTests.NoNameReachesProcessing [59 ms]
+  Passed Mpai.Aif.Tests.MacWorkflowTests.TheMacWorkflowWelcomesAsksFaceAndSpeechThenPresentsThePortableAvatarOfTheVerdict [30 ms]
+[MMC-ASR-V2.5] heard 8 words
+  Passed Mpai.Aif.Tests.AmqWorkflowTests.TheAmqWorkflowAsksChoosesTheQuestionPresentsTheAnswerAndEndsWhenThePersonSaysNo [11 ms]
+  Passed Mpai.Aif.Tests.AmqPictureRoutesTests.TheCatalogueOffersOnlyItsCollectionsAndNothingOutsideThem [11 ms]
+  Passed Mpai.Aif.Tests.AmqPictureRoutesTests.ThePersonProvidesAPictureOfTheirOwnAndAsks [264 ms]
+  Passed Mpai.Aif.Tests.AmqPictureRoutesTests.OnePersonsPictureIsNeverUsedForAnother [147 ms]
+  Passed Mpai.Aif.Tests.AmqPictureRoutesTests.ThePersonChoosesAMonumentByNameAndAsks [163 ms]
+  Passed Mpai.Aif.Tests.AsmWelcomeTests.TheFirstRequestIsAHelloAndTheModelSaysHelloToIt [10 ms]
+  Passed Mpai.Aif.Tests.StoreLicenceServiceTests.AnAimWithAnOfferIsLicensedOverHttpAtThePriceWithTheStoresMarkupAndAControllerBuildsFromIt [2 s]
+  Passed Mpai.Aif.Tests.StoreLicenceServiceTests.WhatTheStoreIssuedIsKeptAndTheSameAfterARestart [218 ms]
+[ONNX] pose_estimation_mediapipe_2023mar.onnx: CPU
+  Passed Mpai.Aif.Tests.AsmWelcomeTests.AskedWhichMaterialsAreAvailableTheModelNamesThemAll(question: "What materials do you know") [450 ms]
+  Passed Mpai.Aif.Tests.AsmWelcomeTests.AskedWhichMaterialsAreAvailableTheModelNamesThemAll(question: "show materials") [4 ms]
+  Passed Mpai.Aif.Tests.AsmWelcomeTests.AskedWhichMaterialsAreAvailableTheModelNamesThemAll(question: "list the materials") [2 ms]
+  Passed Mpai.Aif.Tests.AsmWelcomeTests.AskedWhichMaterialsAreAvailableTheModelNamesThemAll(question: "which materials are available?") [2 ms]
+  Passed Mpai.Aif.Tests.PersonalStatusInterpretationTests.OnlyKeypointsAreInterpretedAndWithoutAPictureThereIsNothingToDescribe [41 ms]
+  Passed Mpai.Aif.Tests.PlannerTests.AnOncomingVehicleThatTurnsAcrossTheWayIsNotHit(earlierBy: 3, turn: Left) [2 s]
+  Passed Mpai.Aif.Tests.PlannerTests.ACarThatBrakesHardAheadIsNotHit [463 ms]
+  Passed Mpai.Aif.Tests.StoreLicenceServiceTests.TheStoreIssuesAnAimLicenceOnlyToACallerItCanAuthenticate [1 s]
+  Passed Mpai.Aif.Tests.PayloadAccessTests.AReaderCountsOnceHoweverOftenItReleases [5 ms]
+  Passed Mpai.Aif.Tests.PayloadAccessTests.OnlyAReaderOfTheChannelIsAtItsFarEnd [1 ms]
+  Passed Mpai.Aif.Tests.AudioSceneSchemaTests.ScenesAsTheSchemasSayThem [19 ms]
+  Passed Mpai.Aif.Tests.PlannerTests.ASlowCarAheadIsFollowedAtItsSpeedAndNeverHit [763 ms]
+  Passed Mpai.Aif.Tests.PlannerTests.AnEmptyRoadIsDrivenAtTheSpeedLimit [362 ms]
+[ONNX] go_emotions_roberta_base.onnx: CPU
+  Passed Mpai.Aif.Tests.AihStoreServiceTests.TheBackEndRegistersAsAMachinePublishesThroughTheServiceAndAControllerObtainsWhatItPublished [2 s]
+  Passed Mpai.Aif.Tests.PersonalStatusInterpretationTests.TheKeypointsOfABodyAreFoundAndInterpreted [4 s]
+  Passed Mpai.Aif.Tests.PlannerTests.ACarAheadIsNotPassedWhereTheLaneBesideItIsBusy [1 s]
+[ONNX] blip_decoder_context_dynamic.onnx: CPU
+[AIF] 1TST-RPT-V1.0-I01 reports: fell back to a simpler path
+[MMC-ASR-V2.5] heard 6 words
+[ONNX] decoder_model.onnx: CPU
+  Passed Mpai.Aif.Tests.TrustTraceTests.Module [2 s]
+  Passed Mpai.Aif.Tests.TrustTraceTests.Chain [148 ms]
+  Passed Mpai.Aif.Tests.PlannerTests.DiagnoseTheLeftTurn [2 s]
+  Passed Mpai.Aif.Tests.PlannerTests.AStoppedCarAheadIsStoppedBehind [1 s]
+  Passed Mpai.Aif.Tests.PlannerTests.ACarAheadIsPassedWhereTheLaneBesideItIsFree [1 s]
+[MMC-ASR-V2.5] heard 6 words
+[MMC-TTS-V2.5] no voice configured for language 'ja'; falling back to the default voice (en-US). Add a "Voice:ja" setting to speak it properly.
+  Passed Mpai.Aif.Tests.PlannerTests.DiagnoseThePass [1 s]
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-NLU-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1CAV-HCI-V2.0-I01: flow '1MMC-NLU-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+  Passed Mpai.Aif.Tests.SyntheticDriveTests.IntoEssStage1 [14 s]
+  Passed Mpai.Aif.Tests.SystemTests.CavStatus [578 ms]
+  Passed Mpai.Aif.Tests.SystemTests.Loops [22 ms]
+  Passed Mpai.Aif.Tests.PtfTests.Schemas_AsWritten [6 ms]
+  Passed Mpai.Aif.Tests.PtfTests.Signature [9 ms]
+  Passed Mpai.Aif.Tests.PtfTests.Canonical_Form [< 1 ms]
+  Passed Mpai.Aif.Tests.CavDrivingTests.Step3_APedestrianSteppingOutFromBehindAVanIsNotHit [670 ms]
+  Passed Mpai.Aif.Tests.CavDrivingTests.Step3_WhenNoMotionIsFreeOfCollisionTheCavStops [3 ms]
+  Passed Mpai.Aif.Tests.CavDrivingTests.Step3_OnAFreeRoadTheCavReachesItsDestinationWithinTheSpeedLimit [172 ms]
+  Passed Mpai.Aif.Tests.CavDrivingTests.Step3_PedestriansFirst_AClearanceEnoughBesideACarIsNotEnoughBesideAPedestrian [1 ms]
+  Passed Mpai.Aif.Tests.CavDrivingTests.Step2_WhatTheCavCannotSeeIsAssumed [1 ms]
+  Passed Mpai.Aif.Tests.CavDrivingTests.Step2_ACarMovingAcrossItsLaneMayChangeLane [7 ms]
+  Passed Mpai.Aif.Tests.CavDrivingTests.Step1_ARoadUserIsKeptApartOverTimeAndItsMotionEstimated [12 ms]
+  Passed Mpai.Aif.Tests.CavDrivingTests.Step2_ACarBeforeAJunctionMayTurnTheIndicatorSaysWhich [4 ms]
+  Passed Mpai.Aif.Tests.CavDrivingTests.Step2_APedestrianAtTheKerbMayStepOutLessSoTheLongerItStands [2 ms]
+  Passed Mpai.Aif.Tests.CavDrivingTests.Step1_AVanParkedBesideTheLaneHidesAnAreaAndAStoppedCarOnTheLaneDoesNot [4 ms]
+  Passed Mpai.Aif.Tests.CavDrivingTests.Step1_TheSceneSaysWhatKindOfPlaceTheCavIsNear [< 1 ms]
+[ONNX] TapeIrregularityClassifier.onnx: CPU
+  Passed Mpai.Aif.Tests.CavDrivingTests.Step2_ACarThatSlowsAtAGiveWayLineGivesWay [1 ms]
+  Passed Mpai.Aif.Tests.AccessConformanceTests.AnEntryAnAimIsNotGivenIsNotReadByIt [16 ms]
+  Passed Mpai.Aif.Tests.AccessConformanceTests.WhatAUriHoldsThatIsNotWhatTheEntryPinsIsReplacedByTheDataFoundByItsHash [14 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25SmeAesTests.SpeakModelWithEmotionGivesTheEmotionlessSpeechTheProsodyOfTheModelUtterance [1 s]
+  Passed Mpai.Aif.Tests.CaeUscV25SmeAesTests.AddEmotionToSpeechGivesTheEmotionlessSpeechTheFeaturesOfTheEmotion [1 s]
+[MMC-ASR-V2.5] heard 1 words
+[MMC-TTS-V2.5] no voice configured for language 'zh'; falling back to the default voice (en-US). Add a "Voice:zh" setting to speak it properly.
+  Passed Mpai.Aif.Tests.PersonalStatusInterpretationTests.TheEmotionOfATextIsReadFromItsDescriptors [24 s]
+  Passed Mpai.Aif.Tests.PersonalStatusInterpretationTests.OnlyTheDescriptorsOfTheRightFormatAreInterpreted [43 ms]
+  Passed Mpai.Aif.Tests.PersonalStatusInterpretationTests.TheSpeechAffectIsInterpretedAsMmcSpeDoesAndNothingElseIs [60 ms]
+[MMC-ASR-V2.5] heard 18 words
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.AppModulesTests.TheStandaloneAmqProgramAnswersAndTheAnswerSpeaks [49 s]
+[ONNX] model.onnx: CPU
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTS-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-GFD-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[ASR] ports in: OSD-BSO-V1.5#1; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+  Passed Mpai.Aif.Tests.VoiceLanguageTests.EachVoiceIsHeardSayingItsLanguage [1 m 3 s]
+[MMC-ASR-V2.5] heard 11 words
+  Passed Mpai.Aif.Tests.AppModulesTests.McaAnswersASpokenTurn [4 s]
+[AIF] 1MMC-JSI-V2.5-I02: DEGRADED (it threw: it returned an error: The language model could not be reached (is Ollama running?): The operation was canceled.); 1MMC-VCI-V2.5-I01 OnDegraded Continue
+dotnet : [xUnit.net 00:01:08.48]     Mpai.Aif.Tests.AsmVoiceChainTests.WhatThePersonSaysMovesTheObjectInTheScene [FAIL]
+At line:1 char:351
++ ... = Get-Date; dotnet test --no-build --blame-hang-timeout 30m --logger  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([xUnit.net 00:0...TheScene [FAIL]:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[xUnit.net 00:01:08.48]       the Voice Command Interface gave no command for "Move the violin one meter to the left."
+[xUnit.net 00:01:08.48]       Stack Trace:
+[xUnit.net 00:01:08.48]         D:\AI\Test\Mpai.Aif.Tests\AsmVoiceChainTests.cs(77,0): at Mpai.Aif.Tests.AsmVoiceChainTests.Run()
+[xUnit.net 00:01:08.48]         D:\AI\Test\Mpai.Aif.Tests\AsmVoiceChainTests.cs(36,0): at Mpai.Aif.Tests.AsmVoiceChainTests.WhatThePersonSaysMovesTheObjectInTheScene()
+[xUnit.net 00:01:08.48]         --- End of stack trace from previous location ---
+  Failed Mpai.Aif.Tests.AsmVoiceChainTests.WhatThePersonSaysMovesTheObjectInTheScene [59 s]
+  Error Message:
+   the Voice Command Interface gave no command for "Move the violin one meter to the left."
+  Stack Trace:
+     at Mpai.Aif.Tests.AsmVoiceChainTests.Run() in D:\AI\Test\Mpai.Aif.Tests\AsmVoiceChainTests.cs:line 77
+   at Mpai.Aif.Tests.AsmVoiceChainTests.WhatThePersonSaysMovesTheObjectInTheScene() in D:\AI\Test\Mpai.Aif.Tests\AsmVoiceChainTests.cs:line 36
+--- End of stack trace from previous location ---
+  Passed Mpai.Aif.Tests.VciTests.TheJsonInterfaceOfAnApplicationAndTheNeutralOneAreInstancesOfTheSameL2 [3 ms]
+  Passed Mpai.Aif.Tests.VciTests.ItsL3IsItsL2sTopologyWithTheInstancesNamed [2 ms]
+  Passed Mpai.Aif.Tests.VciTests.TheAccessOfTheJsonInterfaceForAudioSceneManagementIsPinnedToItsFiles [4 ms]
+  Passed Mpai.Aif.Tests.VciTests.WhatIsHeardLeavesAtTheHeardTextPortWhetherOrNotItBecomesACommand [1 s]
+[xUnit.net 00:01:13.58]     Mpai.Aif.Tests.VciTests.WhatIsSaidBecomesACommandAndTheResponseIsSaid [FAIL]
+[xUnit.net 00:01:13.58]       NotProduced
+[xUnit.net 00:01:13.58]       Stack Trace:
+[xUnit.net 00:01:13.58]         D:\AI\Test\Mpai.Aif.Tests\VciTests.cs(112,0): at Mpai.Aif.Tests.VciTests.WhatIsSaidBecomesACommandAndTheResponseIsSaid()
+[xUnit.net 00:01:13.58]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:01:13.58]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Mpai.Aif.Tests.VciTests.WhatIsSaidBecomesACommandAndTheResponseIsSaid [4 s]
+  Error Message:
+   NotProduced
+  Stack Trace:
+     at Mpai.Aif.Tests.VciTests.WhatIsSaidBecomesACommandAndTheResponseIsSaid() in D:\AI\Test\Mpai.Aif.Tests\VciTests.cs:line 112
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed Mpai.Aif.Tests.VciTests.ARequestThatGivesNoCommandIsAnsweredAtOnceWithWhatIsMissing [545 ms]
+  Passed Mpai.Aif.Tests.IceConditionMessageTests.TheRoadStateIsSentOnTheSecondAmsMasMessageOutput [383 ms]
+  Passed Mpai.Aif.Tests.StorageUntilTests.ADateIsNotLongerThanAnotherAndNoDateIsLongerThanADate [< 1 ms]
+  Passed Mpai.Aif.Tests.StorageUntilTests.ADatumPastItsDateIsDeletedAndOneWithoutADateIsKept [10 ms]
+  Passed Mpai.Aif.Tests.StorageUntilTests.WithNoTimeStatedADatumIsKeptUntilItIsDeleted [2 ms]
+  Passed Mpai.Aif.Tests.StorageUntilTests.ADateIsParsedAsTheEndOfThatDayAndSaid [< 1 ms]
+  Passed Mpai.Aif.Tests.MmmSeatsTests.TheSeatsAreGivenInTheOrderOfTheWorld [< 1 ms]
+  Passed Mpai.Aif.Tests.MmmSeatsTests.MoreSeatsPlannedThanTheRoomHasKeepsTheRoomsSeats [< 1 ms]
+  Passed Mpai.Aif.Tests.MmmSeatsTests.TwoPeopleAndTheSecretaryHaveThreeSeats_TheFirstThreeOfTheWorld [2 ms]
+  Passed Mpai.Aif.Tests.NnwV20Tests.TheAimsHaveExactlyTheirPorts [4 ms]
+  Passed Mpai.Aif.Tests.NnwV20Tests.TheDataTypesRefuseWhatTheyDoNotDescribe [7 ms]
+  Passed Mpai.Aif.Tests.NnwV20Tests.TheAimsAreNamedForV20AndTheCompositesAreMadeOfAimsThatExist [1 ms]
+  Passed Mpai.Aif.Tests.NnwV20Tests.TheDataTypesAcceptWhatTheyDescribe [1 ms]
+  Passed Mpai.Aif.Tests.LaneChangePlannerOpposingTests.ToldThatAVehicleComesItWaits [14 ms]
+  Passed Mpai.Aif.Tests.LaneChangePlannerOpposingTests.ItGoesBackBehindTheTruckIfAVehicleAppearsBeforeItIsLevel [2 ms]
+  Passed Mpai.Aif.Tests.LaneChangePlannerOpposingTests.WithoutAReportItDoesNotPullOutBehindATruck [< 1 ms]
+  Passed Mpai.Aif.Tests.LaneChangePlannerOpposingTests.ToldThatTheLaneIsFreeItPullsOutToTheOtherLane [< 1 ms]
+  Passed Mpai.Aif.Tests.LaneChangePlannerOpposingTests.ItHurriesPastIfAVehicleAppearsWhenItIsLevel [< 1 ms]
+[ONNX] decoder_with_past_model.onnx: CPU
+  Passed Mpai.Aif.Tests.PersonalStatusInterpretationTests.TheAffectOfASpeechThroughDescriptionAndInterpretationIsWhatMmcSpeGives [41 s]
+[ONNX] hsemotion_enet_b0_8_va_mtl.onnx: CPU
+  Passed Mpai.Aif.Tests.PersonalStatusInterpretationTests.EveryLabelOfGoEmotionsIsMappedOrDeclaredLost [3 ms]
+  Passed Mpai.Aif.Tests.PersonalStatusInterpretationTests.TheFaceExpressionIsInterpretedAsPafFpeDoesAndNothingElseIs [38 ms]
+  Passed Mpai.Aif.Tests.PersonalStatusInterpretationTests.WithoutATextThereIsNothingToDescribe [32 ms]
+  Passed Mpai.Aif.Tests.PersonalStatusInterpretationTests.TheBodyFormatIsOneOfTheFormatsOfTheBodyDescriptors [< 1 ms]
+  Passed Mpai.Aif.Tests.PersonalStatusInterpretationTests.TheBodyRulesGiveThePostureTheyName [< 1 ms]
+  Passed Mpai.Aif.Tests.PersonalStatusInterpretationTests.TheExpressionOfAFaceThroughDescriptionAndInterpretationIsWhatPafFpeGives [3 s]
+  Passed Mpai.Aif.Tests.PersonalStatusInterpretationTests.TheHighestScoreOfEachFactorIsGivenWithItsScoreAsDegree [< 1 ms]
+  Passed Mpai.Aif.Tests.PersonalStatusInterpretationTests.TheNewDescriptorFormatsAreInTheEnumerations [< 1 ms]
+  Passed Mpai.Aif.Tests.PersonalStatusInterpretationTests.ScoresBelowTheThresholdGiveNoPersonalStatus [< 1 ms]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[CAE-AOE-V1.0] open low
+[CAE-AOE-V1.0] open high
+[CAE-AOE-V1.0] open low
+  Passed Mpai.Aif.Tests.AppModulesTests.AmqAppAnswersThroughItsWorkflow [1 m 22 s]
+[xUnit.net 00:02:30.46]     
+Mpai.Aif.Tests.XrvLtpWorkflowTests.TheLamplighterRunsByItselfThroughTheAppWithTheVirtualVenueOnMmmTec [FAIL]
+[xUnit.net 00:02:30.46]       System.TimeoutException : The operation has timed out.
+[xUnit.net 00:02:30.46]       Stack Trace:
+[xUnit.net 00:02:30.46]         D:\AI\Test\Mpai.Aif.Tests\XrvLtpWorkflowTests.cs(205,0): at Mpai.Aif.Tests.XrvLtpWorkflowTests.TheLamplighterRunsByItselfThroughTheAppWithTheVirtualVenueOnMmmTec()
+[xUnit.net 00:02:30.46]         D:\AI\Test\Mpai.Aif.Tests\XrvLtpWorkflowTests.cs(205,0): at Mpai.Aif.Tests.XrvLtpWorkflowTests.TheLamplighterRunsByItselfThroughTheAppWithTheVirtualVenueOnMmmTec()
+[xUnit.net 00:02:30.46]         --- End of stack trace from previous location ---
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-SOE-V2.5] open hello
+  Failed Mpai.Aif.Tests.XrvLtpWorkflowTests.TheLamplighterRunsByItselfThroughTheAppWithTheVirtualVenueOnMmmTec [1 m 15 s]
+  Error Message:
+   System.TimeoutException : The operation has timed out.
+  Stack Trace:
+     at Mpai.Aif.Tests.XrvLtpWorkflowTests.TheLamplighterRunsByItselfThroughTheAppWithTheVirtualVenueOnMmmTec() in D:\AI\Test\Mpai.Aif.Tests\XrvLtpWorkflowTests.cs:line 205
+   at Mpai.Aif.Tests.XrvLtpWorkflowTests.TheLamplighterRunsByItselfThroughTheAppWithTheVirtualVenueOnMmmTec() in D:\AI\Test\Mpai.Aif.Tests\XrvLtpWorkflowTests.cs:line 205
+--- End of stack trace from previous location ---
+  Passed Mpai.Aif.Tests.AppModulesTests.TheStandaloneProgramSpeaksItsPromptThroughRsr(app: "MAC") [631 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25SmeAesTests.TheTwoAppsGiveSpeechWithEmotionFromFilesAndSayWhatIsMissing [1 m 47 s]
+  Passed Mpai.Aif.Tests.CaeUscV25SmeAesTests.TheTwoModulesAreTheSubAIMsOfEmotionEnhancedSpeechAndHaveItsPorts [2 ms]
+  Passed Mpai.Aif.Tests.AppModulesTests.TheStandaloneProgramSpeaksItsPromptThroughRsr(app: "ACR") [408 ms]
+  Passed Mpai.Aif.Tests.AsmModuleTests.OneModuleOneSession [2 m 19 s]
+[CAE-AOE-V1.0] audio object band
+[ONNX] blip_vision_model.onnx: CPU
+[MMC-SOE-V2.5] open anna
+[MMC-SOE-V2.5] open ben
+[MMC-SSE-V2.5] opened round-a
+[CAE-AOE-V1.0] open solo
+  Passed Mpai.Aif.Tests.MasCodecsTests.EveryBoundaryPortCrosses [3 ms]
+  Passed Mpai.Aif.Tests.XrvLtpWorkflowTests.TheMiniShowRunsThroughTheAppAndTheOutputUnitsActAsTheScriptSays [1 s]
+  Passed Mpai.Aif.Tests.ControllerCompositePoolTests.EachInstanceIsMadeOnceAndAsItself [60 ms]
+  Passed Mpai.Aif.Tests.ControllerCompositePoolTests.AnAimInTwoCompositesIsTwoInstancesAndAnAimAloneKeepsItsName [55 ms]
+  Passed Mpai.Aif.Tests.ControllerCompositePoolTests.NoChannelCrossesFromOneCompositesPoolToTheOthers [67 ms]
+  Passed Mpai.Aif.Tests.AsmFullTests.AFullAudioObjectIsPlacedInASceneOnePartAtATimeAtThePlaceItsOwnPlacementGives [297 ms]
+  Passed Mpai.Aif.Tests.AsmFullTests.AFullSpeechSceneOfSeveralSubScenesIsTheFrameTheOpenSceneIsEditedInAndIsGivenWhole [126 ms]
+  Passed Mpai.Aif.Tests.AsmFullTests.ABasicAudioObjectIsPlacedInASceneAsItWas [101 ms]
+[CAE-AOE-V1.0] audio object band
+[CAE-AOE-V1.0] open drums
+[CAE-AOE-V1.0] open bass
+[CAE-AOE-V1.0] open solo
+[CAE-AOE-V1.0] open drums
+[CAE-ASE-V1.0] opened stage-a
+[CAE-AOE-V1.0] open drums
+[CAE-AOE-V1.0] open bass
+[CAE-ASE-V1.0] opened stage-a
+  Passed Mpai.Aif.Tests.AsmFullTests.AFullAudioObjectOfSeveralBasicOnesIsKeptOpenAndEditedPartByPart [190 ms]
+  Passed Mpai.Aif.Tests.AsmFullTests.MultimodalSceneEditingTakesAFullAudioSceneAsItTakesABasicOne [191 ms]
+  Passed Mpai.Aif.Tests.AsmFullTests.ALoneBasicAudioObjectIsTheCaseOfOnePartAndBehavesAsItDid [88 ms]
+  Passed Mpai.Aif.Tests.AsmFullTests.AFullSpeechObjectIsOpenAndItsPartsAreEditedAndPlacedInASceneOneAtATime [108 ms]
+  Passed Mpai.Aif.Tests.AsmFullTests.ABasicAudioSceneArrivingAloneIsTheCaseOfOnePartAndIsGivenAsOneSubScene [113 ms]
+  Passed Mpai.Aif.Tests.AsmFullTests.AFullAudioSceneOfSeveralSubScenesIsTheFrameTheOpenSceneIsEditedInAndIsGivenWhole [227 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25ProsodyTests.ThePitchIsMultipliedAndTheLengthIsKept [129 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25ProsodyTests.TheLevelIsMultiplied [107 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25ProsodyTests.ThePitchTheLevelAndTheRateOfSpeechAreMeasured [88 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25ProsodyTests.TheRateIsMultipliedAndThePitchIsKept [61 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.AihDataMadeByTheFrontEndHasNoSmartContractYetAndIsValid [1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.AihDataSaysWhoseItIs [1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.AThirdPartyUserStatesWhatItAsksToDo [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.AThirdPartyUserRegistersWithItsOwnProfile [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.AnInstanceValidatesAgainstItsSchema(schema: "HealthData", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.AnInstanceValidatesAgainstItsSchema(schema: "ECGObject", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.AnInstanceValidatesAgainstItsSchema(schema: "ModelLicence", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.AnInstanceValidatesAgainstItsSchema(schema: "AIHData", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.AnInstanceValidatesAgainstItsSchema(schema: "Tokens", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.AnInstanceValidatesAgainstItsSchema(schema: "UserProfile", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.AnInstanceValidatesAgainstItsSchema(schema: "Register", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.AnInstanceValidatesAgainstItsSchema(schema: "Register", instance: [···]) [2 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.AnInstanceValidatesAgainstItsSchema(schema: "AIHDataProcess", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.AnInstanceValidatesAgainstItsSchema(schema: "AIHDataProcess", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.AnInstanceValidatesAgainstItsSchema(schema: "LicenceConfirm", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.AnInstanceValidatesAgainstItsSchema(schema: "LicenceConfirm", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.AnInstanceValidatesAgainstItsSchema(schema: "BlockchainLicence", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.AnInstanceValidatesAgainstItsSchema(schema: "BlockchainLicence", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.AnInstanceValidatesAgainstItsSchema(schema: "ARAData", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.AnInstanceValidatesAgainstItsSchema(schema: "DeIDAndAnonym", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.AnInstanceValidatesAgainstItsSchema(schema: "FederatedLearn", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.AnInstanceValidatesAgainstItsSchema(schema: "Audit", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.AnIndividualRegistersAsAMemberOfAnOrganisation [1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.TheTaxonomiesAreClosedLists [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.ARegisterRequestCarriesOneProfileNotTwoNorNone [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.WithoutItsHeaderItIsNotValid(schema: "HealthData", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.WithoutItsHeaderItIsNotValid(schema: "ECGObject", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.WithoutItsHeaderItIsNotValid(schema: "ModelLicence", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.WithoutItsHeaderItIsNotValid(schema: "AIHData", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.WithoutItsHeaderItIsNotValid(schema: "Tokens", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.WithoutItsHeaderItIsNotValid(schema: "UserProfile", instance: [···]) [3 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.WithoutItsHeaderItIsNotValid(schema: "Register", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.WithoutItsHeaderItIsNotValid(schema: "Register", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.WithoutItsHeaderItIsNotValid(schema: "AIHDataProcess", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.WithoutItsHeaderItIsNotValid(schema: "AIHDataProcess", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.WithoutItsHeaderItIsNotValid(schema: "LicenceConfirm", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.WithoutItsHeaderItIsNotValid(schema: "LicenceConfirm", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.WithoutItsHeaderItIsNotValid(schema: "BlockchainLicence", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.WithoutItsHeaderItIsNotValid(schema: "BlockchainLicence", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.WithoutItsHeaderItIsNotValid(schema: "ARAData", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.WithoutItsHeaderItIsNotValid(schema: "DeIDAndAnonym", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.WithoutItsHeaderItIsNotValid(schema: "FederatedLearn", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AihSchemaTests.WithoutItsHeaderItIsNotValid(schema: "Audit", instance: [···]) [< 1 ms]
+  Passed Mpai.Aif.Tests.AnimationRecorder.Record [< 1 ms]
+  Passed Mpai.Aif.Tests.AnimationRecorder.RecordOncoming [< 1 ms]
+  Passed Mpai.Aif.Tests.AnimationRecorder.RecordDrive [< 1 ms]
+  Passed Mpai.Aif.Tests.AccessSourcesTests.AnArchiveOfAProgramIsUnpackedAndTheSettingIsGivenTheFileInside [18 ms]
+  Passed Mpai.Aif.Tests.AsmServerTests.TheUserAgentManagesAudioThroughTheControllerAndTheModuleRunsApart [2 m 21 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.AihTrustTests.APartySpeaksOnlyForItsSubject [864 ms]
+  Passed Mpai.Aif.Tests.AihTrustTests.ThePartiesAdmittedByAnotherAuthorityAreNotTrusted [70 ms]
+  Passed Mpai.Aif.Tests.AihTrustTests.NothingIsExchangedBeforeTrustIsEstablished [7 ms]
+  Passed Mpai.Aif.Tests.AihTrustTests.WhatIsNotSignedOrIsChangedIsRefused [16 ms]
+  Passed Mpai.Aif.Tests.AihTrustTests.AnAdmittedPartyIsHeardAndAnsweredWithASignedAnswer [60 ms]
+  Passed Mpai.Aif.Tests.AihTrustTests.ABackEndAnswerSignedByAnotherIsNotTrustedByTheParty [18 ms]
+  Passed Mpai.Aif.Tests.GreekVoiceTests.GreekTextIsPlacedAsGreek [< 1 ms]
+  Passed Mpai.Aif.Tests.AccessSourcesTests.DataValidOnlyWithOtherDataIsNotGivenWithoutIt [6 s]
+  Passed Mpai.Aif.Tests.AccessSourcesTests.TheModelsOfTheTranslationAndTheQuestionAimsAreDeclared(l3: "1MMC-TIQ-V2.5-I01.json", setting: "VisionModel", count: 5) [1 ms]
+  Passed Mpai.Aif.Tests.AccessSourcesTests.TheModelsOfTheTranslationAndTheQuestionAimsAreDeclared(l3: "1MMC-TTT-V2.5-I01.json", setting: "TttEncoderModel", count: 6) [1 ms]
+  Passed Mpai.Aif.Tests.AccessSourcesTests.FilesThatNameAnAsFileAreGivenTogetherUnderThatName [14 ms]
+  Passed Mpai.Aif.Tests.AccessSourcesTests.AModuleIsRefusedWhenARequiredAccessCannotBeObtained [30 ms]
+  Passed Mpai.Aif.Tests.AccessSourcesTests.DataAlreadyInAccessIsNotDownloadedAgain [11 ms]
+  Passed Mpai.Aif.Tests.AccessSourcesTests.AnAimThatDeclaresNothingReadsNothing [6 ms]
+  Passed Mpai.Aif.Tests.AccessSourcesTests.EveryAccessEntryOfEveryL3StatesItsTerms [16 ms]
+  Passed Mpai.Aif.Tests.AccessSourcesTests.TheSettingNamedByAnEntryIsGivenTheFileOfAccess [6 ms]
+  Passed Mpai.Aif.Tests.AccessSourcesTests.AnItemIsReadAsAStream [9 ms]
+  Passed Mpai.Aif.Tests.AccessSourcesTests.AFileOfAnArchiveIsObtainedByItsOwnHash [20 ms]
+  Passed Mpai.Aif.Tests.AccessSourcesTests.KeyPrefixesNarrowTheKeys [14 ms]
+  Passed Mpai.Aif.Tests.AccessSourcesTests.TheModelsOfTheSpeechAimsAreDeclared(l3: "1MMC-TTS-V2.5-I01.json", setting: "VoiceModel") [1 ms]
+  Passed Mpai.Aif.Tests.AccessSourcesTests.TheModelsOfTheSpeechAimsAreDeclared(l3: "1MMC-ASR-V2.5-I01.json", setting: "ModelPath") [1 ms]
+  Passed Mpai.Aif.Tests.AccessSourcesTests.TheModelsOfTheSpeechAimsAreDeclared(l3: "1MMC-TTS-V2.5-I01.json", setting: "Voice:it") [1 ms]
+  Passed Mpai.Aif.Tests.AccessSourcesTests.ASetIsReadItemByItemAndEachItemIsChecked [13 ms]
+  Passed Mpai.Aif.Tests.AccessSourcesTests.WhoMayReadADatumOfAccessIsDecidedByItsRules [16 ms]
+  Passed Mpai.Aif.Tests.AccessSourcesTests.TheModelsOfTheOcrAndTheSpeechEmotionAimsAreDeclared(l3: "1MMC-OCR-V2.5-I01.json", setting: "DetModel", count: 4) [1 ms]
+  Passed Mpai.Aif.Tests.AccessSourcesTests.TheModelsOfTheOcrAndTheSpeechEmotionAimsAreDeclared(l3: "1MMC-SPE-V2.5-I01.json", setting: "W2v2Model", count: 1) [1 ms]
+[xUnit.net 00:02:41.40]     Mpai.Aif.Tests.EdpAsmTests.VoiceCommandsForTheScene [FAIL]
+[xUnit.net 00:02:41.40]       no command for: move the violin 1 metre to the left
+[xUnit.net 00:02:41.40]       Stack Trace:
+[xUnit.net 00:02:41.40]         D:\AI\Test\Mpai.Aif.Tests\EdpAsmTests.cs(67,0): at Mpai.Aif.Tests.EdpAsmTests.VoiceCommandsForTheScene()
+[xUnit.net 00:02:41.40]         --- End of stack trace from previous location ---
+  Passed Mpai.Aif.Tests.AccessSourcesTests.DataThatIsNotWhatTheMetadataNamesIsRefused [2 ms]
+  Passed Mpai.Aif.Tests.AccessSourcesTests.TheTermsAndTheMirrorsAreReadFromTheMetadata [1 ms]
+  Passed Mpai.Aif.Tests.AccessSourcesTests.AMirrorServesWhenTheUriDoesNotAndOnlyIfItHoldsTheSameBytes [7 ms]
+  Passed Mpai.Aif.Tests.AccessSourcesTests.AFileIsObtainedCheckedAndReadByItsKey [6 ms]
+  Failed Mpai.Aif.Tests.EdpAsmTests.VoiceCommandsForTheScene [57 s]
+  Error Message:
+   no command for: move the violin 1 metre to the left
+  Stack Trace:
+     at Mpai.Aif.Tests.EdpAsmTests.VoiceCommandsForTheScene() in D:\AI\Test\Mpai.Aif.Tests\EdpAsmTests.cs:line 67
+--- End of stack trace from previous location ---
+  Passed Mpai.Aif.Tests.AsmGrammarTests.ARuleIsNeverWrittenByHand [4 ms]
+  Passed Mpai.Aif.Tests.MmmUc2Tests.FriendsMeetInTheMetaverse [1 s]
+[ONNX] scrfd_10g_bnkps.onnx: CPU
+[ONNX] yolox_s.onnx: CPU
+  Passed Mpai.Aif.Tests.MmmCaptureTests.AUserSeesThePersonaeOfTheOthersWhereTheyStandAndLook [158 ms]
+  Passed Mpai.Aif.Tests.GreekVoiceTests.AGreekSentenceIsSpokenByTheGreekVoice [4 s]
+  Passed Mpai.Aif.Tests.AccessEnvironmentTests.TheSameNameOrSettingFortheSameEnvironmentIsRefused [< 1 ms]
+  Passed Mpai.Aif.Tests.AccessEnvironmentTests.OneNameAndSettingForEachEnvironmentIsConsistent [< 1 ms]
+  Passed Mpai.Aif.Tests.AccessEnvironmentTests.TheProgramsOfTheReferenceAimsAreForWindows [3 ms]
+  Passed Mpai.Aif.Tests.AccessEnvironmentTests.OnlyTheEntriesForThisMachineApply [< 1 ms]
+  Passed Mpai.Aif.Tests.AccessEnvironmentTests.AnEntryForAnotherArchitectureDoesNotApply [< 1 ms]
+  Passed Mpai.Aif.Tests.CveVsiTests.TheFaceLeavesAtPort1TaggedFaceAndTheOtherAtPort3TaggedObject [2 s]
+  Passed Mpai.Aif.Tests.CveVsiTests.TheAmdDeclaresOneInputAndThreeOutputsOfBasicVisualObject [72 ms]
+[xUnit.net 00:02:47.85]     
+Mpai.Aif.Tests.AsmGrammarTests.WhatIsSaidBecomesTheCommandTheRecordSaysAndEveryCommandIsOneOfTheSchema [FAIL]
+[xUnit.net 00:02:47.85]       System.Text.RegularExpressions.RegexMatchTimeoutException : The Regex engine has timed out while trying to match a pattern to an input string. This can occur for many reasons, including very large inputs or excessive backtracking caused by nested quantifiers, back-references and other factors.
+[xUnit.net 00:02:47.85]       Stack Trace:
+[xUnit.net 00:02:47.85]            at System.Text.RegularExpressions.RegexRunner.<CheckTimeout>g__ThrowRegexTimeout|25_0()
+[xUnit.net 00:02:47.85]            at System.Text.RegularExpressions.Regex.Match(String input)
+[xUnit.net 00:02:47.85]         D:\AI\AIMs\MMC\V2.5\JSI\RuleGrammar.cs(70,0): at Mpai.Mmc.Jsi.RuleGrammar.Match(String request, IReadOnlyList`1 rules, IReadOnlyDictionary`2 nameSets, ApplicationState state, String lastCommandId, IDictionary`2 memory, Action`1 named, IReadOnlyDictionary`2 strings, Action`2 sets)
+[xUnit.net 00:02:47.85]         D:\AI\Test\Mpai.Aif.Tests\AsmGrammarTests.cs(97,0): at Mpai.Aif.Tests.AsmGrammarTests.WhatIsSaidBecomesTheCommandTheRecordSaysAndEveryCommandIsOneOfTheSchema()
+[xUnit.net 00:02:47.85]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:02:47.85]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Mpai.Aif.Tests.AsmGrammarTests.WhatIsSaidBecomesTheCommandTheRecordSaysAndEveryCommandIsOneOfTheSchema [6 s]
+  Error Message:
+   System.Text.RegularExpressions.RegexMatchTimeoutException : The Regex engine has timed out while trying to match a pattern to an input string. This can occur for many reasons, including very large inputs or excessive backtracking caused by nested quantifiers, back-references and other factors.
+  Stack Trace:
+     at System.Text.RegularExpressions.RegexRunner.<CheckTimeout>g__ThrowRegexTimeout|25_0()
+   at System.Text.RegularExpressions.Regex.Match(String input)
+   at Mpai.Mmc.Jsi.RuleGrammar.Match(String request, IReadOnlyList`1 rules, IReadOnlyDictionary`2 nameSets, ApplicationState state, String lastCommandId, IDictionary`2 memory, Action`1 named, IReadOnlyDictionary`2 strings, Action`2 sets) in D:\AI\AIMs\MMC\V2.5\JSI\RuleGrammar.cs:line 70
+   at Mpai.Aif.Tests.AsmGrammarTests.WhatIsSaidBecomesTheCommandTheRecordSaysAndEveryCommandIsOneOfTheSchema() in D:\AI\Test\Mpai.Aif.Tests\AsmGrammarTests.cs:line 97
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.MmcControllerProcessTests.TheUserAgentStartsTheModuleOfAnAppThroughTheControllerApi(module: "1MMC-NPR-V2.5-I01") [2 m 13 s]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.ABarePlaceIsAboutTheSoundJustLoaded(words: "two metres to the right", x: 2, y: 0) [1 s]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.ABarePlaceIsAboutTheSoundJustLoaded(words: "here", x: 0, y: 0) [133 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.ABarePlaceIsAboutTheSoundJustLoaded(words: "on my left", x: -2, y: 0) [177 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.ABarePlaceIsAboutTheSoundJustLoaded(words: "in front of me", x: 0, y: 2) [155 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.ABarePlaceIsAboutTheSoundJustLoaded(words: "put it at x 2, y 1, z 0", x: 2, y: 1) [189 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.TheCeilingIsPartOfTheRoom(words: "place a room of 4 by 4 metres, ceiling height 3 me"···, height: 3) [210 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.TheCeilingIsPartOfTheRoom(words: "place a room of 4 by 4 metres with a ceiling at 3 "···, height: 3) [148 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.TheCeilingIsPartOfTheRoom(words: "place a room of 4 by 4 metres three metres high", height: 3) [185 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.TheCeilingIsPartOfTheRoom(words: "place a square room 4 metres by 4 metres at the ce"···, height: 3) [117 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.ARoomIsNeverAMoveAndIsMadeInAnEmptyScene(words: "build a 5 by 3 metre room", halfX: 2.5, halfY: 1.5) [127 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.ARoomIsNeverAMoveAndIsMadeInAnEmptyScene(words: "make the room 6 by 4 metres", halfX: 3, halfY: 2) [83 ms]
+[AIF] 1MMC-MTS-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-TTT-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-TTT-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow '1MMC-TTT-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTS-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow '1MMC-TTT-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+  Passed Mpai.Aif.Tests.JsiGrammarTests.ARoomIsNeverAMoveAndIsMadeInAnEmptyScene(words: "create a square room of 3 metres by 3 metres centr"···, halfX: 1.5, halfY: 1.5) [104 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.ARoomIsNeverAMoveAndIsMadeInAnEmptyScene(words: "place a room of 4x4 meters at the centre of the ro"···, halfX: 2, halfY: 2) [181 ms]
+  Passed Mpai.Aif.Tests.AppModulesTests.AmqAnswersAQuestionAboutAPicture [19 s]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.ARoomIsNeverAMoveAndIsMadeInAnEmptyScene(words: "Place a room of four by four meters at the center "···, halfX: 2, halfY: 2) [124 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.WhatNoRuleMatchesGoesToTheModel(words: "move the harp 2 metres to the right") [88 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.WhatNoRuleMatchesGoesToTheModel(words: "rearrange everything so it sounds nicer") [156 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.WhatSaysNothingKnownIsNotGuessedAt [254 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.ARequestOfKnownShapeMovesAnObjectWithoutTheModel(words: "move the violin 2 metres to the right", x: 0.5, y: 2, z: 0) [156 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.ARequestOfKnownShapeMovesAnObjectWithoutTheModel(words: "move the violin by 1.5 metres forward", x: -1.5, y: 3.5, z: 0) [88 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.ARequestOfKnownShapeMovesAnObjectWithoutTheModel(words: "move the drums to x -1, y 3, z 0", x: -1, y: 3, z: 0) [175 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.ARequestOfKnownShapeMovesAnObjectWithoutTheModel(words: "shift the violin 3 metres back", x: -1.5, y: -1, z: 0) [94 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.ARequestOfKnownShapeMovesAnObjectWithoutTheModel(words: "Move the violin two meters to the left.", x: -3.5, y: 2, z: 0) [87 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.ARequestOfKnownShapeMovesAnObjectWithoutTheModel(words: "move the violin 1 metre up", x: -1.5, y: 2, z: 1) [82 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.ARequestOfKnownShapeMovesAnObjectWithoutTheModel(words: "move the violin to the right by 2 metres", x: 0.5, y: 2, z: 0) [95 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.ARequestOfKnownShapeMovesAnObjectWithoutTheModel(words: "put the violin at x 2, y 1, z 0", x: 2, y: 1, z: 0) [108 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.ARoomIsABoxCentredAtTheOrigin [148 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.ATurnStatesOnlyTheYawAndSoKeepsThePosition [130 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.UndoRevokesTheLastCommandOfThePerson [169 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.TheCeilingAloneUpdatesTheRoomJustMadeAndWithoutARoomItIsAsked [260 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.AKeptSoundNotInTheSceneIsAdded [111 ms]
+  Passed Mpai.Aif.Tests.JsiGrammarTests.ALevelRemovalAndDeletionAreEachTheirOwnCommand [551 ms]
+  Passed Mpai.Aif.Tests.RevocationTests.ACommandRevokesAnEarlierOneByItsID [1 ms]
+  Passed Mpai.Aif.Tests.RevocationTests.TheReportSaysWhetherTheAIMUndidIt(outcome: "Done") [< 1 ms]
+  Passed Mpai.Aif.Tests.RevocationTests.TheReportSaysWhetherTheAIMUndidIt(outcome: "NotSupported") [< 1 ms]
+  Passed Mpai.Aif.Tests.RevocationTests.TheReportSaysWhetherTheAIMUndidIt(outcome: "Failed") [< 1 ms]
+  Passed Mpai.Aif.Tests.RevocationTests.AFieldOfTheCommandThatDoesNotExistIsStillRefused [< 1 ms]
+  Passed Mpai.Aif.Tests.AcrWorkflowTests.TheAcrWorkflowWelcomesAsksTheNameTheFaceAndTheSpeechThenConfirmsTheRegistration [261 ms]
+  Passed Mpai.Aif.Tests.HostCertificateTests.ServiceCertificate [13 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25AimTests.TheAimsReadWhatTheQualifierSaysTheDataIs [12 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25AimTests.AssemblyRefusesSectionsNotFromLeftToRightAndMoreSpeechThanSections [12 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25AimTests.AssemblyPutsTheSynthesisedSpeechInTheDamagedSectionAndLeavesTheRestAlone [28 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25AimTests.SpeechThatComesBeforeTheDamagedSegmentWaitsForIt [3 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25AimTests.AWhollyDamagedSegmentIsReplacedWholly [12 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25AimTests.SpeechModelCreationGivesAnMLModelObjectMadeFromTheSegments [8 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25AimTests.ASpeechObjectOfSpeechFilesAndOneOfRawSamplesAreReadAlikeAndTheirQualifiersAreValid [11 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25AimTests.SpeechModelCreationRefusesWhatIsNotAudioItCanRead [2 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25AimTests.TheRestoredSegmentIsGivenInPartsAsTheSynthesisedSpeechComes [10 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25AimTests.TheDamagedListInTheFormOfTheSchemaIsValid [< 1 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25AimTests.TheSubAimsTogetherRestoreTheSegmentPartByPart [20 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25AimTests.SpeechModelCreationSaysSoWhenThereIsLittleSpeechAndStillGivesTheModel [3 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25AimTests.TheTimeOfADamagedSectionIsASimpleTime [2 ms]
+  Passed Mpai.Aif.Tests.AihFirstSliceTests.TheThirdPartyUserRegistersAndAsksForProcessing [23 s]
+  Passed Mpai.Aif.Tests.CaeUscV25TicRulesVersusModelTests.OnTheSameClipsTheDeployedAimIsAtLeastAsRightAsTheRules [2 m 45 s]
+  Passed Mpai.Aif.Tests.MtsWorkflowTests.TheMtsWorkflowTakesModelAndLanguagesOnceThenTranslatesShowingTheTextBeforeThePortableAvatar [750 ms]
+  Passed Mpai.Aif.Tests.AihFirstSliceTests.TheFirstSlice(trusted: False) [29 s]
+  Passed Mpai.Aif.Tests.HostPublishedTests.Published [4 m 3 s]
+[CAE-AOE-V1.0] open violin
+[MMC-SOE-V2.5] open hello
+[MMC-SOE-V2.5] open hello
+[CAE-AOE-V1.0] open violin
+  Passed Mpai.Aif.Tests.AsmStorageRuleTests.EveryStoredKeyIsADataTypeAPortAndAnIdAndNoTableOrCounterIsKept [892 ms]
+  Passed Mpai.Aif.Tests.AsmStorageRuleTests.SpeechSceneEditingReadsTheSpeechObjectSpeechObjectEditingKeptByDataTypeAndPortAndDoesNotWriteIt [250 ms]
+[MMC-SOE-V2.5] open hello
+  Passed Mpai.Aif.Tests.AsmStorageRuleTests.TheEditorsKeepWhatTheyEditInThePrivateStorageAndOfferTheirObjectsAndScenesInTheSharedStorageWithTheModuleNameInTheKey [841 ms]
+  Passed Mpai.Aif.Tests.HighwayTests.TheRigIsAsSpecified [594 ms]
+  Passed Mpai.Aif.Tests.HighwayTests.TheTrafficDoesNotCollideAmongItself [4 s]
+  Passed Mpai.Aif.Tests.HighwayTests.TheTwoCamerasOfThePairSeeTheDisparityTheGeometryGives [37 ms]
+  Passed Mpai.Aif.Tests.HighwayTests.TheRearCameraSeesTheFastCarComingUpInTheLeftLane [32 ms]
+  Passed Mpai.Aif.Tests.HighwayTests.TheTrafficHasSlowerDriversAndFasterOnesThanTheCav [168 ms]
+  Passed Mpai.Aif.Tests.HighwayTests.TheSameSeedMakesTheSameTraffic [309 ms]
+  Passed Mpai.Aif.Tests.HighwayTests.Samples [< 1 ms]
+  Passed Mpai.Aif.Tests.HighwayTests.AReducedPictureHoldsTheSameScene [58 ms]
+  Passed Mpai.Aif.Tests.HighwayTests.TheRoadIsWhereTheGeometryPutsIt [47 ms]
+  Passed Mpai.Aif.Tests.MmcControllerProcessTests.TheUserAgentStartsTheModuleOfAnAppThroughTheControllerApi(module: "1MMC-MTS-V2.5-I01") [1 m 24 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-TTT-V2.5] en -> fr
+  Passed Mpai.Aif.Tests.AppModulesTests.MtsTranslatesATypedTurn [1 m 31 s]
+[AIF] 1MMC-AMC-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-AMC-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-NLU-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-AMC-V2.5-I01: flow '1MMC-NLU-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[xUnit.net 00:04:32.98]     Mpai.Aif.Tests.UserAgentIsolationTests.TheUserAgentReachesNoAim [FAIL]
+[xUnit.net 00:04:32.98]       user-agent-isolation.json: 1 difference(s) from the recorded state. A new failure is a regression; a new success is accepted with MPAI_UPDATE_EXPECTED=1.
+  AIF/UserAgent/Remote/Mpai.Mas.Client.csproj
+    expected: only the User Agent, Data Types and the Controller API
+    now:      REACHES AIF/Communication/Bout/Mpai.Aif.Bout.csproj
+[xUnit.net 00:04:32.98]       Stack Trace:
+[xUnit.net 00:04:32.98]         D:\AI\Test\Mpai.Aif.Tests\Expected.cs(52,0): at Mpai.Aif.Tests.Expected.Match(String file, IReadOnlyDictionary`2 actual)
+[xUnit.net 00:04:32.98]         D:\AI\Test\Mpai.Aif.Tests\UserAgentIsolationTests.cs(50,0): at Mpai.Aif.Tests.UserAgentIsolationTests.TheUserAgentReachesNoAim()
+[xUnit.net 00:04:32.98]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:04:32.98]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Mpai.Aif.Tests.UserAgentIsolationTests.TheUserAgentReachesNoAim [20 s]
+  Error Message:
+   user-agent-isolation.json: 1 difference(s) from the recorded state. A new failure is a regression; a new success is accepted with MPAI_UPDATE_EXPECTED=1.
+  AIF/UserAgent/Remote/Mpai.Mas.Client.csproj
+    expected: only the User Agent, Data Types and the Controller API
+    now:      REACHES AIF/Communication/Bout/Mpai.Aif.Bout.csproj
+  Stack Trace:
+     at Mpai.Aif.Tests.Expected.Match(String file, IReadOnlyDictionary`2 actual) in D:\AI\Test\Mpai.Aif.Tests\Expected.cs:line 52
+   at Mpai.Aif.Tests.UserAgentIsolationTests.TheUserAgentReachesNoAim() in D:\AI\Test\Mpai.Aif.Tests\UserAgentIsolationTests.cs:line 50
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[ASR] ports in: OSD-BSO-V1.5#1; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+[MMC-ASR-V2.5] heard 11 words
+[ONNX] blip_text_encoder_wrapper.onnx: CPU
+[MMC-EDP-V2.5] emotion NEUTRAL, attitude confident
+[ONNX] blip_decoder_context_dynamic.onnx: CPU
+  Passed Mpai.Aif.Tests.AppModulesTests.AmcAnswersASpokenTurnWithTheFace [21 s]
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTS-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-GFD-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.PseCompositeTests.TheFourMediaGiveAPersonalStatusEach [12 s]
+  Passed Mpai.Aif.Tests.PseCompositeTests.TheCompositeHasTheNineAimsOfTheSpecification [< 1 ms]
+  Passed Mpai.Aif.Tests.PseCompositeTests.ADescriptorsObjectEntersAsItIsAndAMediumNotGivenLeavesItsModalityOut [2 s]
+  Passed Mpai.Aif.Tests.AihEthereumNodeTests.TheContractOnANodeFollowsTheSameRulesAsTheTestLedger [1 m 53 s]
+[AIF] 1HMC-CEC-V2.2-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1HMC-ECU-V2.2-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1HMC-ECU-V2.2-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TST-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1HMC-ECU-V2.2-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I03 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1MMC-TST-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-EDP-V2.5-I03 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1MMC-EDP-V2.5-I03.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTT-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1HMC-CEC-V2.2-I01: flow '1MMC-TTT-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[ONNX] yamnet.onnx: CPU
+[ONNX] scrfd_10g_bnkps.onnx: CPU
+  Passed Mpai.Aif.Tests.AppModulesTests.McaAnswersATypedTurn [4 s]
+  Passed Mpai.Aif.Tests.RevocationAimTests.ASpeechObjectEditedInPlaceIsPutBack [189 ms]
+  Passed Mpai.Aif.Tests.RevocationAimTests.AnEditOfAnObjectIsUndone [113 ms]
+  Passed Mpai.Aif.Tests.RevocationAimTests.TheLastCommandIsUndoneFirst [169 ms]
+  Passed Mpai.Aif.Tests.MmmApiTests.NoRecursion [257 ms]
+  Passed Mpai.Aif.Tests.McaWorkflowTests.TheMcaWorkflowTakesTheModelThenEachTurnOffersWordsModelIdAndMemoryAndPresentsThePortableAvatar [236 ms]
+[ONNX] yamnet.onnx: CPU
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.MseTests.TwoMediaMakeAMultimodalScene [633 ms]
+  Passed Mpai.Aif.Tests.MseTests.ObjectsAndScenesMakeAMultimodalScene [188 ms]
+  Passed Mpai.Aif.Tests.CavSchemaTests.FaultsCorrected [27 ms]
+  Passed Mpai.Aif.Tests.TsdStdTests.OnlyAToneColourEmbeddingDrivesTheVoice [1 ms]
+  Passed Mpai.Aif.Tests.TsdStdTests.TsdTakesTheSelectorAndTheStdFeedsIt [59 ms]
+  Passed Mpai.Aif.Tests.TsdStdTests.TheNewFormatIsOneOfTheFormatsOfTheSpeechDescriptors [36 ms]
+  Passed Mpai.Aif.Tests.AmqFromPackagesTests.AmqRunsFromTheL3sAndThePackagesOfItsAims [2 m 21 s]
+  Passed Mpai.Aif.Tests.AihFirstSliceTests.TheFirstSlice(trusted: True) [1 m 16 s]
+  Passed Mpai.Aif.Tests.HighwayDetectionTests.WhatTheDetectorFindsAtWhichDistance [2 m 13 s]
+  Passed Mpai.Aif.Tests.PlannerPropertyTests.RandomEncountersAtTheJunction(seed: 5) [2 s]
+  Passed Mpai.Aif.Tests.PlannerPropertyTests.RandomEncountersAtTheJunction(seed: 4) [616 ms]
+  Passed Mpai.Aif.Tests.PlannerPropertyTests.RandomEncountersAtTheJunction(seed: 6) [585 ms]
+  Passed Mpai.Aif.Tests.PlannerPropertyTests.RandomEncountersAtTheJunction(seed: 1) [644 ms]
+  Passed Mpai.Aif.Tests.PlannerPropertyTests.RandomEncountersAtTheJunction(seed: 3) [694 ms]
+  Passed Mpai.Aif.Tests.PlannerPropertyTests.RandomEncountersAtTheJunction(seed: 2) [2 s]
+  Passed Mpai.Aif.Tests.PlannerPropertyTests.RandomTrafficOnTheHighway(seed: 3) [7 s]
+[xUnit.net 00:05:14.67]     
+Mpai.Aif.Tests.MmcControllerProcessTests.TheUserAgentStartsTheModuleOfAnAppThroughTheControllerApi(module: 
+"1MMC-AMQ-V2.5-I01") [FAIL]
+[xUnit.net 00:05:14.67]       the Controller did not come up
+[xUnit.net 00:05:14.67]       Stack Trace:
+[xUnit.net 00:05:14.67]         D:\AI\Test\Mpai.Aif.Tests\MmcControllerProcessTests.cs(31,0): at Mpai.Aif.Tests.MmcControllerProcessTests.TheUserAgentStartsTheModuleOfAnAppThroughTheControllerApi(String module)
+[xUnit.net 00:05:14.67]            at InvokeStub_MmcControllerProcessTests.TheUserAgentStartsTheModuleOfAnAppThroughTheControllerApi(Object, Span`1)
+[xUnit.net 00:05:14.67]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Failed Mpai.Aif.Tests.MmcControllerProcessTests.TheUserAgentStartsTheModuleOfAnAppThroughTheControllerApi(module: "1MMC-AMQ-V2.5-I01") [1 m]
+  Error Message:
+   the Controller did not come up
+  Stack Trace:
+     at Mpai.Aif.Tests.MmcControllerProcessTests.TheUserAgentStartsTheModuleOfAnAppThroughTheControllerApi(String module) in D:\AI\Test\Mpai.Aif.Tests\MmcControllerProcessTests.cs:line 31
+   at InvokeStub_MmcControllerProcessTests.TheUserAgentStartsTheModuleOfAnAppThroughTheControllerApi(Object, Span`1)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[CAE-AOE-V1.0] open violin
+  Passed Mpai.Aif.Tests.VcrTests.AnAvatarWithoutASeatIsNotInTheScene [84 ms]
+  Passed Mpai.Aif.Tests.VcrTests.AnAvatarThatHasNoModelIsShownAsTheDefaultAvatar [5 ms]
+  Passed Mpai.Aif.Tests.VcrTests.AnUpdateIsMergedIntoTheAvatarThatTheReceiverHolds [4 ms]
+  Passed Mpai.Aif.Tests.VcrTests.TheProviderBuildsIt [2 ms]
+  Passed Mpai.Aif.Tests.VcrTests.TheSpeechIsAddedAtTheMouth [57 ms]
+  Passed Mpai.Aif.Tests.VcrTests.TheAvatarsAreSeatedWhereTheirPortableAvatarsSay [4 ms]
+  Passed Mpai.Aif.Tests.VcrTests.ThePointOfViewAndTheTextGoThrough [5 ms]
+  Passed Mpai.Aif.Tests.AsmRoomAcousticsListingTests.TheAcousticProfileOfASceneThatHasNoneIsAnsweredAsOneThatHasNothingSet [221 ms]
+  Passed Mpai.Aif.Tests.PlannerPropertyTests.RandomTrafficOnTheHighway(seed: 1) [6 s]
+  Passed Mpai.Aif.Tests.XrvCommonTests.ADerivedStatusHasTheElementsOfTheDescriptorsAndValidates [275 ms]
+  Passed Mpai.Aif.Tests.AihFirstSliceTests.TheEndUserAndTheBackEndStartFunctions [21 s]
+  Passed Mpai.Aif.Tests.ModelTests.NoSettingNamesAModelOrPinsAFile [< 1 ms]
+  Passed Mpai.Aif.Tests.XrvCommonTests.EveryFileOfTheMiniShowValidatesAgainstItsSchema [263 ms]
+  Passed Mpai.Aif.Tests.XrvCommonTests.TheIdsAreBasicTextObjects [2 ms]
+  Passed Mpai.Aif.Tests.XrvCommonTests.ADatumThatTheSchemaDoesNotAllowIsNotRead [26 ms]
+  Passed Mpai.Aif.Tests.XrvCommonTests.TheScriptHasThreeCuesOfTheThreeKinds [35 ms]
+  Passed Mpai.Aif.Tests.XrvCommonTests.TheDescriptorsAndTheStatusesOfAnyOfTheSixKindsValidate [48 ms]
+  Passed Mpai.Aif.Tests.XrvCommonTests.EveryFileReadsBackUnchanged [19 ms]
+  Passed Mpai.Aif.Tests.XrvCommonTests.EveryActionTheCuesNameIsInTheActionTableAndHasAnAssociation [11 ms]
+  Passed Mpai.Aif.Tests.XrvCommonTests.AStatusMeetsATargetWhenTheElementsTheTargetNamesAreEqual [< 1 ms]
+  Passed Mpai.Aif.Tests.XrvCommonTests.TheCueListAsItsOwnDataTypeIsTheListOfTheScript [8 ms]
+  Passed Mpai.Aif.Tests.XrvCommonTests.TheVenueSpecificationsHaveTwoDmxFixturesAndOneVirtualLamp [10 ms]
+[MAS] Listening on http://127.0.0.1:60806
+[MAS] No certificate supplied - Kestrel default.
+[MAS] Data Types: OSD-BSO-V1.5, OSD-BTO-V1.5, OSD-BVO-V1.5, PAF-FDO-V1.6, OSD-STM-V1.5, OSD-SEL-V1.5, MMC-SUM-V2.5, MMC-EPS-V2.5, OSD-B3O-V1.5, PAF-PAV-V1.6, OSD-PNT-V1.5, OSD-BAO-V1.5, OSD-BAS-V1.5, OSD-BSS-V1.5, OSD-BMS-V1.5, OSD-AUO-V1.5, OSD-ASD-V1.5, OSD-SPO-V1.5, OSD-SSD-V1.5, OSD-MSD-V1.5, OSD-OPV-V1.5, CAE-UCM-V1.0, CUI-FND-V2.1, CUI-GVS-V2.1, CUI-LRD-V2.1, CUI-CRD-V2.1, CUI-SRS-V2.1, CUI-ORD-V2.1, CUI-PDD-V2.1, CUI-PSD-V2.1, CUI-SRM-V2.1, number, boolean, string
+[MAS] No bearer token configured - every caller is accepted.
+[MAS] Controller Instance 4c62b2a2-48c8-4652-9bd6-f1017d5bb865
+[MAS] Module echo started as 8573c2d5-4dfa-4ca2-ac44-c1bd62f77df1
+[MAS] input OSD-BTO-V1.5#1 (82 bytes)
+  Passed Mpai.Aif.Tests.MasBoutTests.Paths_APortIsTwoSegments_AndOtherFormsAre404 [4 s]
+[MAS] Controller Instance fc8a8664-403b-4ad9-b182-12d04e132085
+[MAS] Module echo started as aceb1d1f-5afb-4487-9264-fbacec00a28b
+[MAS] Controller Instance 2cfe6295-c68b-4ef1-9953-3593a99de67a
+[MAS] Module echo started as ba6cc573-ab5e-45ad-8a05-9f85082e9341
+[MAS] Controller Instance d911ab52-4ff5-4d4f-8738-9596f0ab1fcb
+[MAS] Module echo started as 6a99b4c6-9844-4b8c-884c-739201403ba5
+[MAS] input OSD-BTO-V1.5#1 (92 bytes)
+[MAS] input OSD-BTO-V1.5#1 (92 bytes)
+[MAS] input OSD-BTO-V1.5#1 (92 bytes)
+[MAS] input OSD-BTO-V1.5#1 (92 bytes)
+[MAS] Controller Instance fe8a6243-2ccc-496c-9e02-6317512c7569
+[MAS] Module echo started as c80624bd-472d-4b0e-87da-0561ced57f8f
+  Passed Mpai.Aif.Tests.MasBoutTests.BrowserClient_GivesAndReceivesBouts [658 ms]
+  Passed Mpai.Aif.Tests.MasBoutTests.InputBout_WithoutACredential_IsRefused [12 ms]
+  Passed Mpai.Aif.Tests.MasBoutTests.OutputBout_TheSciGivesSignedFramesThatTheClientVerifiesAndDecompresses [74 ms]
+  Passed Mpai.Aif.Tests.MasBoutTests.InputBout_TheClientGivesABoutWithTheCredentialTheSciIssued [65 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TarTests.TheEqualisationIsCorrectedByTheResponseItShouldHaveHadOverTheOneItHad [1 s]
+  Passed Mpai.Aif.Tests.CaeUscV25TarTests.TheAimKeepsThePreservationAudioFileAndRestoresEachIrregularityFileThatComesOnceOnly [105 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TarTests.ASectionReadAtTwiceTheSpeedItWasWrittenAtIsRestoredAndTheEditingListSaysSo [109 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TarTests.WhereNothingNeedsCorrectingTheAimGivesNothing [8 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TarTests.AnUnknownEqualisationAtASpeedIsRefused [< 1 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TarTests.AWrongEqualisationIsCorrectedAndEachSectionHasItsRestoration [149 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TarTests.TheAimSaysWhatItCannotRestore [24 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TarTests.ATapeReadAtTwiceTheSpeedItWasWrittenAtPlaysAtHalfTheRate [< 1 ms]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.PlannerPropertyTests.RandomTrafficOnTheHighway(seed: 4) [8 s]
+  Passed Mpai.Aif.Tests.PlannerPropertyTests.RandomTrafficOnTheHighway(seed: 6) [6 s]
+  Passed Mpai.Aif.Tests.PlannerPropertyTests.RandomTrafficOnTheHighway(seed: 2) [6 s]
+  Passed Mpai.Aif.Tests.PlannerPropertyTests.RandomTrafficOnTheHighway(seed: 5) [5 s]
+  Passed Mpai.Aif.Tests.AoaFileTests.TheFileSaysWhatItIs [9 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[xUnit.net 00:06:13.52]     
+Mpai.Aif.Tests.CaeUscV25AppTests.SpeechRestorationSystemInTheVoiceOfTheSpeakerGivesTheWholeRestoredSegment [FAIL]
+[xUnit.net 00:06:13.52]       The App did not finish: Starting the Module (a first start takes a while)...
+[xUnit.net 00:06:13.52]       The Store approved 25 Implementation(s) of this build.
+[xUnit.net 00:06:13.52]       The AIMs of 1CAE-SRS-V2.5-I01 run on an AIM host at localhost:60494.
+[xUnit.net 00:06:13.52]       Restoring...
+[xUnit.net 00:06:13.52]       
+[xUnit.net 00:06:13.52]       Stack Trace:
+[xUnit.net 00:06:13.52]         D:\AI\Test\Mpai.Aif.Tests\CaeUscV25AppTests.cs(27,0): at Mpai.Aif.Tests.CaeUscV25AppTests.Run(String exe, String[] args)
+[xUnit.net 00:06:13.52]         D:\AI\Test\Mpai.Aif.Tests\CaeUscV25AppTests.cs(67,0): at Mpai.Aif.Tests.CaeUscV25AppTests.SpeechRestorationSystemInTheVoiceOfTheSpeakerGivesTheWholeRestoredSegment()
+[xUnit.net 00:06:13.52]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:06:13.52]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Mpai.Aif.Tests.CaeUscV25AppTests.SpeechRestorationSystemInTheVoiceOfTheSpeakerGivesTheWholeRestoredSegment [6 m]
+  Error Message:
+   The App did not finish: Starting the Module (a first start takes a while)...
+The Store approved 25 Implementation(s) of this build.
+The AIMs of 1CAE-SRS-V2.5-I01 run on an AIM host at localhost:60494.
+Restoring...
+
+  Stack Trace:
+     at Mpai.Aif.Tests.CaeUscV25AppTests.Run(String exe, String[] args) in D:\AI\Test\Mpai.Aif.Tests\CaeUscV25AppTests.cs:line 27
+   at Mpai.Aif.Tests.CaeUscV25AppTests.SpeechRestorationSystemInTheVoiceOfTheSpeakerGivesTheWholeRestoredSegment() in D:\AI\Test\Mpai.Aif.Tests\CaeUscV25AppTests.cs:line 67
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[xUnit.net 00:06:15.06]     Mpai.Aif.Tests.PgmControllerTests.TheModuleOnTheControllerWithOllama [SKIP]
+[xUnit.net 00:06:15.06]       Ollama is not available: The request was canceled due to the configured HttpClient.Timeout of 300 seconds elapsing.
+  Skipped Mpai.Aif.Tests.PgmControllerTests.TheModuleOnTheControllerWithOllama [5 m]
+[AIF] 1TST-RPT-V1.0-I01 reports: fell back to a simpler path
+  Passed Mpai.Aif.Tests.PgmControllerTests.TheModuleRunsOnItsL3s [9 s]
+  Passed Mpai.Aif.Tests.AsmVoiceWorkflowTests.TheModuleStartsWithTheRealAimsAsThePersonsUserAgentStartsIt [1 m 29 s]
+  Passed Mpai.Aif.Tests.RemoteTests.Today [35 s]
+  Passed Mpai.Aif.Tests.MspSpaceTimeTests.WhatWasNotAsPredictedIsAmsDataAndThePlanIsInThePrivateStorage [11 s]
+  Passed Mpai.Aif.Tests.MspSpaceTimeTests.ThePlannerSlowsForAPedestrianAtTheKerbAndNotForNoOne [14 ms]
+[AIF] 1MMC-EDP-V2.5-I03: DEGRADED (it threw: it returned an error: LLM call failed (is Ollama running?): The request was canceled due to the configured HttpClient.Timeout of 300 seconds elapsing.); 1MMC-VCI-V2.5-I01 OnDegraded Continue
+  Passed Mpai.Aif.Tests.VehicleResponseVocabularyTests.TheProbeMeasuresTheVehicleOnAPlane [7 s]
+[xUnit.net 00:07:36.49]     Mpai.Aif.Tests.AccessServiceTests.Step3OfferedByTheService [FAIL]
+[xUnit.net 00:07:36.49]       access-service.json: 2 difference(s) from the recorded state. A new failure is a regression; a new success is accepted with MPAI_UPDATE_EXPECTED=1.
+  registered, then checked
+    expected: in the gallery; access granted
+    now:      OK; kept True; granted 
+  then
+    expected: access refused
+    now:      access not refused
+[xUnit.net 00:07:36.50]       Stack Trace:
+[xUnit.net 00:07:36.50]         D:\AI\Test\Mpai.Aif.Tests\Expected.cs(52,0): at Mpai.Aif.Tests.Expected.Match(String file, IReadOnlyDictionary`2 actual)
+[xUnit.net 00:07:36.50]         D:\AI\Test\Mpai.Aif.Tests\AccessServiceTests.cs(99,0): at Mpai.Aif.Tests.AccessServiceTests.Step3OfferedByTheService()
+[xUnit.net 00:07:36.50]         --- End of stack trace from previous location ---
+  Failed Mpai.Aif.Tests.AccessServiceTests.Step3OfferedByTheService [4 m 2 s]
+  Error Message:
+   access-service.json: 2 difference(s) from the recorded state. A new failure is a regression; a new success is accepted with MPAI_UPDATE_EXPECTED=1.
+  registered, then checked
+    expected: in the gallery; access granted
+    now:      OK; kept True; granted 
+  then
+    expected: access refused
+    now:      access not refused
+  Stack Trace:
+     at Mpai.Aif.Tests.Expected.Match(String file, IReadOnlyDictionary`2 actual) in D:\AI\Test\Mpai.Aif.Tests\Expected.cs:line 52
+   at Mpai.Aif.Tests.AccessServiceTests.Step3OfferedByTheService() in D:\AI\Test\Mpai.Aif.Tests\AccessServiceTests.cs:line 99
+--- End of stack trace from previous location ---
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-SOE-V2.5] open welcome
+[MMC-SOE-V2.5] translating welcome from en-US into it
+[ASR] ports in: OSD-BSO-V1.5#1; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+[MMC-ASR-V2.5] heard 7 words
+  Passed Mpai.Aif.Tests.AccessModelsTests.TheProgramsAreObtainedUnpackedAndAreTheOnesPinned(l3: "1MMC-ASR-V2.5-I01.json", setting: "ExecutablePath") [11 s]
+[MMC-TTT-V2.5] en -> it
+[MMC-SOE-V2.5] welcome replaced by its translation into it: welcome-trans
+  Passed Mpai.Aif.Tests.AccessModelsTests.TheProgramsAreObtainedUnpackedAndAreTheOnesPinned(l3: "1MMC-ASR-V2.5-I01.json", setting: "ServerPath") [3 s]
+[AIF] 1TST-RPT-V1.0-I01 reports: fell back to a simpler path
+  Passed Mpai.Aif.Tests.StandaloneAppsTests.NprReadsTheClickedColumnAloud [2 m 38 s]
+[AIF] 1TST-RPT-V1.0-I01 reports: fell back to a simpler path
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-EDP-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTS-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-GFD-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MCA-V2.5-I01: flow '1MMC-EDP-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.AihEthereumNodeTests.AuditingAndLicenceChangeAreOnlyTheOwners [3 m 10 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.AsmTranslationTests.ASpeechObjectTranslatedUnderANewName [2 m 36 s]
+[ASR] ports in: OSD-BSO-V1.5#3; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+[ONNX] ecapa-tdnn.onnx: CPU
+  Passed Mpai.Aif.Tests.RemoteTests.Placed [1 m 45 s]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeTransformTests.TheTransformsSayWhatTheyCannotDo [315 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeTransformTests.TheSynthesisReturnsWhatTheAnalysisTook [3 s]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeTransformTests.TheMicrophoneArrayGeometryIsAValidOneAndIsReadBack [21 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeTransformTests.TheTransformGivesTheSpectrumOfEachChannelForEachBlockAndKeepsTheGeometry [71 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeTransformTests.TheMultichannelAudioObjectCarriesTheChannelsAndTheGeometryAndIsValid [13 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TicTests.TheAudioAnalysisTheVideoAnalysisAndTheClassificationTogetherFindTheTapesIrregularitiesAndTheLoopEnds [3 s]
+VOICES right 6/6; wrong: 
+  Passed Mpai.Aif.Tests.CaeUscV25TicTests.EachIrregularityGetsTheTypeItsDefinitionDescribesAndTheOnesNotClassifiedAreNotSelected [422 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TicTests.ThePropertiesOfAnIrregularityAreKeptSoThatTapeAudioRestorationCanActOnThem [691 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TicTests.TheFileIsGivenAgainOnlyIfItIsNotWhatWasGivenLastAndNothingSelectedIsNothing [431 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TicTests.TheEndOfTheTapeIsRecognisedWhenTheLengthOfTheFilmIsKnown [2 ms]
+  Passed Mpai.Aif.Tests.ReferencePopulationEndToEndTests.TheSpeakersOfTheReferenceVoicesAreRecognised [31 s]
+  Passed Mpai.Aif.Tests.CaeUscV25TicTests.OnlyTheImagesOfTheSelectedIrregularitiesAreGiven [363 ms]
+[xUnit.net 00:08:36.32]     Mpai.Aif.Tests.CpsCasTests.TheConversationAboutASceneAnswersWithAPortableAvatarFromSpeechAndFace [SKIP]
+[xUnit.net 00:08:36.32]       the models, or Ollama, are not there
+  Skipped Mpai.Aif.Tests.CpsCasTests.TheConversationAboutASceneAnswersWithAPortableAvatarFromSpeechAndFace [3 s]
+[ONNX] scrfd_10g_bnkps.onnx: CPU
+[xUnit.net 00:08:46.51]     Mpai.Aif.Tests.CpsCasTests.TheConversationWithPersonalStatusAnswersWithAPortableAvatarFromTextAndFace [SKIP]
+[xUnit.net 00:08:46.51]       the models, or Ollama, are not there
+  Skipped Mpai.Aif.Tests.CpsCasTests.TheConversationWithPersonalStatusAnswersWithAPortableAvatarFromTextAndFace [10 s]
+  Passed Mpai.Aif.Tests.CpsCasTests.TheInstancesHaveTheAimsThatHaveCodeAndSayWhatTheyLack [1 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25Tests.ThereAreThirtyOneAimsAndTheFourWorkflowsAreCompositeAims [3 s]
+[ONNX] glintr100.onnx: CPU
+  Passed Mpai.Aif.Tests.CaeUscV25Tests.EveryAimIsNamedByItsFileItsHeaderAndItsIdentifier [13 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[AIF] 1MMC-ASR-V2.5-I02: DEGRADED (it threw: whisper-server did not answer within 2 minutes of its start.); 1HMC-ECU-V2.2-I01 OnDegraded StopModule
+FACES right 8/8; wrong: 
+[MMC-SOE-V2.5] open welcome
+  Passed Mpai.Aif.Tests.StandaloneAppsTests.McaHoldsAConversationAndSpeaksEachReply [3 m 43 s]
+[MMC-SOE-V2.5] translating welcome from en-US into it
+  Passed Mpai.Aif.Tests.ReferencePopulationEndToEndTests.ThePeopleOfTheReferenceFacesAreRecognised [3 m 9 s]
+[ASR] ports in: OSD-BSO-V1.5#1; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+  Passed Mpai.Aif.Tests.AboutMpaiTests.YouTubeLinks(uri: "https://www.youtube.com/watch?v=ITG6fff89yM&t=5", id: "ITG6fff89yM") [323 ms]
+  Passed Mpai.Aif.Tests.AboutMpaiTests.YouTubeLinks(uri: "https://example.org/video.mp4", id: null) [1 ms]
+  Passed Mpai.Aif.Tests.AboutMpaiTests.YouTubeLinks(uri: "https://www.youtube.com/embed/ITG6fff89yM", id: "ITG6fff89yM") [< 1 ms]
+  Passed Mpai.Aif.Tests.AboutMpaiTests.YouTubeLinks(uri: "https://youtu.be/ITG6fff89yM", id: "ITG6fff89yM") [30 ms]
+[xUnit.net 00:11:42.79]     Mpai.Aif.Tests.HmcEndToEndTests.ASpokenTurnWithAFaceIsAnsweredWithAPortableAvatar [FAIL]
+[xUnit.net 00:11:42.79]       NotProduced
+[xUnit.net 00:11:42.81]       1OSD-BAS-V1.5-I01: in [OSD-BAO-V1.5#1] -> out [OSD-BAS-V1.5#1]
+[xUnit.net 00:11:42.81]       1OSD-BVS-V1.5-I01: in [OSD-BVO-V1.5#1] -> out [OSD-BVS-V1.5#1]
+[xUnit.net 00:11:42.81]       1OSD-MAL-V1.5-I01: in [OSD-BAS-V1.5#1, OSD-BVS-V1.5#1] -> out [OSD-BAS-V1.5#1, OSD-BVS-V1.5#1, OSD-BAG-V1.5#1, OSD-BVG-V1.5#1, OSD-BMS-V1.5#1]
+[xUnit.net 00:11:42.81]       1CAE-ASI-V2.5-I01: in [OSD-EAD-V1.5#1] -> out [OSD-BSO-V1.5#1]
+[xUnit.net 00:11:42.81]       1CVE-VSI-V1.0-I01: in [OSD-BVS-V1.5#1] -> out [OSD-BVO-V1.5#1]
+[xUnit.net 00:11:42.81]       1MMC-ASR-V2.5-I02: threw TimeoutException: whisper-server did not answer within 2 minutes of its start.
+[xUnit.net 00:11:42.81]       Stack Trace:
+[xUnit.net 00:11:42.81]         D:\AI\Test\Mpai.Aif.Tests\HmcEndToEndTests.cs(102,0): at Mpai.Aif.Tests.HmcEndToEndTests.ASpokenTurnWithAFaceIsAnsweredWithAPortableAvatar()
+[xUnit.net 00:11:42.81]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:11:42.81]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:11:42.81]       Output:
+[xUnit.net 00:11:42.81]         Machine text: NotProduced
+[xUnit.net 00:11:42.81]         1OSD-BAS-V1.5-I01: in [OSD-BAO-V1.5#1] -> out [OSD-BAS-V1.5#1]
+[xUnit.net 00:11:42.81]         1OSD-BVS-V1.5-I01: in [OSD-BVO-V1.5#1] -> out [OSD-BVS-V1.5#1]
+[xUnit.net 00:11:42.81]         1OSD-MAL-V1.5-I01: in [OSD-BAS-V1.5#1, OSD-BVS-V1.5#1] -> out [OSD-BAS-V1.5#1, OSD-BVS-V1.5#1, OSD-BAG-V1.5#1, OSD-BVG-V1.5#1, OSD-BMS-V1.5#1]
+[xUnit.net 00:11:42.81]         1CAE-ASI-V2.5-I01: in [OSD-EAD-V1.5#1] -> out [OSD-BSO-V1.5#1]
+[xUnit.net 00:11:42.81]         1CVE-VSI-V1.0-I01: in [OSD-BVS-V1.5#1] -> out [OSD-BVO-V1.5#1]
+[xUnit.net 00:11:42.81]         1MMC-ASR-V2.5-I02: threw TimeoutException: whisper-server did not answer within 2 minutes of its start.
+[MMC-ASR-V2.5] heard 7 words
+  Failed Mpai.Aif.Tests.HmcEndToEndTests.ASpokenTurnWithAFaceIsAnsweredWithAPortableAvatar [6 m 55 s]
+  Error Message:
+   NotProduced
+1OSD-BAS-V1.5-I01: in [OSD-BAO-V1.5#1] -> out [OSD-BAS-V1.5#1]
+1OSD-BVS-V1.5-I01: in [OSD-BVO-V1.5#1] -> out [OSD-BVS-V1.5#1]
+1OSD-MAL-V1.5-I01: in [OSD-BAS-V1.5#1, OSD-BVS-V1.5#1] -> out [OSD-BAS-V1.5#1, OSD-BVS-V1.5#1, OSD-BAG-V1.5#1, OSD-BVG-V1.5#1, OSD-BMS-V1.5#1]
+1CAE-ASI-V2.5-I01: in [OSD-EAD-V1.5#1] -> out [OSD-BSO-V1.5#1]
+1CVE-VSI-V1.0-I01: in [OSD-BVS-V1.5#1] -> out [OSD-BVO-V1.5#1]
+1MMC-ASR-V2.5-I02: threw TimeoutException: whisper-server did not answer within 2 minutes of its start.
+  Stack Trace:
+     at Mpai.Aif.Tests.HmcEndToEndTests.ASpokenTurnWithAFaceIsAnsweredWithAPortableAvatar() in D:\AI\Test\Mpai.Aif.Tests\HmcEndToEndTests.cs:line 102
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ Machine text: NotProduced
+ 1OSD-BAS-V1.5-I01: in [OSD-BAO-V1.5#1] -> out [OSD-BAS-V1.5#1]
+ 1OSD-BVS-V1.5-I01: in [OSD-BVO-V1.5#1] -> out [OSD-BVS-V1.5#1]
+ 1OSD-MAL-V1.5-I01: in [OSD-BAS-V1.5#1, OSD-BVS-V1.5#1] -> out [OSD-BAS-V1.5#1, OSD-BVS-V1.5#1, OSD-BAG-V1.5#1, OSD-BVG-V1.5#1, OSD-BMS-V1.5#1]
+ 1CAE-ASI-V2.5-I01: in [OSD-EAD-V1.5#1] -> out [OSD-BSO-V1.5#1]
+ 1CVE-VSI-V1.0-I01: in [OSD-BVS-V1.5#1] -> out [OSD-BVO-V1.5#1]
+ 1MMC-ASR-V2.5-I02: threw TimeoutException: whisper-server did not answer within 2 minutes of its start.
+
+
+[MMC-TTT-V2.5] en -> it
+[AIF] 1MMC-MTS-V2.5-I01: flow '1MMC-ASR-V2.5-I01.OSD-BTO-V1.5:1' declares Output 1, but 1MMC-TTT-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow 'OSD-BTO-V1.5:1' declares Output 1, but 1MMC-TTT-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow '1MMC-TTT-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1MMC-TTS-V2.5-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+[AIF] 1MMC-MTS-V2.5-I01: flow '1MMC-TTT-V2.5-I01.OSD-BTO-V1.5' declares Output 1, but 1PAF-PMX-V1.6-I01 declares no Input group for OSD-BTO-V1.5; not used on this edge.
+  Passed Mpai.Aif.Tests.AboutMpaiTests.TheVideoIsPresentedByItsLinkAndTheControllerIsNotAsked [10 s]
+[xUnit.net 00:11:50.90]     Mpai.Aif.Tests.HmcEndToEndTests.ATypedTurnWithAFaceIsAnsweredWithAPortableAvatar [SKIP]
+[xUnit.net 00:11:50.90]       the models, or Ollama, are not there
+  Skipped Mpai.Aif.Tests.HmcEndToEndTests.ATypedTurnWithAFaceIsAnsweredWithAPortableAvatar [8 s]
+[CAE-AOE-V1.0] open violin
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.CaeUscV25Tests.TheCompositeAimsAreGraphsWhoseConnectionsJoinPortsThatExist [3 m 22 s]
+  Passed Mpai.Aif.Tests.NprWorkflowTests.TheNprWorkflowShowsThePageAsksForAColumnAndPresentsThePortableAvatar [806 ms]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-TTT-V2.5] en -> it
+  Passed Mpai.Aif.Tests.EssSpecificationTests.CompositesAreWired [1 m 24 s]
+  Passed Mpai.Aif.Tests.EssSpecificationTests.BasicEnvironmentDescriptorsDescribe [332 ms]
+  Passed Mpai.Aif.Tests.EssSpecificationTests.L2sValidate [3 s]
+[xUnit.net 00:13:55.56]       The App did not finish: Starting the Module (a first start takes a while)...
+[xUnit.net 00:13:55.56]     Mpai.Aif.Tests.CaeUscV25AppTests.EnhancedAudioconferenceExperienceFindsTheTwoSpeakersOfTheD
+emoRoomWhereAndWhenTheySpeak [FAIL]
+[xUnit.net 00:13:55.56]       The Store approved 25 Implementation(s) of this build.
+[xUnit.net 00:13:55.56]       The AIMs of 1CAE-EAE-V2.5-I01 run on an AIM host at localhost:61007.
+[xUnit.net 00:13:55.56]       
+[xUnit.net 00:13:55.56]       Stack Trace:
+[xUnit.net 00:13:55.57]         D:\AI\Test\Mpai.Aif.Tests\CaeUscV25AppTests.cs(27,0): at Mpai.Aif.Tests.CaeUscV25AppTests.Run(String exe, String[] args)
+[xUnit.net 00:13:55.57]         D:\AI\Test\Mpai.Aif.Tests\CaeUscV25AppTests.cs(142,0): at Mpai.Aif.Tests.CaeUscV25AppTests.EnhancedAudioconferenceExperienceFindsTheTwoSpeakersOfTheDemoRoomWhereAndWhenTheySpeak()
+[xUnit.net 00:13:55.57]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:13:55.57]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Mpai.Aif.Tests.CaeUscV25AppTests.EnhancedAudioconferenceExperienceFindsTheTwoSpeakersOfTheDemoRoomWhereAndWhenTheySpeak [7 m 41 s]
+  Error Message:
+   The App did not finish: Starting the Module (a first start takes a while)...
+The Store approved 25 Implementation(s) of this build.
+The AIMs of 1CAE-EAE-V2.5-I01 run on an AIM host at localhost:61007.
+
+  Stack Trace:
+     at Mpai.Aif.Tests.CaeUscV25AppTests.Run(String exe, String[] args) in D:\AI\Test\Mpai.Aif.Tests\CaeUscV25AppTests.cs:line 27
+   at Mpai.Aif.Tests.CaeUscV25AppTests.EnhancedAudioconferenceExperienceFindsTheTwoSpeakersOfTheDemoRoomWhereAndWhenTheySpeak() in D:\AI\Test\Mpai.Aif.Tests\CaeUscV25AppTests.cs:line 142
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[ASR] ports in: OSD-BSO-V1.5#1; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+[MMC-ASR-V2.5] heard 7 words
+[MMC-TTT-V2.5] en -> it
+  Passed Mpai.Aif.Tests.InstanceIdentificationRunnerTests.AiiGivesTheSceneOnAsItCameAndIdentifiesTheObjectOfTheSameMessage [34 s]
+[ONNX] yolox_s.onnx: CPU
+  Passed Mpai.Aif.Tests.InstanceIdentificationRunnerTests.AiiRunnerIdentifiesEveryObjectAndPassesEveryScene [711 ms]
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/de-clean", column: 1) [2 m 41 s]
+  Passed Mpai.Aif.Tests.InstanceIdentificationRunnerTests.ViiRunnerIdentifiesEveryObjectAndPassesEveryScene [5 s]
+  Passed Mpai.Aif.Tests.InstanceIdentificationRunnerTests.ViiGivesTheSceneOnAsItCameAndIdentifiesTheObjectOfTheSameMessage [682 ms]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.StandaloneAppsTests.MtsTranslatesATypedAndASpokenSentenceAndSpeaksTheTranslation [3 m 6 s]
+[MMC-SOE-V2.5] welcome replaced by its translation into it: welcome-trans
+[xUnit.net 00:14:46.36]     Mpai.Aif.Tests.AsmVoiceWorkflowTests.WhatIsSaidEditsTheSceneAndTheMachineAnswers [FAIL]
+[xUnit.net 00:14:46.36]       "put the violin at x 2, y 1, z 0" was not answered.
+--- interpreter:
+workflow ASM-VCI over 1CAE-ASM-V1.0-I01
+[C] started 1CAE-ASM-V1.0-I01
+device "Voice": stream Voice (OSD-BSO-V1.5)
+device "SoundIn": stream ObjectCommand (CAE-UCM-V1.0)
+device "SceneCommand": stream SceneCommand (CAE-UCM-V1.0:2)
+device "SpeechCommand": stream SpeechCommand (CAE-UCM-V1.0:3)
+device "SpeechSceneCommand": stream SpeechSceneCommand (CAE-UCM-V1.0:4)
+device "SceneIn": stream OpenScene (OSD-ASD-V1.5)
+device "TypedIn": stream TypedText (OSD-BTO-V1.5)
+device "Heard": deliver Heard (OSD-BTO-V1.5)
+device "ReplyText": deliver ResponseText (OSD-BTO-V1.5:2)
+device "ReplySpeech": deliver ResponseSpeech (OSD-BSO-V1.5)
+device "Scene": deliver Scene (OSD-ASD-V1.5)
+device "Unused": deliver ObjectOut (OSD-AUO-V1.5), deliver MultimodalOut (OSD-MSD-V1.5)
+device "ObjectReport": deliver ObjectReport (CAE-UCM-V1.0)
+device "SceneReport": deliver SceneReport (CAE-UCM-V1.0:2)
+device "SpeechOut": deliver SpeechOut (OSD-SPO-V1.5)
+device "SpeechScene": deliver SpeechSceneOut (OSD-SSD-V1.5)
+device "SpeechReport": deliver SpeechReport (CAE-UCM-V1.0:3)
+device "SpeechSceneRep": deliver SpeechSceneRep (CAE-UCM-V1.0:4)
+device "MultimodalRep": deliver MultimodalRep (CAE-UCM-V1.0:5)
+[C] take OSD-BTO-V1.5:1
+[C] returned: 
+[C] give WelcomeText (OSD-BTO-V1.5:2): nothing
+[C] give WelcomeSpeech (OSD-BSO-V1.5): nothing
+present WelcomeText, WelcomeSpeech: nothing to present
+
+--- replies: 
+--- spoken: 
+--- JSI turns: 
+--- heard: 1 scenes: 0 ollama: 
+--- status: 
+[xUnit.net 00:14:46.37]       Stack Trace:
+[xUnit.net 00:14:46.37]         D:\AI\Test\Mpai.Aif.Tests\AsmVoiceWorkflowTests.cs(266,0): at Mpai.Aif.Tests.AsmVoiceWorkflowTests.<>c__DisplayClass9_0.<<WhatIsSaidEditsTheSceneAndTheMachineAnswers>g__Say|1>d.MoveNext()
+[xUnit.net 00:14:46.37]         --- End of stack trace from previous location ---
+[xUnit.net 00:14:46.37]         D:\AI\Test\Mpai.Aif.Tests\AsmVoiceWorkflowTests.cs(276,0): at Mpai.Aif.Tests.AsmVoiceWorkflowTests.WhatIsSaidEditsTheSceneAndTheMachineAnswers()
+[xUnit.net 00:14:46.37]         --- End of stack trace from previous location ---
+  Failed Mpai.Aif.Tests.AsmVoiceWorkflowTests.WhatIsSaidEditsTheSceneAndTheMachineAnswers [8 m 19 s]
+  Error Message:
+   "put the violin at x 2, y 1, z 0" was not answered.
+--- interpreter:
+workflow ASM-VCI over 1CAE-ASM-V1.0-I01
+[C] started 1CAE-ASM-V1.0-I01
+device "Voice": stream Voice (OSD-BSO-V1.5)
+device "SoundIn": stream ObjectCommand (CAE-UCM-V1.0)
+device "SceneCommand": stream SceneCommand (CAE-UCM-V1.0:2)
+device "SpeechCommand": stream SpeechCommand (CAE-UCM-V1.0:3)
+device "SpeechSceneCommand": stream SpeechSceneCommand (CAE-UCM-V1.0:4)
+device "SceneIn": stream OpenScene (OSD-ASD-V1.5)
+device "TypedIn": stream TypedText (OSD-BTO-V1.5)
+device "Heard": deliver Heard (OSD-BTO-V1.5)
+device "ReplyText": deliver ResponseText (OSD-BTO-V1.5:2)
+device "ReplySpeech": deliver ResponseSpeech (OSD-BSO-V1.5)
+device "Scene": deliver Scene (OSD-ASD-V1.5)
+device "Unused": deliver ObjectOut (OSD-AUO-V1.5), deliver MultimodalOut (OSD-MSD-V1.5)
+device "ObjectReport": deliver ObjectReport (CAE-UCM-V1.0)
+device "SceneReport": deliver SceneReport (CAE-UCM-V1.0:2)
+device "SpeechOut": deliver SpeechOut (OSD-SPO-V1.5)
+device "SpeechScene": deliver SpeechSceneOut (OSD-SSD-V1.5)
+device "SpeechReport": deliver SpeechReport (CAE-UCM-V1.0:3)
+device "SpeechSceneRep": deliver SpeechSceneRep (CAE-UCM-V1.0:4)
+device "MultimodalRep": deliver MultimodalRep (CAE-UCM-V1.0:5)
+[C] take OSD-BTO-V1.5:1
+[C] returned: 
+[C] give WelcomeText (OSD-BTO-V1.5:2): nothing
+[C] give WelcomeSpeech (OSD-BSO-V1.5): nothing
+present WelcomeText, WelcomeSpeech: nothing to present
+
+--- replies: 
+--- spoken: 
+--- JSI turns: 
+--- heard: 1 scenes: 0 ollama: 
+--- status: 
+  Stack Trace:
+     at Mpai.Aif.Tests.AsmVoiceWorkflowTests.<>c__DisplayClass9_0.<<WhatIsSaidEditsTheSceneAndTheMachineAnswers>g__Say|1>d.MoveNext() in D:\AI\Test\Mpai.Aif.Tests\AsmVoiceWorkflowTests.cs:line 266
+--- End of stack trace from previous location ---
+   at Mpai.Aif.Tests.AsmVoiceWorkflowTests.WhatIsSaidEditsTheSceneAndTheMachineAnswers() in D:\AI\Test\Mpai.Aif.Tests\AsmVoiceWorkflowTests.cs:line 276
+--- End of stack trace from previous location ---
+[xUnit.net 00:14:46.86]     Mpai.Aif.Tests.StandaloneAppsTests.AmcAnswersWhatItHearsAndSeesAndSpeaksTheReply [SKIP]
+[xUnit.net 00:14:46.86]       Ollama is not running with llama3.2:3b.
+  Passed Mpai.Aif.Tests.JoinServiceTests.TheWorkflowJoinsAServiceByName [148 ms]
+  Passed Mpai.Aif.Tests.JoinServiceTests.AJoinThatNamesNoServiceIsRefused [136 ms]
+  Skipped Mpai.Aif.Tests.StandaloneAppsTests.AmcAnswersWhatItHearsAndSeesAndSpeaksTheReply [3 s]
+  Passed Mpai.Aif.Tests.JoinServiceTests.TheUserAgentKnowsTheServicesItsUserTrusts [991 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25VapTests.ASplicePassingTheHeadAndAChangeOfTapeAreFoundAndACleanFilmHasNone [421 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25VapTests.WithTheFilmAndTheAudiosFileTheAimGivesTheMergedIrregularitiesInTheTimeOfTheRecordingAndTheirImages [708 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25VapTests.TheAimGivesAFileAgainOnlyIfItIsNotWhatItGaveLastSoTheLoopWithTheAudioAnalysisEnds [8 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25VapTests.AnImageIsAPngOfTheFrame [183 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25VapTests.WhatTheFilmDoesNotCoverHasNoImageAndTheAimSaysWhatItCannotAnalyse [215 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25VapTests.AnIrregularityTheAudioAndTheFilmBothFoundIsOne [6 ms]
+  Passed Mpai.Aif.Tests.SpatialAudioTests.ScenesHeardFromTheUser [3 s]
+[ONNX] frozen-backbone.onnx: CPU
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/en-degraded", column: 1) [31 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/fr-degraded", column: 2) [14 s]
+  Passed Mpai.Aif.Tests.AsmTranslationTests.ATranslationIsRevoked [7 m 19 s]
+  Passed Mpai.Aif.Tests.AimLicenceRepositoryTests.AControllerThatIsNotUnderTheTrustAnchorIsNotCovered [32 s]
+  Passed Mpai.Aif.Tests.CaeUscV25PapTests.ThePackagerSaysWhatItCannotPackage [244 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25PapTests.TheAccessCopyHasTheRestoredSectionInThePlaceOfTheSectionItRestores [42 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25PapTests.ThePackagerKeepsWhatComesAndPackagesAgainOnlyWhenWhatItHoldsHasChanged [11 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25PapTests.TheMasterKeepsTheDigitisedAudioAsItIsEvenWhenItIsNotWhatTheAimsDecode [72 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25PapTests.TheMasterHoldsTheFilesThatDocumentTheRecordingAndAManifestOfTheirHashesAndNothingRestored [9 ms]
+  Passed Mpai.Aif.Tests.VmsTests.PortableAvatarCrossesMas [113 ms]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.VmsTests.SecretarySpeaks [6 s]
+  Passed Mpai.Aif.Tests.AimLicenceRepositoryTests.AnAimThatOffersALicenceIsNotKeptWithoutOne [8 s]
+  Passed Mpai.Aif.Tests.VmsTests.App [1 s]
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "real/us-federal-register-b", column: 1) [9 s]
+  Passed Mpai.Aif.Tests.VmsTests.Meeting [2 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.RoadUserTests.APedestrianWhoComesOutFromBehindAParkedCarIsNeverHit [487 ms]
+  Passed Mpai.Aif.Tests.RoadUserTests.APedestrianWhoStepsOffTheKerbIsNeverHit [361 ms]
+  Passed Mpai.Aif.Tests.RoadUserTests.ACyclistInTheCavsLaneIsNeverHitAndIsFollowedOrPassed [790 ms]
+  Passed Mpai.Aif.Tests.AihModelAimTests.EachModelIsAnAimOfItsOwn [17 s]
+  Passed Mpai.Aif.Tests.AimLicenceRepositoryTests.AnAimLicenceThatHasEndedIsNotUsed [23 s]
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "real/us-federal-register-b", column: 0) [23 s]
+  Passed Mpai.Aif.Tests.AihModelAimTests.TheStoreDoesNotPublishAWrappingThatItsL2DoesNotAllow [2 s]
+  Passed Mpai.Aif.Tests.AimLicenceRepositoryTests.TheLocalStoreKeepsEveryVersionAndRefusesAMissingSubAim [2 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.AihModelAimTests.AModelThatIsNotTheOneTheStoreApprovedIsNotBuilt [2 s]
+  Passed Mpai.Aif.Tests.AimLicenceRepositoryTests.NothingIsPaidForUntilTheLicenceIsAskedFor [1 s]
+  Passed Mpai.Aif.Tests.AimLicenceRepositoryTests.ARevokedAimLicenceIsNotUsedWhenTheStoreIsAsked [2 s]
+  Passed Mpai.Aif.Tests.AihModelAimTests.TheControllerAsksWhetherTheStoreHasANewerVersionAndFollowsItOrNot [3 s]
+  Passed Mpai.Aif.Tests.CaeUscV25AppTests.EnhancedAudioconferenceExperienceSaysWhatIsWrongWithWhatItWasGiven [2 m 3 s]
+  Passed Mpai.Aif.Tests.AihModelAimTests.AModelThatArrivesOtherThanTheStoreApprovedItIsNotKept [981 ms]
+  Passed Mpai.Aif.Tests.AimLicenceRepositoryTests.AnAimExecutingApartIsCoveredByRunWhereTheLicenseeControlsItAndByRunUnderOtherControlWhereAnotherPartyDoes [2 s]
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/it-clean", column: 1) [8 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.AihModelAimTests.TheBackEndUploadsTheModelAsAnAimAndAControllerObtainsAndKeepsIt [2 s]
+  Passed Mpai.Aif.Tests.AimLicenceRepositoryTests.ThePriceWithTheMarkupIsKnownBeforeTheLicenceIsIssuedAndTheLicenceStatesIt [2 s]
+  Passed Mpai.Aif.Tests.AihModelAimTests.TheL2OfTheModelAimIsInTheSchemas [425 ms]
+  Passed Mpai.Aif.Tests.AimLicenceRepositoryTests.AnAimLicenceThatDoesNotCoverWhatIsHeldIsRefused [958 ms]
+  Passed Mpai.Aif.Tests.AccessLedgerTests.ADeletedItemDoesNotComeBackWithItsOldContent [567 ms]
+  Passed Mpai.Aif.Tests.AccessLedgerTests.TheFileGivenToAReaderIsReadOnlyAndStillReplaceable [8 ms]
+  Passed Mpai.Aif.Tests.AccessModelsTests.TheProgramsAreObtainedUnpackedAndAreTheOnesPinned(l3: "1MMC-TTS-V2.5-I01.json", setting: "PiperExecutable") [8 m 13 s]
+  Passed Mpai.Aif.Tests.AccessLedgerTests.TheVersionOfASourceMadeAgainGoesOnFromWhereItWas [1 s]
+[CAE-AOE-V1.0] open violin
+  Passed Mpai.Aif.Tests.AimLicenceRepositoryTests.TheIssuedAimLicenceIsASublicenceUnderTheOfferAndItsPriceHasTheStoresMarkup [3 s]
+  Passed Mpai.Aif.Tests.AimLicenceRepositoryTests.WhenTheLicenceNamesOneControllerOfTheOrganisationOnlyThatOneIsCovered [242 ms]
+[AIF] 1TST-RPT-V1.0-I01 reports: fell back to a simpler path
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/de-clean", column: 2) [13 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[xUnit.net 00:16:23.44]     Mpai.Aif.Tests.AccessModelsTests.EachPiperVoiceOfAccessSpeaksWithThePiperOfAccess [FAIL]
+[xUnit.net 00:16:23.44]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:16:23.44]       Expected: OK
+[xUnit.net 00:16:23.44]       Actual:   Refused
+[xUnit.net 00:16:23.44]       Stack Trace:
+[xUnit.net 00:16:23.44]         D:\AI\Test\Mpai.Aif.Tests\AccessModelsTests.cs(91,0): at Mpai.Aif.Tests.AccessModelsTests.EachPiperVoiceOfAccessSpeaksWithThePiperOfAccess()
+[xUnit.net 00:16:23.44]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:16:23.44]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Failed Mpai.Aif.Tests.AccessModelsTests.EachPiperVoiceOfAccessSpeaksWithThePiperOfAccess [18 s]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: OK
+Actual:   Refused
+  Stack Trace:
+     at Mpai.Aif.Tests.AccessModelsTests.EachPiperVoiceOfAccessSpeaksWithThePiperOfAccess() in D:\AI\Test\Mpai.Aif.Tests\AccessModelsTests.cs:line 91
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed Mpai.Aif.Tests.AimLicenceRepositoryTests.AnOfflineControllerGoesOnUntilTheStatusIsTooOldAndThenAsks [18 s]
+[AIF] 1TST-RPT-V1.0-I01 reports: fell back to a simpler path
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.AihFederatedRoundTests.AnExtremeUpdateIsRefusedAndTheRestIsAveraged [1 m 34 s]
+  Passed Mpai.Aif.Tests.AihFederatedRoundTests.TheCodeOfTheBackEndsRoundNeverReadsWhoSentAModel [361 ms]
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "real/us-federal-register-b", column: 2) [13 s]
+  Passed Mpai.Aif.Tests.AimLicenceRepositoryTests.AnAimWithoutAnOfferNeedsNoLicence [6 s]
+  Passed Mpai.Aif.Tests.AimLicenceRepositoryTests.ALicenceThatStatesAnotherPriceThanTheOneQuotedIsRefused [667 ms]
+  Passed Mpai.Aif.Tests.AimLicenceRepositoryTests.ALicenceThatDoesNotGrantTheRightToKeepCannotBeKeptWithTheAim [2 s]
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/fr-clean", column: 1) [8 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.AimLicenceRepositoryTests.TheStoreIssuesTheOfferAsAnAimLicenceTheControllerKeepsAndBuildsFrom [4 s]
+  Passed Mpai.Aif.Tests.AccessModelsTests.TheBlipFilesAreObtainedFromWhereMpaiPublishesThem [15 s]
+  Passed Mpai.Aif.Tests.AimLicenceRepositoryTests.AnAimLicenceNotSignedByTheStoreIsRefused [3 s]
+  Passed Mpai.Aif.Tests.AimLicenceRepositoryTests.EveryControllerUnderTheTrustAnchorIsCoveredAndNothingIsPaidForAgain [3 s]
+  Passed Mpai.Aif.Tests.AimLicenceRepositoryTests.ALicenceUnderAnotherOfferThanTheOneInTheMetadataIsRefused [441 ms]
+  Passed Mpai.Aif.Tests.AimLicenceRepositoryTests.ANewVersionDoesNotTakeAwayTheApprovalOfTheVersionAControllerHolds [990 ms]
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/it-degraded", column: 1) [11 s]
+[xUnit.net 00:16:52.11]     Mpai.Aif.Tests.JsiDemoSentencesTests.TheDemoSentencesGiveACommandOrSayWhatIsMissing [FAIL]
+[xUnit.net 00:16:52.11]       create a square room of 3 metres by 3 metres centred at 0 0
+[xUnit.net 00:16:52.11]       Stack Trace:
+[xUnit.net 00:16:52.11]         D:\AI\Test\Mpai.Aif.Tests\JsiDemoSentencesTests.cs(47,0): at Mpai.Aif.Tests.JsiDemoSentencesTests.TheDemoSentencesGiveACommandOrSayWhatIsMissing()
+[xUnit.net 00:16:52.11]         --- End of stack trace from previous location ---
+  Failed Mpai.Aif.Tests.JsiDemoSentencesTests.TheDemoSentencesGiveACommandOrSayWhatIsMissing [5 m 1 s]
+  Error Message:
+   create a square room of 3 metres by 3 metres centred at 0 0
+  Stack Trace:
+     at Mpai.Aif.Tests.JsiDemoSentencesTests.TheDemoSentencesGiveACommandOrSayWhatIsMissing() in D:\AI\Test\Mpai.Aif.Tests\JsiDemoSentencesTests.cs:line 47
+--- End of stack trace from previous location ---
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.AimLicenceRepositoryTests.TheStoreIssuesNothingUnderAnOfferThatDoesNotAllowItToSublicense [5 s]
+  Passed Mpai.Aif.Tests.AimLicenceRepositoryTests.TheStoreIsReachedOverHttpsOnly [838 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25DataTypeTests.TheMicrophoneArrayGeometrySchemaLoadsAndRequiresItsHeader [< 1 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25DataTypeTests.AnIrregularityFileNeedsItsHeaderAndEachIrregularityItsSource [1 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25DataTypeTests.TheFormatsOfTheSpeechFeaturesOfEmotionEnhancedSpeechAreThoseOfV21InV25 [< 1 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25DataTypeTests.ADamagedListHasItsHeaderAndAtLeastOneDamagedSection [< 1 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25DataTypeTests.AnEditingListLabelsTheTimeOfARestorationAsHoursMinutesSecondsAndMilliseconds [1 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25DataTypeTests.AnAudioSceneReferenceBelongsToCaeAsmAndIsAPolynomialOfTerms [1 ms]
+  Passed Mpai.Aif.Tests.AsmM3282Tests.ASpatialAttitudeThatStatesOnlyTheTimeOrOnlyThePositionChangesOnlyThat [55 s]
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/it-degraded", column: 2) [13 s]
+[CAE-AOE-V1.0] open violin
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.AihFederatedRoundTests.TrainedModelsAreAveragedByTheirNumberOfCases [41 s]
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/en-clean", column: 2) [6 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/fr-degraded", column: 1) [10 s]
+  Passed Mpai.Aif.Tests.TrustLinkTests.Modules [2 m 41 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "real/uk-london-gazette", column: 1) [12 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.AsmM3282Tests.TheSceneIsReadBackWithItsDurationTheLevelAndTheTimeOfEachMemberItsListenerAndItsRoom [33 s]
+[CAE-AOE-V1.0] open violin
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "real/us-federal-register-a", column: 0) [10 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.TrustLinkTests.Protocol [25 s]
+  Passed Mpai.Aif.Tests.FedSceneTests.TheScenePlacesTheCavAndEveryObjectOfTheFed [942 ms]
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "real/us-federal-register-a", column: 1) [21 s]
+[CAE-AOE-V1.0] open violin
+  Passed Mpai.Aif.Tests.AihFederatedRoundTests.AnAcceptedRoundIsAveragedCheckedAndReplacesTheOldModel [56 s]
+  Passed Mpai.Aif.Tests.AihFederatedRoundTests.TheNumberOfCasesIsCarriedInTheWayTheSchemaOfTheModelObjectAllows [25 ms]
+  Passed Mpai.Aif.Tests.AihFederatedRoundTests.TheAuditOfAModelVersionListsItsRoundItsDataAndItsLicence [205 ms]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.CaeUscV25AppTests.EmotionEnhancedSpeechByTheEmotionAndByTheModelUtterance [2 m 6 s]
+  Passed Mpai.Aif.Tests.AsmOnAnAimHostTests.TheAudioSceneManagementAimsRunOnAnAimHost [1 m 13 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.NprModuleTests.ThePointedColumnIsRead(column: 3, x: 1995, y: 472) [19 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/en-clean", column: 1) [21 s]
+  Passed Mpai.Aif.Tests.AsmM3282Tests.AnAcousticProfileGivenInFullIsKeptUnderItsIdentifierAndThenGivenByIt [52 s]
+[CAE-AOE-V1.0] open violin
+  Passed Mpai.Aif.Tests.AsmVciIntegrationTests.EveryEditingAimAnswersACommandAndTheAnswersMakeOne [41 s]
+  Passed Mpai.Aif.Tests.AsmVciIntegrationTests.TheApplicationContextOfAudioSceneManagementFollowsTheStructureOfOne [15 ms]
+  Passed Mpai.Aif.Tests.AsmVciIntegrationTests.TheVoiceCommandInterfaceIsInsideTheModuleAndTheAmiAndTheAjiAreGone [358 ms]
+[CAE-AOE-V1.0] open violin
+  Passed Mpai.Aif.Tests.NprModuleTests.ThePointedColumnIsRead(column: 1, x: 560, y: 472) [8 s]
+[CAE-AOE-V1.0] open drums
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/it-clean", column: 0) [8 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.NprModuleTests.ThePointedColumnIsRead(column: 1, x: 560, y: 1500) [8 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[CAE-AOE-V1.0] open violin
+  Passed Mpai.Aif.Tests.AsmVciIntegrationTests.ASceneAndAnObjectAreDeletedByTheirNamesAnObjectInASceneNotUntilTheSceneIs [18 s]
+  Passed Mpai.Aif.Tests.AsmVciIntegrationTests.WhatOneAimDidStandsOverWhatTheOthersCouldNot [3 ms]
+  Passed Mpai.Aif.Tests.AsmVciIntegrationTests.TheAnswersOfAllTheEditingAimsAreOneResponseTheyAreToldOnce [844 ms]
+  Passed Mpai.Aif.Tests.AsmVciIntegrationTests.WhenNoneDidAnythingTheCommandWasIgnoredAndWhenAllFailedItFailed [< 1 ms]
+[CAE-AOE-V1.0] open violin
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[ONNX] marked.onnx: CPU
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "real/uk-london-gazette", column: 0) [14 s]
+  Passed Mpai.Aif.Tests.AsmVciIntegrationTests.ASoundByItsNameOpensTheObjectTheModuleKeeps [1 s]
+  Passed Mpai.Aif.Tests.AsmM3282Tests.TheWallsGivenAreMergedIntoTheWallsOfTheProfileAndTheOthersKeepTheirMaterial [22 s]
+  Passed Mpai.Aif.Tests.AsmM3282Tests.TheWallsOfTheProfileAreWhatTheRendererReadsFaceByFaceAPolygonOnAFaceIsThatFace [181 ms]
+  Passed Mpai.Aif.Tests.AihFederatedWatermarkTests.TheMarkIsInsertedInTheConvolutionWeightsAndFoundWithoutTheOriginal [82 ms]
+  Passed Mpai.Aif.Tests.AsmVciIntegrationTests.ARoomIsMadeInAnEmptySceneAndOnlyAudioSceneEditingAnswersForIt [418 ms]
+  Passed Mpai.Aif.Tests.AihFederatedRoundTests.AResultThatIsWorseOnTheFixedSetIsRefusedAndTheOldModelIsKept [44 s]
+  Passed Mpai.Aif.Tests.AihFederatedRoundTests.ANumberOfCasesThatIsNotAPositiveWholeNumberIsAnError [3 ms]
+  Passed Mpai.Aif.Tests.AihFederatedRoundTests.AModelOf100CasesCountsMoreThanOneOf5 [1 ms]
+  Passed Mpai.Aif.Tests.AihFederatedRoundTests.ARoundGivesTheSameResultWhateverTheSendersAreCalled [2 ms]
+  Passed Mpai.Aif.Tests.AsmVciIntegrationTests.AnAnswerToACommandThatIsNotTheirsIsNotToldAndAListingIsTheState [102 ms]
+  Passed Mpai.Aif.Tests.NprModuleTests.ThePointedColumnIsRead(column: 2, x: 1383, y: 472) [6 s]
+[ONNX] marked.onnx: CPU
+  Passed Mpai.Aif.Tests.CveVdiVoeTests.TheDirectionOfTheFingerFindsTheObjectItPointsAt [1 s]
+  Passed Mpai.Aif.Tests.CveVdiVoeTests.AWiderApertureReachesWhatANarrowOneMisses [49 ms]
+  Passed Mpai.Aif.Tests.CveVdiVoeTests.ABodyOfAnotherFormatIsRefused [45 ms]
+  Passed Mpai.Aif.Tests.CveVdiVoeTests.TheIndexFingerOfTheRightArmGivesAPointOfViewAlongThatArm [83 ms]
+  Passed Mpai.Aif.Tests.CveVdiVoeTests.AnArmThatPointsUpGivesAnElevationAbove0 [84 ms]
+  Passed Mpai.Aif.Tests.CveVdiVoeTests.NoIndexFingerSeenIsSaidAndNoDirectionIsGuessed [42 ms]
+  Passed Mpai.Aif.Tests.AihFederatedWatermarkTests.TheMarkedNetworkStillRunsAndGivesNearlyTheSameFeatures [2 s]
+  Passed Mpai.Aif.Tests.CveVdiVoeTests.TheObjectInTheConeAndClosestToTheAxisIsExtracted [89 ms]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.CveVdiVoeTests.NothingCrossedAndAnObjectNotYetReceivedAreSaidDifferently [42 ms]
+  Passed Mpai.Aif.Tests.CveVdiVoeTests.TheHandThatReachesFartherFromItsShoulderIsTheOneThatPoints [570 ms]
+  Passed Mpai.Aif.Tests.TmaTests.CombiningTheSceneLastReceivedOfEachKindStandsInTheMultimodalScene [255 ms]
+  Passed Mpai.Aif.Tests.TmaTests.WithoutCombiningEachSceneIsAMultimodalSceneOfItsOwn [< 1 ms]
+  Passed Mpai.Aif.Tests.TmaTests.TheNamesInTheAuxiliaryTextRaiseTheirCandidates [78 ms]
+  Passed Mpai.Aif.Tests.TmaTests.SpeechTextAndIdAreMultiplexedAndCollected [16 ms]
+  Passed Mpai.Aif.Tests.TmaTests.VideoOfThreeShotsGivesThreeScenes [732 ms]
+  Passed Mpai.Aif.Tests.TmaTests.ASceneIsMadeOfEachBasicSpeechObject [< 1 ms]
+  Passed Mpai.Aif.Tests.TmaTests.FullToBasicGivesTheBasicObjectsInOrder [2 ms]
+  Passed Mpai.Aif.Tests.TmaTests.AnAudioSceneIsMultiplexedAsAScene [< 1 ms]
+[ONNX] ecapa-tdnn.onnx: CPU
+[ONNX] glintr100.onnx: CPU
+  Passed Mpai.Aif.Tests.NprModuleTests.ThePointedColumnIsRead(column: 1, x: 183, y: 373) [7 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/fr-clean", column: 0) [8 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[ASR] ports in: OSD-TXO-V1.5#1; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+[ASR] ports in: MMC-SOL-V2.5#1; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+[ASR] ports in: OSD-BSO-V1.5#3; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+  Passed Mpai.Aif.Tests.AihFederatedWatermarkTests.TheMarkIsFoundInTheModelsThatComeBackAndNotInModelsOfAnotherNetwork [22 s]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.WhatOnlyAnIssuedAimLicenceHasComesWithItsSignature(property: "AIM", text: null) [20 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.WhatOnlyAnIssuedAimLicenceHasComesWithItsSignature(property: "ParentLicence", text: null) [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.WhatOnlyAnIssuedAimLicenceHasComesWithItsSignature(property: "Licensee", text: null) [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.WhatOnlyAnIssuedAimLicenceHasComesWithItsSignature(property: "KeyID", text: "k") [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.WhatOnlyAnIssuedAimLicenceHasComesWithItsSignature(property: "AIMLicenceID", text: "lic-1") [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.WhatOnlyAnIssuedAimLicenceHasComesWithItsSignature(property: "Licensor", text: null) [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.WhatOnlyAnIssuedAimLicenceHasComesWithItsSignature(property: "Status", text: null) [13 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.TheDurationOfAnOfferIsAnIso8601Duration(duration: "P30D", valid: True) [3 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.TheDurationOfAnOfferIsAnIso8601Duration(duration: "P", valid: False) [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.TheDurationOfAnOfferIsAnIso8601Duration(duration: "1Y", valid: False) [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.TheDurationOfAnOfferIsAnIso8601Duration(duration: "PT", valid: False) [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.TheDurationOfAnOfferIsAnIso8601Duration(duration: "P1Y", valid: True) [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.TheDurationOfAnOfferIsAnIso8601Duration(duration: "1 year", valid: False) [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.TheDurationOfAnOfferIsAnIso8601Duration(duration: "P6M", valid: True) [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.TheDurationOfAnOfferIsAnIso8601Duration(duration: "PT12H", valid: True) [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.TheDurationOfAnOfferIsAnIso8601Duration(duration: "P1Y6M", valid: True) [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.AnIssuedAimLicenceWithoutWhatItRequiresIsNotValid(property: "Status") [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.AnIssuedAimLicenceWithoutWhatItRequiresIsNotValid(property: "Signature") [5 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.AnIssuedAimLicenceWithoutWhatItRequiresIsNotValid(property: "KeyID") [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.AnIssuedAimLicenceWithoutWhatItRequiresIsNotValid(property: "AIMLicenceID") [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.AnIssuedAimLicenceWithoutWhatItRequiresIsNotValid(property: "AIMLicenceTime") [2 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.AnIssuedAimLicenceWithoutWhatItRequiresIsNotValid(property: "Header") [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.AnIssuedAimLicenceWithoutWhatItRequiresIsNotValid(property: "ParentLicence") [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.AnIssuedAimLicenceWithoutWhatItRequiresIsNotValid(property: "Grant") [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.AnIssuedAimLicenceWithoutWhatItRequiresIsNotValid(property: "Term") [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.AnIssuedAimLicenceWithoutWhatItRequiresIsNotValid(property: "Licensee") [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.AnIssuedAimLicenceWithoutWhatItRequiresIsNotValid(property: "AIM") [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.AnIssuedAimLicenceWithoutWhatItRequiresIsNotValid(property: "Licensor") [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.AnOfferWithoutWhatItRequiresIsNotValid(property: "Header") [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.AnOfferWithoutWhatItRequiresIsNotValid(property: "Grant") [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.AnOfferIsValid [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.ThePriceIsAnMmmServicePricingModel [1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.AnOfferSaysWhereItsTermsAre [2 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.TheStatusMayGoUnconfirmedForAnIso8601Duration(maxAge: "P7D", valid: True) [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.TheStatusMayGoUnconfirmedForAnIso8601Duration(maxAge: "a week", valid: False) [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.TheStatusMayGoUnconfirmedForAnIso8601Duration(maxAge: "PT12H", valid: True) [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.TheStatusMayGoUnconfirmedForAnIso8601Duration(maxAge: "P", valid: False) [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.TheStatusMayGoUnconfirmedForAnIso8601Duration(maxAge: "P1M", valid: True) [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.TheParentLicenceNamesTheImplementerAndTheHashOfTheOffer [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.TheLeastAnIssuedAimLicenceNeedsIsValid [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.WhatAnIssuedAimLicenceCoversIsNamedByFingerprint [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.ALimitIsAtLeastOne [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.UsageIsReportedToSomewhere [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.TheLicenseeIsTheHolderOfATrustAnchor [2 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.AnOfferStatesWhetherTheStoreMaySublicense [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.ALicenceThatDoesNotGrantTheRightToRunIsNotValid [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.TheLeastAnOfferNeedsIsValid [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.AnIssuedAimLicenceHasWhenItBeginsAndProvesThePayment [1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.AnIssuedAimLicenceIsValid [< 1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceSchemaTests.NothingElseIsAllowed [< 1 ms]
+  Passed Mpai.Aif.Tests.JsiTests.ACommandWithNothingInItIsNotACommand [200 ms]
+  Passed Mpai.Aif.Tests.JsiTests.ANumberThatIsNotGivenIsAskedForAndNothingIsSent(words: "move the violin a bit to the left") [1 s]
+  Passed Mpai.Aif.Tests.JsiTests.ANumberThatIsNotGivenIsAskedForAndNothingIsSent(words: "a little more cello") [36 ms]
+  Passed Mpai.Aif.Tests.JsiTests.ANumberThatIsNotGivenIsAskedForAndNothingIsSent(words: "make the drums louder") [32 ms]
+  Passed Mpai.Aif.Tests.JsiTests.ANumberThatIsNotGivenIsAskedForAndNothingIsSent(words: "bring the voice closer") [31 ms]
+  Passed Mpai.Aif.Tests.JsiTests.ANumberThatIsNotGivenIsAskedForAndNothingIsSent(words: "turn up the voice") [31 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AShortcutForTheSoundsListsEverything [46 ms]
+  Passed Mpai.Aif.Tests.JsiTests.WithoutTheEntriesOfItsAccessItServesNoApplication [63 ms]
+  Passed Mpai.Aif.Tests.JsiTests.WithoutAnApplicationConnectedARequestIsWorkedOutAtOnce [52 ms]
+  Passed Mpai.Aif.Tests.JsiTests.ACommandThatDoesNotConformIsGivenBackOnceWithTheFault [79 ms]
+  Passed Mpai.Aif.Tests.JsiTests.ItsPortsAreThoseOfItsL2 [< 1 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AnObjectThatIsNamedIsNotAskedFor(words: "move the violent 1 metre to the left") [52 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AnObjectThatIsNamedIsNotAskedFor(words: "move me to 0, -2, 0") [3 s]
+  Passed Mpai.Aif.Tests.JsiTests.AnObjectThatIsNamedIsNotAskedFor(words: "shift the fiddle 0.5 metres to the left") [46 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AnObjectThatIsNamedIsNotAskedFor(words: "undo that") [45 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AnObjectThatIsNamedIsNotAskedFor(words: "set the whole scene to minus 23 LUFS") [48 ms]
+  Passed Mpai.Aif.Tests.JsiTests.WithoutAStateNoObjectCanBeNamedAndTheModelIsToldSo [45 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AnEarlierCommandCanBeNamedToUndoIt [58 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AnObjectThatIsNotNamedIsAskedFor(words: "rotate the guitar to 90 degrees") [34 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AnObjectThatIsNotNamedIsAskedFor(words: "move it 1 metre to the left") [33 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AnObjectThatIsNotNamedIsAskedFor(words: "move the instrument 1 metre closer") [31 ms]
+  Passed Mpai.Aif.Tests.JsiTests.ACommandThatConformsLeavesInACommand [46 ms]
+  Passed Mpai.Aif.Tests.JsiTests.WhatTheModelGivesIsCompletedToTheWholeSchema [14 ms]
+  Passed Mpai.Aif.Tests.JsiTests.ListingsThatComeOneAfterAnotherAddUpToTheState [50 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AnApplicationThatIsConnectedIsAskedForTheStateBeforeARequestIsWorkedOut [76 ms]
+  Passed Mpai.Aif.Tests.JsiTests.TheModelIsShownTheSchemaReducedByTheGuide [17 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AWordOfAmountWithANumberIsNotAsked(words: "lower the piano a metre") [44 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AWordOfAmountWithANumberIsNotAsked(words: "bring the voice 2 metres closer") [47 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AWordOfAmountWithANumberIsNotAsked(words: "move the violin half a metre to the left") [60 ms]
+  Passed Mpai.Aif.Tests.JsiTests.TheStateOfTheApplicationIsWhatTheModelIsToldAndChoosesFrom [47 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AResponseThatDoesNotConformToTheSchemaIsNotTold [49 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AResponseBecomesFactsWithTheRequestItAnswers [50 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AnAnswerThatIsNotJsonIsGivenBackToo [47 ms]
+  Passed Mpai.Aif.Tests.JsiTests.TheGuideFillsWhatTheApplicationGivesAtAPath [49 ms]
+  Passed Mpai.Aif.Tests.JsiTests.EveryExampleOfTheGuideIsACommandOfTheSchemaOrAProblem [30 ms]
+  Passed Mpai.Aif.Tests.JsiTests.EveryPathOfTheGuideIsInTheSchema [16 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AShortcutIsACommandWithoutTheModel(words: "What is in the scene?") [52 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AShortcutIsACommandWithoutTheModel(words: "what's in the scene right now") [49 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AnApplicationContextOnItsPortReplacesTheOneOfAccess [63 ms]
+  Passed Mpai.Aif.Tests.JsiTests.NothingSaidIsNothing [32 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AListingBecomesTheNamesAndTheCounts [94 ms]
+  Passed Mpai.Aif.Tests.JsiTests.ALanguageModelThatCannotBeReachedIsAnError [45 ms]
+  Passed Mpai.Aif.Tests.JsiTests.ARequestThatIsNotForTheApplicationIsAnsweredWithoutTheModel(words: "stop") [32 ms]
+  Passed Mpai.Aif.Tests.JsiTests.ARequestThatIsNotForTheApplicationIsAnsweredWithoutTheModel(words: "what is the weather like") [30 ms]
+  Passed Mpai.Aif.Tests.JsiTests.TheModelCanSayWhatIsMissingItself [42 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AContextThatIsNotAListingIsIgnoredAndTheStateIsKept [45 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AResponseThatFailedSaysWhy [47 ms]
+  Passed Mpai.Aif.Tests.JsiTests.TheStateIsKeptUntilTheNextOne [59 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AnApplicationContextThatIsNotOneIsRefusedAndTheOneInUseStays [86 ms]
+  Passed Mpai.Aif.Tests.JsiTests.ACommandThatDoesNotConformTwiceGivesNoCommandAndFacts [44 ms]
+  Passed Mpai.Aif.Tests.JsiTests.AListingThatAnswersACommandNotSentHereIsTheStateAndIsNotTold [45 ms]
+  Passed Mpai.Aif.Tests.AsmRenderingModeTests.TheRendererRendersTheSceneAsItSays(scene: "{\"RenderingMode\":\"Multichannel\",\"ChannelCount"···, expected: Surround71) [2 ms]
+  Passed Mpai.Aif.Tests.AsmRenderingModeTests.TheRendererRendersTheSceneAsItSays(scene: "{\"SubAudioScenes\":[{\"SubASceneIDOrSubAScene\":["···, expected: Stereo) [< 1 ms]
+  Passed Mpai.Aif.Tests.AsmRenderingModeTests.TheRendererRendersTheSceneAsItSays(scene: "{\"RenderingMode\":\"Stereo\"}", expected: Stereo) [< 1 ms]
+  Passed Mpai.Aif.Tests.AsmRenderingModeTests.TheRendererRendersTheSceneAsItSays(scene: "{\"RenderingMode\":\"Binaural\"}", expected: Binaural) [< 1 ms]
+  Passed Mpai.Aif.Tests.AsmRenderingModeTests.TheRendererRendersTheSceneAsItSays(scene: "{\"RenderingMode\":\"Mono\"}", expected: Mono) [< 1 ms]
+  Passed Mpai.Aif.Tests.AsmRenderingModeTests.TheRendererRendersTheSceneAsItSays(scene: "{\"RenderingMode\":\"Multichannel\",\"ChannelCount"···, expected: Surround51) [< 1 ms]
+  Passed Mpai.Aif.Tests.AsmRenderingModeTests.TheRendererRendersTheSceneAsItSays(scene: "{\"RenderingMode\":\"Multichannel\",\"ChannelCount"···, expected: Quad) [< 1 ms]
+[CAE-AOE-V1.0] open violin
+  Passed Mpai.Aif.Tests.AsmRenderingModeTests.ASceneThatSaysNothingUsableIsRenderedAsTheRendererDoesByDefault(scene: "{\"Header\":\"OSD-ASD-V1.5\"}") [< 1 ms]
+  Passed Mpai.Aif.Tests.AsmRenderingModeTests.ASceneThatSaysNothingUsableIsRenderedAsTheRendererDoesByDefault(scene: "not json") [< 1 ms]
+  Passed Mpai.Aif.Tests.AsmRenderingModeTests.ASceneThatSaysNothingUsableIsRenderedAsTheRendererDoesByDefault(scene: "{\"RenderingMode\":\"Ambisonics\"}") [< 1 ms]
+  Passed Mpai.Aif.Tests.AsmRenderingModeTests.ASceneThatSaysNothingUsableIsRenderedAsTheRendererDoesByDefault(scene: "{\"RenderingMode\":\"Multichannel\"}") [< 1 ms]
+  Passed Mpai.Aif.Tests.MmmInvitationTests.AVisitorMayComeInOnlyIfTheChairAllowsIt [35 s]
+  Passed Mpai.Aif.Tests.NprModuleTests.ThePointedColumnIsRead(column: 1, x: 203, y: 303) [31 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[CAE-AOE-V1.0] open violin
+  Passed Mpai.Aif.Tests.MmmInvitationTests.AGuestIsWhoeverHoldsItsInvitation [3 s]
+  Passed Mpai.Aif.Tests.StorageConformanceTests.APutAtAnOffsetIsAtomicWithRespectToItsKey [539 ms]
+  Passed Mpai.Aif.Tests.AsmRenderingModeTests.AModeTheRendererCannotRenderIsRefusedWithTheReason(mode: "Multichannel", channels: null) [7 s]
+  Passed Mpai.Aif.Tests.StorageConformanceTests.OnlyTheControllerWritesTheRecordAndTheUserAgentReadsIt [127 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25AppTests.SpeechRestorationSystemReplacesTheDamagedSectionsAndTheFileHasTheLengthItShould [1 m 23 s]
+  Passed Mpai.Aif.Tests.StorageConformanceTests.WhatWasKeptForASessionOrAModuleIsDeletedWhenItEndsEvenInAPrivateStorage [220 ms]
+  Passed Mpai.Aif.Tests.StorageConformanceTests.KeyInfoGivesTheClientTheWriteWasMadeFor [128 ms]
+  Passed Mpai.Aif.Tests.StorageConformanceTests.ACentralControlDoesNotWriteTheRecordEitherButTheUserAgentStillReadsIt [292 ms]
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "real/us-federal-register-a", column: 2) [32 s]
+  Passed Mpai.Aif.Tests.StorageConformanceTests.ANarrowingOfTheLongestTimeAppliesAtOnceToWhatWasWritten [619 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeNcmAmxTests.TheNoiseCancellationModuleSaysWhatItCannotDo [510 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeNcmAmxTests.EachSourceOfTheGeometryCarriesItsAudioObject [200 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeNcmAmxTests.WhereThereIsNoSilenceToMeasureTheNoiseInTheAIMIsAPassthrough [129 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeNcmAmxTests.TheNoiseMeasuredWhereNothingIsActiveIsTakenAwayWhereASourceIsAndTheSourceStays [129 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeNcmAmxTests.ASourceWithNoAudioKeepsItsIdAndAnAudioObjectWithNoSourceIsAdded [119 ms]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.WhenNoConditionIsMetTheEngineWaits [1 s]
+  Passed Mpai.Aif.Tests.NprModuleTests.ThePointedColumnIsRead(column: 2, x: 1383, y: 1900) [6 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/en-degraded", column: 0) [17 s]
+  Passed Mpai.Aif.Tests.NprModuleTests.ThePointedColumnIsRead(column: 3, x: 1995, y: 1300) [12 s]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.TheOperatorControlsTheShowThroughTheOperatorDescriptors [22 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.TheCuePointIdPortHasDepthOneAndDropOldestAndTheDescriptorsDropOldest [168 ms]
+  Passed Mpai.Aif.Tests.NprModuleTests.ThePointedColumnIsRead(column: 1, x: 198, y: 438) [15 s]
+  Passed Mpai.Aif.Tests.AsmRenderingModeTests.AModeTheRendererCannotRenderIsRefusedWithTheReason(mode: "Surround", channels: 3) [35 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[CAE-AOE-V1.0] open violin
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/it-degraded", column: 0) [21 s]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.TheWholeRecordingWrittenAtOnceGivesTheSameSequence [14 s]
+[CAE-AOE-V1.0] open violin
+  Passed Mpai.Aif.Tests.AsmRenderingModeTests.AModeTheRendererCannotRenderIsRefusedWithTheReason(mode: "Multichannel", channels: 5) [6 s]
+  Passed Mpai.Aif.Tests.NprModuleTests.WithNoPointTheFirstColumnUnderTheHeadlineIsRead [8 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.TheModuleGivesTheExpectedActionIdsForTheRecordedMiniShow [7 s]
+[xUnit.net 00:20:17.67]     Mpai.Aif.Tests.ServiceTests.Timing [FAIL]
+[xUnit.net 00:20:17.67]       1MMC-AMQ-V2.5-I01: Failed
+the Service's log, last 400 lines:
+=== MPAI-MAS server (AMQ) ===
+[xUnit.net 00:20:17.69]         Configuration: C:\Users\Thor\AppData\Local\Temp\mpai-test-service.json
+[xUnit.net 00:20:17.69]         Listen:        https://localhost:5108/
+[xUnit.net 00:20:17.69]         AMDs:          D:\AI\AIMs\AMDs
+[xUnit.net 00:20:17.69]         Settings:      D:\AI\AIMs\aim-settings.json
+[xUnit.net 00:20:17.69]       
+[xUnit.net 00:20:17.69]         Certificate:  none configured - the ASP.NET development
+[xUnit.net 00:20:17.69]                       certificate will be used. Loopback only.
+[xUnit.net 00:20:17.69]       
+[xUnit.net 00:20:17.69]         Schemas:      D:\AI\schemas
+[xUnit.net 00:20:17.69]         AMDs found: 221
+[xUnit.net 00:20:17.69]         Trust:         no Trust Anchor configured (the Trust Protocol is off)
+[xUnit.net 00:20:17.69]       
+[xUnit.net 00:20:17.69]       Loading models. This is the slow part.
+[xUnit.net 00:20:17.69]       [ONNX] blip_vision_model.onnx: CPU (CUDA unavailable: Unable to find an entry point named 'OrtSessionOptionsAppendExecutionProvider_CUDA' in DLL 'onnxruntime'.)
+[xUnit.net 00:20:17.69]       [ONNX] blip_text_encoder_wrapper.onnx: CPU
+[xUnit.net 00:20:17.69]       [ONNX] blip_decoder_context_dynamic.onnx: CPU
+[xUnit.net 00:20:17.69]       [MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[xUnit.net 00:20:17.69]         1MMC-AMQ-V2.5-I01: ready
+[xUnit.net 00:20:17.69]         1MAS-APP-V1.0-I01: ready
+[xUnit.net 00:20:17.69]         Gallery:       D:\AI\AIF\Access\SharedStorage
+[xUnit.net 00:20:17.69]       
+[xUnit.net 00:20:17.69]       Warm-up: off (WarmUp is false) - the first answer of each App will be slow.
+[xUnit.net 00:20:17.69]       
+[xUnit.net 00:20:17.69]           AMQ    What's in a picture
+[xUnit.net 00:20:17.69]         Apps:         1 in D:\AI\Apps
+[xUnit.net 00:20:17.69]       [MAS] Listening on https://localhost:5108/
+[xUnit.net 00:20:17.69]       [MAS] No certificate supplied - Kestrel default.
+[xUnit.net 00:20:17.69]       [MAS] Data Types: OSD-BSO-V1.5, OSD-BTO-V1.5, OSD-BVO-V1.5, PAF-FDO-V1.6, OSD-STM-V1.5, OSD-SEL-V1.5, MMC-SUM-V2.5, MMC-EPS-V2.5, OSD-B3O-V1.5, PAF-PAV-V1.6, OSD-PNT-V1.5, OSD-BAO-V1.5, OSD-BAS-V1.5, OSD-BSS-V1.5, OSD-BMS-V1.5, OSD-AUO-V1.5, OSD-ASD-V1.5, OSD-SPO-V1.5, OSD-SSD-V1.5, OSD-MSD-V1.5, OSD-OPV-V1.5, CAE-UCM-V1.0, CUI-FND-V2.1, CUI-GVS-V2.1, CUI-LRD-V2.1, CUI-CRD-V2.1, CUI-SRS-V2.1, CUI-ORD-V2.1, CUI-PDD-V2.1, CUI-PSD-V2.1, CUI-SRM-V2.1, number, boolean, string
+[xUnit.net 00:20:17.69]       [MAS] No bearer token configured - every caller is accepted.
+[xUnit.net 00:20:17.69]       [MAS] Controller Instance c2daa18c-74e8-46b6-a5b3-76af4621e31a
+[xUnit.net 00:20:17.69]       [MAS] Module 1MMC-AMQ-V2.5-I01 started as 6f44f01c-84bc-4929-950b-517a6fc89963
+[xUnit.net 00:20:17.69]       [SCHEMA] OSD-BVO-V1.5 received does not validate against OSD/V1.5/data/BasicVisualObject.json:  Some properties did not match the required schema: ["VisualQualifier"]; /VisualQualifier Some properties did not match the required schema: ["Attributes"]; /VisualQualifier/Attributes Some properties did not match the required schema: ["VisualObjectType"]; /VisualQualifier/Attributes/VisualObjectType Value should match one of the values specified by the enum; /VisualQualifier/Formats/Content/2D/Static Expected "\u0022BMP\u0022"; /VisualQualifier/Formats/Content/2D/Static Expected "\u0022BoundingBox\u0022"; /VisualQualifier/Formats/Content/2D/Static Expected "\u0022JPEG2000\u0022"; /VisualQualifier/Formats/Content/2D/Static Expected "\u0022JPEGXS\u0022"; /VisualQualifier/Formats/Content/2D/Static Expected "\u0022PNG\u0022"; /VisualQualifier/Formats/Content/2D/Static Expected "\u0022RAW\u0022"; /VisualQualifier/Formats/Content/2D/Static Expected "\u0022SVG\u0022"; /VisualQualifier/Formats/Content/2D/Static Expected "\u0022TIFF\u0022"; (said once: the Objects of this Data Type are not checked again this way)
+[xUnit.net 00:20:17.69]       [MAS] input OSD-BVO-V1.5#1 (1,811 bytes)
+[xUnit.net 00:20:17.69]       [MAS] input OSD-BTO-V1.5#1 (140 bytes)
+[xUnit.net 00:20:17.69]       [MAS] input OSD-BVO-V1.5#1 (1,811 bytes)
+[xUnit.net 00:20:17.69]       [MAS] input OSD-BTO-V1.5#1 (140 bytes)
+[xUnit.net 00:20:17.69]       
+[xUnit.net 00:20:17.69]       Stack Trace:
+[xUnit.net 00:20:17.69]         D:\AI\Test\Mpai.Aif.Tests\ServiceTests.cs(223,0): at Mpai.Aif.Tests.ServiceTests.Median(String module, Datum[] inputs)
+[xUnit.net 00:20:17.69]         D:\AI\Test\Mpai.Aif.Tests\ServiceTests.cs(189,0): at Mpai.Aif.Tests.ServiceTests.Timing()
+[xUnit.net 00:20:17.69]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:20:17.69]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.TheMixedCueNeedsTheConditionsOfBothSides [15 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.ACueWhoseConditionsAreNeverMetWaitsForAGoOrASkip [5 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.TheMiniShowGivesTheExpectedSequenceOfActionIds [29 ms]
+  Failed Mpai.Aif.Tests.ServiceTests.Timing [9 s]
+  Error Message:
+   1MMC-AMQ-V2.5-I01: Failed
+the Service's log, last 400 lines:
+=== MPAI-MAS server (AMQ) ===
+  Configuration: C:\Users\Thor\AppData\Local\Temp\mpai-test-service.json
+  Listen:        https://localhost:5108/
+  AMDs:          D:\AI\AIMs\AMDs
+  Settings:      D:\AI\AIMs\aim-settings.json
+
+  Certificate:  none configured - the ASP.NET development
+                certificate will be used. Loopback only.
+
+  Schemas:      D:\AI\schemas
+  AMDs found: 221
+  Trust:         no Trust Anchor configured (the Trust Protocol is off)
+
+Loading models. This is the slow part.
+[ONNX] blip_vision_model.onnx: CPU (CUDA unavailable: Unable to find an entry point named 'OrtSessionOptionsAppendExecutionProvider_CUDA' in DLL 'onnxruntime'.)
+[ONNX] blip_text_encoder_wrapper.onnx: CPU
+[ONNX] blip_decoder_context_dynamic.onnx: CPU
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  1MMC-AMQ-V2.5-I01: ready
+  1MAS-APP-V1.0-I01: ready
+  Gallery:       D:\AI\AIF\Access\SharedStorage
+
+Warm-up: off (WarmUp is false) - the first answer of each App will be slow.
+
+    AMQ    What's in a picture
+  Apps:         1 in D:\AI\Apps
+[MAS] Listening on https://localhost:5108/
+[MAS] No certificate supplied - Kestrel default.
+[MAS] Data Types: OSD-BSO-V1.5, OSD-BTO-V1.5, OSD-BVO-V1.5, PAF-FDO-V1.6, OSD-STM-V1.5, OSD-SEL-V1.5, MMC-SUM-V2.5, MMC-EPS-V2.5, OSD-B3O-V1.5, PAF-PAV-V1.6, OSD-PNT-V1.5, OSD-BAO-V1.5, OSD-BAS-V1.5, OSD-BSS-V1.5, OSD-BMS-V1.5, OSD-AUO-V1.5, OSD-ASD-V1.5, OSD-SPO-V1.5, OSD-SSD-V1.5, OSD-MSD-V1.5, OSD-OPV-V1.5, CAE-UCM-V1.0, CUI-FND-V2.1, CUI-GVS-V2.1, CUI-LRD-V2.1, CUI-CRD-V2.1, CUI-SRS-V2.1, CUI-ORD-V2.1, CUI-PDD-V2.1, CUI-PSD-V2.1, CUI-SRM-V2.1, number, boolean, string
+[MAS] No bearer token configured - every caller is accepted.
+[MAS] Controller Instance c2daa18c-74e8-46b6-a5b3-76af4621e31a
+[MAS] Module 1MMC-AMQ-V2.5-I01 started as 6f44f01c-84bc-4929-950b-517a6fc89963
+[SCHEMA] OSD-BVO-V1.5 received does not validate against OSD/V1.5/data/BasicVisualObject.json:  Some properties did not match the required schema: ["VisualQualifier"]; /VisualQualifier Some properties did not match the required schema: ["Attributes"]; /VisualQualifier/Attributes Some properties did not match the required schema: ["VisualObjectType"]; /VisualQualifier/Attributes/VisualObjectType Value should match one of the values specified by the enum; /VisualQualifier/Formats/Content/2D/Static Expected "\u0022BMP\u0022"; /VisualQualifier/Formats/Content/2D/Static Expected "\u0022BoundingBox\u0022"; /VisualQualifier/Formats/Content/2D/Static Expected "\u0022JPEG2000\u0022"; /VisualQualifier/Formats/Content/2D/Static Expected "\u0022JPEGXS\u0022"; /VisualQualifier/Formats/Content/2D/Static Expected "\u0022PNG\u0022"; /VisualQualifier/Formats/Content/2D/Static Expected "\u0022RAW\u0022"; /VisualQualifier/Formats/Content/2D/Static Expected "\u0022SVG\u0022"; /VisualQualifier/Formats/Content/2D/Static Expected "\u0022TIFF\u0022"; (said once: the Objects of this Data Type are not checked again this way)
+[MAS] input OSD-BVO-V1.5#1 (1,811 bytes)
+[MAS] input OSD-BTO-V1.5#1 (140 bytes)
+[MAS] input OSD-BVO-V1.5#1 (1,811 bytes)
+[MAS] input OSD-BTO-V1.5#1 (140 bytes)
+
+  Stack Trace:
+     at Mpai.Aif.Tests.ServiceTests.Median(String module, Datum[] inputs) in D:\AI\Test\Mpai.Aif.Tests\ServiceTests.cs:line 223
+   at Mpai.Aif.Tests.ServiceTests.Timing() in D:\AI\Test\Mpai.Aif.Tests\ServiceTests.cs:line 189
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.TheL3OfEachAimIsAnInstanceOfItsL2 [1 s]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.AShowWithNoOperatorRunsFromTheFirstToTheLastCue [4 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.ANewCueForgetsTheStatusesOfTheCueBefore [5 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.BackReturnsToTheCueBefore [5 ms]
+[MMC-ASR-V2.5] heard 10 words
+[MMC-ASR-V2.5] speaker unknown, overlapped speech
+[ASR] ports in: OSD-BSO-V1.5#3, OSD-IID-V1.5#1; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/de-degraded", column: 2) [11 s]
+[xUnit.net 00:20:20.74]     Mpai.Aif.Tests.ServiceTests.TwoClientsStop [FAIL]
+[xUnit.net 00:20:20.75]       B's question that was being answered when A stopped got no answer
+[xUnit.net 00:20:20.75]       Stack Trace:
+[xUnit.net 00:20:20.75]         D:\AI\Test\Mpai.Aif.Tests\ServiceTests.cs(177,0): at Mpai.Aif.Tests.ServiceTests.TwoClientsStop()
+[xUnit.net 00:20:20.75]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:20:20.75]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:20:20.75]       Output:
+[xUnit.net 00:20:20.75]         A stopped AMQ while B's question was already answered
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Failed Mpai.Aif.Tests.ServiceTests.TwoClientsStop [3 s]
+  Error Message:
+   B's question that was being answered when A stopped got no answer
+  Stack Trace:
+     at Mpai.Aif.Tests.ServiceTests.TwoClientsStop() in D:\AI\Test\Mpai.Aif.Tests\ServiceTests.cs:line 177
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standard Output Messages:
+ A stopped AMQ while B's question was already answered
+
+
+  Passed Mpai.Aif.Tests.ServiceTests.TwoClientsPictures [379 ms]
+  Passed Mpai.Aif.Tests.AbvTests.AParticipantWithoutAModelIsTheDefaultAvatar [166 ms]
+  Passed Mpai.Aif.Tests.AbvTests.TheMeetingFromEndToEnd [87 ms]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.NprModuleTests.AGermanPageInBlackletterIsReadFromItsColumn [10 s]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.AnInterpretationAimIgnoresTheParticipantData(aim: "1XRV-PTI-V1.0-I01") [4 s]
+  Passed Mpai.Aif.Tests.AccessModelsTests.TheVoiceEngineWorksFromTheOpenVoiceOfAccess [3 m 45 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.AsmRenderingModeTests.TheModeSaidIsInTheSceneTheModuleGivesAndAnotherEditDoesNotChangeIt [16 s]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.AnInterpretationAimIgnoresTheParticipantData(aim: "1XRV-PFI-V1.0-I01") [3 s]
+  Passed Mpai.Aif.Tests.NprModuleTests.TheColumnsLanguageIsOnItsText [14 s]
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/en-degraded", column: 2) [17 s]
+[xUnit.net 00:20:40.47]     Mpai.Aif.Tests.NprModuleTests.ARunningServiceReadsTheClickedColumn [SKIP]
+[xUnit.net 00:20:40.47]       no Service on 5105
+  Skipped Mpai.Aif.Tests.NprModuleTests.ARunningServiceReadsTheClickedColumn [3 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[xUnit.net 00:20:45.96]     Mpai.Aif.Tests.NprModuleTests.TempWhatTheRecogniserMakesOfTheLastRecording [SKIP]
+[xUnit.net 00:20:45.96]       no Service on 5105
+  Skipped Mpai.Aif.Tests.NprModuleTests.TempWhatTheRecogniserMakesOfTheLastRecording [5 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-ASR-V2.5] heard 8 words
+[MMC-ASR-V2.5] speaker unknown, overlapped speech
+[ASR] ports in: OSD-BSO-V1.5#3, OSD-IID-V1.5#1; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+  Passed Mpai.Aif.Tests.NprModuleTests.NprAppReadsTheClickedColumnThroughItsWorkflow [22 s]
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/fr-degraded", column: 0) [33 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[MMC-SOE-V2.5] open welcome
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.AnInterpretationAimIgnoresTheParticipantData(aim: "1XRV-OSI-V1.0-I01") [50 s]
+[MMC-SOE-V2.5] translating welcome from en-US into it
+[ASR] ports in: OSD-BSO-V1.5#1; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+[xUnit.net 00:21:18.90]     Mpai.Aif.Tests.BuildReferenceVoices.ReferenceVoicesFromLibriSpeech [SKIP]
+[xUnit.net 00:21:18.90]       A tool: set MPAI_BUILD_REFERENCE=1 to run it.
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.GoStartsTheShowAndHoldHoldsIt [74 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.GoInARunningShowFiresTheWaitingCue [4 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.ConditionsOnDescriptorsAreNotEvaluated [5 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.AHeldShowGoesOnWhereItWasOnGo [8 ms]
+  Passed Mpai.Aif.Tests.AccessModelsTests.TheOcrModelsAreObtainedAndTheEngineIsBuiltFromThem [53 s]
+  Skipped Mpai.Aif.Tests.BuildReferenceVoices.ReferenceVoicesFromLibriSpeech [342 ms]
+[MMC-ASR-V2.5] heard 7 words
+[MMC-TTT-V2.5] en -> it
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/fr-clean", column: 2) [15 s]
+  Passed Mpai.Aif.Tests.TmaEndToEndTests.TheThreeSpeakers [2 m 32 s]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.TheSightSpeedStopsWithinTheDistanceSeen [199 ms]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.ATrajectoryOutOfItsLaneViolatesC2 [135 ms]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.TheFollowingDistanceNeverFallsBelowTheLeastWhenStopped [25 ms]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.TheSafeLateralDistanceIsRssAndGrowsWhenTheyMoveTowardsEachOther [< 1 ms]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.TheSetsOfLimitsAreOrderedAndScaledByTheGrip [< 1 ms]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.AVehicleInAnotherLaneIsNoViolationButOneThatCutsInIs [28 ms]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.TheFollowingDistanceIsTheTableOfR157(speed: 25, gap: 1.6000000000000001, distance: 40) [< 1 ms]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.TheFollowingDistanceIsTheTableOfR157(speed: 16.670000000000002, gap: 1.6000000000000001, distance: 26.670000000000002) [< 1 ms]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.TheFollowingDistanceIsTheTableOfR157(speed: 2.7799999999999998, gap: 1.1000000000000001, distance: 3.0600000000000001) [< 1 ms]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.TheFollowingDistanceIsTheTableOfR157(speed: 5.5599999999999996, gap: 1.2, distance: 6.6699999999999999) [< 1 ms]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.TheFollowingDistanceIsTheTableOfR157(speed: 2, gap: 1, distance: 2) [< 1 ms]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.TheCapOnARouteSlowsForACornerBeforeIt [< 1 ms]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.TheFallBackGoesBackIntoTheLane [83 ms]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.WorkflowTests.Workflows [9 s]
+  Passed Mpai.Aif.Tests.MmmSchemaTests.CorrectedItems [510 ms]
+  Passed Mpai.Aif.Tests.MmmSchemaTests.RightsAndPenalties [5 ms]
+  Passed Mpai.Aif.Tests.AihEthereumTests.Make_sends_the_licence_then_each_Third_Party_User_and_gives_the_contract_identifier [40 ms]
+  Passed Mpai.Aif.Tests.AihEthereumTests.Strings_are_encoded_as_offsets_then_lengths_and_bytes [21 ms]
+  Passed Mpai.Aif.Tests.AihEthereumTests.Keccak256_gives_the_known_values [26 ms]
+  Passed Mpai.Aif.Tests.AihEthereumTests.Confirm_gives_the_answer_of_the_contract_and_records_that_it_was_asked [1 ms]
+  Passed Mpai.Aif.Tests.HmcProviderTests.EveryLeafOfTheCompositeIsBuiltByTheProviders [559 ms]
+  Passed Mpai.Aif.Tests.HmcProviderTests.TheHmcsOwnLeavesAreBuiltAndMsmCombines [35 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeSfdTests.APlaneWaveGivesTheCoefficientsOfTheHarmonicsInTheDirectionItComesFrom [287 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeSfdTests.TheSphericalBesselFunctionsAreThoseOfTheTables [< 1 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeSfdTests.TheSphericalHarmonicsAreOrthonormalAndAnArrayResolvesTheOrderItsMicrophonesAllow [262 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25EaeSfdTests.MoreMicrophonesGiveAHigherOrderAndFewerAreRefusedWhenTheyDoNotMatchTheTransform [509 ms]
+  Passed Mpai.Aif.Tests.AimLicenceFieldTests.AnOfferSaysWhereItsTermsAre [6 ms]
+  Passed Mpai.Aif.Tests.AimLicenceFieldTests.AFreeOfferIsAccepted [6 ms]
+  Passed Mpai.Aif.Tests.AimLicenceFieldTests.ItIsTheAimLicenceDataTypeNotAnotherShape [1 ms]
+  Passed Mpai.Aif.Tests.AimLicenceFieldTests.AnOfferIsAccepted [7 ms]
+  Passed Mpai.Aif.Tests.AimLicenceFieldTests.ItIsOptionalAndOmittedMeansTheAimNeedsNoLicence [5 ms]
+  Passed Mpai.Aif.Tests.AimLicenceFieldTests.AnOfferThatNamesALicenseeOrIsSignedIsRefused [3 ms]
+  Passed Mpai.Aif.Tests.AimLicenceFieldTests.AnAimLicenceIssuedToAControllerIsNotMetadata [5 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TicModelTests.TheL3DeclaresTheModelInItsAccessSourcesAndTheControllerGivesItUnderItsSetting [432 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TicModelTests.TheModelInTheAimGivesWhatItGaveWhereItWasTrained [1 s]
+  Passed Mpai.Aif.Tests.CaeUscV25TicModelTests.TheAimGivesEachIrregularityTheTypeTheModelHearsAndDoesNotSelectTheOnesItHearsNone [467 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TicModelTests.TheWindowIsCentredOnTheIrregularityAndTheMissingSamplesAreReflected [7 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TicModelTests.AnAnswerUnderTheMinimumProbabilityIsNotAnAnswerAndTheRulesDecide [562 ms]
+  Passed Mpai.Aif.Tests.NprModuleTests.AnyPointInAColumnOfADensePageReadsThatColumn [26 s]
+  Passed Mpai.Aif.Tests.AmcWorkflowTests.TheAmcWorkflowOffersWordsAndFaceEachTurnWithTheMemoryOfThePreviousTurn [419 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.OfTheCuePointIdsThatWaitOnThePortTheAimReadsTheLast [19 s]
+[MMC-SOE-V2.5] welcome replaced by its translation into it: welcome-trans
+  Passed Mpai.Aif.Tests.CaeUscV25TicModelTests.OnTheTestPiecesTheAimsPathIsAsAccurateAsTheTrainingReported [8 s]
+  Passed Mpai.Aif.Tests.CaeUscV25TicModelTests.TheProviderBuildsTheAimWithTheModelTheControllerGaveUnderItsSetting [633 ms]
+[ONNX] ecapa-tdnn.onnx: CPU
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/de-degraded", column: 0) [18 s]
+[xUnit.net 00:21:46.22]     Mpai.Aif.Tests.AudioSegmentationTests.WritesTheDialogueWhereAskedForComparison [SKIP]
+[xUnit.net 00:21:46.22]       MPAI_AUS_DIALOGUE_WAV is not set.
+  Passed Mpai.Aif.Tests.AudioSegmentationTests.SilenceHasNoTurns [3 s]
+  Skipped Mpai.Aif.Tests.AudioSegmentationTests.WritesTheDialogueWhereAskedForComparison [41 ms]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.AsmTranslationInItsOwnPoolTests.ASpeechSegmentTranslatedInAsmIsInTheTargetLanguageAndTheVciDoesNotAnswerIt [1 m 25 s]
+  Passed Mpai.Aif.Tests.AudioSegmentationTests.OneSpeakerIsOneSpeaker [5 s]
+  Passed Mpai.Aif.Tests.AihFederatedTrainingTests.EachNewTrainingKeepsANewVersionInTheEndUsersStorage [17 s]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.ParticipantDataPassesThroughActionGenerationUnchanged [15 s]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.ASkipOrABackOfAHeldShowTellsTheCuePointOnGo [12 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.ACueWithSeveralGroupsBranchesToTheRightNextCue [34 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.TheVirtualCueOfTheMiniShowHasTwoWaysOn [13 ms]
+[MMC-ASR-V2.5] heard 7 words
+[MMC-ASR-V2.5] speaker unknown, overlapped speech
+  Passed Mpai.Aif.Tests.AudioSegmentationTests.ThreeTurnsOfTwoSpeakersInOrder [7 s]
+A: own cases 50% -> 83% (loss 0.679 -> 0.556); check set 58% -> 57%
+B: own cases 51% -> 71% (loss 0.778 -> 0.562); check set 58% -> 55%
+C: own cases 80% -> 81% (loss 0.641 -> 0.572); check set 58% -> 62%
+  Passed Mpai.Aif.Tests.AihFederatedTrainingTests.ThreeFrontEndsEachTrainOnTheirOwnImagesAndTheImagesStay [9 s]
+  Passed Mpai.Aif.Tests.AudioSegmentationTests.ThroughItsPorts [2 s]
+  Passed Mpai.Aif.Tests.CaeUscV25AppTests.AudioRecordingPreservationKeepsTheTapeAsItIsFindsItsIrregularitiesAndGivesTheAccessCopy [2 m 36 s]
+[AIF] 1TST-RPT-V1.0-I01 reports: fell back to a simpler path
+  Passed Mpai.Aif.Tests.OcrTests.ThePageReadAsLines [11 s]
+  Passed Mpai.Aif.Tests.XrvLtpTests.TheMiniShowRunsThroughTheLiveTheatricalPerformance [27 s]
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/en-clean", column: 0) [31 s]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.XrvLtpTests.TheParticipantDataLeavesUnchanged [4 s]
+  Passed Mpai.Aif.Tests.XrvLtpTests.TheEnvironmentDescriptionTellsPerformersParticipantsAndObjectsByTheAssociations [323 ms]
+  Passed Mpai.Aif.Tests.XrvLtpTests.TheExperienceGenerationGivesTheCommandsOfAnActionAsTheVenueCanTakeThem [74 ms]
+  Passed Mpai.Aif.Tests.HmcMdxSidTests.EverySceneGivesItsGeometryInTheFormOfItsOwnKind(header: "OSD-BSS-V1.5", idKey: "BasicSpeechSceneDescriptorsID", spaceKey: "BasicSpeechSceneDescriptorsSpaceTime", entrySpace: "ObjectSpaceTime", entryObject: "ObjectIDOrObject", objectHeader: "OSD-BSO-V1.5", qualifierKey: "SpeechQualifier", geometryHeader: "OSD-BSG-V1.5", listKey: "BasicSpeechSceneObjects") [314 ms]
+  Passed Mpai.Aif.Tests.HmcMdxSidTests.EverySceneGivesItsGeometryInTheFormOfItsOwnKind(header: "OSD-ASD-V1.5", idKey: "AudioSceneDescriptorsID", spaceKey: "AudioSceneDescriptorsSpaceTime", entrySpace: "AudioObjectSpaceTime", entryObject: "AObjectIDOrAObject", objectHeader: "OSD-BAO-V1.5", qualifierKey: "AudioQualifier", geometryHeader: "OSD-ASG-V1.5", listKey: "AudioSceneObjects") [6 ms]
+  Passed Mpai.Aif.Tests.HmcMdxSidTests.EverySceneGivesItsGeometryInTheFormOfItsOwnKind(header: "OSD-BAS-V1.5", idKey: "BasicAudioSceneDescriptorsID", spaceKey: "BASSpaceTime", entrySpace: "AudioObjectSpaceTime", entryObject: "AObjectIDOrAObject", objectHeader: "OSD-BAO-V1.5", qualifierKey: "AudioQualifier", geometryHeader: "OSD-BAG-V1.5", listKey: "BasicAudioSceneObjects") [< 1 ms]
+  Passed Mpai.Aif.Tests.HmcMdxSidTests.EverySceneGivesItsGeometryInTheFormOfItsOwnKind(header: "OSD-SSD-V1.5", idKey: "SpeechSceneDescriptorsID", spaceKey: "SpeechSceneDescriptorsSpaceTime", entrySpace: "ObjectSpaceTime", entryObject: "ObjectIDOrObject", objectHeader: "OSD-BSO-V1.5", qualifierKey: "SpeechQualifier", geometryHeader: "OSD-SSG-V1.5", listKey: "SpeechSceneObjects") [1 ms]
+  Passed Mpai.Aif.Tests.HmcMdxSidTests.EverySceneGivesItsGeometryInTheFormOfItsOwnKind(header: "OSD-BVS-V1.5", idKey: "BasicVisualSceneDescriptorsID", spaceKey: "BVSDescriptorsSpaceTime", entrySpace: "VisualObjectSpaceTime", entryObject: "VObjectIDOrVObject", objectHeader: "OSD-BVO-V1.5", qualifierKey: "VisualQualifier", geometryHeader: "OSD-BVG-V1.5", listKey: "VisualObjects") [< 1 ms]
+  Passed Mpai.Aif.Tests.HmcMdxSidTests.EverySceneGivesItsGeometryInTheFormOfItsOwnKind(header: "OSD-VSD-V1.5", idKey: "VisualDescriptorsID", spaceKey: "VisualDescriptorsSpaceTime", entrySpace: "ObjectSpaceTime", entryObject: "ObjectIDOrObject", objectHeader: "OSD-BVO-V1.5", qualifierKey: "VisualQualifier", geometryHeader: "OSD-VSG-V1.5", listKey: "Objects") [1 ms]
+  Passed Mpai.Aif.Tests.HmcMdxSidTests.AsAProcessorItGivesTheFirstOfEachKind [466 ms]
+  Passed Mpai.Aif.Tests.HmcMdxSidTests.TheObjectsOfASceneComeOutEachOnItsOwnPort [134 ms]
+  Passed Mpai.Aif.Tests.HmcMdxSidTests.ASceneThatIsNotBasicMultimodalIsRefusedWithTheReason [70 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25ArpModuleTests.TheModuleFindsTheIrregularitiesOfTheTapeClassifiesThemAndPackagesTheRecording [1 m 54 s]
+  Passed Mpai.Aif.Tests.HmcMdxSidTests.TheObjectsOfTheConveyedSceneLeaveOnTheirPorts [462 ms]
+  Passed Mpai.Aif.Tests.HmcMdxSidTests.WhatTheSceneDoesNotHoldIsNotProduced [152 ms]
+  Passed Mpai.Aif.Tests.HmcMdxSidTests.AMultimodalSceneDescriptorsGivesItsFullObjectsAsFullObjects [< 1 ms]
+  Passed Mpai.Aif.Tests.JsiPropertyQuestionTests.AQuestionAboutAPropertyIsAnsweredWithThatProperty(request: "when does clip777 start?", said: "clip777: starts at 10 s; ends at 20 s.") [367 ms]
+  Passed Mpai.Aif.Tests.JsiPropertyQuestionTests.AQuestionAboutAPropertyIsAnsweredWithThatProperty(request: "what is the position of the piano?", said: "piano: position (-1, 2, 0) m.") [27 ms]
+  Passed Mpai.Aif.Tests.JsiPropertyQuestionTests.AQuestionAboutAPropertyIsAnsweredWithThatProperty(request: "How long is clip777", said: "clip777: starts at 10 s; ends at 20 s.") [7 ms]
+  Passed Mpai.Aif.Tests.JsiPropertyQuestionTests.AQuestionAboutAPropertyIsAnsweredWithThatProperty(request: "what is the level of clip777?", said: "clip777: level -14 LUFS.") [6 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.TheModuleWaitsWhenNoConditionIsMet [28 s]
+  Passed Mpai.Aif.Tests.JsiPropertyQuestionTests.AQuestionAboutAPropertyIsAnsweredWithThatProperty(request: "what is the duration of clip777?", said: "clip777: starts at 10 s; ends at 20 s.") [5 ms]
+  Passed Mpai.Aif.Tests.JsiPropertyQuestionTests.AQuestionAboutAPropertyIsAnsweredWithThatProperty(request: "where is clip777?", said: "clip777: position (2.8, 1.8, 0) m.") [12 ms]
+  Passed Mpai.Aif.Tests.JsiPropertyQuestionTests.ARequestThatIsNotAQuestionAboutAPropertyIsLeftToTheRest(request: "what is in the scene") [6 ms]
+  Passed Mpai.Aif.Tests.JsiPropertyQuestionTests.ARequestThatIsNotAQuestionAboutAPropertyIsLeftToTheRest(request: "what is clip777?") [9 ms]
+  Passed Mpai.Aif.Tests.HmcMdxSidTests.APortableAvatarWithNoSceneGivesNothingToTheOtherPorts [130 ms]
+  Passed Mpai.Aif.Tests.JsiPropertyQuestionTests.ARequestThatIsNotAQuestionAboutAPropertyIsLeftToTheRest(request: "move clip777 one metre to the right") [8 ms]
+  Passed Mpai.Aif.Tests.JsiPropertyQuestionTests.ARequestThatIsNotAQuestionAboutAPropertyIsLeftToTheRest(request: "what is the duration of clip999?") [9 ms]
+  Passed Mpai.Aif.Tests.JsiPropertyQuestionTests.ARequestThatIsNotAQuestionAboutAPropertyIsLeftToTheRest(request: "put clip777 at x 2, y 1") [11 ms]
+  Passed Mpai.Aif.Tests.JsiPropertyQuestionTests.ARequestNotUnderstoodIsToldBackWithTheSentenceItIsNearTo(request: "what is in the sceen", near: "what is in the scene") [7 ms]
+  Passed Mpai.Aif.Tests.JsiPropertyQuestionTests.ARequestNotUnderstoodIsToldBackWithTheSentenceItIsNearTo(request: "display the acoustic provile", near: "display the acoustic profile") [72 ms]
+  Passed Mpai.Aif.Tests.JsiPropertyQuestionTests.ARequestNotUnderstoodIsToldBackWithTheSentenceItIsNearTo(request: "frobnicate the thing", near: null) [8 ms]
+  Passed Mpai.Aif.Tests.JsiPropertyQuestionTests.ARequestNotUnderstoodIsToldBackWithTheSentenceItIsNearTo(request: "show the acustic profile", near: "show the acoustic profile") [5 ms]
+  Passed Mpai.Aif.Tests.JsiPropertyQuestionTests.ARequestNotUnderstoodIsToldBackWithTheSentenceItIsNearTo(request: "hello", near: null) [7 ms]
+  Passed Mpai.Aif.Tests.HmcMdxSidTests.TheScenesThemselvesLeaveToo [294 ms]
+  Passed Mpai.Aif.Tests.XrvCueEngineTests.TheL3sLoadInTheControllerWithThePortsOfTheirL2 [444 ms]
+  Passed Mpai.Aif.Tests.HmcMdxSidTests.ABasicAudioSceneGivesItsAudioSceneDescriptorsAndItsGeometry [222 ms]
+  Passed Mpai.Aif.Tests.HmcMdxSidTests.ASceneHoldsManyObjectsOfAKindAndEachLeavesOnThePortOfItsKindInTheOrderItStands [2 ms]
+  Passed Mpai.Aif.Tests.HmcMdxSidTests.SomethingThatIsNotASceneIsRefused [72 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25AapTests.TheAimSaysWhatItCannotAnalyse [193 ms]
+  Passed Mpai.Aif.Tests.PgmSliceTests.PortsAreThoseOfTheMetadata(aim: "1PGM-USR-V1.0-I01") [201 ms]
+  Passed Mpai.Aif.Tests.PgmSliceTests.PortsAreThoseOfTheMetadata(aim: "1PGM-CXT-V1.0-I01") [63 ms]
+  Passed Mpai.Aif.Tests.PgmSliceTests.PortsAreThoseOfTheMetadata(aim: "1PGM-FRD-V1.0-I01") [70 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25AapTests.TheAimGivesTheIrregularityFileWithTheOffsetAndTheAudioFilesOfWhatItFound [363 ms]
+  Passed Mpai.Aif.Tests.PgmSliceTests.PortsAreThoseOfTheMetadata(aim: "1PGM-EFD-V1.0-I01") [133 ms]
+  Passed Mpai.Aif.Tests.PgmSliceTests.PortsAreThoseOfTheMetadata(aim: "1PGM-PSD-V1.0-I01") [65 ms]
+  Passed Mpai.Aif.Tests.PgmSliceTests.PortsAreThoseOfTheMetadata(aim: "1PGM-PAL-V1.0-I01") [118 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25AapTests.ADropoutAClickAndAStepInLevelAreFoundWhereTheyAre [306 ms]
+  Passed Mpai.Aif.Tests.PgmSliceTests.PortsAreThoseOfTheMetadata(aim: "1PGM-DAC-V1.0-I01") [70 ms]
+  Passed Mpai.Aif.Tests.PgmSliceTests.PortsAreThoseOfTheMetadata(aim: "1PGM-PRC-V1.0-I01") [120 ms]
+  Passed Mpai.Aif.Tests.PgmSliceTests.PortsAreThoseOfTheMetadata(aim: "1PGM-AUF-V1.0-I01") [66 ms]
+  Passed Mpai.Aif.Tests.PgmSliceTests.PortsAreThoseOfTheMetadata(aim: "1PGM-BKN-V1.0-I01") [71 ms]
+  Passed Mpai.Aif.Tests.AihBackEndModuleTests.DeIdentificationMakesACopyThatAuditingFindsLicensedOrNot [21 s]
+  Passed Mpai.Aif.Tests.CaeUscV25TapeRoundTripTests.ASectionCutFromTheMiddleOfTheTapeIsGivenBackAtItsEndsWithAMarginOfTape(name: "piano-beethoven-op101") [1 s]
+  Passed Mpai.Aif.Tests.CaeUscV25AapTests.TheLoopWithTheVideoAnalysisComesToAnEnd [393 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25AapTests.ADropoutInATapeWithATonalSignalIsADropoutAndNotAStep [30 ms]
+  Passed Mpai.Aif.Tests.PgmSliceTests.PortsAreThoseOfTheMetadata(aim: "1PGM-EBD-V1.0-I01") [162 ms]
+  Passed Mpai.Aif.Tests.PgmSliceTests.PortsAreThoseOfTheMetadata(aim: "1PGM-AOG-V1.0-I01") [72 ms]
+  Passed Mpai.Aif.Tests.PgmSliceTests.PortsAreThoseOfTheMetadata(aim: "1PGM-AUC-V1.0-I01") [67 ms]
+  Passed Mpai.Aif.Tests.PgmSliceTests.EveryDataTypeOfTheSliceHasASchema [82 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25AapTests.TheIrregularitiesOfTheFilmComeInTheTimeOfTheRecordingAndThoseFoundByBothAreOne [461 ms]
+  Passed Mpai.Aif.Tests.PgmSliceTests.OpenTheDoorsWithText [307 ms]
+  Passed Mpai.Aif.Tests.PgmSliceTests.FinalResponseDemultiplexingTakesTheFinalResponseApart [38 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25AapTests.TheOffsetIsWhereTheAudioOfTheFilmStartsInThePreservationAudioFile [190 ms]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.TheMonitorMeasuresTheStrategiesOnTheSameScenarios [58 s]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.ARoadUserThatMayGoAnywhereIsKeptFarEnoughForItsReach [16 ms]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.ATrajectoryTowardsAStoppedVehicleTooCloseViolatesC1 [12 ms]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.ATrajectoryTooFastIntoACornerViolatesC4AndOneAboveTheLimitC5 [9 ms]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.TheSafeDistanceGrowsAsTheRoadGetsSlippery [< 1 ms]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.TheDistanceOfVehiclesThatComeTowardsEachOtherIsTheSumOfBoth [< 1 ms]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.TheSafeLongitudinalDistanceIsRssAtTheParametersOfR157 [< 1 ms]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.ABrakingBeyondTheNormalLimitIsReportedNotRefused [3 ms]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.ASlowStrategyIsNotMadeFaster [< 1 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25AapTests.TheOffsetIsNegativeWhenTheFilmStartsBeforeTheRecording [319 ms]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.TheFallBackBrakesAsGentlyAsTheSituationAllows [12 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TapeRoundTripTests.ASectionCutFromTheMiddleOfTheTapeIsGivenBackAtItsEndsWithAMarginOfTape(name: "voice-zappatore") [1 s]
+  Passed Mpai.Aif.Tests.CaeUscV25AapTests.TheAudioAndTheFilmMayComeSeparatelyInEitherOrderAndTheOffsetFollowsWhenBothAreHeld [548 ms]
+  Passed Mpai.Aif.Tests.MotionConstraintsTests.TheRoadStateOfTheMasReachesThePlannerOnTheBus [819 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TapeRoundTripTests.ASectionCutFromTheMiddleOfTheTapeIsGivenBackAtItsEndsWithAMarginOfTape(name: "trnecek-op77") [703 ms]
+[AIF] 1TST-RPT-V1.0-I01 reports: fell back to a simpler path
+  Passed Mpai.Aif.Tests.CaeUscV25TapeRoundTripTests.MusicWrittenWithOneEqualisationAndReadWithAnotherIsGivenBackItsSound(name: "voice-zappatore") [1 s]
+  Passed Mpai.Aif.Tests.CaeUscV25TapeRoundTripTests.MusicWrittenWithOneEqualisationAndReadWithAnotherIsGivenBackItsSound(name: "piano-beethoven-op101") [761 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TapeRoundTripTests.MusicWrittenWithOneEqualisationAndReadWithAnotherIsGivenBackItsSound(name: "trnecek-op77") [720 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TapeRoundTripTests.MusicWrittenWithOneEqualisationAndReadWithAnotherIsGivenBackItsSound(name: "piano-orchestra-mozart-k595") [822 ms]
+[AIF] 1TST-RPT-V1.0-I01 reports: fell back to a simpler path
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/de-degraded", column: 1) [13 s]
+  Passed Mpai.Aif.Tests.CaeUscV25TapeRoundTripTests.MusicWrittenWithOneEqualisationAndReadWithAnotherIsGivenBackItsSound(name: "guitar-el-noi-de-la-mare") [737 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TapeRoundTripTests.MusicWrittenAtOneSpeedAndReadAtTwiceThatSpeedPlaysAtTheRightSpeedAgain(name: "piano-beethoven-op101") [303 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TapeRoundTripTests.MusicWrittenAtOneSpeedAndReadAtTwiceThatSpeedPlaysAtTheRightSpeedAgain(name: "piano-orchestra-mozart-k595") [275 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TapeRoundTripTests.MusicWrittenAtOneSpeedAndReadAtTwiceThatSpeedPlaysAtTheRightSpeedAgain(name: "trnecek-op77") [117 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TapeRoundTripTests.MusicWrittenAtOneSpeedAndReadAtTwiceThatSpeedPlaysAtTheRightSpeedAgain(name: "voice-zappatore") [136 ms]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.TrustEvidenceTests.Modules [25 s]
+  Passed Mpai.Aif.Tests.CaeUscV25TapeRoundTripTests.MusicWrittenAtOneSpeedAndReadAtTwiceThatSpeedPlaysAtTheRightSpeedAgain(name: "guitar-el-noi-de-la-mare") [311 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25TapeRoundTripTests.ASectionAtTheStartOfTheTapeHasNoMarginBeforeItAndIsStillRestoredWhereTheTapeHasOne [582 ms]
+  Passed Mpai.Aif.Tests.AihBackEndModuleTests.AnEndUserRegistersUploadsAndTheBackEndKeepsTheAihDataWithItsSmartContract [9 s]
+[AIF] 1TST-RPT-V1.0-I01 reports: fell back to a simpler path
+  Passed Mpai.Aif.Tests.CaeUscV25ModuleTests.TheModuleRestoresTheDamagedSectionsWithSpeechMadeFromTheModel [6 s]
+  Passed Mpai.Aif.Tests.TrustEvidenceTests.OnAHost [8 s]
+[CAE-AOE-V1.0] open violin
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[CAE-AOE-V1.0] open drums
+[CAE-AOE-V1.0] open violin
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/de-clean", column: 0) [9 s]
+  Passed Mpai.Aif.Tests.AihBackEndModuleTests.AnIndividualWhoIsAMemberOfAnOrganisationIsAThirdPartyUserAndAnEndUserWorksOnItsOwnAihDataOnly [6 s]
+  Passed Mpai.Aif.Tests.TrustEvidenceTests.StoreApproves [406 ms]
+  Passed Mpai.Aif.Tests.StoreL3sTests.TheL3sOfAmqForTheStoreConformToTheirL2s [15 s]
+[CAE-AOE-V1.0] open drums
+[MMC-SOE-V2.5] open hello
+  Passed Mpai.Aif.Tests.AsmNamesTests.AListGivesOnlyNames [2 s]
+[CAE-AOE-V1.0] open violin
+[CAE-AOE-V1.0] open drums
+[MMC-SOE-V2.5] open hello
+[CAE-AOE-V1.0] open violin
+[CAE-AOE-V1.0] open drums
+[MMC-SOE-V2.5] open hello
+[CAE-AOE-V1.0] open music
+[CAE-AOE-V1.0] open voice
+[CAE-AOE-V1.0] open violin
+[CAE-AOE-V1.0] open violin 2
+[CAE-AOE-V1.0] open violin
+  Passed Mpai.Aif.Tests.AsmNamesTests.ACreationWithNoNameAsksForOne [374 ms]
+  Passed Mpai.Aif.Tests.AsmNoIdentifierTests.AnObjectIsGivenItselfAndNamedByItsPoV [3 s]
+  Passed Mpai.Aif.Tests.AsmNamesTests.ACommandWithoutItsAmountIsReportedNotGuessed [626 ms]
+[CAE-AOE-V1.0] open violin 3
+[MMC-SOE-V2.5] open hello
+[MMC-SOE-V2.5] open hello 2
+[MMC-SOE-V2.5] open hello
+  Passed Mpai.Aif.Tests.AsmEditingTests.EditComposePlace [1 s]
+  Passed Mpai.Aif.Tests.AsmNamesTests.ASecondObjectWithTheSameNameIsNumbered [1 s]
+  Passed Mpai.Aif.Tests.AsmNamesTests.TheSchemaRequiresTheAmounts [35 ms]
+  Passed Mpai.Aif.Tests.AihBackEndModuleTests.AThirdPartyUserIsAnsweredUnderTheLicenceAndRefusedOutsideIt [6 s]
+  Passed Mpai.Aif.Tests.MmmWorldTests.AnAccountLevelIsOneOfTheOfferedAndAVisitorAccountHasNoSeat [33 s]
+  Passed Mpai.Aif.Tests.NewspaperPagesTests.ThePointedColumnOfEachTestPageIsRead(page: "synthetic/it-clean", column: 2) [9 s]
+  Passed Mpai.Aif.Tests.MmmWorldTests.OnlyTheConvenerEndsTheMeetingAndTheRightsEndWithItsTimeToo [1 s]
+  Passed Mpai.Aif.Tests.MmmWorldTests.AnOfficerAccountHoldsTheRightsToEveryPlace [445 ms]
+  Passed Mpai.Aif.Tests.MmmWorldTests.TheDoorIsARightThatTheMeetingGivesAndTheEndOfTheMeetingWithdraws [559 ms]
+  Passed Mpai.Aif.Tests.MmmWorldTests.TheWorldFileAgreesWithTheLocationsAndTheBuildingsAreGltf [263 ms]
+  Passed Mpai.Aif.Tests.MmmWorldTests.OnlyTheConvenerSharesAScreenAndWhoIsInTheRoomSeesIt [3 s]
+  Passed Mpai.Aif.Tests.MmmTrustTests.OnlyTheInvitedAreSeatedOnlyParticipantsReadTheMinutesAndTheRemovedAreOut [826 ms]
+  Passed Mpai.Aif.Tests.MmmTailscaleTests.WhoeverTailscaleSaysAsksAndTheChairBrowsesOnThisMachine [332 ms]
+  Passed Mpai.Aif.Tests.MmmTailscaleTests.TheOfficerLevelIsOfferedOnlyToTheChairAndTheDesignated [335 ms]
+[xUnit.net 00:22:56.58]     Mpai.Aif.Tests.MmmStreamTests.ASpeechObjectIsHeardWhileItIsStillBeingSpoken [FAIL]
+[xUnit.net 00:22:56.58]       Assert.Equal() Failure: Collections differ
+[xUnit.net 00:22:56.58]                               ↓ (pos 0)
+[xUnit.net 00:22:56.58]       Expected: <generated>  ["Anna: this was said while it was streamed"]
+[xUnit.net 00:22:56.58]       Actual:   List<string> []
+[xUnit.net 00:22:56.58]       Stack Trace:
+[xUnit.net 00:22:56.58]         D:\AI\Test\Mpai.Aif.Tests\MmmStreamTests.cs(147,0): at Mpai.Aif.Tests.MmmStreamTests.ASpeechObjectIsHeardWhileItIsStillBeingSpoken()
+[xUnit.net 00:22:56.58]         D:\AI\Test\Mpai.Aif.Tests\MmmStreamTests.cs(153,0): at Mpai.Aif.Tests.MmmStreamTests.ASpeechObjectIsHeardWhileItIsStillBeingSpoken()
+[xUnit.net 00:22:56.58]         --- End of stack trace from previous location ---
+  Passed Mpai.Aif.Tests.MmmTailscaleTests.WhatIsNotThroughTailscaleIsNotAnswered [130 ms]
+  Failed Mpai.Aif.Tests.MmmStreamTests.ASpeechObjectIsHeardWhileItIsStillBeingSpoken [932 ms]
+  Error Message:
+   Assert.Equal() Failure: Collections differ
+                        ↓ (pos 0)
+Expected: <generated>  ["Anna: this was said while it was streamed"]
+Actual:   List<string> []
+  Stack Trace:
+     at Mpai.Aif.Tests.MmmStreamTests.ASpeechObjectIsHeardWhileItIsStillBeingSpoken() in D:\AI\Test\Mpai.Aif.Tests\MmmStreamTests.cs:line 147
+   at Mpai.Aif.Tests.MmmStreamTests.ASpeechObjectIsHeardWhileItIsStillBeingSpoken() in D:\AI\Test\Mpai.Aif.Tests\MmmStreamTests.cs:line 153
+--- End of stack trace from previous location ---
+  Passed Mpai.Aif.Tests.MmmStreamTests.APersonaIsAnimatedByAStreamThatEveryoneInTheRoomWatches [30 s]
+  Passed Mpai.Aif.Tests.MmmStreamTests.TheSecretaryHasASentenceRecognisedAtAPauseWhileTheSpeechGoesOn [4 s]
+  Passed Mpai.Aif.Tests.MmmSpeechTests.ASpeechObjectCarriesItsOwnDurationAndReachesTheMinutesThroughTheAsrService [1 s]
+  Passed Mpai.Aif.Tests.MmmSpeechTests.SpeechThatHasNoWordsLeavesNothingInTheMinutes [1 s]
+[xUnit.net 00:25:13.15]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:25:13.16]       Expected: OK
+[xUnit.net 00:25:13.16]       Actual:   Timeout
+[xUnit.net 00:25:13.16]       Stack Trace:
+[xUnit.net 00:25:13.17]         D:\AI\Test\Mpai.Aif.Tests\AsmControllerProcessTests.cs(39,0): at Mpai.Aif.Tests.AsmControllerProcessTests.TheUserAgentStartsTheModuleThroughTheControllerApiOfAControllerThatIsAProgramOfItsOwn()
+[xUnit.net 00:25:13.17]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:25:13.17]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:25:13.10]     Mpai.Aif.Tests.AsmControllerProcessTests.TheUserAgentStartsTheModuleThroughTheControllerApi
+OfAControllerThatIsAProgramOfItsOwn [FAIL]
+  Failed Mpai.Aif.Tests.AsmControllerProcessTests.TheUserAgentStartsTheModuleThroughTheControllerApiOfAControllerThatIsAProgramOfItsOwn [2 m 34 s]
+  Error Message:
+   Assert.Equal() Failure: Values differ
+Expected: OK
+Actual:   Timeout
+  Stack Trace:
+     at Mpai.Aif.Tests.AsmControllerProcessTests.TheUserAgentStartsTheModuleThroughTheControllerApiOfAControllerThatIsAProgramOfItsOwn() in D:\AI\Test\Mpai.Aif.Tests\AsmControllerProcessTests.cs:line 39
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Passed Mpai.Aif.Tests.CavDrivingContextsTests.EveryContextRunsWithoutACollision [2 m 50 s]
+  Passed Mpai.Aif.Tests.MmmSpeechTests.WhisperRecognisesARecordedUtteranceForTheMinutes [1 m 44 s]
+  Passed Mpai.Aif.Tests.MmmSpeechCaptureTests.CapturedDataIsNotAnItemUntilItIsIdentified_AndThenItIsASpeechObject [20 s]
+  Passed Mpai.Aif.Tests.MmmSpeechCaptureTests.OnlyTheRequesterIdentifiesItsData_AndTheQualifierMustSayItIsAStream [1 s]
+  Passed Mpai.Aif.Tests.MmmSpeechCaptureTests.ASpeechCapturedIsPlacedAtAnMLocationAndItsDataIsComplete [613 ms]
+  Passed Mpai.Aif.Tests.MmmSecretaryDialogueTests.AParticipantSpeaksToTheSecretaryAndNobodyElseHearsIt [9 s]
+  Passed Mpai.Aif.Tests.MmmMeetingUseCaseTests.ThreeParticipantsAndTheSecretaryHoldAMeeting [9 s]
+  Passed Mpai.Aif.Tests.MmmMeetingTests.TwoParticipantsAndTheSecretaryMeetInARoom [1 s]
+  Passed Mpai.Aif.Tests.MmmHandSummaryTests.ASummaryIsMadeInEnglishThenTranslatedAndSpokenInTheLanguageChosen [944 ms]
+  Passed Mpai.Aif.Tests.MmmHandSummaryTests.AVeryLongMeetingIsSummarisedInPiecesThenThePieces [12 s]
+  Passed Mpai.Aif.Tests.MmmHandSummaryTests.SpeechWithNoWordsDoesNotCountTowardsLoweringTheHand [2 s]
+  Passed Mpai.Aif.Tests.MmmHandSummaryTests.NoSummaryExistsUnlessSomebodyAsksAndThenItGoesToTheParticipants [1 s]
+  Passed Mpai.Aif.Tests.MmmHandSummaryTests.AHandRaisedIsSeenByEveryoneAndNotedInTheMinutes [782 ms]
+  Passed Mpai.Aif.Tests.MmmHandSummaryTests.OnlyTheConvenerLetsAParticipantShareAScreen [885 ms]
+  Passed Mpai.Aif.Tests.MmmHandSummaryTests.OnlyTheConvenerLowersAnotherHand [799 ms]
+  Passed Mpai.Aif.Tests.MmmHandSummaryTests.ThereIsNoSummaryForWhoIsNotInTheMeetingOrWithoutAService [1 s]
+  Passed Mpai.Aif.Tests.MmmHandSummaryTests.AHandComesDownByItselfAfterFiveSecondsOfSpeechAndNotBefore [1 s]
+  Passed Mpai.Aif.Tests.MmmHandSummaryTests.EveryParticipantIsSentTheSummaryInItsOwnLanguage [574 ms]
+  Passed Mpai.Aif.Tests.TsdStdTests.TheTextIsSpokenInTheVoiceThatTheDescriptorsDescribe [22 m 21 s]
+  Passed Mpai.Aif.Tests.TsdStdTests.WithoutTheTextOrTheDescriptorsThereIsNothingToSpeak [282 ms]
+  Passed Mpai.Aif.Tests.CaeUscV25VoiceTests.TheSpeechModelIsTheEmbeddingOfTheVoiceAndTheSpeechThatUsesItSoundsLikeIt [20 m 38 s]
+[xUnit.net 00:27:24.69]     Mpai.Aif.Tests.PgmSliceTests.OpenTheDoorsWithOllama [SKIP]
+[xUnit.net 00:27:24.78]       Ollama is not available: The request was canceled due to the configured HttpClient.Timeout of 300 seconds elapsing.
+  Passed Mpai.Aif.Tests.CaeUscV25VoiceTests.ASpeechModelThatIsNotAnEmbeddingIsRefused [1 s]
+  Skipped Mpai.Aif.Tests.PgmSliceTests.OpenTheDoorsWithOllama [5 m]
+  Passed Mpai.Aif.Tests.PgmSliceTests.TheFinalResponseGoesOnlyToAUserFormation [514 ms]
+  Passed Mpai.Aif.Tests.PgmSliceTests.NoWordsNoAction [255 ms]
+  Passed Mpai.Aif.Tests.PgmSliceTests.AnimationObjectGenerationAnimatesFromTheAction [30 ms]
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+[ASR] ports in: OSD-BSO-V1.5#1; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+[MMC-ASR-V2.5] heard 9 words
+[MMC-TTT-V2.5] en -> it
+[MMC-TTS-V2.5] voices configured: en, pt, es, de, fr, it, el
+  Passed Mpai.Aif.Tests.TsdStdTests.EnglishSpeechComesOutInItalianInTheVoiceThatSaidIt [1 m 7 s]
+[createdump] Writing full dump for process 20196 to file C:\Users\Thor\AppData\Local\Temp\8e5ddcbf-8d66-45f7-baf5-a187fe97609c\testhost_20196_20261112T031143_hangdump.dmp

@@ -1,0 +1,38 @@
+﻿Test run for D:\AI\Test\Mpai.Aif.Tests\bin\Debug\net10.0\Mpai.Aif.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+D:\AI\Test\Mpai.Aif.Tests\bin\Debug\net10.0\Mpai.Aif.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.13]   Discovering: Mpai.Aif.Tests
+[xUnit.net 00:00:00.33]   Discovered:  Mpai.Aif.Tests
+[xUnit.net 00:00:00.36]   Starting:    Mpai.Aif.Tests
+[ONNX] ecapa-tdnn.onnx: CPU (CUDA unavailable: Unable to find an entry point named 'OrtSessionOptionsAppendExecutionProvider_CUDA' in DLL 'onnxruntime'.)
+[ONNX] glintr100.onnx: CPU
+[ONNX] scrfd_10g_bnkps.onnx: CPU
+[ASR] ports in: OSD-TXO-V1.5#1; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+[AIF] 1MMC-ASR-V2.5-I02: DEGRADED (it threw: Object reference not set to an instance of an object.); 1OSD-TMA-V1.5-I01 OnDegraded Continue
+[ASR] ports in: MMC-SOL-V2.5#1; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+[AIF] 1MMC-ASR-V2.5-I02: DEGRADED (it threw: Object reference not set to an instance of an object.); 1OSD-TMA-V1.5-I01 OnDegraded Continue
+[ASR] ports in: OSD-BSO-V1.5#3; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+[MMC-ASR-V2.5] heard 10 words
+[MMC-ASR-V2.5] speaker unknown, overlapped speech
+[ASR] ports in: OSD-BSO-V1.5#3, OSD-IID-V1.5#1; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+[MMC-ASR-V2.5] heard 8 words
+[MMC-ASR-V2.5] speaker unknown, overlapped speech
+[ASR] ports in: OSD-BSO-V1.5#3, OSD-IID-V1.5#1; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+[MMC-ASR-V2.5] heard 7 words
+[MMC-ASR-V2.5] speaker unknown, overlapped speech
+[ASR] ports in: OSD-BSO-V1.5#3, OSD-IID-V1.5#1; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+[MMC-ASR-V2.5] heard 7 words
+[MMC-ASR-V2.5] speaker unknown, overlapped speech
+[ASR] ports in: OSD-BSO-V1.5#3, OSD-IID-V1.5#1; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+[MMC-ASR-V2.5] heard 2 words
+[MMC-ASR-V2.5] speaker unknown, overlapped speech
+[ASR] ports in: OSD-IID-V1.5#1; looking for reply=OSD-BSO-V1.5#2 image=OSD-BSO-V1.5#1
+[AIF] 1MMC-ASR-V2.5-I02: DEGRADED (it threw: Object reference not set to an instance of an object.); 1OSD-TMA-V1.5-I01 OnDegraded Continue
+[xUnit.net 00:02:08.63]   Finished:    Mpai.Aif.Tests
+  Passed Mpai.Aif.Tests.TmaEndToEndTests.TheThreeSpeakers [2 m 8 s]
+
+Test Run Successful.
+Total tests: 1
+     Passed: 1
+ Total time: 2.1515 Minutes

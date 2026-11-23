@@ -1,0 +1,13 @@
+== CavSchemaTests (3 s) Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 578 ms - Mpai.Aif.Tests.dll (net10.0)
+== EssSpecificationTests (3 s) Passed!  - Failed:     0, Passed:     3, Skipped:     0, Total:     3, Duration: 858 ms - Mpai.Aif.Tests.dll (net10.0)
+== CavStage1Tests (75 s) Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 1 m 13 s - Mpai.Aif.Tests.dll (net10.0)
+== HighwayTests (9 s) Passed!  - Failed:     0, Passed:     9, Skipped:     0, Total:     9, Duration: 3 s - Mpai.Aif.Tests.dll (net10.0)
+== MasStage1Tests (29 s) Passed!  - Failed:     0, Passed:     6, Skipped:     0, Total:     6, Duration: 27 s - Mpai.Aif.Tests.dll (net10.0)
+== MetadataTests (7 s) Passed!  - Failed:     0, Passed:    13, Skipped:     0, Total:    13, Duration: 5 s - Mpai.Aif.Tests.dll (net10.0)
+== AudioSceneSchemaTests (3 s) Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 725 ms - Mpai.Aif.Tests.dll (net10.0)
+== MmmCaptureTests (3 s) Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 1 s - Mpai.Aif.Tests.dll (net10.0)
+== Jsi (8 s) Passed!  - Failed:     0, Passed:    82, Skipped:     0, Total:    82, Duration: 6 s - Mpai.Aif.Tests.dll (net10.0)
+== Asm (75 s)   Failed Mpai.Aif.Tests.AsmVoiceWorkflowTests.WhatIsSaidEditsTheSceneAndTheMachineAnswers [40 s]
+Failed!  - Failed:     1, Passed:    58, Skipped:     0, Total:    59, Duration: 1 m 13 s - Mpai.Aif.Tests.dll (net10.0)
+== SpatialAudioTests (2 s) No test matches the given testcase filter `FullyQualifiedName~Mpai.Aif.Tests.SpatialAudioTests&Group=Fast` in D:\AI\Test\Mpai.Aif.Tests\bin\Debug\net10.0\Mpai.Aif.Tests.dll
+== MseTests (2 s) Passed!  - Failed:     0, Passed:     2, Skipped:     0, Total:     2, Duration: 1 s - Mpai.Aif.Tests.dll (net10.0)
