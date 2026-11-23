@@ -598,6 +598,13 @@ public sealed class UserAgent
                 moduleId = -1;
                 return AifError.NotTrusted;
             }
+            catch (ImplementationNotHostedException refused)
+            {
+                // An Implementation of a kind this Controller cannot host (its Architecture, Operating System or form): FAILED, and why - never a silent absence.
+                LastRefusal = refused.Message;
+                moduleId = -1;
+                return AifError.Failed;
+            }
             catch (ProfileRefusedException refused)
             {
                 // An AIM of the Secure Profile where the party has no Security API, or Sub-AIMs of another Profile (Zero Trust and Profiles 6.3): FAILED, and why.

@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <Compile Include="Program.cs" />
+    <Compile Include="PackageAdapters.cs" />
     <Compile Include="..\..\Apps\MAS\Service\src\ControllerApiRunner.cs" Link="ControllerApiRunner.cs" />
   </ItemGroup>
 
@@ -32,6 +33,8 @@
     <ProjectReference Include="..\..\AIF\PortData\Mpai.Aif.PortData.csproj" />
     <ProjectReference Include="..\..\Apps\MAS\Server\Mpai.Mas.Server.csproj" />
     <ProjectReference Include="..\..\AIMs\Providers\Mpai.Providers.csproj" />
+    <!-- what the packages of the Store's AIMs need and do not carry (the glue in PackageAdapters.cs): the Controller has it -->
+    <ProjectReference Include="..\..\AIMs\AIH\V1.1\Common\Mpai.Aih.Common.csproj" />
     <ProjectReference Include="..\..\AIMs\MMC\V2.5\ASR\Mpai.Mmc.Asr.csproj" />
     <ProjectReference Include="..\..\AIMs\MMC\V2.5\TTS\Mpai.Mmc.Tts.csproj" />
     <ProjectReference Include="..\..\AIMs\PAF\V1.6\PSD\Mpai.Paf.Psd.csproj" />

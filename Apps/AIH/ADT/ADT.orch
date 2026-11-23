@@ -1,0 +1,32 @@
+# =============================================================================
+#  ADT.orch - Audit AIH Data (MPAI-AIH HSP V1.1, AIH-ADT)
+#  Workflow Description Language v0.3, AIF V3.0
+#
+#  One Controller, one Module: the AIM 2AIH-ADT-V1.1-I01 of Implementer 2, which the
+#  Controller obtains from the MPAI Store, verifies and runs from its package. The
+#  User Agent offers the Controller an Audit Request, identified by Data Type and Port
+#  Number, and asks for the Audit Response the same way. It names no AIM.
+#
+#  The Audit Response lists the AIH Data whose operation was not licensed since the
+#  start of the audit period. An AIM that has been given no AIH Data yet answers with
+#  an empty list: nothing was done that was not licensed.
+# =============================================================================
+
+workflow ADT-Audit over 2AIH-ADT-V1.1-I01
+
+on Start:
+
+    ask Controller to start
+
+    prompt "Asking the Auditing AIM whether any operation on the AIH Data of this End User was not licensed."
+
+    offer AuditRequest (AIH-ADT-V1.1:1) = { "Header": "AIH-ADT-V1.1", "UserID": "end-user-1", "AuditID": "audit-1", "AuditTime": { "Header": "OSD-TIM-V1.5", "TimeID": "t-1", "Data": "2026-11-22T09:00:00Z" }, "Audit": { "Request": { "AuditPeriod": { "Header": "OSD-TIM-V1.5", "TimeID": "t-0", "Data": "2026-11-01T00:00:00Z" }, "ProcessingOperations": [], "Tokens": { "Header": "AIH-TKN-V1.1", "UserID": "end-user-1", "TokensID": "tk-1", "TokensTime": { "Header": "OSD-TIM-V1.5", "TimeID": "t-2", "Data": "2026-11-22T09:00:00Z" }, "Tokens": [ { "ProcessType": "Auditing" } ] } } } }
+    ask AuditResponse (AIH-ADT-V1.1)
+    display AuditResponse
+
+    loop until Stop:
+        wait 1s
+
+on Stop:
+
+    ask Controller to stop

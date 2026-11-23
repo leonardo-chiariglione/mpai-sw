@@ -1,0 +1,14 @@
+{
+    "Name": "Audit AIH Data",
+    "Description": "Ask the Auditing AIM whether any operation on the AIH Data of an End User was done without a licence, and read its answer.",
+    "Icon": "icon.svg",
+    "Version": "1.0",
+    "Standard": "MPAI-AIH V1.1",
+    "UseCase": "ADT",
+    "Module": "2AIH-ADT-V1.1-I01",
+    "Keywords": ["audit", "AIH Data", "health data", "licence", "unlicensed operations"],
+    "Categories": ["Health"],
+    "Languages": ["en"],
+    "Asks": [],
+    "Keeps": "Nothing: the audit is answered from the AIH Data the AIM has been given while it runs."
+}

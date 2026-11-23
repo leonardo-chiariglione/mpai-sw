@@ -47,6 +47,8 @@ sealed class StoreContext
     public required string Data { get; init; }          // Thalia's data of this User
     public required InstalledApps Installed { get; init; }
     public required string Amds { get; init; }
+    public required string ControllerAims { get; init; }            // the AIMs the Controller of this machine obtained from the Store (its folder of its own)
+    public required Func<string, (JsonObject? L3, string Where)> L3Of { get; init; }    // the L3 of an AIM: in the software, obtained by the Controller, or (asked, not obtained) in the Store
     public required Func<string?, Needs> NeedsOf { get; init; }
     public required Func<string, bool> IsRunning { get; init; }
     public required Func<string, string?> ModuleOfLocal { get; init; }
@@ -156,18 +158,31 @@ static class StoreRoutes
         finally { try { if (Directory.Exists(staging)) Directory.Delete(staging, true); } catch { } }
     }
 
-    // THE CONTROLLER OBTAINS THE MODULE (APP-5): Thalia asks, the Controller holds. In this reference the Controller is the one of the machine, which holds the L3 of the Module and of each of its AIMs.
+    // THE CONTROLLER OBTAINS THE MODULE (APP-5): Thalia asks, the Controller holds. In this reference the Controller is the one of the machine. What it holds, or finds in the software, is said "held". A Module of
+    // an Implementer is not in the software: the Store is asked for its L3 (and its Sub-AIMs'), and what the Store has is said, with the version; the Controller of the App obtains it when the App starts, measures the
+    // package it unpacks and asks the Store whether that is what it approved (Same): Thalia obtains no AIM itself.
     static JsonObject ObtainModule(StoreContext c, string? module)
     {
         var o = new JsonObject { ["module"] = module };
         if (module is null) { o["state"] = "the App names no Module"; return o; }
         var needs = c.NeedsOf(module);
-        var missing = needs.Aims.Select(a => a!.ToString()).Where(a => !File.Exists(Path.Combine(c.Amds, a + ".json"))).ToList();
-        if (!File.Exists(Path.Combine(c.Amds, module + ".json"))) missing.Insert(0, module);
+        var all = needs.Aims.Select(a => a!.ToString()).Prepend(module).Distinct().ToList();
+        var missing = new List<string>(); var inStore = new List<string>();
+        foreach (var a in all)
+        {
+            var (l3, where) = c.L3Of(a);
+            if (where == "store" && l3 is not null) inStore.Add($"{a} (version {StoreVersionOf(l3)})");
+            else if (l3 is null) missing.Add(a);
+        }
         o["aims"] = needs.Aims.Count; o["missing"] = new JsonArray(missing.Select(m => (JsonNode)m).ToArray());
-        o["state"] = missing.Count == 0 ? "held: the Controller of this machine has the Module and its AIMs" : "not held: " + string.Join(", ", missing);
+        o["inStore"] = new JsonArray(inStore.Select(m => (JsonNode)m).ToArray());
+        o["state"] = missing.Count > 0 ? "not held: " + string.Join(", ", missing)
+                   : inStore.Count > 0 ? "in the Store: " + string.Join(", ", inStore) + " - the Controller of this machine obtains it when the App starts, verifies its fingerprint with the Store and runs it from its package"
+                   : "held: the Controller of this machine has the Module and its AIMs";
         return o;
     }
+
+    static string StoreVersionOf(JsonObject l3) => (string?)l3["Header"] is { } h ? ((string?)l3["Identifier"]?["ImplementationID"] ?? "") + " " + h : "";
 
     // What each AIM of the Module obtains, and under which licence: the Access Sources of the L3s, so that the User sees them before accepting.
     static JsonArray Sources(StoreContext c, string? module, Needs needs)
@@ -176,11 +191,9 @@ static class StoreRoutes
         if (module is null) return list;
         foreach (var a in needs.Aims.Select(x => x!.ToString()).Append(module).Distinct())
         {
-            var f = Path.Combine(c.Amds, a + ".json");
-            if (!File.Exists(f)) continue;
             try
             {
-                var l3 = JsonNode.Parse(File.ReadAllText(f))!.AsObject();
+                if (c.L3Of(a).L3 is not { } l3) continue;
                 foreach (var s in l3["AccessSources"]?.AsArray().OfType<JsonObject>() ?? Enumerable.Empty<JsonObject>())
                 {
                     var uri = (string?)s["Uri"] ?? "";
@@ -217,7 +230,7 @@ static class StoreRoutes
             var dll = new[] { Path.Combine(c.Root, "Thalia", "Store", "bin", "StoreService.dll"), Path.Combine(c.Root, "Store", "Service", "bin", "Debug", "net10.0", "StoreService.dll") }.FirstOrDefault(File.Exists);
             if (dll is null) return "The MPAI Store is not built on this machine (dotnet build Store\\Service\\StoreService.csproj -o Thalia\\Store\\bin).";
             var data = Path.Combine(c.Data, "Store"); Directory.CreateDirectory(data);
-            var info = new ProcessStartInfo("dotnet", $"\"{dll}\" --Urls {c.StoreUrl.GetLeftPart(UriPartial.Authority)} --Root \"{data}\" --Schemas \"{Path.Combine(c.Root, "schemas")}\"") { WorkingDirectory = c.Root, UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true };
+            var info = new ProcessStartInfo("dotnet", $"\"{dll}\" --Urls {c.StoreUrl.GetLeftPart(UriPartial.Authority)} --Root \"{data}\" --Packages \"{Path.Combine(data, "packages")}\" --Schemas \"{Path.Combine(c.Root, "schemas")}\"") { WorkingDirectory = c.Root, UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true };
             Shared.Store = Process.Start(info);
             Shared.Store!.OutputDataReceived += (_, _) => { }; Shared.Store.ErrorDataReceived += (_, _) => { };
             Shared.Store.BeginOutputReadLine(); Shared.Store.BeginErrorReadLine();

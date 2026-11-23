@@ -89,6 +89,10 @@ public sealed class PortDataCodecs
             .Register(new JsonObjectCodec("CUI-PDD-V2.1"))
             .Register(new JsonObjectCodec("CUI-PSD-V2.1"))
             .Register(new JsonObjectCodec("CUI-SRM-V2.1"))
+            // Health Data (MPAI-AIH HSP V1.1): the Audit and the AIH Data and the Licence Confirm of the Auditing AIM, the JSON instance of their schema, inside and on the wire (N-45).
+            .Register(new JsonObjectCodec("AIH-ADT-V1.1"))
+            .Register(new JsonObjectCodec("AIH-AHD-V1.1"))
+            .Register(new JsonObjectCodec("AIH-LCF-V1.1"))
             .Register(new NumberCodec())
             .Register(new BooleanCodec())
             .Register(new StringCodec());

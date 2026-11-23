@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- A TINY AIM WRITTEN OUTSIDE OUR CODE (N-45): it references no library of ours, only the .NET base library, and has only the entry Module of the standard, written against the C binding of docs\AIF-Entry-Binding.md. The Controller
+       starts it from the package it obtained from the MPAI Store. Built by ThaliaAimFromStoreTests (with -p:Shape=NoTable for the entry that takes nothing). Not part of any solution. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Foreign.Aim</AssemblyName>
+    <RootNamespace>Foreign</RootNamespace>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <DefineConstants Condition="'$(Shape)' == 'NoTable'">$(DefineConstants);NO_TABLE</DefineConstants>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup><Compile Include="Entry.cs" /></ItemGroup>
+</Project>

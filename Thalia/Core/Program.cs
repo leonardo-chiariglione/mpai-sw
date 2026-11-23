@@ -58,6 +58,8 @@ var storeUrl = new Uri(builder.Configuration["Store"] ?? (string?)ReadPrefsEarly
 var installed = new InstalledApps(installedFile);
 string[] AllIds() => appIds.Concat(installed.Ids()).Distinct().ToArray();
 
+var fromStore = new Dictionary<string, JsonObject>();                       // L3s asked of the Store, kept for the session
+var controllerAims = Path.Combine(thaliaData, "Controller", "AIMs");       // what the Controller of this machine obtained from the Store: its folder of its own
 var controllerDll = Path.Combine(root, "Thalia", "Controller", "bin", "Debug", "net10.0", "ThaliaController.dll");
 var hostProject   = remote ? Path.Combine(root, "Host") : Path.Combine(root, "AIF", "UserAgent", "Clients", "Browser", "Host");
 var hostDll       = remote ? Path.Combine(hostProject, "RcaWeb.Host.dll") : Path.Combine(hostProject, "bin", "Debug", "net10.0", "RcaWeb.Host.dll");
@@ -214,6 +216,7 @@ if (!remote)
     StoreRoutes.Map(app, storeContext = new StoreContext
     {
         StoreUrl = storeUrl, Root = root, AppsRoot = appsRoot, UserApps = userApps, Data = thaliaData, Installed = installed, Amds = amds,
+        ControllerAims = controllerAims, L3Of = L3Of,
         NeedsOf = Needs,
         IsRunning = id => running.Values.Any(r => r.App == id && r.Alive),
         IsBundled = id => appIds.Contains(id),
@@ -272,6 +275,15 @@ app.MapPost("/api/settings", async (HttpRequest req) =>
 });
 
 app.MapGet("/", () => Results.File(Path.Combine(app.Environment.WebRootPath, "launcher.html"), "text/html; charset=utf-8"));
+// THE UNITS OF A BROWSER (AIF\UserAgent\PhysicalLayer\Browser\mpai-units.js): one file for every page, served from where it is in the repository, or, in the Remote package, from units\ beside the program.
+app.MapGet("/mpai-units.js", (HttpContext ctx) =>
+{
+    var inRepository = Path.Combine(root, "AIF", "UserAgent", "PhysicalLayer", "Browser", "mpai-units.js");
+    var beside = Path.Combine(AppContext.BaseDirectory, "units", "mpai-units.js");
+    var file = File.Exists(inRepository) ? inRepository : beside;
+    ctx.Response.Headers.CacheControl = "no-store";
+    return File.Exists(file) ? Results.File(file, "text/javascript") : Results.NotFound();
+});
 // The four seasonal pictures of the Launcher (Sacra di San Michele, CC BY-SA 4.0) are kept in Access, with the data of the other standards: Access\THL\seasons.
 var seasons = Path.Combine(root, "Access", "THL", "seasons");
 if (Directory.Exists(seasons))
@@ -306,7 +318,9 @@ async Task StartAsync(Run run)
             run.Phase = "starting its local Controller (its Module and AIMs load: up to a minute or two)";
             // An App the User obtained is in the User's folder of Apps; the Controller is told where.
             var appsArg = installed.Get(run.App) is not null && AppCatalogue.Scan(appsRoot, new[] { run.App }).Apps.Count == 0 ? $" --apps \"{userApps}\"" : "";
-            var controller = run.Spawn("controller", "dotnet", $"\"{controllerDll}\" --listen http://127.0.0.1:{port} --app {run.App}{appsArg}", root, null);
+            // The Store and the Controller's folder of its own: a Module that is not in the software is obtained from the Store, verified, and run from its package (ThaliaController).
+            var storeArg = $" --store {storeUrl.GetLeftPart(UriPartial.Authority)} --aims \"{controllerAims}\"";
+            var controller = run.Spawn("controller", "dotnet", $"\"{controllerDll}\" --listen http://127.0.0.1:{port} --app {run.App}{appsArg}{storeArg}", root, null);
             if (!await run.WaitForAsync(controller, "[MAS] Listening", TimeSpan.FromMinutes(5)))
                 throw new InvalidOperationException("its local Controller did not come up: " + run.LastLine(controller));
             service = new Uri($"http://127.0.0.1:{port}/");
@@ -417,16 +431,38 @@ JsonObject Item(string id, string name, string description, string where, string
     };
 }
 
+// THE L3 OF AN AIM: in the software (AIMs\AMDs), or obtained by this machine's Controller (its folder of its own), or - only asked, not obtained - in the MPAI Store.
+(JsonObject? L3, string Where) L3Of(string aim)
+{
+    foreach (var (folder, where) in new[] { (amds, "software"), (controllerAims, "controller") })
+    {
+        var f = Path.Combine(folder, aim + ".json");
+        if (File.Exists(f)) { try { return (JsonNode.Parse(File.ReadAllText(f))!.AsObject(), where); } catch { } }
+    }
+    if (remote || aim.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0) return (null, "none");
+    lock (fromStore)
+    {
+        if (fromStore.TryGetValue(storeUrl + aim, out var known)) return (known, "store");
+        try
+        {
+            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+            var text = http.GetStringAsync(new Uri(storeUrl, "MPAI/Store/L3/" + Uri.EscapeDataString(aim))).GetAwaiter().GetResult();
+            var l3 = JsonNode.Parse(text)!.AsObject();
+            fromStore[storeUrl + aim] = l3;
+            return (l3, "store");
+        }
+        catch { return (null, "none"); }
+    }
+}
+
 // WHAT THE MODULE NEEDS, from its L3 (AIM Instance Metadata): its AIMs, the AIM Licences, the computing resources, and whether this machine can run it.
 Needs Needs(string? module)
 {
     var n = new Needs();
     if (module is null) { n.Why = "no Module named"; return n; }
-    var file = Path.Combine(amds, module + ".json");
-    if (!File.Exists(file)) { n.CanRun = false; n.Why = $"its L3 {module}.json is not on this machine"; return n; }
+    if (L3Of(module).L3 is not { } l3) { n.CanRun = false; n.Why = $"its L3 {module}.json is neither on this machine nor in the Store"; return n; }
     try
     {
-        var l3 = JsonNode.Parse(File.ReadAllText(file))!.AsObject();
         foreach (var s in l3["SubAIMs"]?.AsArray().OfType<JsonObject>() ?? Enumerable.Empty<JsonObject>())
             if ((string?)(s["Identifier"]?["AIMInstID"] ?? s["AIMInstID"]) is { } a && !n.Aims.Any(x => (string?)x == a)) n.Aims.Add(a);
         foreach (var r in l3["ResourcePolicies"]?.AsArray().OfType<JsonObject>() ?? Enumerable.Empty<JsonObject>())
@@ -437,9 +473,7 @@ Needs Needs(string? module)
         var gpuWanted = false;
         foreach (var a in n.Aims.Select(x => x!.ToString()).Append(module))
         {
-            var f = Path.Combine(amds, a + ".json");
-            if (!File.Exists(f)) { n.CanRun = false; n.Why = $"the L3 of {a} is not on this machine"; continue; }
-            var sub = JsonNode.Parse(File.ReadAllText(f))!.AsObject();
+            if (L3Of(a).L3 is not { } sub) { n.CanRun = false; n.Why = $"the L3 of {a} is neither on this machine nor in the Store"; continue; }
             var impls = sub["Implementations"]?.AsArray().OfType<JsonObject>().ToList() ?? new();
             if (impls.Count > 0 && !impls.Any(i => ((string?)i["OperatingSystem"] ?? os) == os && ((string?)i["Architecture"] ?? arch) == arch))
             { n.CanRun = false; n.Why = $"{a} has no Implementation for {os} {arch}"; }
@@ -549,7 +583,7 @@ sealed class Run(string key, string app, string where)
                 if (!keep) try { if (!p.HasExited) p.Kill(entireProcessTree: true); } catch { }
     }
 
-    public JsonObject Json() => new() { ["key"] = Key, ["app"] = App, ["where"] = Where, ["phase"] = Phase, ["url"] = Url, ["paused"] = Paused };
+    public JsonObject Json() => new() { ["key"] = Key, ["app"] = App, ["where"] = Where, ["phase"] = Phase, ["url"] = Url, ["controller"] = Controller?.ToString(), ["paused"] = Paused };
 }
 
 static class NativeWindows

@@ -113,6 +113,10 @@ public sealed class AimPortReader
         return Array.Empty<string>();
     }
 
+    // The keys of all the Input Ports, and of all the Output Ports ("DataType#PortNumber"): what a binding that gives an Implementation its Ports as a list needs.
+    public IReadOnlyList<string> InputKeys => _inputPorts.Values.SelectMany(l => l).Select(e => e.Key).Distinct().ToList();
+    public IReadOnlyList<string> OutputKeys => _outputPorts.Values.SelectMany(l => l).Select(e => e.Key).Distinct().ToList();
+
     // The key of the Input Port for the given DataType and ordinal.
     // Throws if not found â€” a misconfigured AMD is a hard error.
     public string Input(string dataType, int ordinal = 1) =>
