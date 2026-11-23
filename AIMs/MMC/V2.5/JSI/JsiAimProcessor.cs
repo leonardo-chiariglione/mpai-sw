@@ -34,7 +34,7 @@ namespace Mpai.Mmc.Jsi;
 // A COMMAND THAT WAS SENT IS NOT SAID: the person is told when the application answers. A Response Hint leaves when a request gave no command, and when a response arrives.
 public sealed class JsiAimProcessor : IAimProcessor
 {
-    private const int RemembersCommands = 5;
+    private const int TellsTheModel = 20;      // the commands of the session are all remembered; the model is told the latest ones (a longer list is not a help to a small model)
     private const string Ucm = "CAE-UCM-V1.0";
     private static readonly TimeSpan GatherFor = TimeSpan.FromSeconds(10);
 
@@ -519,13 +519,8 @@ public sealed class JsiAimProcessor : IAimProcessor
     private void Remember(JsonNode command, string request)
     {
         var id = IdOf(command) ?? "";
-        _sent.Add((id, request));
-        while (_sent.Count > RemembersCommands) _sent.RemoveAt(0);
-        if (id.Length > 0)
-        {
-            _requestOf[id] = request;
-            if (_requestOf.Count > 40) _requestOf.Remove(_requestOf.Keys.First());
-        }
+        _sent.Add((id, request));                                   // every command of the session stays until the session ends
+        if (id.Length > 0) _requestOf[id] = request;
     }
 
     // Words that ask for a change by an amount, and no number with them.
@@ -604,7 +599,7 @@ public sealed class JsiAimProcessor : IAimProcessor
     {
         string? earlier = null;
         if (_sent.Count > 0 && guide.Earlier.Length > 0)
-            earlier = string.Join('\n', _sent.Select(s => "- " + s.Id + ": \"" + s.Request + "\""));
+            earlier = string.Join('\n', _sent.TakeLast(TellsTheModel).Select(s => "- " + s.Id + ": \"" + s.Request + "\""));
         var hints = string.Concat(guide.HintsFor(request).Select(h => "Hint: " + h + "\n"));
         return StateText(_state.Tell(guide), earlier) + hints + (guide.Reminder.Length > 0 ? "Reminder: " + guide.Reminder + "\n" : "") + "Request: " + request;
     }

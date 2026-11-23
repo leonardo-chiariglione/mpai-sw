@@ -644,6 +644,7 @@
     { "Mode": "Multichannel", "ChannelCount": 6, "Words": [ "5.1", "5.1 surround", "surround", "six speakers" ] },
     { "Mode": "Multichannel", "ChannelCount": 8, "Words": [ "7.1", "7.1 surround", "eight speakers" ] }
   ],
+  "DefaultMaterial": "plaster",
   "Faces": {
     "floor": "Floor",
     "ceiling": "Ceiling",

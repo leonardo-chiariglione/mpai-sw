@@ -66,6 +66,19 @@ public partial class MainWindow : Window
         Room.ListenerDropped += (x, y, yaw) => { _wantedListener = (x + 0.0, y + 0.0, yaw + 0.0); _wantedGiven = false; App.Log($"[window] the listener is put at {x:0.##}, {y:0.##}, facing {yaw:0}: kept until the Module's scene says the same"); Quiet(string.Create(System.Globalization.CultureInfo.InvariantCulture, $"move me to x {x + 0.0:0.0#}, y {y + 0.0:0.0#}, facing {yaw + 0.0:0} degrees")); };
         Room.Dropped += (name, x, y, z) => Quiet(string.Create(System.Globalization.CultureInfo.InvariantCulture, $"move {name} to x {x + 0.0:0.0#}, y {y + 0.0:0.0#}, z {z + 0.0:0.0#}"));
         InputBox.KeyDown += (_, e) => { if (e.Key == Key.Enter) Submit(); };
+        InputBox.PreviewKeyDown += (_, e) => { if (_naming is null && (e.Key == Key.Up || e.Key == Key.Down)) { Recall(e.Key == Key.Up ? -1 : 1); e.Handled = true; } };
+    }
+
+    // The commands typed during the session, as in cmd and PowerShell: Up goes back through them, Down forward again, and past the newest comes the empty line.
+    private readonly List<string> _typed = [];
+    private int _recalled;                                                // the position in _typed; _typed.Count = the line being typed
+
+    private void Recall(int step)
+    {
+        if (_typed.Count == 0) return;
+        _recalled = Math.Clamp(_recalled + step, 0, _typed.Count);
+        InputBox.Text = _recalled == _typed.Count ? "" : _typed[_recalled];
+        InputBox.CaretIndex = InputBox.Text.Length;
     }
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
@@ -478,6 +491,7 @@ public partial class MainWindow : Window
         var words = InputBox.Text.Trim();
         App.Log("[window] Enter pressed, text: " + words + (_naming is not null ? " (the name of a sound)" : ""));
         if (words.Length == 0) return;
+        if (_naming is null) { if (_typed.Count == 0 || _typed[^1] != words) _typed.Add(words); _recalled = _typed.Count; }
         if (_naming is not null) InputBox.Clear(); else InputBox.SelectAll();       // a command stays where it was typed: it can be corrected and sent again
         if (_naming is { } naming) { naming.TrySetResult(words); return; }       // the name of a sound, not a command
         HeardText.Text = words;

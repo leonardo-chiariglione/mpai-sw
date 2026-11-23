@@ -64,6 +64,7 @@ public class AsmGrammarTests
         "play on headphones", "hear it on stereo speakers", "set the output to 5.1", "play on mono", "render for quad", "set the sound output to binaural", "listen through the headset",
         "set the size of the room to 6 by 4 by 3", "change the room size to 8 by 5", "set the room height to 3.5 metres", "modify the ceiling height to 2.8",
         "set the floor to carpet", "make the walls concrete", "change the ceiling material to foam", "set the back wall to glass", "cover the left wall with curtain", "the floor is wood",
+        "remove concrete from Wall Left (west)", "remove concrete from the west wall", "take the brick off the back wall", "set Wall Left (west) to concrete",
         "set the floor absorption to 0.6", "change the walls absorption to 0.3", "set the ceiling's absorption to 0.8",
         "modify the diffusion of the room to 0.7", "change the reverberation time to 1.4 seconds", "set rt30 to 0.9", "set rt20 to 0.8 seconds", "set the early decay time to 0.5",
         "set the doppler direct sound factor to 0.5", "set the doppler indirect sound to 0.7",
