@@ -409,6 +409,8 @@ function fillDetail(box, a, d) {
   const personal = src.some(s => s.personalData);
   box.innerHTML = `
     <h4>What the App is</h4><div>${esc(d.description)} Version ${esc(d.version)}${d.held ? `; you have ${esc(d.held.version)}` : ''}.</div>
+    <h4>What the App itself needs</h4>
+    <div>${(d.descriptor && d.descriptor.Asks && d.descriptor.Asks.length) ? 'It will ask you for: ' + d.descriptor.Asks.map(esc).join(', ') + '.' : 'It asks you for nothing.'}${d.descriptor && d.descriptor.Keeps ? ' What it keeps: ' + esc(d.descriptor.Keeps) : ''}</div>
     <h4>What its Module needs</h4>
     <div>Module ${esc(d.module)}: ${(n.aims || []).length} AIMs${(n.aims || []).length ? ' - ' + (n.aims || []).map(esc).join(', ') : ''}.</div>
     <div>Resources: ${(n.resources || []).length ? n.resources.map(esc).join('; ') : 'none stated'}${(n.accelerators || []).length ? '. Builds by processing unit: ' + n.accelerators.map(esc).join('; ') : ''}.</div>
@@ -554,13 +556,6 @@ async function settingsView() {
   card.appendChild(field('The MPAI as a Service instance you use', 'mas', st.mas, 'https://...', st.fixed));
   if (!st.fixed) card.appendChild(field('The MPAI Store you use', 'store', st.store, 'http://...', false));
   if (st.fixed) { const n = document.createElement('p'); n.className = 'desc'; n.textContent = 'This is a Remote Thalia: it uses the Service of its package.'; card.appendChild(n); }
-  const where = document.createElement('div'); where.className = 'detail';
-  where.innerHTML = `<h4>Where Thalia looks by default</h4><div class="seg" id="dscope"><span data-s="local">This machine</span><span data-s="mas">MPAI as a Service</span><span data-s="both">Both</span></div>`;
-  if (!st.fixed) {
-    card.appendChild(where);
-    const segs = where.querySelectorAll('#dscope span'); const mark = () => segs.forEach(x => x.classList.toggle('on', x.dataset.s === scope));
-    segs.forEach(x => x.onclick = () => { scope = x.dataset.s; save(); mark(); }); mark();
-  }
   if (st.data) {
     const d = document.createElement('div'); d.className = 'detail';
     d.innerHTML = '<h4>Where your things are kept</h4><div class="desc"></div>'; d.querySelector('.desc').textContent = `Your Apps: ${st.apps}. Your choices, the Store and what you obtained: ${st.data}.`; card.appendChild(d);
@@ -622,7 +617,7 @@ function obtainedFooter(a) {
 function needs(a) {
   const d = document.createElement('details'); d.dataset.id = a.id;
   const list = (title, items) => items && items.length ? `<li>${title}: ${items.map(esc).join(', ')}</li>` : '';
-  d.innerHTML = `<summary>What its Module needs</summary><ul>${list('AIMs', a.aims)}${list('Licences of the data its AIMs obtain', a.licences)}${list('Resources', a.resources)}${list('Builds by processing unit', a.accelerators)}<li>This machine: ${esc(a.why || '')}</li></ul>`;
+  d.innerHTML = `<summary>What its Module needs</summary><ul>${list('AIMs', a.aims)}${list('The App will ask you for', a.asks)}${a.keeps ? `<li>What it keeps: ${esc(a.keeps)}</li>` : ''}${list('Licences of the data its AIMs obtain', a.licences)}${list('Resources', a.resources)}${list('Builds by processing unit', a.accelerators)}<li>This machine: ${esc(a.why || '')}</li></ul>`;
   return d;
 }
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }

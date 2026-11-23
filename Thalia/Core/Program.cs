@@ -84,13 +84,13 @@ app.MapGet("/api/catalogue", async () =>
     var items = new JsonArray();
     foreach (var e in local.Apps.OrderBy(a => Array.IndexOf(appIds, a.Id)))
     {
-        var item = Item(e.Id, e.Name, e.Description, "local", e.Module, $"/api/icon/local/{e.Id}");
+        var item = Item(e.Id, e.Name, e.Description, "local", e.Module, $"/api/icon/local/{e.Id}", e);
         item["version"] = VersionOf(e); item["obtained"] = false;
         items.Add(item);
     }
     foreach (var e in obtained.Apps.Where(o => !local.Apps.Any(l => l.Id == o.Id)))          // what the User obtained, after what comes with the software
     {
-        var item = Item(e.Id, e.Name, e.Description, "local", e.Module, $"/api/icon/local/{e.Id}");
+        var item = Item(e.Id, e.Name, e.Description, "local", e.Module, $"/api/icon/local/{e.Id}", e);
         item["version"] = VersionOf(e); item["obtained"] = true; item["from"] = installed.Get(e.Id)?.From;
         items.Add(item);
     }
@@ -106,7 +106,8 @@ app.MapGet("/api/catalogue", async () =>
         foreach (var a in offered.OrderBy(a => Rank((string)a["id"]!)).ThenBy(a => (string?)a["name"] ?? "", StringComparer.CurrentCultureIgnoreCase))
         {
             var id = (string)a["id"]!;
-            items.Add(Item(id, (string?)a["name"] ?? id, (string?)a["description"] ?? "", "mas", known.Apps.FirstOrDefault(l => l.Id == id)?.Module, $"/api/icon/mas/{id}"));
+            var software = known.Apps.FirstOrDefault(l => l.Id == id);
+            items.Add(Item(id, (string?)a["name"] ?? id, (string?)a["description"] ?? "", "mas", software?.Module, $"/api/icon/mas/{id}", software));
         }
     }
     catch (Exception ex) { masProblem = remote
@@ -170,7 +171,7 @@ app.MapGet("/api/log/{where}/{id}", (string where, string id) =>
     running.TryGetValue($"{where}:{id}", out var r) ? Results.Text(string.Join('\n', r.Lines.TakeLast(200))) : Results.NotFound());
 
 // The User's choices (season, side of the functions, search scope, welcome): one small file for this User on this machine, so that they stay whatever window shows Thalia.
-var prefsKeys = new[] { "season", "side", "scope", "welcomeHidden", "micLabel", "camLabel", "screenLabel", "masUrl", "storeUrl" };
+var prefsKeys = new[] { "season", "side", "welcomeHidden", "micLabel", "camLabel", "screenLabel", "masUrl", "storeUrl" };
 var prefsLock = new object();
 JsonObject ReadPrefs() { try { return File.Exists(prefsFile) ? (JsonNode.Parse(File.ReadAllText(prefsFile)) as JsonObject ?? new JsonObject()) : new JsonObject(); } catch { return new JsonObject(); } }
 app.MapGet("/api/prefs", () => { lock (prefsLock) return Results.Json(ReadPrefs()); });
@@ -424,12 +425,20 @@ static string VersionOf(Mpai.Mas.Server.AppCatalogue.Entry e)
     try { return (string?)JsonNode.Parse(e.Descriptor)?["Version"] ?? ""; } catch { return ""; }
 }
 
-JsonObject Item(string id, string name, string description, string where, string? module, string icon)
+// WHAT THE APP ITSELF NEEDS (APP-2): what it will ask the User for (devices and inputs) and what it keeps, as its app.json states them.
+(JsonNode? Asks, string? Keeps) AsksOf(AppCatalogue.Entry? e)
+{
+    if (e is null) return (null, null);
+    try { var d = JsonNode.Parse(e.Descriptor); return (d?["Asks"]?.DeepClone(), (string?)d?["Keeps"]); } catch { return (null, null); }
+}
+
+JsonObject Item(string id, string name, string description, string where, string? module, string icon, AppCatalogue.Entry? descriptor = null)
 {
     var needs = Needs(module);
+    var (asks, keeps) = AsksOf(descriptor);
     return new JsonObject
     {
-        ["id"] = id, ["name"] = name, ["description"] = description, ["where"] = where, ["module"] = module, ["icon"] = icon,
+        ["id"] = id, ["name"] = name, ["description"] = description, ["where"] = where, ["module"] = module, ["icon"] = icon, ["asks"] = asks, ["keeps"] = keeps,
         ["aims"] = needs.Aims, ["licences"] = needs.Licences, ["resources"] = needs.Resources, ["accelerators"] = needs.Accelerators,
         ["canRun"] = where == "mas" ? true : needs.CanRun, ["why"] = needs.Why
     };
