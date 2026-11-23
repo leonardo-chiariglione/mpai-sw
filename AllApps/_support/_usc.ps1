@@ -1,6 +1,6 @@
 # THE APPS OF CAE-USC, picked with dialogs: you choose the files and say the few words each App needs; the App is built if it is not, run, and the folder of its results is opened.
-#   _usc.ps1 -App SRS | AES | SME | ARP | EAE
-param([Parameter(Mandatory)][ValidateSet('SRS', 'AES', 'SME', 'ARP', 'EAE')][string]$App)
+#   _usc.ps1 -App SRS | AES | SME | ARP | EAE | EES
+param([Parameter(Mandatory)][ValidateSet('SRS', 'AES', 'SME', 'ARP', 'EAE', 'EES')][string]$App)
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName Microsoft.VisualBasic
@@ -18,7 +18,7 @@ function Ask([string]$prompt, [string]$title, [string]$default = '') {
 }
 function Yes([string]$question, [string]$title) { [Windows.Forms.MessageBox]::Show($question, $title, 'YesNo', 'Question') -eq 'Yes' }
 
-$names = @{ SRS = 'Speech Restoration System'; AES = 'Add Emotion to Speech'; SME = 'Speak Model with Emotion'; ARP = 'Audio Recording Preservation'; EAE = 'Enhanced Audioconference Experience' }
+$names = @{ SRS = 'Speech Restoration System'; AES = 'Add Emotion to Speech'; SME = 'Speak Model with Emotion'; ARP = 'Audio Recording Preservation'; EAE = 'Enhanced Audioconference Experience'; EES = 'Emotion Enhanced Speech' }
 $title = $names[$App]
 $project = Join-Path $root "Apps\CAE\$App\App\$((Get-Culture).TextInfo.ToTitleCase($App.ToLower()))App.csproj"
 $exe = Join-Path $root "Apps\CAE\$App\App\bin\Debug\net10.0\$((Get-Culture).TextInfo.ToTitleCase($App.ToLower()))App.exe"
@@ -47,6 +47,17 @@ try {
             $speech = Pick 'The emotionless speech' $wav
             $model = Pick 'The model utterance, whose prosody gives the emotion' $wav
             $arguments = @('--speech', $speech, '--model', $model, '--out', (Join-Path $out 'speech-with-emotion.wav'))
+        }
+        'EES' {
+            $speech = Pick 'The emotionless speech' $wav
+            if (Yes "Give the emotion with the prosody of a model utterance?`n`nYes: you pick the model utterance.`nNo: you name an emotion and how strong." $title) {
+                $model = Pick 'The model utterance, whose prosody gives the emotion' $wav
+                $arguments = @('--speech', $speech, '--model', $model, '--out', (Join-Path $out 'speech-with-emotion.wav'))
+            } else {
+                $emotion = Ask 'Which emotion? SADNESS, HAPPINESS, ANGER, FEAR ...' $title 'SADNESS'
+                $degree = Ask 'How strong, from 0 to 1?' $title '0.5'
+                $arguments = @('--speech', $speech, '--emotion', $emotion, '--degree', $degree, '--out', (Join-Path $out 'speech-with-emotion.wav'))
+            }
         }
         'ARP' {
             $tape = Pick 'The digitised audio of the tape (16-bit WAV)' $wav
