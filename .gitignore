@@ -157,3 +157,6 @@ __pycache__/
 /schemas-publish-*/
 /Night/*
 !/Night/TODO.md
+# generated or downloaded knowledge for the CAV and the traffic rules: Test/Data holds small inputs of the tests, not datasets
+/Test/Data/CAV/
+/Test/Data/TrafficRules/
