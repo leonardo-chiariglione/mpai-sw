@@ -281,6 +281,7 @@ public sealed class AseAim
 
     // THE WALLS GIVEN are merged into the walls the Scene has (CAE-ACP): a wall given replaces the wall with the same name - the same Right Parallelepiped, Face and Region, or the same Polygon,
     // or the same SurfaceID - and the others keep their Material: "the floor is carpet" does not undo "the ceiling is wood". None given, the walls the Scene has.
+    // A wall given with no Material takes its entry away (CAE-ACP): "remove the concrete from the left wall".
     private static System.Text.Json.Nodes.JsonArray? MergedWalls(System.Text.Json.Nodes.JsonArray? had, System.Text.Json.Nodes.JsonArray? given)
     {
         if (given is null) return had;
@@ -289,7 +290,8 @@ public sealed class AseAim
             : w?["Polygon"] is { } polygon ? "P|" + polygon.ToJsonString()
             : $"F|{(string?)w?["RightParallelepipedID"]}|{(string?)w?["Face"]}|{w?["Region"]?.ToJsonString()}";
         var walls = had?.Where(w => w is not null && !given.Any(g => Key(g) == Key(w))).Select(w => w!.DeepClone()).ToList() ?? [];
-        walls.AddRange(given.Where(g => g is not null).Select(g => g!.DeepClone()));
+        // A wall given without a Material has none of its own: its entry is gone (above) and none is added - the wall is as one never given a Material.
+        walls.AddRange(given.Where(g => g is not null && g["MaterialIDOrMaterial"] is not null).Select(g => g!.DeepClone()));
         return new System.Text.Json.Nodes.JsonArray(walls.ToArray());
     }
 

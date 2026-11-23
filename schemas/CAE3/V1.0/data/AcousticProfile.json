@@ -64,18 +64,18 @@
                                   "description": "The Material of every wall of the Closed Space not given its own in Walls. When given, it replaces the one the Scene has." } } },
 
     "MaterialIDOrMaterial":     { "type": "array", "minItems": 1, "maxItems": 1, "items": { "oneOf": [ { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/Material.json" }, { "type": "string" } ] } },
-    "Wall":                     { "description": "A wall and its Material: the wall named by a face of a Right Parallelepiped (with a Region of it, if only part), by a Polygon, or by a SurfaceID.", "oneOf": [ { "type": "object", "required": [ "RightParallelepipedID", "Face", "MaterialIDOrMaterial" ], "additionalProperties": false, "properties": {
+    "Wall":                     { "description": "A wall and its Material: the wall named by a face of a Right Parallelepiped (with a Region of it, if only part), by a Polygon, or by a SurfaceID. A wall given WITHOUT a Material has no Material of its own: the entry the Scene has for it is removed, and the wall is as the walls that were never given one (the DefaultMaterial, else the acoustic properties of the profile).", "oneOf": [ { "type": "object", "required": [ "RightParallelepipedID", "Face" ], "additionalProperties": false, "properties": {
       "RightParallelepipedID":  { "type": "string", "description": "The Right Parallelepiped of the Shape whose face this wall is." },
       "Face":                   { "type": "string", "enum": [ "Floor", "Ceiling", "Front", "Back", "Left", "Right" ] },
       "Region":                 { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/RightParallelepiped.json",
                                   "description": "A part of the face, a 2D Right Parallelepiped on it; absent, the whole face." },
 
       "MaterialIDOrMaterial":   { "$ref": "#/$defs/MaterialIDOrMaterial" } } },
-                                { "type": "object", "required": [ "Polygon", "MaterialIDOrMaterial" ], "additionalProperties": false, "properties": {
+                                { "type": "object", "required": [ "Polygon" ], "additionalProperties": false, "properties": {
       "Polygon":                { "type": "array", "minItems": 3, "items": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "number" } },
                                   "description": "The vertices of a flat wall, in order round its edge, as (x, y, z) in metres in the frame of the Closed Space." },
 
       "MaterialIDOrMaterial":   { "$ref": "#/$defs/MaterialIDOrMaterial" } } },
-                                { "type": "object", "required": [ "SurfaceID", "MaterialIDOrMaterial" ], "additionalProperties": false, "properties": {
+                                { "type": "object", "required": [ "SurfaceID" ], "additionalProperties": false, "properties": {
       "SurfaceID":              { "type": "string", "description": "The identifier of a surface of the Shape, when the Shape is not made of Right Parallelepipeds." },
       "MaterialIDOrMaterial":   { "$ref": "#/$defs/MaterialIDOrMaterial" } } } ] } } }

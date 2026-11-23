@@ -111,6 +111,12 @@ public class AsmM3282Tests
         Assert.Equal("wood", (string?)walls.Single(w => (string?)w!["Face"] == "Floor")!["MaterialIDOrMaterial"]![0]);
         Assert.Equal("glass", (string?)walls.Single(w => (string?)w!["Face"] == "Left")!["MaterialIDOrMaterial"]![0]);
 
+        // A wall given WITHOUT a Material has none of its own: its entry is taken away and the others stay.
+        Assert.Equal("Done", (await Run(rig, new UserCommandRQ { ModifiedScene = new SceneChange { AcousticProfile = new AcousticProfile { AcousticProfileID = "walls", Walls = new JsonArray(JsonNode.Parse("{\"RightParallelepipedID\":\"room\",\"Face\":\"Left\"}")!) } } })).UserCommandRS!.Outcome);
+        walls = (await ListedOf(rig, "Acoustic Profile", "stage")).AcousticProfile!.Walls!;
+        Assert.Equal("Floor", (string?)Assert.Single(walls)!["Face"]);
+        await Run(rig, new UserCommandRQ { ModifiedScene = new SceneChange { AcousticProfile = WallsOf(Wall("glass", "Left")) } });       // the glass back, for what follows
+
         // A wall is also a Polygon or a SurfaceID: each is a wall of its own name, merged by it; and the default material replaces.
         var poly = JsonNode.Parse("{\"Polygon\":[[-3,-2,0],[3,-2,0],[3,2,0],[-3,2,0]],\"MaterialIDOrMaterial\":[\"concrete\"]}")!;
         var curved = JsonNode.Parse("{\"SurfaceID\":\"dome\",\"MaterialIDOrMaterial\":[\"plaster\"]}")!;

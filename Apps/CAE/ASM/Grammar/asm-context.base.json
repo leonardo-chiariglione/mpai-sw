@@ -62,46 +62,7 @@
         }
       ]
     },
-    "UserCommandRQ.ClosedSpace.Shape.SimpleLocationData.RightParallelepiped.Dimensions": "3D",
-    "UserCommandRQ.ClosedSpace.DefaultMaterial": [
-      {
-        "Header": "OSD-MTR-V1.5",
-        "MaterialID": "plaster",
-        "Acoustic": {
-          "Absorption": [
-            {
-              "FrequencyHz": 400,
-              "Fraction": 0.1
-            },
-            {
-              "FrequencyHz": 2500,
-              "Fraction": 0.15
-            },
-            {
-              "FrequencyHz": 15000,
-              "Fraction": 0.2
-            }
-          ],
-          "Scattering": 0.3,
-          "Transmission": [
-            {
-              "FrequencyHz": 400,
-              "Fraction": 0
-            },
-            {
-              "FrequencyHz": 2500,
-              "Fraction": 0
-            },
-            {
-              "FrequencyHz": 15000,
-              "Fraction": 0
-            }
-          ],
-          "BandScheme": "Other",
-          "Incidence": "Random"
-        }
-      }
-    ]
+    "UserCommandRQ.ClosedSpace.Shape.SimpleLocationData.RightParallelepiped.Dimensions": "3D"
   },
   "Names": [
     {

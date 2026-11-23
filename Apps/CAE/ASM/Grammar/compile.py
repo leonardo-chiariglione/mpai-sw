@@ -440,17 +440,17 @@ def property_table():
     # the surfaces of the room: a face or the walls, a material by name or an absorption (the Walls of the Acoustic Profile: the walls named are replaced, the others keep theirs)
     mats = {k: v for k, v in G['Materials'].items() if k not in ('_', 'Bands')}
     def walls(names, mat):
+        # mat None: the wall is given WITHOUT a Material - its own is taken away and it is as the walls never given one (the acoustic properties of the profile)
         return {'UserCommandRQ': {'ModifiedScene': {'AcousticProfile': {'AcousticProfileID': G.get('ProfileId', 'walls'),
-                'Walls': [{'RightParallelepipedID': 'room', 'Face': f, 'MaterialIDOrMaterial': [mat]} for f in names]}}}}
+                'Walls': [dict({'RightParallelepipedID': 'room', 'Face': f}, **({} if mat is None else {'MaterialIDOrMaterial': [mat]})) for f in names]}}}}
     groups = dict((k, [v]) for k, v in G['Faces'].items())
     groups['walls'] = ['Left', 'Right', 'Front', 'Back']
     for f in ('Left', 'Right', 'Front', 'Back'): groups['wall ' + f.lower()] = [f]            # the way the acoustic panel names a wall: "Wall Left (west)"
-    default_material = G.get('DefaultMaterial', 'plaster')                                    # a wall that has its material taken away is the room's again
     for gname, names in groups.items():
         g = '(?:the )?' + re.escape(gname) + "(?:'s)?" + r'(?: \(?(?:west|east|north|south)\)?)?'
         for m, bands in mats.items():
-            emit({'Pattern': '(?:remove|take off|strip|clear) (?:the )?' + m + '(?: surface| material)? (?:from|off|on) ' + g, 'Command': walls(names, material(default_material, mats[default_material]))})
-            emit({'Pattern': '(?:take|strip|clear) (?:the )?' + m + '(?: surface| material)? off ' + g, 'Command': walls(names, material(default_material, mats[default_material]))})
+            emit({'Pattern': '(?:remove|take off|strip|clear) (?:the )?' + m + '(?: surface| material)? (?:from|off|on) ' + g, 'Command': walls(names, None)})
+            emit({'Pattern': '(?:take|strip|clear) (?:the )?' + m + '(?: surface| material)? off ' + g, 'Command': walls(names, None)})
             emit({'Pattern': SETV_OPT + g + '(?: material| surface)?' + TO + '(?:made of |of |in )?(?:the )?' + m + '(?: surface| material)?', 'Command': walls(names, material(m, bands))})
             emit({'Pattern': '(?:cover|line) ' + g + ' (?:with|in) (?:the )?' + m, 'Command': walls(names, material(m, bands))})
         emit({'Pattern': SETV_OPT + g + '(?: surface)? absorption' + TO + '<NUM:v>', 'Command': walls(names, material(gname + ' absorbing', fraction='{v}'))})
