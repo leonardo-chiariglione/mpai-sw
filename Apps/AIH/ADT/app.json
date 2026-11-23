@@ -4,6 +4,7 @@
     "Icon": "icon.svg",
     "Version": "1.0",
     "Standard": "MPAI-AIH V1.1",
+    "ComponentOf": "HSP",
     "UseCase": "ADT",
     "Module": "2AIH-ADT-V1.1-I01",
     "Keywords": ["audit", "AIH Data", "health data", "licence", "unlicensed operations"],

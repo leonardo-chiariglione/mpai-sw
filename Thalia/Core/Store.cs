@@ -73,6 +73,8 @@ static class StoreRoutes
             JsonArray list;
             try { list = JsonNode.Parse(await Http.GetStringAsync(new Uri(c.StoreUrl, "MPAI/Store/App" + (string.IsNullOrWhiteSpace(search) ? "" : "?search=" + Uri.EscapeDataString(search)))))!.AsArray(); }
             catch (Exception ex) { return Results.Json(new JsonObject { ["problem"] = "The Store does not answer: " + ex.GetBaseException().Message, ["apps"] = new JsonArray() }); }
+            var components = ComponentIds(c);                                   // the top level list holds Apps, not their components
+            foreach (var a in list.OfType<JsonObject>().Where(a => components.Contains((string)a["id"]!)).ToList()) list.Remove(a);
             foreach (var a in list.OfType<JsonObject>())
             {
                 var id = (string)a["id"]!; var storeVersion = (string?)a["version"] ?? "";
@@ -253,6 +255,22 @@ static class StoreRoutes
         catch { return false; }
     }
 
+    // The Apps of the software that are components of another App (their app.json says ComponentOf): they are not listed on their own.
+    static HashSet<string> ComponentIds(StoreContext c)
+    {
+        var ids = new HashSet<string>(StringComparer.Ordinal);
+        try
+        {
+            foreach (var folder in Directory.EnumerateDirectories(c.AppsRoot).SelectMany(Directory.EnumerateDirectories))
+            {
+                var f = Path.Combine(folder, "app.json");
+                try { if (File.Exists(f) && JsonNode.Parse(File.ReadAllText(f))?["ComponentOf"] is not null) ids.Add(Path.GetFileName(folder)); } catch { }
+            }
+        }
+        catch { }
+        return ids;
+    }
+
     // A Store is given the Apps that come with the software and are not on its shelf yet (every folder of Apps with an app.json that names a Standard and a Workflow), as its operator would publish them.
     static async Task SeedAsync(StoreContext c, string data)
     {
@@ -265,7 +283,8 @@ static class StoreRoutes
             foreach (var folder in Directory.EnumerateDirectories(c.AppsRoot).SelectMany(Directory.EnumerateDirectories).Where(f => !onShelf.Contains(Path.GetFileName(f))))
             {
                 if (!File.Exists(Path.Combine(folder, "app.json")) || !Directory.EnumerateFiles(folder, "*.orch").Any()) continue;
-                try { if ((string?)JsonNode.Parse(File.ReadAllText(Path.Combine(folder, "app.json")))?["Standard"] is null) continue; } catch { continue; }          // the descriptors of the MAS App itself are not Apps of a standard
+                // the descriptors of the MAS App itself are not Apps of a standard, and a component of an App (ComponentOf: ADT of the HSP App) is not an App of its own: neither goes on the shelf
+                try { var d0 = JsonNode.Parse(File.ReadAllText(Path.Combine(folder, "app.json"))); if ((string?)d0?["Standard"] is null || d0?["ComponentOf"] is not null) continue; } catch { continue; }
                 using var ms = new MemoryStream();
                 using (var zip = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
                     foreach (var f in Directory.EnumerateFiles(folder).Where(f => Path.GetFileName(f) == "app.json" || new[] { ".orch", ".svg", ".png", ".jpg" }.Contains(Path.GetExtension(f).ToLowerInvariant())))
