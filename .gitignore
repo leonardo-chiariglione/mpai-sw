@@ -138,3 +138,22 @@ Test/Data/Fl/chex-densenet121-features.onnx*
 Test/Data/TMA/*.mp4
 # Written by AllApps/MMM/Run-Meeting.ps1 at each meeting (the address of the meeting, for the join page)
 AllApps/MMM/Join/meeting.json
+
+# 2026-11-23: what the day and night sessions leave on this PC and is never source - the Rocketbox avatar library, spare avatars, downloaded datasets, the outputs of test runs, the working files and backups of the night jobs
+/Support/Avatars/
+/Apps/ABV/AVS/avatars-spare/
+/Test/Data/Fall/
+/Test/Data/Music/corpus/
+/Test/Data/Music/dataset-v2/
+/Test/Data/Speech/LJSpeech/
+/Test/Mpai.Aif.Tests/TestResults/
+/Test/Results/2026-11-15/
+/Test/Results/*/xrv-*/
+/Test/Results/*/mas-night/
+/Test/Results/*/rcaweb-night/
+/Test/Results/night-*.txt
+/Test/AsmVoice/result*.json
+__pycache__/
+/schemas-publish-*/
+/Night/*
+!/Night/TODO.md
