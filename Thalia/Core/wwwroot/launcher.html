@@ -550,7 +550,13 @@ let screenChoice = null;
 (async () => { try { if (P.screenLabel && window.getScreenDetails) { const det = await window.getScreenDetails(); screenChoice = det.screens.find(x => x.label === P.screenLabel) || null; } } catch { } })();
 function openApp(url) {
   if (screenChoice && !screenChoice.isPrimary) window.open(url, '_blank', `popup,left=${screenChoice.availLeft},top=${screenChoice.availTop},width=${screenChoice.availWidth},height=${screenChoice.availHeight}`);
-  else window.open(url, '_blank');
+  else {
+    // A window of its own, smaller than the screen and centred, so that Thalia stays in sight behind it; a tab would fill the whole screen of Thalia.
+    const aw = screen.availWidth || 1280, ah = screen.availHeight || 800;
+    const w = Math.min(1100, Math.round(aw * 0.8)), h = Math.min(860, Math.round(ah * 0.85));
+    const l = (screen.availLeft || 0) + Math.round((aw - w) / 2), t = (screen.availTop || 0) + Math.round((ah - h) / 2);
+    window.open(url, '_blank', `popup,left=${l},top=${t},width=${w},height=${h}`) || window.open(url, '_blank');
+  }
 }
 
 // ---- Settings (APP-1): where Thalia looks -------------------------------------------------------------------------------------------------------------
