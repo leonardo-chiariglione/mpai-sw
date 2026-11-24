@@ -1,0 +1,15 @@
+{
+    "Name": "A-User opens the door",
+    "Description": "Tell the A-User to open the door when the bell rings: it waits in a room with one door, hears the Visitor ring, walks to the door, opens it and says hello.",
+    "Icon": "icon.svg",
+    "Pane": "wide",
+    "Version": "1.0",
+    "Standard": "MPAI-PGM V1.0",
+    "UseCase": "AUA",
+    "Module": "1PGM-ATU-V1.0-I01",
+    "Keywords": ["door", "bell", "A-User", "metaverse", "room", "visitor"],
+    "Categories": ["Metaverse"],
+    "Languages": ["en"],
+    "Asks": ["microphone", "typed text"],
+    "Keeps": "Nothing: the room, the door and what happens in them are used while the demonstration runs."
+}

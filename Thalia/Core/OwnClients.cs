@@ -37,6 +37,8 @@ static class OwnClients
             // the Virtual Meeting Secretary: the ABV server of this PC, and its page
             "VMS" => new(null, null, "dotnet", $"run -c Release --project \"{P(@"Apps\ABV\AVS\Server")}\"", false, Page: "https://localhost:{page}/",
                          Env: new() { ["ABV_PORT"] = "{port}" }),
+            // A-User opens the door (PGM-AUA): the MMM server of the room with its door, the Host User (the A-User App) and the Visitor, and its page; the language model of Basic Knowledge first
+            "AUA" => new(null, null, "dotnet", $"run --project \"{P(@"AllApps\MMM\Server\Mpai.Mmm.Server.csproj")}\" -- http://127.0.0.1:{{port}} --door --llm llama3.2:3b", true, Page: "http://127.0.0.1:{port}/viewer/door.html"),
             _ => null
         };
     }

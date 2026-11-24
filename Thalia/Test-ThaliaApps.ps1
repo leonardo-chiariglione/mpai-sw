@@ -5,13 +5,14 @@
     - AES, SME, SRS, EES, ARP, EAE, CPP: Thalia starts the App's local Controller; the App's own program is then run with files on that Controller (--controller) and must give its result.
     - ASM: Thalia starts the ASM Controller and window; the window must show the Module's welcome.
     - CAS, CPS, TMA: Thalia starts the App's Controller and its questions (dialogs nobody answers here); the App's program is then run with files on that Controller and must give its result.
+    - AUA: Thalia starts the door server and its page; the A-User is ready, is told to open the door when the bell rings, the Visitor rings, and the door opens.
     - LTP, VMS: Thalia starts the program (LTP) or the server and its page (VMS); they must be running 20 s later (and the page must answer).
   Then Thalia stops the App, and what it started must be gone. Needs the Apps built (their launchers build them) and, for ASM, CAS and CPS, Ollama.
 
     powershell -ExecutionPolicy Bypass -File Thalia\Test-ThaliaApps.ps1 [-Apps AES,ASM,...] [-Data <folder>]
   (N-49, 2026-11-24)
 #>
-param([string[]]$Apps = @('AES', 'SME', 'SRS', 'EES', 'ARP', 'EAE', 'CPP', 'ASM', 'CAS', 'CPS', 'TMA', 'LTP', 'VMS'), [string]$Data = '')
+param([string[]]$Apps = @('AES', 'SME', 'SRS', 'EES', 'ARP', 'EAE', 'CPP', 'ASM', 'CAS', 'CPS', 'TMA', 'LTP', 'VMS', 'AUA'), [string]$Data = '')
 $Apps = @($Apps | ForEach-Object { $_ -split ',' })
 $ErrorActionPreference = 'Continue'
 $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
@@ -85,6 +86,18 @@ try {
                     Check 'CPS answers the turn' ($code -eq 0 -and (Test-Path "$out\answer-1.wav")) }
             'TMA' { $code = RunWithFiles (Join-Path $root 'Apps\OSD\TMA\App\bin\Debug\net10.0\TmaApp.exe') @('--controller', $c, '--video', (Join-Path $root 'Test\Data\TMA\AMI-IS1009c-10m00-15m00-side-by-side.mp4'), '--seconds', '20', '--out', $out) $app
                     Check 'TMA describes the programme' ($code -eq 0 -and (Test-Path "$out\event-descriptors.json")) }
+            'AUA' {
+                # the door server and its page; the A-User is told to open the door when the bell rings, the Visitor rings, and the door must open (Night\n37\drive.ps1 drives it as the page does)
+                $door = ($r.url -replace '/viewer/.*$', '')
+                $ready = $false
+                for ($i = 0; $i -lt 240 -and -not $ready; $i++) { try { $ready = ((Invoke-RestMethod "$door/door/log" -TimeoutSec 3).ready -eq $true) } catch { }; if (-not $ready) { Start-Sleep 1 } }
+                Check 'the A-User is ready' $ready 'not ready in 4 minutes'
+                if ($ready) {
+                    $json = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root 'Night\n37\drive.ps1') -Command 'When someone rings, open the door and say hello' -Sound bell -Base $door | Select-Object -Last 1
+                    $o = try { $json | ConvertFrom-Json } catch { $null }
+                    Check 'the A-User opens the door when the bell rings' ($o -and @($o.sounds)[0].opened) $json
+                }
+            }
             default {
                 Start-Sleep 20
                 $r2 = @(Invoke-RestMethod "$base/api/runs" -TimeoutSec 10) | ForEach-Object { $_ } | Where-Object { $_.key -eq "local:$app" }
