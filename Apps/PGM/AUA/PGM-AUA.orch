@@ -1,0 +1,46 @@
+# =============================================================================
+#  PGM-AUA.orch - A-User opens the door (MPAI-PGM V1.0, the A-User App of M3313)
+#  Workflow Description Language v0.3, AIF V3.0
+#
+#  One Controller, one Module, which runs continuously: the A-User Module (PGM-ATU) of the Host User
+#  waits in a room of an M-Instance with one door. The User Agent of the Host User binds its devices to
+#  the boundary of the Module for the life of the workflow:
+#    Command         - the Human Command: "When someone rings, open the door and say hello", typed or
+#                      spoken (recognised by the Module's own AIMs from the speech)
+#    Hearing         - what the Host User hears in the room: speech, sounds (the bell, a knock)
+#    Seeing          - what the Host User sees in the room: the Visual Object
+#    Room            - the answers of the M-Instance to the Process Actions of the Module
+#    Response        - the Human Command Response (Accepted, Rejected, Refused ...), shown to the person
+#    Doing           - the Actions of the Module in the room (walk to the door, open it) and its Process
+#                      Action Requests to the M-Instance
+#    Avatar          - the A-User's Portable Avatar: its speech, its face and its body, played on the
+#                      avatar of the Host User
+#  It names no AIM.
+# =============================================================================
+
+workflow PGM-AUA over 1PGM-ATU-V1.0-I01
+
+on Start:
+
+    ask Controller to start
+
+    stream  Command         (PGM-HCM-V1.0)  from device "Command"
+    stream  Speech          (OSD-BSO-V1.5)  from device "Hearing"
+    stream  Text            (OSD-BTO-V1.5)  from device "Hearing"
+    stream  Sound           (OSD-BAO-V1.5)  from device "Hearing"
+    stream  Sight           (OSD-BVO-V1.5)  from device "Seeing"
+    stream  RoomAnswer      (MMM-PAC-V2.2)  from device "Room"
+
+    deliver Response        (PGM-HCM-V1.0)  to device "Response"
+    deliver Action          (MMM-ACT-V2.2)  to device "Doing"
+    deliver RoomRequest     (MMM-PAC-V2.2)  to device "Room"
+    deliver Avatar          (PAF-PAV-V1.6)  to device "Avatar"
+
+    prompt "The A-User is ready. Tell it what to do when the bell rings, then let the Visitor ring."
+
+    loop until Stop:
+        wait 1s
+
+on Stop:
+
+    ask Controller to stop
