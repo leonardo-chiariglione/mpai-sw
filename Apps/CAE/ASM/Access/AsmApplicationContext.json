@@ -4731,6 +4731,40 @@
       }
     },
     {
+      "Pattern": "(?:(?:remove|take out|take away|get rid of|clear)) (?:the |my )?scene (?:called |named )?(?<sname>.+?)",
+      "Raw": [
+        "sname"
+      ],
+      "Command": {
+        "UserCommandRQ": {
+          "DeletedObjects": {
+            "Objects": [
+              {
+                "ObjectID": "{sname}"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "Pattern": "(?:(?:remove|take out|take away|get rid of|clear)) (?:the |my )?(?<sname>.+?) scene",
+      "Raw": [
+        "sname"
+      ],
+      "Command": {
+        "UserCommandRQ": {
+          "DeletedObjects": {
+            "Objects": [
+              {
+                "ObjectID": "{sname}"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
       "Pattern": "(?:(?:remove|take out|take away|get rid of|clear)) (?:the )?(?<name>.+?)(?: from the scene| out of the scene)?",
       "Names": {
         "name": "Members"

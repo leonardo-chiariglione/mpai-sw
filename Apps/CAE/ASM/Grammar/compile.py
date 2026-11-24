@@ -327,6 +327,11 @@ def delete_scene():
           'Command': {'UserCommandRQ': {'DeletedObjects': {'Objects': [{'ObjectID': '{sname}'}]}}}})
     emit({'Pattern': '(?:' + V['Delete'] + ') (?:the |my )?(?<sname>.+?) (?:scene|room)', 'Raw': ['sname'],
           'Command': {'UserCommandRQ': {'DeletedObjects': {'Objects': [{'ObjectID': '{sname}'}]}}}})
+    # "remove the Guitar-Piano scene": with the word scene, remove means delete (a sound is removed from the scene by its name, with no word scene)
+    emit({'Pattern': '(?:' + V['Remove'] + ') (?:the |my )?scene (?:called |named )?(?<sname>.+?)', 'Raw': ['sname'],
+          'Command': {'UserCommandRQ': {'DeletedObjects': {'Objects': [{'ObjectID': '{sname}'}]}}}})
+    emit({'Pattern': '(?:' + V['Remove'] + ') (?:the |my )?(?<sname>.+?) scene', 'Raw': ['sname'],
+          'Command': {'UserCommandRQ': {'DeletedObjects': {'Objects': [{'ObjectID': '{sname}'}]}}}})
 
 def rename_object():
     """"rename the guitar as piano": the name of an object that is kept, by the verb first (the same command as "set the name of the guitar to piano")."""

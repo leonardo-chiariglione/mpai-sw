@@ -20,10 +20,17 @@ if (-not $Data) { $Data = Join-Path $env:USERPROFILE ('Downloads\Claude-work\tha
 $results = Join-Path $Data 'results'; New-Item -ItemType Directory -Force $Data, $results | Out-Null
 $base = 'http://localhost:5299'
 $script:failed = 0
+$startedAt = Get-Date
 function Check([string]$what, [bool]$ok, [string]$detail = '') {
     if ($ok) { Write-Host ("  ok    " + $what) -ForegroundColor Green } else { Write-Host ("  FAIL  " + $what + $(if ($detail) { ' - ' + $detail })) -ForegroundColor Red; $script:failed++ }
 }
 function Kids($top) { $all = Get-CimInstance Win32_Process; $set = @($top); $more = $true; while ($more) { $more = $false; foreach ($p in $all) { if ($set -contains $p.ParentProcessId -and -not ($set -contains $p.ProcessId)) { $set += $p.ProcessId; $more = $true } } }; $set | Select-Object -Skip 1 }
+# A client host of the browser (RcaWeb.Host) whose Controller is gone is a leftover: it keeps its files locked (the build of Thalia then fails). Those started in this run are stopped.
+function StopOrphanHosts([datetime]$since) {
+    foreach ($p in @(Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match 'RcaWeb\.Host' -and $_.CreationDate -ge $since })) {
+        if ($p.CommandLine -match '--Service http://127\.0\.0\.1:(\d+)/' -and -not (Get-NetTCPConnection -LocalPort ([int]$Matches[1]) -State Listen -ErrorAction SilentlyContinue)) { Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue }
+    }
+}
 function RunWithFiles([string]$file, [string[]]$arguments, [string]$name) {
     $line = ($arguments | ForEach-Object { if ($_ -match '\s') { '"' + $_ + '"' } else { $_ } }) -join ' '
     $p = Start-Process -FilePath $file -ArgumentList $line -NoNewWindow -PassThru -RedirectStandardOutput (Join-Path $results "$name.out.txt") -RedirectStandardError (Join-Path $results "$name.err.txt")
@@ -111,10 +118,12 @@ try {
         $left = @($before | ForEach-Object { Get-Process -Id $_ -ErrorAction SilentlyContinue } | Where-Object { $_ -and $_.ProcessName -ne 'conhost' })
         Check "stopping $app stops what Thalia started" ($left.Count -eq 0) (($left | ForEach-Object { $_.ProcessName }) -join ', ')
         foreach ($p in $left) { Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue }
+        StopOrphanHosts $startedAt
     }
 } finally {
     foreach ($id in @(Kids $thalia.Id)) { Stop-Process -Id $id -Force -ErrorAction SilentlyContinue }
     Stop-Process -Id $thalia.Id -Force -ErrorAction SilentlyContinue
+    Start-Sleep 2; StopOrphanHosts $startedAt
     Pop-Location
 }
 Write-Host ''
