@@ -1,5 +1,8 @@
 using System.Text.Json.Nodes;
 
+using Mpai.Core;
+using Mpai.Core.OSD;
+
 using Mpai.Mmc.Jsi;
 
 namespace Mpai.Aif.Tests;
@@ -34,5 +37,26 @@ public class JsiKindListingTests
         Assert.Equal("The Acoustic Profiles kept: warm, hall.", JsiAimProcessor.TellKind("Acoustic Profiles", Answer("{\"ObjectID\":\"warm\",\"Kind\":\"Acoustic Profile\"},{\"ObjectID\":\"hall\",\"Kind\":\"Acoustic Profile\"}")));
         Assert.Equal("The Module keeps no Acoustic Profile.", JsiAimProcessor.TellKind("Acoustic Profiles", Answer("")));
         Assert.Equal("The Acoustic Profile is shown in the panel.", JsiAimProcessor.TellKind("Acoustic Profile", Answer("{\"ObjectID\":\"stage\",\"Kind\":\"Acoustic Profile\"}")));
+    }
+
+    // What the Audio Scene Editing AIM really lists for the room and the listener (not a copy of the shape): told as it is.
+    [Fact]
+    public async Task TheRoomAndTheListenerTheModuleListsAreToldRight()
+    {
+        using var rig = new AsmRig();
+        await rig.OpenAudio(AsmRig.Sound("violin"));
+        const string room = "{\"Header\":\"OSD-CSP-V1.5\",\"ClosedSpaceID\":\"room\",\"Shape\":[{\"Header\":\"OSD-SLC-V1.5\",\"SimpleLocationData\":[{\"RightParallelepiped\":{\"Header\":\"OSD-RPP-V1.5\",\"Dimensions\":\"3D\",\"CartPositions\":[[-3,-2,0],[3,-2,0],[-3,2,0],[-3,-2,3]]}}]}]}";
+        async Task<UserCommand> Run(UserCommandRQ data) { var c = AsmRig.Command(data); return (await rig.Ask(c)).Merged(c.UserCommandID); }
+        await Run(new UserCommandRQ { AddedObjects = new ObjectPlacements { ObjectID = "stage", Objects = [AsmRig.Put("violin", 1)] } });
+        await Run(new UserCommandRQ { ClosedSpace = new JsonArray(JsonNode.Parse(room)) });
+
+        var listedRoom = await Run(new UserCommandRQ { ListedObjects = new ObjectListing { Kind = "Closed Space", ObjectID = "stage" } });
+        var roomJson = JsonNode.Parse("{\"UserCommandRS\":{\"ListedObjects\":" + MpaiJson.ToJson(listedRoom.UserCommandRS!.ListedObjects!) + "}}")!.AsObject();
+        Assert.Equal("The room is 6 by 4 metres and 3 metres high.", JsiAimProcessor.TellKind("Closed Space", roomJson));
+
+        var listedListener = await Run(new UserCommandRQ { ListedObjects = new ObjectListing { Kind = "Listener", ObjectID = "stage" } });
+        var listenerJson = JsonNode.Parse("{\"UserCommandRS\":{\"ListedObjects\":" + MpaiJson.ToJson(listedListener.UserCommandRS!.ListedObjects!) + "}}")!.AsObject();
+        Assert.StartsWith("The listener is at x ", JsiAimProcessor.TellKind("Listener", listenerJson));
+        Assert.DoesNotContain("no listener position", JsiAimProcessor.TellKind("Listener", listenerJson));
     }
 }
