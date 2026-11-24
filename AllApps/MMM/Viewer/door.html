@@ -41,7 +41,17 @@
   <div class="row"><button id="send">Send command</button><button id="mic" class="alt" title="Click to speak, click again to stop">Speak</button></div>
   <div class="muted">The other User (the Visitor), outside, in the street:</div>
   <div class="row"><button id="ring" class="alt">Visitor comes and rings the bell</button><button id="knock" class="alt">Visitor comes and knocks</button></div>
-  <div class="row"><button id="reset" class="alt" title="The door closed, the Personae back at their places, the A-User Module started again">New scene</button></div>
+  <div class="row"><button id="reset" class="alt" title="The door closed, the Personae back at their places, the A-User Module started again">New scene</button><button id="back" class="alt" hidden title="Leave this page and go back to Thalia: the App goes on running until you stop it in Thalia (Running)">Back to Thalia</button></div>
+  <script>
+    // Opened by Thalia (?from=thalia): a button to go back. The page closes if it was opened by Thalia's page; otherwise Thalia's page is shown in its place.
+    (() => {
+      const q = new URLSearchParams(location.search), back = document.getElementById('back');
+      if (!back || q.get('from') !== 'thalia') return;
+      back.hidden = false;
+      let home = 'http://localhost:5199/'; try { const r = new URL(document.referrer); if (r.hostname === 'localhost' || r.hostname === '127.0.0.1') home = r.origin + '/'; } catch { }      // Thalia's own address, when the page was opened from it
+      back.onclick = () => { try { window.close(); } catch { } setTimeout(() => { location.href = home; }, 300); };
+    })();
+  </script>
   <div id="log"></div>
 </div>
 <script>if (location.protocol === 'file:') document.write('<div style="position:fixed;inset:0;z-index:9;background:#1d2126;color:#fff;display:flex;align-items:center;justify-content:center;font:18px Segoe UI,Arial;text-align:center;padding:20px">This page works only from the demo server.<br>Start MMM\\Run-Door.ps1, then open<br><a style="color:#9cc7ff" href="http://127.0.0.1:7101/viewer/door.html">http://127.0.0.1:7101/viewer/door.html</a></div>');</script>
