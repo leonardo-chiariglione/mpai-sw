@@ -145,7 +145,8 @@ app.MapGet("/api/icon/{where}/{id}", async (string where, string id) =>
 // ---- the App life cycle (APP-6): run and stop, local and MAS-based alike ------------------------------------------------------------------------
 app.MapPost("/api/run/{where}/{id}", async (string where, string id) =>
 {
-    if (!AllIds().Contains(id)) return Results.BadRequest(new { error = $"{id} is not in the catalogue" });
+    // An App of the MPAI as a Service instance is run from here whether or not it is also in this Thalia's own list: the catalogue shows every App the instance offers.
+    if (where != "mas" && !AllIds().Contains(id)) return Results.BadRequest(new { error = $"{id} is not in the catalogue" });
     if (remote && where != "mas") return Results.BadRequest(new { error = "this is a Remote Thalia: it runs the Apps of MPAI as a Service only" });
     var key = $"{where}:{id}";
     if (running.TryGetValue(key, out var already) && already.Alive) return Results.Json(already.Json());
@@ -312,6 +313,9 @@ async Task StartAsync(Run run)
     {
         // AN APP WITH ITS OWN CONTROLLER AND CLIENT (OwnClients.cs, N-49): started as its launcher of AllApps starts it, on a port Thalia chooses.
         if (!remote && run.Where == "local" && OwnClients.Of(run.App, root) is { } own) { await StartOwnAsync(run, own); return; }
+        // An App of the MPAI as a Service instance that needs its own window (ASM, CAS, CPS, TMA: the browser client has not the devices they use): the window is started on this machine and told where
+        // the instance is. The Controller is the instance's: none is started here.
+        if (!remote && run.Where == "mas" && OwnClients.Of(run.App, root) is { ControllerExe: not null } ownMas) { await StartOwnAsync(run, ownMas, masUrl.ToString()); return; }
         if (!File.Exists(hostDll)) throw new InvalidOperationException($"the App client is not built: {hostDll} (dotnet build {hostProject})");
         var hostFile = remote && File.Exists(hostExe) ? hostExe : "dotnet";
         var hostArgs = hostFile == "dotnet" ? $"\"{hostDll}\" " : "";
@@ -373,13 +377,15 @@ async Task StartAsync(Run run)
 }
 
 // THE APP'S OWN CONTROLLER, THEN ITS OWN CLIENT; when the client ends (the User closed its window), the App ends and its Controller is stopped.
-async Task StartOwnAsync(Run run, OwnClients.Own own)
+async Task StartOwnAsync(Run run, OwnClients.Own own, string? serviceUrl = null)
 {
-    if (own.LanguageModel) await EnsureOllamaAsync(run);
-    string controller = "";
+    if (own.LanguageModel && serviceUrl is null) await EnsureOllamaAsync(run);
+    string controller = serviceUrl?.TrimEnd('/') ?? "";
     var clientPort = FreePort();
     string Fill(string t) => t.Replace("{controller}", controller).Replace("{root}", root).Replace("{data}", thaliaData).Replace("{port}", clientPort.ToString()).Replace("{page}", (clientPort + 1).ToString());
-    if (own.ControllerExe is { } exe)
+    // On the instance of MPAI as a Service the Module's storage is the instance's: the window is not given a storage of its own.
+    var clientArgs = serviceUrl is null ? own.ClientArgs : System.Text.RegularExpressions.Regex.Replace(own.ClientArgs, @"\s*--storage\s+""[^""]*""", "");
+    if (own.ControllerExe is { } exe && serviceUrl is null)
     {
         if (!File.Exists(exe)) throw new InvalidOperationException($"its Controller is not built: {exe} (dotnet build {own.ControllerProject})");
         var port = FreePort();
@@ -398,7 +404,7 @@ async Task StartOwnAsync(Run run, OwnClients.Own own)
     if (own.ClientBuilt is { } built && !File.Exists(built)) throw new InvalidOperationException($"the App is not built: {built}");
     run.Phase = "starting the App's own client";
     var env = own.Env?.ToDictionary(kv => kv.Key, kv => Fill(kv.Value));
-    var client = run.Spawn("client", own.ClientFile, Fill(own.ClientArgs), root, env);
+    var client = run.Spawn("client", own.ClientFile, Fill(clientArgs), root, env);
     if (own.Page is { } page)
     {
         var until = DateTime.UtcNow.AddMinutes(3);
