@@ -65,6 +65,9 @@
   .ret { font:inherit; font-size:13px; padding:6px 14px; border-radius:8px; border:1px solid var(--line); background:var(--panel2); color:var(--ink); cursor:pointer; }
   .ret:hover { border-color:var(--accent); }
   .dock { margin-top:auto; display:flex; flex-direction:column; align-items:center; gap:8px; padding:12px 4px 4px; border-top:1px solid var(--line); }
+  .rail .dock button.logo { width:100%; padding:6px 10px; background:#fff; border:2px solid transparent; border-radius:10px; cursor:pointer; }
+  .rail .dock button.logo img { display:block; height:46px; margin:0 auto; }
+  .rail .dock button.logo:hover, .rail .dock button.logo.on { border-color:var(--accent); }
   .face { width:104px; height:104px; border-radius:50%; object-fit:cover; border:2px solid var(--line); background:#222; }
   .dock .name { font-size:13px; color:var(--muted); margin-top:-4px; }
   .sw { width:100%; display:grid; grid-template-columns:1fr 1fr; gap:6px; }
@@ -91,7 +94,7 @@
   <div class="body">
     <nav class="rail"><button class="on" data-view="home">Home</button><button data-view="apps">Apps</button><button data-view="running">Running</button><button data-view="devices">Devices</button><button data-view="settings">Settings</button>
 <aside class="dock" aria-label="Thalia">
-  <button data-view="about" style="width:100%" title="A video that tells what MPAI proposes">About MPAI</button>
+  <button data-view="about" class="logo" title="About MPAI: a video that tells what MPAI proposes" aria-label="About MPAI"><img src="/mpai-logo.png" alt="About MPAI"></button>
   <img class="face" src="/thalia.png?v=2" alt="Thalia">
   <div class="name">Thalia</div>
   <div class="sw" id="sw"><button disabled title="Coming: Thalia listens to you">Listen</button><button disabled title="Coming: Thalia speaks to you">Speak</button></div>
