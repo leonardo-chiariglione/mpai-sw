@@ -136,7 +136,7 @@ Console.WriteLine($"M-Instance {m.ID} on {url}; its viewer at {url.TrimEnd('/')}
 var noAsr = args.Contains("--no-asr");
 var whisper = new WhisperAsr(repo);
 if (noAsr) Console.WriteLine("No speech recognition (--no-asr): the participants write to the Secretary.");
-else if (whisper.Available) { whisper.Start(); Console.WriteLine("Whisper starting for the ASR Service (the model loads in a few seconds)."); }
+else if (whisper.Available) Console.WriteLine("Whisper starts for the ASR Service after the language model is loaded (the model loads in a few seconds).");
 else Console.WriteLine("Whisper (the program and the model the L3 of ASR declares) is not in Access: the ASR Service finds no words.");
 // --meeting-demo [seconds]: the bots of the meeting use case play it against this server, a step at a time (default 5 s apart), for the viewer - open /viewer/?look=12,0 -
 // to show. The bots have no voices, so the ASR Service recognises the words of a script instead of Whisper.
@@ -146,6 +146,19 @@ var inside = new HttpClient { BaseAddress = new Uri(url) }; inside.DefaultReques
 var meeting = new MeetingServices(inside, m, meetingDemo >= 0 ? MeetingUseCase.ScriptedRecognizer() : !noAsr && whisper.Available ? whisper.RecognizeAsync : null) { TranscribeAlways = meetingDemo >= 0 };
 // --llm llama3.1: the language model of the Secretary and of the summary (default llama3.2:3b, which fits on a 4 GB card and leaves the processor to Whisper).
 var llm = Arg("--llm") ?? "llama3.2:3b";
+// THE LANGUAGE MODEL FIRST, THEN WHISPER (as the door demo, N-48): both use the card; the model loaded after Whisper reads and writes 2.3 times slower. Ollama is asked to load the model and keep it; when it is loaded - or cannot be reached - Whisper starts.
+if (!noAsr && whisper.Available)
+    _ = Task.Run(async () =>
+    {
+        try
+        {
+            using var ollama = new HttpClient { BaseAddress = new Uri("http://127.0.0.1:11434"), Timeout = TimeSpan.FromSeconds(120) };
+            using var loaded = await ollama.PostAsync("/api/generate", new StringContent(System.Text.Json.JsonSerializer.Serialize(new { model = llm, prompt = "", keep_alive = "30m" }), System.Text.Encoding.UTF8, "application/json"));
+            Console.WriteLine($"The language model {llm} is loaded; Whisper starts.");
+        }
+        catch (Exception e) { Console.WriteLine($"The language model {llm} could not be loaded ({e.Message}); Whisper starts anyway."); }
+        whisper.Start();
+    });
 // The summary, for who asks (--no-summary: none): the language model and the voices are asked only when somebody does.
 using var summary = new SummaryServices(repo, llm);
 if (!args.Contains("--no-summary")) { meeting.Summarise = summary.SummariseAsync; meeting.Translate = summary.TranslateAsync; meeting.Synthesise = summary.SynthesiseAsync; }

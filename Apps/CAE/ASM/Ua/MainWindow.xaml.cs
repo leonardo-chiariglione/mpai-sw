@@ -147,6 +147,10 @@ public partial class MainWindow : Window
             if (_warming) return Task.CompletedTask;
             var heard = TextOf(json);
             if (IsNoise(heard)) { App.Log("[window] noise ignored: " + heard); SetStatus("Ready."); return Task.CompletedTask; }
+            // EACH WORDS HEARD OWES ONE ANSWER, in order: whether that answer is the person's or the window's own (a sound placed for the person) is known from the words, not counted by time.
+            var quiet = TakeQuiet(heard);
+            lock (_owed) _owed.Enqueue(quiet);
+            if (quiet) return Task.CompletedTask;
             Dispatcher.Invoke(() => { HeardText.Text = heard; AnswerText.Text = ""; });
             SetStatus("Thinking...");
             return Task.CompletedTask;
@@ -157,8 +161,10 @@ public partial class MainWindow : Window
         {
             if (_warming) { _warmed++; return Task.CompletedTask; }
             var said = TextOf(json);
-            if (_quietPending > 0 && DateTime.UtcNow - _quietSince < TimeSpan.FromSeconds(5)) { _quietPending--; App.Log("[window] the answer to a command given for the person: " + said); return Task.CompletedTask; }
+            bool? owedToTheWindow; lock (_owed) owedToTheWindow = _owed.Count > 0 ? _owed.Dequeue() : null;
+            if (owedToTheWindow == true) { Interlocked.Increment(ref _quietSpeech); App.Log("[window] the answer to a command given for the person: " + said); return Task.CompletedTask; }
             Interlocked.Increment(ref _textsToSpeak); Interlocked.Increment(ref _answers);
+            Interlocked.Exchange(ref _textSinceSpeech, 1);
             App.Log("[window] answer shown (and to be spoken): " + said);
             Dispatcher.Invoke(() => AnswerText.Text = said);
             _stuck = 0;
@@ -172,6 +178,19 @@ public partial class MainWindow : Window
         {
             if (_warming) return;
             // WHAT IS SAID IS WHAT IS WRITTEN: speech is said only for an answer shown in the box; speech that has no answer written for it is not said.
+            // A SPEECH COMES WITH ITS WRITTEN ANSWER. The speech of a command the window gave for the person is not said. Any other speech that has no answer written since the speech before is an answer whose text did not
+            // arrive: the speech carries the text it was made from (its Content Description), and that is written and said.
+            if (_speechShape++ < 1) App.Log("[window] shape of a speech: " + System.Text.RegularExpressions.Regex.Replace(json, "\"[A-Za-z0-9+/=]{200,}\"", "\"...\""));
+            var textCame = Interlocked.Exchange(ref _textSinceSpeech, 0) == 1;
+            if (!textCame)
+            {
+                if (Interlocked.Decrement(ref _quietSpeech) >= 0) { App.Log("[window] speech of a command given for the person: NOT said"); return; }
+                Interlocked.Exchange(ref _quietSpeech, 0);
+                if (TextOfSpeech(json) is not { Length: > 0 } recovered) { App.Log("[window] speech without an answer written for it, and no text in it: NOT said"); return; }
+                App.Log("[window] the written answer did not arrive; written from the speech: " + recovered);
+                await showReply(MpaiJson.ToJson(BasicTextObject.FromText(recovered)));
+                Interlocked.Exchange(ref _textSinceSpeech, 0);
+            }
             if (Interlocked.Decrement(ref _textsToSpeak) < 0) { Interlocked.Exchange(ref _textsToSpeak, 0); App.Log("[window] speech without an answer written for it: NOT said"); return; }
             if (App.Silent || _textOnly) { App.Log(App.Silent ? "[window] (silent) the answer is not played" : "[window] text mode: the answer is written, not said"); return; }
             try
@@ -824,11 +843,47 @@ public partial class MainWindow : Window
         });
     }
 
-    private int _quietPending; private DateTime _quietSince;
+    // The words the window gave for the person (not typed by the person), until they come back as the words heard; and, in the order the words were heard, whether the answer owed is the window's.
+    private readonly List<(string Words, DateTime At)> _quietWords = [];
+    private readonly Queue<bool> _owed = new();
+    private int _speechShape;
+    private int _textSinceSpeech;          // 1 when an answer was written since the last speech
+    private int _quietSpeech;          // the speech still to come for answers that were not written because the window gave the command
+    // The words a Speech Object was made from: its Qualifier carries them (Content Description, Text Object).
+    private static string? TextOfSpeech(string json)
+    {
+        try
+        {
+            if (JsonNode.Parse(json) is JsonObject top && (string?)top["DescrMetadata"] is { Length: > 0 } described) return described;
+            string? best = null;
+            void Walk(JsonNode? n, bool inside)
+            {
+                switch (n)
+                {
+                    case JsonObject o: foreach (var (k, v) in o) Walk(v, inside || k == "TextObject"); break;
+                    case JsonArray a: foreach (var x in a) Walk(x, inside); break;
+                    case JsonValue v when inside && v.TryGetValue<string>(out var str) && str.Length > 0 && str.Contains(' ') && (best is null || str.Length > best.Length): best = str; break;
+                }
+            }
+            Walk(JsonNode.Parse(json), false);
+            return best;
+        }
+        catch (System.Text.Json.JsonException) { return null; }
+    }
+    private bool TakeQuiet(string heard)
+    {
+        lock (_quietWords)
+        {
+            _quietWords.RemoveAll(q => DateTime.UtcNow - q.At > TimeSpan.FromSeconds(60));
+            var at = _quietWords.FindIndex(q => string.Equals(q.Words.Trim(), heard.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (at < 0) return false;
+            _quietWords.RemoveAt(at);
+            return true;
+        }
+    }
     private void Quiet(string words)
     {
-        if (DateTime.UtcNow - _quietSince > TimeSpan.FromSeconds(5)) _quietPending = 0;          // an answer that never came is not waited for
-        _quietPending++; _quietSince = DateTime.UtcNow;
+        lock (_quietWords) _quietWords.Add((words, DateTime.UtcNow));
         App.Log("[window] a command for the person, quietly: " + words);
         GiveText(words);
     }

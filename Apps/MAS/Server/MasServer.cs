@@ -694,7 +694,9 @@ public sealed class MasServer
                 await Write(ctx, outcome == "NotProduced" ? 404 : 500, "text/plain", $"No output for Port {port.Key} ({outcome}).");
                 return;
             }
-            await WriteOutput(ctx, module, port, codecs.ToWire(dataType, json));
+            if (Environment.GetEnvironmentVariable("MPAI_DIAG") == "1") Console.WriteLine($"[MAS] output {dataType}#{portNumber} read {json.Length} bytes at {DateTime.Now:HH:mm:ss.fff} (client port {ctx.Connection.RemotePort}, request {ctx.TraceIdentifier})");
+            try { await WriteOutput(ctx, module, port, codecs.ToWire(dataType, json)); }
+            catch (Exception lost) { Console.WriteLine($"[MAS] output {dataType}#{portNumber} read {json.Length} bytes and NOT sent: {lost.GetType().Name}: {lost.Message}"); throw; }
             return;
         }
 

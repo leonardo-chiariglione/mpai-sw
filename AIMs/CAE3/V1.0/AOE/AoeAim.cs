@@ -97,6 +97,8 @@ public sealed class AoeAim
 
     // The name of the Audio Object (Basic or Full) the Module keeps under it; null when it keeps none. The name is the ID, and the ID is the key.
     public string? Kept(string? name) => NameBook.Clean(name) is { } clean && Holds(clean) ? clean : null;
+    public bool KeepsAScene() => store.All(Kinds.AudioScene).Any();
+    public bool HoldsScene(string? name) => NameBook.Clean(name) is { } clean && store.Holds(Kinds.AudioScene, clean);
     public bool Holds(string? name) => NameBook.Clean(name) is { } clean && (store.Holds(Kinds.BasicAudioObject, clean) || store.Holds(Kinds.AudioObject, clean));
     public bool IsBasic(string? id) => store.Holds(Kinds.BasicAudioObject, id);
     public bool IsFull(string? id) => store.Holds(Kinds.AudioObject, id);

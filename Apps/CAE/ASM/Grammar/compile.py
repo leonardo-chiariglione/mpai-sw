@@ -474,6 +474,9 @@ def translate():
         emit(rule(MEMBER, '(?:' + verbs + ') (?:the )?(?<name>.+?)' + into, None, cmd))
         emit(rule(MEMBER, '(?:' + verbs + ') ' + lang + ' (?:the )?(?<name>.+?)', None, cmd))
         emit(rule(NEWEST, '(?:' + verbs + ') (?:' + PRON + ')' + into, None, cmd))
+        # a speech segment loaded and not in the Audio Scene is no member of it: named as it is, by the verb that cannot be taken for anything else
+        emit(rule(RAW, '(?:translate) (?:the )?(?<name>.+?)' + into, None, cmd))
+        emit(rule(RAW, '(?:translate) ' + lang + ' (?:the )?(?<name>.+?)', None, cmd))
 
 def profiles():
     """acoustic profiles by name: one kept is applied to the scene, the acoustics of the scene are kept under a name, a kept one is deleted (M3282 UCM-4)."""
@@ -535,6 +538,8 @@ def build():
     names = [k for k in G['Materials'] if k not in ('_', 'Bands')]
     say = 'I know these materials: ' + ', '.join(names[:-1]) + ' and ' + names[-1] + '. Say for example: set the left wall to carpet, or cover the ceiling with foam.'
     context.setdefault('Asks', []).insert(0, {'Words': ['which materials', 'what materials', 'list the materials', 'list materials', 'materials available', 'available materials', 'materials do you', 'materials can i', 'materials are there', 'show the materials', 'show materials'], 'Say': say})
+    # "move the violin" with nothing more (no rule took it): the manual asks by how much (M3300).
+    context['Asks'].insert(0, {'Words': ['move the ', 'push the ', 'shift the ', 'raise the ', 'lower the ', 'bring the '], 'Say': 'By how much, as a number? For example: move the violin 2 metres to the right, or put the violin at x 2, y 1.'})
     text = json.dumps(context, indent=2, ensure_ascii=False) + '\n'
     return text
 

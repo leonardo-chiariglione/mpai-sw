@@ -994,7 +994,8 @@
     "ModifiedObjects": "changed {0}",
     "NewScene": "started the scene {0}",
     "OpenedScene": "opened the scene {0}",
-    "NamedScene": "named the scene {0}"
+    "NamedScene": "named the scene {0}",
+    "TranslatedObjects": "translated {0}"
   },
   "Asks": [
     {

@@ -289,7 +289,12 @@ public sealed class AimHost : IDisposable
         var context = await ContextAsync(instanceId);
         if (!TurnTrace.Enabled) return await processor.ProcessAsync(message with { Context = context });
         var clock = System.Diagnostics.Stopwatch.StartNew();
-        try { return await processor.ProcessAsync(message with { Context = context }); }
+        try
+        {
+            var done = await processor.ProcessAsync(message with { Context = context });
+            TurnTrace.Line($"aim {instanceId} out [{string.Join(", ", done.Ports.Where(p => p.Value.Length > 0).Select(p => p.Key + ":" + p.Value.Length))}] of in [{string.Join(", ", message.Ports.Where(p => p.Value.Length > 0).Select(p => p.Key + ":" + p.Value.Length))}]");
+            return done;
+        }
         finally { TurnTrace.Line($"aim {instanceId} {clock.ElapsedMilliseconds} ms"); }
     }
 

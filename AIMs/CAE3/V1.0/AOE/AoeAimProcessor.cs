@@ -75,7 +75,16 @@ public sealed class AoeAimProcessor : IAimProcessor
 
     private static string? N(string? id) => id;
 
+    // ONE COMMAND AT A TIME: the Controller may call this AIM from two Ports at once (the person's words and the window's own placement of a sound just loaded); the open Scene and the names taken
+    // are this AIM's, so two calls together made a second Scene ("stage 2") and lost answers. A call waits for the one before it.
+    private readonly object _one = new();
+
     public Task<Message> ProcessAsync(Message message)
+    {
+        lock (_one) return ProcessOne(message);
+    }
+
+    private Task<Message> ProcessOne(Message message)
     {
         var outputs = new Dictionary<string, string>();
 
@@ -188,11 +197,13 @@ public sealed class AoeAimProcessor : IAimProcessor
     // The Objects, each with its place and its time, as ONE new Audio Object under the name the command gives it.
     private void Compose(ObjectPlacements composed, PointOfView? pov, CommandReport report)
     {
+        // No name, and the Module keeps a Scene: the Objects are put in it (Audio Scene Editing's), no Audio Object is asked for. A name that is a Scene's is that Scene's, not an Audio Object's.
         if (NameBook.Clean(composed.ObjectID) is not { } madeName)
         {
-            report.Failed("AddedObjects", null, "a name is needed for the Audio Object that is made: the command gives it in ObjectID");
+            if (!_aoe.KeepsAScene()) report.Failed("AddedObjects", null, "a name is needed for the Audio Object that is made: the command gives it in ObjectID");
             return;
         }
+        if (_aoe.HoldsScene(madeName)) return;
         var parts = new List<(string, SpaceTime?)>();
         foreach (var entry in composed.Objects)
         {

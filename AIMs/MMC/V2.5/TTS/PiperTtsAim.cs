@@ -175,7 +175,7 @@ public sealed class PiperTtsAim : ITtsAim
         // Build the output Speech Qualifier and attach it to the Basic Speech Object.
         var qualifier = BuildSpeechQualifier(text, voice.Profile);
 
-        return BasicSpeechObject.FromData(wav.SpeechData, qualifier);
+        return BasicSpeechObject.FromData(wav.SpeechData, qualifier, text.GetText());      // the words it was made from travel with it (Descriptive Metadata)
     }
 
     // Piper's errors arrive with a timestamp and a log prefix; the useful part is

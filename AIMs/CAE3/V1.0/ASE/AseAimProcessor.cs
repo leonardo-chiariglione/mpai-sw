@@ -78,7 +78,16 @@ public sealed class AseAimProcessor : IAimProcessor
 
     private static string? N(string? id) => id;
 
+    // ONE COMMAND AT A TIME: the Controller may call this AIM from two Ports at once (the person's words and the window's own placement of a sound just loaded); the open Scene and the names taken
+    // are this AIM's, so two calls together made a second Scene ("stage 2") and lost answers. A call waits for the one before it.
+    private readonly object _one = new();
+
     public Task<Message> ProcessAsync(Message message)
+    {
+        lock (_one) return ProcessOne(message);
+    }
+
+    private Task<Message> ProcessOne(Message message)
     {
         var outputs = new Dictionary<string, string>();
 

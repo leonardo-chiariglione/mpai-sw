@@ -1035,9 +1035,21 @@
     "ModifiedObjects": "changed {0}",
     "NewScene": "started the scene {0}",
     "OpenedScene": "opened the scene {0}",
-    "NamedScene": "named the scene {0}"
+    "NamedScene": "named the scene {0}",
+    "TranslatedObjects": "translated {0}"
   },
   "Asks": [
+    {
+      "Words": [
+        "move the ",
+        "push the ",
+        "shift the ",
+        "raise the ",
+        "lower the ",
+        "bring the "
+      ],
+      "Say": "By how much, as a number? For example: move the violin 2 metres to the right, or put the violin at x 2, y 1."
+    },
     {
       "Words": [
         "which materials",
@@ -27438,6 +27450,68 @@
       }
     },
     {
+      "Pattern": "(?:translate) (?:the )?(?<name>.+?)(?: (?:in|into|to))? english",
+      "Raw": [
+        "name"
+      ],
+      "Command": {
+        "UserCommandRQ": {
+          "TranslatedObjects": {
+            "Objects": [
+              {
+                "ObjectID": "{name}",
+                "SpeechQualifier": {
+                  "Header": "TFA-SPQ-V1.5",
+                  "SpeechQualifierID": "translated",
+                  "SubTypes": {},
+                  "Formats": {},
+                  "Attributes": {
+                    "Metadata": {
+                      "Language": {
+                        "LanguageFormat": "ISO 639-1",
+                        "LanguageCode": "en"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "Pattern": "(?:translate) english (?:the )?(?<name>.+?)",
+      "Raw": [
+        "name"
+      ],
+      "Command": {
+        "UserCommandRQ": {
+          "TranslatedObjects": {
+            "Objects": [
+              {
+                "ObjectID": "{name}",
+                "SpeechQualifier": {
+                  "Header": "TFA-SPQ-V1.5",
+                  "SpeechQualifierID": "translated",
+                  "SubTypes": {},
+                  "Formats": {},
+                  "Attributes": {
+                    "Metadata": {
+                      "Language": {
+                        "LanguageFormat": "ISO 639-1",
+                        "LanguageCode": "en"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
       "Pattern": "(?:(?:translate|say|render)) (?:the )?(?<name>.+?)(?: (?:in|into|to))? french",
       "Names": {
         "name": "Members"
@@ -27504,6 +27578,68 @@
       "Implicit": {
         "name": "Newest"
       },
+      "Command": {
+        "UserCommandRQ": {
+          "TranslatedObjects": {
+            "Objects": [
+              {
+                "ObjectID": "{name}",
+                "SpeechQualifier": {
+                  "Header": "TFA-SPQ-V1.5",
+                  "SpeechQualifierID": "translated",
+                  "SubTypes": {},
+                  "Formats": {},
+                  "Attributes": {
+                    "Metadata": {
+                      "Language": {
+                        "LanguageFormat": "ISO 639-1",
+                        "LanguageCode": "fr"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "Pattern": "(?:translate) (?:the )?(?<name>.+?)(?: (?:in|into|to))? french",
+      "Raw": [
+        "name"
+      ],
+      "Command": {
+        "UserCommandRQ": {
+          "TranslatedObjects": {
+            "Objects": [
+              {
+                "ObjectID": "{name}",
+                "SpeechQualifier": {
+                  "Header": "TFA-SPQ-V1.5",
+                  "SpeechQualifierID": "translated",
+                  "SubTypes": {},
+                  "Formats": {},
+                  "Attributes": {
+                    "Metadata": {
+                      "Language": {
+                        "LanguageFormat": "ISO 639-1",
+                        "LanguageCode": "fr"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "Pattern": "(?:translate) french (?:the )?(?<name>.+?)",
+      "Raw": [
+        "name"
+      ],
       "Command": {
         "UserCommandRQ": {
           "TranslatedObjects": {
@@ -27624,6 +27760,68 @@
       }
     },
     {
+      "Pattern": "(?:translate) (?:the )?(?<name>.+?)(?: (?:in|into|to))? german",
+      "Raw": [
+        "name"
+      ],
+      "Command": {
+        "UserCommandRQ": {
+          "TranslatedObjects": {
+            "Objects": [
+              {
+                "ObjectID": "{name}",
+                "SpeechQualifier": {
+                  "Header": "TFA-SPQ-V1.5",
+                  "SpeechQualifierID": "translated",
+                  "SubTypes": {},
+                  "Formats": {},
+                  "Attributes": {
+                    "Metadata": {
+                      "Language": {
+                        "LanguageFormat": "ISO 639-1",
+                        "LanguageCode": "de"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "Pattern": "(?:translate) german (?:the )?(?<name>.+?)",
+      "Raw": [
+        "name"
+      ],
+      "Command": {
+        "UserCommandRQ": {
+          "TranslatedObjects": {
+            "Objects": [
+              {
+                "ObjectID": "{name}",
+                "SpeechQualifier": {
+                  "Header": "TFA-SPQ-V1.5",
+                  "SpeechQualifierID": "translated",
+                  "SubTypes": {},
+                  "Formats": {},
+                  "Attributes": {
+                    "Metadata": {
+                      "Language": {
+                        "LanguageFormat": "ISO 639-1",
+                        "LanguageCode": "de"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
       "Pattern": "(?:(?:translate|say|render)) (?:the )?(?<name>.+?)(?: (?:in|into|to))? spanish",
       "Names": {
         "name": "Members"
@@ -27690,6 +27888,68 @@
       "Implicit": {
         "name": "Newest"
       },
+      "Command": {
+        "UserCommandRQ": {
+          "TranslatedObjects": {
+            "Objects": [
+              {
+                "ObjectID": "{name}",
+                "SpeechQualifier": {
+                  "Header": "TFA-SPQ-V1.5",
+                  "SpeechQualifierID": "translated",
+                  "SubTypes": {},
+                  "Formats": {},
+                  "Attributes": {
+                    "Metadata": {
+                      "Language": {
+                        "LanguageFormat": "ISO 639-1",
+                        "LanguageCode": "es"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "Pattern": "(?:translate) (?:the )?(?<name>.+?)(?: (?:in|into|to))? spanish",
+      "Raw": [
+        "name"
+      ],
+      "Command": {
+        "UserCommandRQ": {
+          "TranslatedObjects": {
+            "Objects": [
+              {
+                "ObjectID": "{name}",
+                "SpeechQualifier": {
+                  "Header": "TFA-SPQ-V1.5",
+                  "SpeechQualifierID": "translated",
+                  "SubTypes": {},
+                  "Formats": {},
+                  "Attributes": {
+                    "Metadata": {
+                      "Language": {
+                        "LanguageFormat": "ISO 639-1",
+                        "LanguageCode": "es"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "Pattern": "(?:translate) spanish (?:the )?(?<name>.+?)",
+      "Raw": [
+        "name"
+      ],
       "Command": {
         "UserCommandRQ": {
           "TranslatedObjects": {
@@ -27810,6 +28070,68 @@
       }
     },
     {
+      "Pattern": "(?:translate) (?:the )?(?<name>.+?)(?: (?:in|into|to))? portuguese",
+      "Raw": [
+        "name"
+      ],
+      "Command": {
+        "UserCommandRQ": {
+          "TranslatedObjects": {
+            "Objects": [
+              {
+                "ObjectID": "{name}",
+                "SpeechQualifier": {
+                  "Header": "TFA-SPQ-V1.5",
+                  "SpeechQualifierID": "translated",
+                  "SubTypes": {},
+                  "Formats": {},
+                  "Attributes": {
+                    "Metadata": {
+                      "Language": {
+                        "LanguageFormat": "ISO 639-1",
+                        "LanguageCode": "pt"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "Pattern": "(?:translate) portuguese (?:the )?(?<name>.+?)",
+      "Raw": [
+        "name"
+      ],
+      "Command": {
+        "UserCommandRQ": {
+          "TranslatedObjects": {
+            "Objects": [
+              {
+                "ObjectID": "{name}",
+                "SpeechQualifier": {
+                  "Header": "TFA-SPQ-V1.5",
+                  "SpeechQualifierID": "translated",
+                  "SubTypes": {},
+                  "Formats": {},
+                  "Attributes": {
+                    "Metadata": {
+                      "Language": {
+                        "LanguageFormat": "ISO 639-1",
+                        "LanguageCode": "pt"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
       "Pattern": "(?:(?:translate|say|render)) (?:the )?(?<name>.+?)(?: (?:in|into|to))? italian",
       "Names": {
         "name": "Members"
@@ -27876,6 +28198,68 @@
       "Implicit": {
         "name": "Newest"
       },
+      "Command": {
+        "UserCommandRQ": {
+          "TranslatedObjects": {
+            "Objects": [
+              {
+                "ObjectID": "{name}",
+                "SpeechQualifier": {
+                  "Header": "TFA-SPQ-V1.5",
+                  "SpeechQualifierID": "translated",
+                  "SubTypes": {},
+                  "Formats": {},
+                  "Attributes": {
+                    "Metadata": {
+                      "Language": {
+                        "LanguageFormat": "ISO 639-1",
+                        "LanguageCode": "it"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "Pattern": "(?:translate) (?:the )?(?<name>.+?)(?: (?:in|into|to))? italian",
+      "Raw": [
+        "name"
+      ],
+      "Command": {
+        "UserCommandRQ": {
+          "TranslatedObjects": {
+            "Objects": [
+              {
+                "ObjectID": "{name}",
+                "SpeechQualifier": {
+                  "Header": "TFA-SPQ-V1.5",
+                  "SpeechQualifierID": "translated",
+                  "SubTypes": {},
+                  "Formats": {},
+                  "Attributes": {
+                    "Metadata": {
+                      "Language": {
+                        "LanguageFormat": "ISO 639-1",
+                        "LanguageCode": "it"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "Pattern": "(?:translate) italian (?:the )?(?<name>.+?)",
+      "Raw": [
+        "name"
+      ],
       "Command": {
         "UserCommandRQ": {
           "TranslatedObjects": {

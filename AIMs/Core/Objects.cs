@@ -343,7 +343,7 @@ public sealed class BasicSpeechObject
     // Refused at construction rather than reported later: by the time a consumer
     // notices, the Object has travelled and whoever knew what the bytes were is no
     // longer on the stack.
-    public static BasicSpeechObject FromData(byte[] data, SpeechQualifier qualifier) =>
+    public static BasicSpeechObject FromData(byte[] data, SpeechQualifier qualifier, string? descrMetadata = null) =>
         !qualifier.StatesFormat()
             ? throw new ArgumentException(
                 "The Speech Qualifier states no format. Set Format.ContentFormats.RawData " +
@@ -354,7 +354,8 @@ public sealed class BasicSpeechObject
         BasicSpeechObjectID = Guid.NewGuid().ToString(),
         BasicSpeechObjectTime = SimpleTime.At(DateTimeOffset.UtcNow),
         Data = data,
-        SpeechQualifier = qualifier
+        SpeechQualifier = qualifier,
+        DescrMetadata = descrMetadata
     };
 
     // Reinterpret the BYTES as a Basic Audio Object. The Qualifier does not

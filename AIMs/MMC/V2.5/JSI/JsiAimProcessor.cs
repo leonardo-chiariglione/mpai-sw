@@ -405,6 +405,7 @@ public sealed class JsiAimProcessor : IAimProcessor
         if (guide.ShortcutFor(text) is { } shortcut)
         {
             var completed = whole.Complete(Vars(shortcut));
+            SceneNameOnlyForANewScene(completed);
             if (_commandCheck.Violations(completed.ToJsonString()) is { Count: 0 })
             {
                 if (completed["UserCommandRQ"]?["ListedObjects"] is JsonObject asked && (string?)asked["Kind"] == "Audio Scene" && asked["ObjectID"] is null && IdOf(completed) is { Length: > 0 } listId) _sceneListings.Add(listId);
@@ -424,6 +425,7 @@ public sealed class JsiAimProcessor : IAimProcessor
         if (_configuration.UsesGrammar && guide.Rules.Count > 0 && (MatchOne(text) ?? Compound(text, MatchOne)) is { } ruled)
         {
             var completed = whole.Complete(ruled);
+            SceneNameOnlyForANewScene(completed);
             var violated = _commandCheck.Violations(completed.ToJsonString());
             if (violated.Count > 0) AimLog.Write(InstanceId, "[grammar] the command of a rule does not conform: " + string.Join("; ", violated.Take(3)) + " | " + completed.ToJsonString());
             if (violated.Count == 0)
@@ -682,6 +684,13 @@ public sealed class JsiAimProcessor : IAimProcessor
             foreach (var item in items.ToList()) objects!.Add(item?.DeepClone());
         }
         return first;
+    }
+
+    // AddedObjects.ObjectID is the name of the Scene that is made when none is open. Into a Scene that exists the Objects are put with no name: a name there also asks Audio Object Editing to make an Audio Object of that name ("stage", "stage 2").
+    private void SceneNameOnlyForANewScene(JsonNode command)
+    {
+        if (command["UserCommandRQ"]?["AddedObjects"] is JsonObject add && add["Objects"] is JsonArray { Count: > 0 } && (string?)add["ObjectID"] is { Length: > 0 } name && _state.Scenes.Any(sc => string.Equals(sc.Name, name, StringComparison.Ordinal)))
+            add.Remove("ObjectID");
     }
 
     // The answer to a request for the room, the listener or the Acoustic Profiles the application keeps: what was listed, said as it is.

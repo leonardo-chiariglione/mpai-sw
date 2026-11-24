@@ -233,10 +233,22 @@ public sealed class WorkflowInterpreter
                     {
                         while (!token.IsCancellationRequested)
                         {
-                            var read = await north.OutputReadAsync(ModuleId, port.DataType, port.PortNumber, 200);
-                            // Once at its safe state, a device is given nothing more: the
-                            // Module may still be commanding it.
-                            if (read.Ok && read.Json is not null && Volatile.Read(ref safeStopped) == 0) await device.DeliverAsync(port.DataType, read.Json, token);
+                            // A read that fails is said and tried again: the loop that delivers a Port does not end for one failure (an answer written and not shown was once the result).
+                            try
+                            {
+                                var read = await north.OutputReadAsync(ModuleId, port.DataType, port.PortNumber, 200);
+                                if (!read.Ok && read.Error is not AifError.NotProduced) say($"read of {port.DataType}#{port.PortNumber} failed: {read.Error}");
+                                if (read.Ok && read.Json is null) say($"read of {port.DataType}#{port.PortNumber} was OK and empty");
+                                // Once at its safe state, a device is given nothing more: the
+                                // Module may still be commanding it.
+                                if (read.Ok && read.Json is not null && Volatile.Read(ref safeStopped) == 0) await device.DeliverAsync(port.DataType, read.Json, token);
+                            }
+                            catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
+                            catch (Exception failed)
+                            {
+                                say($"read of {port.DataType}#{port.PortNumber} threw {failed.GetType().Name}: {failed.Message}");
+                                await Task.Delay(100, token);
+                            }
                         }
                     }
                     catch (OperationCanceledException) { }
