@@ -89,7 +89,7 @@
     <button class="ret" id="quit" title="End Thalia, and the Apps it started">Close</button>
   </div>
   <div class="body">
-    <nav class="rail"><button class="on" data-view="home">Home</button><button data-view="apps">Apps</button><button data-view="running">Running</button><button data-view="devices">Devices</button><button data-view="settings">Settings</button>
+    <nav class="rail"><button class="on" data-view="home">Home</button><button data-view="apps">Apps</button><button data-view="running">Running</button><button data-view="devices">Devices</button><button data-view="settings">Settings</button><button data-view="about" title="A video that tells what MPAI proposes">About MPAI</button>
 <aside class="dock" aria-label="Thalia">
   <img class="face" src="/thalia.png?v=2" alt="Thalia">
   <div class="name">Thalia</div>
@@ -160,7 +160,7 @@ const effScope = () => scope || 'both';          // a search with no place chose
 const isRemote = () => catalogue && catalogue.profile === 'remote';   // a Remote Thalia: the Apps of MPAI as a Service only
 const wheres = () => isRemote() ? ['mas'] : ['local', 'mas'].filter(w => effScope() === 'both' || effScope() === w);
 
-let storeDrawn = false, storeQuery = '', storeOpen = null, devicesDrawn = false, settingsDrawn = false;
+let storeDrawn = false, storeQuery = '', storeOpen = null, devicesDrawn = false, settingsDrawn = false, aboutDrawn = false;
 function syncControls() {
   for (const s of document.querySelectorAll('#scope span')) s.classList.toggle('on', s.dataset.s === scope);
   for (const b of document.querySelectorAll('.rail button[data-view]')) b.classList.toggle('on', b.dataset.view === view);
@@ -171,7 +171,7 @@ for (const s of document.querySelectorAll('#scope span')) s.onclick = () => {   
   syncControls(); render();
 };
 for (const b of document.querySelectorAll('.rail button[data-view]')) b.onclick = () => {
-  view = b.dataset.view; storeDrawn = false; devicesDrawn = false; settingsDrawn = false;
+  view = b.dataset.view; storeDrawn = false; devicesDrawn = false; settingsDrawn = false; aboutDrawn = false;
   if (view === 'home') { scope = ''; $('#q').value = ''; }                 // Home: the functions, with no place chosen
   else if (view === 'apps' && !scope) scope = 'local';                      // the Apps of this machine
   save();
@@ -231,7 +231,8 @@ function render() {
   $('#notice').textContent = catalogue.masProblem || '';
   $('#q').placeholder = view === 'running' ? 'Search running Apps' : 'Search Apps by name or by what they do';
 
-  $('.searchbar').hidden = view === 'store' || view === 'settings' || view === 'devices';       // Home has it: it is where the User says where, and what, to look for
+  $('.searchbar').hidden = view === 'store' || view === 'settings' || view === 'devices' || view === 'about';       // Home has it: it is where the User says where, and what, to look for
+  if (view === 'about') { $('#notice').hidden = true; if (!aboutDrawn) aboutView(); return; }
   if (view === 'store') { $('#notice').hidden = true; if (!storeDrawn) storeView(); return; }
   if (view === 'settings') { $('#notice').hidden = true; if (!settingsDrawn) settingsView(); return; }
   if (view === 'devices') { $('#notice').hidden = true; if (!devicesDrawn) devicesView(); return; }
@@ -535,6 +536,19 @@ function openApp(url) {
 }
 
 // ---- Settings (APP-1): where Thalia looks -------------------------------------------------------------------------------------------------------------
+// ---- About MPAI: the video that tells what MPAI proposes (it is not an App: it has no Module work to do; the MAS instance offers it as the App About MPAI) ----------------
+function aboutView() {
+  aboutDrawn = true;
+  const v = $('#view'); v.innerHTML = '';
+  const card = document.createElement('section'); card.className = 'card';
+  card.innerHTML = `<h3 style="margin:0;font-size:20px">About MPAI</h3><p class="desc">In alcuni minuti potete avere un'idea chiara (ma senza dettagli) della proposta MPAI.</p>
+    <div style="position:relative;width:100%;aspect-ratio:16/9;margin-top:8px;border-radius:8px;overflow:hidden;background:#000">
+      <iframe src="https://www.youtube.com/embed/ITG6fff89yM" title="About MPAI" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="accelerometer; autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    </div>
+    <p class="desc" style="margin-top:8px"><a href="https://youtu.be/ITG6fff89yM" target="_blank" rel="noopener" style="color:var(--accent)">Open the video on YouTube</a> - it needs the Internet.</p>`;
+  v.appendChild(card);
+}
+
 async function settingsView() {
   settingsDrawn = true;
   const v = $('#view'); v.innerHTML = '';
