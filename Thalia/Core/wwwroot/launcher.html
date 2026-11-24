@@ -408,8 +408,12 @@ function storeCard(a) {
   card.querySelector('.desc').textContent = a.description;
   const chip = card.querySelector('.chip'); chip.textContent = (STATE_TEXT[a.state] || a.state) + (a.runsHere === false && a.state === 'available' ? ' - not run by Thalia yet' : ''); chip.classList.add(a.state);
   const more = card.querySelector('.more'), box = card.querySelector('.detail');
+  // The way to obtain (or update) an App is through what it needs and the licences, shown first: the button says so, and the state tag opens the same place.
+  const label0 = a.state === 'available' ? 'Obtain...' : a.state === 'update' ? 'Update...' : 'Details';
+  more.textContent = label0;
+  if (a.state === 'available' || a.state === 'update') { chip.style.cursor = 'pointer'; chip.title = 'Open what it needs and the licences, then ' + label0.replace('...', '').toLowerCase() + ' it'; chip.onclick = () => { if (box.hidden) more.click(); }; }
   more.onclick = async () => {
-    if (!box.hidden) { box.hidden = true; more.textContent = 'Details'; storeOpen = null; return; }
+    if (!box.hidden) { box.hidden = true; more.textContent = label0; storeOpen = null; return; }
     storeOpen = a.id; box.hidden = false; more.textContent = 'Hide'; box.textContent = 'Asking the Store what it needs...';
     let d; try { d = await (await fetch(`/api/store/apps/${encodeURIComponent(a.id)}`, { cache: 'no-store' })).json(); } catch { box.textContent = 'Thalia does not answer.'; return; }
     if (d.problem) { box.textContent = d.problem; return; }
