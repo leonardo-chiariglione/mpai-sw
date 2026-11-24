@@ -275,10 +275,20 @@ function render() {
 
 // What Thalia offers, and how much of it exists today: what Thalia comes up on (Home). A function that exists opens the place where it is done.
 const FUNCTIONS = [
-  ['Find an App', 'Search, by name or by what they do, the Apps on this machine, the Apps in the MPAI Store and the Apps in an MPAI as a Service instance: choose a place above, or type what you look for. An App found in the Store is obtained from the result, with what its Module needs and the licences of the data it obtains shown before you accept.', 'available'],
-  ['Run and manage an App', 'Run an App on this machine or on MPAI as a Service, and stop it; pause it and resume it; update it when the Store has a newer version; remove it (its Module stays with the Controller). The microphone, the camera and the screen it uses are the ones you chose in Devices.', 'available'],
+  ['Find an App', 'Look for an App by name or by what it does: on this machine, in the MPAI Store, or on an MPAI as a Service instance. An App from the Store is obtained here, after you have seen what its Module needs and under which licences.', 'available',
+    [['This machine', () => goFind('local')], ['MPAI Store', () => goFind('store')], ['MPAI as a Service', () => goFind('mas')]]],
+  ['Run and manage an App', 'Run an App on this machine or on MPAI as a Service. Stop it, pause it, resume it, update it when the Store has a newer version, or remove it. The microphone, the camera and the screen it uses are the ones chosen in Devices.', 'available',
+    [['Apps', () => goView('apps')], ['Running', () => goView('running')], ['Devices', () => goView('devices')]]],
+  ['Register an AIM', 'Become an Implementer in the MPAI Store, then offer your AIM (its L3) there, signed with your key, so that Modules and Apps can use it.', 'available',
+    [['Open the Store registration page', () => openRegistration()]]],
   ['Make your own Module', 'Combine Basic and Composite AIMs into a Composite AIM that does not exist yet, and submit it.', 'coming']
 ];
+function goFind(place) { scope = place; view = 'apps'; storeDrawn = false; devicesDrawn = false; settingsDrawn = false; aboutDrawn = false; save(); $('#q').focus(); }
+function goView(v) { view = v; if (v === 'apps' && !scope) scope = 'local'; storeDrawn = false; devicesDrawn = false; settingsDrawn = false; aboutDrawn = false; save(); }
+async function openRegistration() {          // the Store starts when it is first asked; its page is where an Implementer registers (STR-1)
+  try { const r = await (await fetch('/api/store/apps', { cache: 'no-store' })).json(); if (r.store) { window.open(new URL('MPAI/Store/Register', r.store).href, '_blank', 'noopener'); return; } } catch { }
+  alert('The MPAI Store does not answer.');
+}
 const GOES = { 'Run and manage an App': 'apps' };
 // Store and Settings do not exist yet: each says what it would enable.
 const SECTIONS = {
@@ -337,14 +347,14 @@ function welcome() {
   if (q) { const p = document.createElement('p'); p.className = 'empty'; p.textContent = `Nothing found for "${q}"${wheres().length ? ' in ' + wheres().map(w => w === 'local' ? 'this machine' : 'MPAI as a Service').join(' and ') : ''}.`; v.appendChild(p); }
   const h = document.createElement('h2'); h.className = 'sec'; h.textContent = 'What Thalia does'; v.appendChild(h);
   const list = document.createElement('div'); list.className = 'grid';
-  for (const [name, text, state] of FUNCTIONS) {
+  for (const [name, text, state, links] of FUNCTIONS) {
     const c = document.createElement('section'); c.className = 'card fn ' + state;
     c.innerHTML = `<div class="fh"><b></b><span class="chip"></span></div><p class="desc"></p>`;
     c.querySelector('b').textContent = name; c.querySelector('.chip').textContent = state === 'available' ? 'available' : 'coming';
     c.querySelector('.desc').textContent = text; list.appendChild(c);
+    if (links) { const row = document.createElement('div'); row.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin-top:6px'; for (const [label, run] of links) { const b = document.createElement('button'); b.className = 'ret'; b.textContent = label; b.onclick = e => { e.stopPropagation(); run(); }; row.appendChild(b); } c.appendChild(row); }
     const go = GOES[name];
-    if (name === 'Find an App') { c.style.cursor = 'pointer'; c.title = 'Choose a place, or type, above'; c.onclick = () => $('#q').focus(); }
-    else if (go && state === 'available') { c.style.cursor = 'pointer'; c.title = 'Open it'; c.onclick = () => { view = go; if (!scope) scope = 'local'; storeDrawn = false; devicesDrawn = false; settingsDrawn = false; save(); }; }
+    if (go && state === 'available') { c.style.cursor = 'pointer'; c.title = 'Open it'; c.onclick = () => { view = go; if (!scope) scope = 'local'; storeDrawn = false; devicesDrawn = false; settingsDrawn = false; save(); }; }
   }
   v.appendChild(list);
 }
