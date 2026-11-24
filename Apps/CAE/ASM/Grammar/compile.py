@@ -321,6 +321,13 @@ def remove_delete():
     emit({'Pattern': '(?:' + V['Delete'] + ') (?:the )?(?<name>.+?)(?: from the (?:store|storage|library))?', 'Names': {'name': 'Kept'},
           'Command': {'UserCommandRQ': {'DeletedObjects': {'Objects': [{'ObjectID': '{name}'}]}}}})
 
+def delete_scene():
+    """"delete the scene party": a scene the Module keeps (a sound is never named by 'scene')."""
+    emit({'Pattern': '(?:' + V['Delete'] + ') (?:the |my )?(?:scene|room) (?:called |named )?(?<sname>.+?)', 'Raw': ['sname'],
+          'Command': {'UserCommandRQ': {'DeletedObjects': {'Objects': [{'ObjectID': '{sname}'}]}}}})
+    emit({'Pattern': '(?:' + V['Delete'] + ') (?:the |my )?(?<sname>.+?) (?:scene|room)', 'Raw': ['sname'],
+          'Command': {'UserCommandRQ': {'DeletedObjects': {'Objects': [{'ObjectID': '{sname}'}]}}}})
+
 def rename_object():
     """"rename the guitar as piano": the name of an object that is kept, by the verb first (the same command as "set the name of the guitar to piano")."""
     emit({'Pattern': '(?:' + V['Rename'] + ') (?:the )?(?<name>.+?) (?:as|to|into)(?: be)? (?<text>.+)', 'Names': {'name': 'Kept'}, 'Raw': ['text'],
@@ -496,6 +503,7 @@ def compile_rules():
     coordinates()
     turn()
     level()
+    delete_scene()
     remove_delete()
     rename_object()
     rendering()
@@ -537,5 +545,16 @@ if __name__ == '__main__':
         print('in step' if current == text else 'NOT in step: run compile.py')
         sys.exit(0 if current == text else 1)
     target = sys.argv[sys.argv.index('--out') + 1] if '--out' in sys.argv else OUT
-    open(target, 'w', encoding='utf-8', newline='').write(text.replace('\n', '\r\n') if '--lf' not in sys.argv else text)
+    # LF always: the SHA-256 of this file is pinned in an L3 and the bytes must be the same here and on GitHub (.gitattributes: -text)
+    open(target, 'w', encoding='utf-8', newline='').write(text)
     print('%d rules -> %s' % (len(RULES), target))
+    if target == OUT:
+        # The L3 of the JSON Interface pins the SHA-256 of this file (AccessSources): the pin follows the file.
+        import hashlib, re
+        l3 = os.path.join(HERE, '..', '..', '..', '..', 'AIMs', 'AMDs', '1MMC-JSI-V2.5-I02.json')
+        sha = hashlib.sha256(text.encode('utf-8')).hexdigest().upper()
+        raw = open(l3, encoding='utf-8', newline='').read()
+        fixed = re.sub(r'("Name": "ApplicationContext", "Uri": "[^"]*", "Sha256": ")[0-9A-Fa-f]{64}(")', lambda m: m.group(1) + sha + m.group(2), raw, count=1)
+        if fixed != raw:
+            open(l3, 'w', encoding='utf-8', newline='').write(fixed)
+            print('pin in 1MMC-JSI-V2.5-I02.json -> ' + sha)

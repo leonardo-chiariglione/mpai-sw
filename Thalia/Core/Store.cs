@@ -59,9 +59,13 @@ static class StoreRoutes
 {
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(20) };
     private static readonly SemaphoreSlim Starting = new(1, 1);
-    // The Apps Thalia can run on this machine today: those whose Modules the local Controller of Thalia builds (the Apps of MPAI-MMC and MPAI-OSD that run in a browser client). The other Apps of the Store have
-    // clients of their own (they start from AllApps): the Store lists them, and Thalia says it does not run them yet.
-    public static readonly HashSet<string> RunsHere = new(StringComparer.Ordinal) { "AMC", "MCA", "MTS", "NPR", "AMQ", "ACR", "MAC" };
+    // The Apps Thalia can run on this machine today: those whose Modules the local Controller of Thalia builds (in the browser client), and those that bring their own Controller and
+    // client, which Thalia starts as their launchers do (OwnClients.cs). An App of the Store not in this list: the Store lists it, and Thalia says it does not run it yet.
+    // The Apps whose Module the local Controller of Thalia builds. AES, SME, SRS, EES, ARP, EAE (CAE-USC) and CPP (CUI) added 2026-11-24 (N-49): the Controller has their AIMs, as the
+    // MPAI as a Service instance does, and each was run through Thalia with its own program on that Controller (--controller) and gave its result. ASM, CAS, CPS, TMA, LTP, VMS:
+    // Thalia starts their own Controller and client (OwnClients.cs), run through Thalia the same night.
+    public static readonly HashSet<string> RunsHere = new(StringComparer.Ordinal) { "AMC", "MCA", "MTS", "NPR", "AMQ", "ACR", "MAC", "AES", "SME", "SRS", "EES", "ARP", "EAE", "CPP",
+                                                                                     "ASM", "CAS", "CPS", "TMA", "LTP", "VMS" };   // with their own Controller and client (OwnClients.cs)
 
     public static void Map(WebApplication app, StoreContext c)
     {

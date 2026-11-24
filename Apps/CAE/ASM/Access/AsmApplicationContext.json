@@ -4685,6 +4685,40 @@
       }
     },
     {
+      "Pattern": "(?:(?:delete|erase|forget|wipe)) (?:the |my )?(?:scene|room) (?:called |named )?(?<sname>.+?)",
+      "Raw": [
+        "sname"
+      ],
+      "Command": {
+        "UserCommandRQ": {
+          "DeletedObjects": {
+            "Objects": [
+              {
+                "ObjectID": "{sname}"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "Pattern": "(?:(?:delete|erase|forget|wipe)) (?:the |my )?(?<sname>.+?) (?:scene|room)",
+      "Raw": [
+        "sname"
+      ],
+      "Command": {
+        "UserCommandRQ": {
+          "DeletedObjects": {
+            "Objects": [
+              {
+                "ObjectID": "{sname}"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
       "Pattern": "(?:(?:remove|take out|take away|get rid of|clear)) (?:the )?(?<name>.+?)(?: from the scene| out of the scene)?",
       "Names": {
         "name": "Members"

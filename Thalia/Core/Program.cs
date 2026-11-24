@@ -310,6 +310,8 @@ async Task StartAsync(Run run)
 {
     try
     {
+        // AN APP WITH ITS OWN CONTROLLER AND CLIENT (OwnClients.cs, N-49): started as its launcher of AllApps starts it, on a port Thalia chooses.
+        if (!remote && run.Where == "local" && OwnClients.Of(run.App, root) is { } own) { await StartOwnAsync(run, own); return; }
         if (!File.Exists(hostDll)) throw new InvalidOperationException($"the App client is not built: {hostDll} (dotnet build {hostProject})");
         var hostFile = remote && File.Exists(hostExe) ? hostExe : "dotnet";
         var hostArgs = hostFile == "dotnet" ? $"\"{hostDll}\" " : "";
@@ -368,6 +370,48 @@ async Task StartAsync(Run run)
         run.Phase = "failed: " + ex.Message;
         run.Stop(null);
     }
+}
+
+// THE APP'S OWN CONTROLLER, THEN ITS OWN CLIENT; when the client ends (the User closed its window), the App ends and its Controller is stopped.
+async Task StartOwnAsync(Run run, OwnClients.Own own)
+{
+    if (own.LanguageModel) await EnsureOllamaAsync(run);
+    string controller = "";
+    var clientPort = FreePort();
+    string Fill(string t) => t.Replace("{controller}", controller).Replace("{root}", root).Replace("{data}", thaliaData).Replace("{port}", clientPort.ToString()).Replace("{page}", (clientPort + 1).ToString());
+    if (own.ControllerExe is { } exe)
+    {
+        if (!File.Exists(exe)) throw new InvalidOperationException($"its Controller is not built: {exe} (dotnet build {own.ControllerProject})");
+        var port = FreePort();
+        run.Phase = "starting its Controller (its Module and AIMs load: up to a minute or two)";
+        var p = run.Spawn("controller", exe, $"--listen http://127.0.0.1:{port} {Fill(own.ControllerArgs)}".TrimEnd(), root, null);
+        var until = DateTime.UtcNow.AddMinutes(5);
+        while (!await PortOpenAsync(port))
+        {
+            if (p.HasExited) throw new InvalidOperationException("its Controller ended: " + run.LastLine(p));
+            if (DateTime.UtcNow > until || run.Cancelled) throw new InvalidOperationException("its Controller did not come up");
+            await Task.Delay(500);
+        }
+        controller = $"http://127.0.0.1:{port}";
+        run.Controller = new Uri(controller + "/");
+    }
+    if (own.ClientBuilt is { } built && !File.Exists(built)) throw new InvalidOperationException($"the App is not built: {built}");
+    run.Phase = "starting the App's own client";
+    var env = own.Env?.ToDictionary(kv => kv.Key, kv => Fill(kv.Value));
+    var client = run.Spawn("client", own.ClientFile, Fill(own.ClientArgs), root, env);
+    if (own.Page is { } page)
+    {
+        var until = DateTime.UtcNow.AddMinutes(3);
+        while (!await PortOpenAsync(clientPort))
+        {
+            if (client.HasExited) throw new InvalidOperationException("the App ended: " + run.LastLine(client));
+            if (DateTime.UtcNow > until || run.Cancelled) throw new InvalidOperationException("the App did not come up");
+            await Task.Delay(500);
+        }
+        run.Url = Fill(page);
+    }
+    run.Phase = "running";
+    _ = Task.Run(async () => { await client.WaitForExitAsync(); if (!run.Cancelled) run.Stop("ended: its window was closed (exit code " + client.ExitCode + ")"); });
 }
 
 async Task EnsureOllamaAsync(Run run)

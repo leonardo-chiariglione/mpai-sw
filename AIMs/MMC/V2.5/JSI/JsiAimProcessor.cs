@@ -57,6 +57,7 @@ public sealed class JsiAimProcessor : IAimProcessor
     private readonly Dictionary<string, string> _matchSets = new(StringComparer.Ordinal);
     private readonly Dictionary<string, PropertyQuestions.Asked> _propertyAsks = new(StringComparer.Ordinal);      // the listings asked for to answer a question about a property of a member of the scene, by command
     private readonly HashSet<string> _sceneListings = new(StringComparer.Ordinal);      // the commands that ask for the list of the scenes, not for what is in one
+    private readonly Dictionary<string, string> _kindListings = new(StringComparer.Ordinal);      // the commands that ask for the room, the listener or the Acoustic Profiles: the Kind asked (an Acoustic Profile asked with no Scene is "Acoustic Profiles"), so that the answer is about that and not the list of the scene
 
     private JsonNode Vars(JsonNode node)
     {
@@ -407,6 +408,8 @@ public sealed class JsiAimProcessor : IAimProcessor
             if (_commandCheck.Violations(completed.ToJsonString()) is { Count: 0 })
             {
                 if (completed["UserCommandRQ"]?["ListedObjects"] is JsonObject asked && (string?)asked["Kind"] == "Audio Scene" && asked["ObjectID"] is null && IdOf(completed) is { Length: > 0 } listId) _sceneListings.Add(listId);
+                if (completed["UserCommandRQ"]?["ListedObjects"] is JsonObject kindAsked && (string?)kindAsked["Kind"] is "Closed Space" or "Listener" or "Acoustic Profile" && IdOf(completed) is { Length: > 0 } kindId)
+                    _kindListings[kindId] = (string?)kindAsked["Kind"] == "Acoustic Profile" && kindAsked["ObjectID"] is null ? "Acoustic Profiles" : (string?)kindAsked["Kind"]!;
                 if (completed["UserCommandRQ"]?["ListedObjects"] is null) Remember(completed, text);
                 else if (IdOf(completed) is { Length: > 0 } listingId) _requestOf[listingId] = text;      // its answer is told, but a listing is not one of the person's commands to be undone
                 return (completed, null);
@@ -681,6 +684,56 @@ public sealed class JsiAimProcessor : IAimProcessor
         return first;
     }
 
+    // The answer to a request for the room, the listener or the Acoustic Profiles the application keeps: what was listed, said as it is.
+    public static string TellKind(string kind, JsonObject instance)
+    {
+        var items = (instance["UserCommandRS"]?["ListedObjects"] as JsonArray)?.OfType<JsonObject>().ToList() ?? [];
+        static string N(double v) => v.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+        static List<double[]> Triples(JsonNode? node, string key)
+        {
+            var found = new List<double[]>();
+            void Walk(JsonNode? n, bool inside)
+            {
+                switch (n)
+                {
+                    case JsonObject o: foreach (var (k, v) in o) Walk(v, inside || k == key); break;
+                    case JsonArray a when a.Count == 3 && inside && a.All(x => x is JsonValue jv && jv.TryGetValue<double>(out _)): found.Add(a.Select(x => x!.GetValue<double>()).ToArray()); break;
+                    case JsonArray a: foreach (var x in a) Walk(x, inside); break;
+                }
+            }
+            Walk(node, false);
+            return found;
+        }
+        switch (kind)
+        {
+            case "Closed Space":
+                {
+                    var room = items.Select(x => x["ClosedSpace"]).FirstOrDefault(x => x is not null);
+                    if (room is null) return "There is no room in the scene yet.";
+                    var corners = Triples(room, "CartPositions");
+                    if (corners.Count == 0) return "The scene has a room, but its size is not given.";
+                    double Span(int axis) => corners.Max(c => c[axis]) - corners.Min(c => c[axis]);
+                    return $"The room is {N(Span(0))} by {N(Span(1))} metres and {N(Span(2))} metres high.";
+                }
+            case "Listener":
+                {
+                    var view = items.Select(x => x["UserPoV"]).FirstOrDefault(x => x is not null);
+                    if (view is null) return "The scene has no listener position yet.";
+                    var at = Triples(view, "CartPosition").FirstOrDefault();
+                    var turned = Triples(view, "Orientation").FirstOrDefault();
+                    if (at is null) return "The scene has no listener position yet.";
+                    return $"The listener is at x {N(at[0])}, y {N(at[1])}, z {N(at[2])}" + (turned is null ? "." : $", turned {N(turned[0])} degrees.");
+                }
+            case "Acoustic Profiles":
+                {
+                    var names = items.Select(x => (string?)x["ObjectID"]).Where(x => !string.IsNullOrEmpty(x)).Distinct().ToList();
+                    return names.Count == 0 ? "The Module keeps no Acoustic Profile." : "The Acoustic Profiles kept: " + string.Join(", ", names) + ".";
+                }
+            default:
+                return "The Acoustic Profile is shown in the panel.";
+        }
+    }
+
     private string? Tell(JsonObject instance, string id, out ResponseKind outcome)
     {
         outcome = ResponseKind.Told;
@@ -690,6 +743,7 @@ public sealed class JsiAimProcessor : IAimProcessor
             if (_guide is not null && ApplicationState.IsListing(instance, _guide)) _state = ApplicationState.Read(instance, _guide, SceneIds()).OnTopOf(_state).Without(SceneIds());
             return null;
         }
+        if (_configuration.SaysPlainly && _kindListings.Remove(id, out var kindAsked2)) return ResponseFacts.SayAsItIs + TellKind(kindAsked2, instance);      // the room, the listener, the profiles: said about that, and the state of the scenes is not read from it
         if (_propertyAsks.Remove(id, out var property) && _guide is not null && ApplicationState.IsListing(instance, _guide))
         {
             _state = ApplicationState.Read(instance, _guide, SceneIds()).OnTopOf(_state).Without(SceneIds());

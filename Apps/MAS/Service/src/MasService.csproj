@@ -40,6 +40,11 @@
     <ProjectReference Include="..\..\..\..\AIMs\CAE1\V2.5\Provider\Mpai.Cae.Usc.csproj" />
     <!-- MPAI-CUI CPP V2.1: the Module of Company Performance Prediction (the CUI-CPP App of the MAS App, 2026-11-18) -->
     <ProjectReference Include="..\..\..\..\AIMs\CUI\V2.1\Mpai.Cui.csproj" />
+    <!-- MPAI-MMC CAS and CPS: the Modules of Conversation About a Scene and Conversation with Personal Status, as their own Controllers build them (N-49, 2026-11-24) -->
+    <ProjectReference Include="..\..\..\MMC\CPS\Provider\Mpai.Mmc.Cps.csproj" />
+    <ProjectReference Include="..\..\..\OSD\TMA\Provider\Mpai.Osd.Tma.Provider.csproj" />
+    <!-- CAE-ASM: the AIMs of Audio Scene Management and the Voice Command Interface, as the ASM Controller builds them (N-49) -->
+    <ProjectReference Include="..\..\..\CAE\ASM\Voice\AsmVoice.csproj" />
     <ProjectReference Include="..\..\..\..\AIMs\MMC\V2.5\ASR\Mpai.Mmc.Asr.csproj" />
     <ProjectReference Include="..\..\..\..\AIMs\MMC\V2.5\TIQ\Mpai.Mmc.Tiq.csproj" />
     <ProjectReference Include="..\..\..\..\AIMs\MMC\V2.5\TTS\Mpai.Mmc.Tts.csproj" />

@@ -24,6 +24,7 @@ internal static class Program
 
     private static int Main(string[] args)
     {
+        var (controller, rest) = ModuleConnection.Take(args); args = rest;          // --controller <url>: the Module on that Controller (Thalia's, or an MPAI as a Service instance)
         try
         {
             var o = new Options(args, "--speech", "--emotion", "--degree", "--language", "--model", "--out");
@@ -33,7 +34,7 @@ internal static class Program
             var degree = double.Parse(o.One("--degree") ?? "0.5", System.Globalization.CultureInfo.InvariantCulture);
 
             Console.WriteLine("Starting the Module (a first start takes a while)...");
-            using var module = ModuleHost.Start(Module, null, Console.WriteLine);
+            using var module = ModuleConnection.Open(Module, controller, null, Console.WriteLine);
 
             string? given = null;
             string Selector(string id) => new JsonObject { ["Header"] = "OSD-SEL-V1.5", ["SelectorID"] = id }.ToJsonString();

@@ -109,6 +109,10 @@ internal static class Program
                               $"{fetched.Missing.Count} missing{(fetched.Missing.Count > 0 ? ": " + string.Join(", ", fetched.Missing) : "")}");
         }
 
+        // ASM and TMA: the deployment their own Controllers prepare (Deployments.cs, N-49)
+        if (!string.Equals(config.L3Source, "Store", StringComparison.OrdinalIgnoreCase))
+            (amdDir, settingsPath) = Deployments.Prepare(config.Apps ?? Array.Empty<string>(), amdDir, settingsPath);
+
         Console.WriteLine($"  Listen:        {config.ListenUrl}");
         Console.WriteLine($"  AMDs:          {amdDir}");
         Console.WriteLine($"  Settings:      {settingsPath}");
@@ -261,7 +265,7 @@ internal static class Program
         if (approving)
         {
             var approvals = new AIF.Store.MpaiStore(amdDir);
-            var providers = new IAimProvider[] { new AmqProvider(store), new MacProvider(store), new AcrProvider(store), new NprProvider(store), new McaProvider(store), new MtsProvider(store), new AmcProvider(store), new Mpai.Cae.Usc.UscProvider(store), new Mpai.Cui.CuiProvider() };
+            var providers = new IAimProvider[] { new AmqProvider(store), new MacProvider(store), new AcrProvider(store), new NprProvider(store), new McaProvider(store), new MtsProvider(store), new AmcProvider(store), new Mpai.Cae.Usc.UscProvider(store), new Mpai.Cui.CuiProvider(), new Mpai.Mmc.Cps.CpsProvider(store) };
             foreach (var aim in store.GetCatalog().Select(c => c.AIMName).Distinct().OrderBy(a => a, StringComparer.Ordinal))
             {
                 var file = providers.Select(p => p.ImplementationOf(aim)).FirstOrDefault(f => f is not null);
@@ -287,6 +291,11 @@ internal static class Program
             providers.Add(new AmcProvider(s));
             providers.Add(new Mpai.Cae.Usc.UscProvider(s));     // CAE-USC V2.5: the Modules of Add Emotion to Speech and Speak Model with Emotion
             providers.Add(new Mpai.Cui.CuiProvider());          // MPAI-CUI CPP V2.1: Company Performance Prediction (2026-11-18)
+            providers.Add(new Mpai.Mmc.Cps.CpsProvider(s));     // MPAI-MMC CAS and CPS (N-49, 2026-11-24)
+            providers.Add(new Mpai.Osd.Tma.Provider.TmaProvider(s));   // MPAI-OSD TMA (N-49): after the others, so that an AIM another provider builds is built as before; its models come from the settings of the deployment
+            providers.Add(new Mpai.Cae.Asm.AsmProvider(amdDir));      // CAE-ASM (N-49): its editing AIMs, and the Voice Command Interface and the leaf AIMs it uses
+            providers.Add(new Mpai.Providers.VciProvider(s));
+            providers.Add(new Mpai.Providers.LeafAimsProvider(s));
             return new CompositeProvider(providers.ToArray());
         });
 

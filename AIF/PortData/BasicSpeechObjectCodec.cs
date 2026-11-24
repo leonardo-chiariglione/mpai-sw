@@ -214,6 +214,13 @@ public sealed class BasicSpeechObjectCodec : IPortDataCodec
             // and is deliberately never written.
             if (pcm.Precision is { } bits) raw["Precision"] = bits;
 
+            // WHERE THE SCHEMA PUTS THEM (TFA/V1.5/formats/PCM.json): in the object PCM inside RawData. Written there too (N-49, 2026-11-24); the
+            // two above stay for the readers of this codec that look for them directly in RawData.
+            var inner = new JsonObject();
+            if (pcm.SamplingFrequency is { } f) inner["SamplingFrequency"] = f;
+            if (pcm.Precision is { } p) inner["Precision"] = p;
+            if (inner.Count > 0) raw["PCM"] = inner;
+
             wire["ContentFormats"] = new JsonObject { ["RawData"] = raw };
         }
 
@@ -381,8 +388,11 @@ public sealed class BasicSpeechObjectCodec : IPortDataCodec
             {
                 RawData = new Pcm
                 {
-                    SamplingFrequency = (double?)raw["SamplingFrequency"],
-                    Precision         = (int?)raw["Precision"]
+                    // The schema's place first (RawData.PCM, TFA/V1.5/formats/PCM.json), then directly in RawData, where this codec wrote them before. Until
+                    // 2026-11-24 only RawData was read: a Speech Object written as the schema says (the CAE Apps' SpeechObject.Make) lost its sampling frequency
+                    // on the way to a remote Controller, and Speech Feature Analysis refused it (N-49).
+                    SamplingFrequency = (double?)raw["PCM"]?["SamplingFrequency"] ?? (double?)raw["SamplingFrequency"],
+                    Precision         = (int?)raw["PCM"]?["Precision"] ?? (int?)raw["Precision"]
                     // SamplePrecision is not read back: nothing writes it.
                 }
             };

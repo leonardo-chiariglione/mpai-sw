@@ -23,7 +23,10 @@ Not done yet, and shown as "coming": **Make your own Module** (the AIM life cycl
 
 - `Core` is Thalia: its screen (`wwwroot/launcher.html`), the catalogue, the Store side (`Store.cs`), starting and stopping Apps. It reaches a Controller only through the Controller-User Agent API (GEN-1): to start a local
   App's Controller, and to ask it to pause and resume (`MasServer.ExclusiveControl`: a Controller that serves one User acts on the Module; a shared MPAI as a Service instance still only changes a label).
-- `Controller` is the local Controller of one running App.
+- `Controller` is the local Controller of one running App. Besides the Apps of MPAI-MMC and MPAI-OSD it builds the Modules of CAE-USC (AES, SME, SRS, EES, ARP, EAE) and of CUI-CPP (2026-11-24).
+- `Core\OwnClients.cs`: the Apps that bring their own Controller and client - ASM, CAS, CPS, TMA, the LTP demonstration, the ABV server of VMS. Thalia starts them as their launchers of AllApps do
+  (the Controller on a port Thalia chooses, the client told where it is with --controller) and stops them all when the User stops the App or closes its window. ASM keeps its scenes and sounds in
+  Thalia's folder of the User (`ASM\module-storage`), apart from those of the ASM started by its launcher.
 - `Store\Service` (the MPAI Store) keeps the Apps as packages (`AppShelf.cs`): app.json, the Workflow, the icon. A version is never overwritten. `Store\Service\Submit-Apps.ps1` publishes Apps.
 - What the User obtains is in `%LOCALAPPDATA%\Thalia` (`Apps`, `installed.json`, `Store`, `preferences.json`); `--Data` names another folder.
 - The Store runs on this machine when it is needed (port 5020); Thalia gives its Store the Apps that come with it, once.
@@ -32,3 +35,5 @@ Not done yet, and shown as "coming": **Make your own Module** (the AIM life cycl
 
 `powershell -ExecutionPolicy Bypass -File Thalia\Test-Thalia.ps1` starts its own Thalia and Store in a temporary folder and checks 28 things without a person (the Store, obtain, update, remove, run, pause, resume, settings);
 `-NoRun` leaves out running an App (it takes a minute or two). `dotnet test Test\Mpai.Aif.Tests --filter ThaliaStoreTests` tests the Apps shelf of the Store.
+`powershell -ExecutionPolicy Bypass -File Thalia\Test-ThaliaApps.ps1` checks, one App at a time, that Thalia starts AES, SME, SRS, EES, ARP, EAE, CPP, ASM, CAS, CPS, TMA, LTP and VMS and that each does its
+job (with files, on the Controller Thalia started), then that stopping it stops all it started (42 checks; about 10 minutes).

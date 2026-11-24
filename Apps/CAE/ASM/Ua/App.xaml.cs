@@ -17,6 +17,9 @@ public partial class App : Application
     public static string? Script, Storage;
     // THE CONTROLLER this User Agent talks to (a program of its own, started by whoever launches the App): `--controller <url>`.
     public static string ControllerUrl = "http://127.0.0.1:5057";
+    private static System.Threading.Mutex? _single;                     // held for the life of the window: one window for one Controller
+    [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern bool SetForegroundWindow(IntPtr window);
+    [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern bool ShowWindow(IntPtr window, int command);
 
     public static void Record(string context, Exception error)
     {
@@ -85,6 +88,17 @@ public partial class App : Application
         var script = Array.IndexOf(e.Args, "--script"); if (script >= 0 && script + 1 < e.Args.Length) Script = e.Args[script + 1];
         var controller = Array.IndexOf(e.Args, "--controller"); if (controller >= 0 && controller + 1 < e.Args.Length) ControllerUrl = e.Args[controller + 1];
         var store = Array.IndexOf(e.Args, "--storage"); if (store >= 0 && store + 1 < e.Args.Length) Storage = e.Args[store + 1];
+        // ONE WINDOW FOR ONE CONTROLLER (N-47, 2026-11-24). A second window on the same Controller used the same Module - what the Module gives went to one window or the other - and, at its start,
+        // deleted what the session before had not saved: the sounds of the first window, still open. The second start now brings the open window to the front and ends.
+        _single = new System.Threading.Mutex(true, "MPAI-ASM-window-" + Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(ControllerUrl.TrimEnd('/').ToLowerInvariant())))[..16], out var first);
+        if (!first)
+        {
+            Log("[window] another window is open on " + ControllerUrl + ": it is brought to the front, and this one ends");
+            var me = System.Diagnostics.Process.GetCurrentProcess();
+            foreach (var other in System.Linq.Enumerable.Where(System.Diagnostics.Process.GetProcessesByName(me.ProcessName),p => p.Id != me.Id && p.MainWindowHandle != IntPtr.Zero))
+            { ShowWindow(other.MainWindowHandle, 9); SetForegroundWindow(other.MainWindowHandle); }
+            Shutdown(0); return;
+        }
         var window = new MainWindow();
         if (Script is not null) { window.WindowStartupLocation = WindowStartupLocation.Manual; window.Left = -3000; window.Top = 0; window.ShowActivated = false; }
         window.Show();

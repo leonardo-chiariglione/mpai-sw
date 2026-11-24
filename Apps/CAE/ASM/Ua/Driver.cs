@@ -51,6 +51,11 @@ public static class Driver
         devices.RegisterDevice("ReplySpeech", new ActingDevice("ReplySpeech", j => { lock (spoken) spoken.Add(j); say("RESPONSE SPEECH: " + (MpaiJson.FromJson<BasicSpeechObject>(j)?.Data?.Length ?? 0) + " bytes"); return Task.CompletedTask; }));
         devices.RegisterDevice("Scene", new ActingDevice("Scene", j => { lock (scenes) scenes.Add(j); say("SCENE: " + string.Join("; ", MainWindow.SoundsOf(j).Select(s => $"{s.Name} at {s.X:0.##}, {s.Y:0.##}, {s.Z:0.##}")) + (MainWindow.RoomOf(j) is { } r ? $" | ROOM {r.Width:0.##} x {r.Depth:0.##} m, ceiling {r.Height:0.##} m, centre {r.CentreX:0.##}, {r.CentreY:0.##}" : " | no room")); if (MainWindow.RoomOf(j) is not null || MainWindow.SoundsOf(j).Count > 0) File.WriteAllText(Value(args, "--drive") + ".asd.json", j); return Task.CompletedTask; }));
         devices.RegisterDevice("Unused", new ActingDevice("Unused", _ => Task.CompletedTask));
+        // THE DEVICES THE WORKFLOW BINDS SINCE THE L3 OF 2026-11-08 (CAE-UCM Ports 2 to 5, the speech segments and the Speech Scene): without them the workflow did not start and the driver had no answer at all (N-47, 2026-11-24).
+        devices.RegisterDevice("SceneCommand", new GivingDevice("CAE-UCM-V1.0")).RegisterDevice("SpeechCommand", new GivingDevice("CAE-UCM-V1.0")).RegisterDevice("SpeechSceneCommand", new GivingDevice("CAE-UCM-V1.0"));
+        foreach (var report in new[] { "SceneReport", "SpeechReport", "SpeechSceneRep", "MultimodalRep" })
+            devices.RegisterDevice(report, new ActingDevice(report, j => { say(report.ToUpperInvariant() + ": " + System.Text.RegularExpressions.Regex.Replace(j, @"\s+", " ")); return Task.CompletedTask; }));
+        devices.RegisterDevice("SpeechOut", new ActingDevice("SpeechOut", _ => Task.CompletedTask)).RegisterDevice("SpeechScene", new ActingDevice("SpeechScene", _ => Task.CompletedTask));
         string? loadingId = null, loadingName = null; var loaded = new List<string>();
         devices.RegisterDevice("ObjectReport", new ActingDevice("ObjectReport", j =>
         {

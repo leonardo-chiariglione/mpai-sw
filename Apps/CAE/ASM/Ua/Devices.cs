@@ -139,6 +139,14 @@ public sealed class VoiceDevice : IDevice
         await foreach (var json in heard.Reader.ReadAllAsync(cancel)) yield return ("OSD-BSO-V1.5", json);
     }
 
+    // AN UTTERANCE RECORDED BEFORE (a WAV), given as the microphone gives one: it waits, is joined and is sent as a capture is. For the window driven by a script (`hear <file.wav>`), with no person to speak.
+    public void Utter(byte[] wav)
+    {
+        var speech = MpaiJson.FromJson<BasicSpeechObject>(SpeechOf(wav))!;
+        lock (_gate) { _pending = speech; _pendingAt = DateTime.UtcNow; }
+        App.Log($"[voice] a recorded utterance of {wav.Length} bytes, given as the microphone would");
+    }
+
     // A WAV as the Speech Object the Module is given: the file format and what the bytes hold are stated.
     public static string SpeechOf(byte[] wav)
     {

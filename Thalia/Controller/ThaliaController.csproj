@@ -33,6 +33,9 @@
     <ProjectReference Include="..\..\AIF\PortData\Mpai.Aif.PortData.csproj" />
     <ProjectReference Include="..\..\Apps\MAS\Server\Mpai.Mas.Server.csproj" />
     <ProjectReference Include="..\..\AIMs\Providers\Mpai.Providers.csproj" />
+    <!-- the Modules of CAE-USC (AES, SME, SRS) and of CUI-CPP, as the MPAI as a Service instance builds them (N-49, 2026-11-24) -->
+    <ProjectReference Include="..\..\AIMs\CAE1\V2.5\Provider\Mpai.Cae.Usc.csproj" />
+    <ProjectReference Include="..\..\AIMs\CUI\V2.1\Mpai.Cui.csproj" />
     <!-- what the packages of the Store's AIMs need and do not carry (the glue in PackageAdapters.cs): the Controller has it -->
     <ProjectReference Include="..\..\AIMs\AIH\V1.1\Common\Mpai.Aih.Common.csproj" />
     <ProjectReference Include="..\..\AIMs\MMC\V2.5\ASR\Mpai.Mmc.Asr.csproj" />

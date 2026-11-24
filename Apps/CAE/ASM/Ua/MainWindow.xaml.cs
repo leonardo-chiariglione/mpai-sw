@@ -91,6 +91,7 @@ public partial class MainWindow : Window
             AvatarUaHost.Diagnose = App.Log;                                  // what the page of the Face meets is in the log
             _avatar = new AvatarUaHost(Web, Dispatcher, AmdDir, AssetsDir);
             await _avatar.InitAsync(faceName: "ASM");
+            _ = WatchTheFaceAsync();
             _ears = new SpeechListener(_avatar);
             await Task.Delay(TimeSpan.FromSeconds(2.0));          // let the avatar settle before it speaks
 
@@ -177,6 +178,7 @@ public partial class MainWindow : Window
             {
                 var wav = MpaiJson.FromJson<BasicSpeechObject>(json)?.Data;
                 App.Log("[window] speaking the answer: " + (wav is null ? 0 : AvatarUaHost.WavDurationSeconds(wav)).ToString("0.0") + " s");
+                if (wav is { Length: > 0 }) { _spokenSeconds = AvatarUaHost.WavDurationSeconds(wav); Interlocked.Increment(ref _spoken); }
                 if (wav is { Length: > 0 })
                 {
                     // Played at once; the step lasts as long as she speaks, unless Stop speaking (or Esc) cuts it.
@@ -194,7 +196,7 @@ public partial class MainWindow : Window
         // THE AUDIO SCENE: drawn from above, by the names and the places the scene gives; kept to be heard.
         devices.RegisterDevice("Scene", new ActingDevice("Scene", json =>
         {
-            _lastScene = json;
+            _lastScene = json; _lastSceneAt = DateTime.UtcNow;
             App.Log("[window] the scene as heard: " + (Mpai.SpatialAudio.AudioRendering.RoomOf(json) is { } heard ? $"room {heard.X1 - heard.X0} x {heard.Y1 - heard.Y0} x {heard.Z1 - heard.Z0}, absorption {heard.Absorption}, time {heard.Time:0.00} s" : "no room acoustics (profile in the scene: " + json.Contains("\"AcousticProfile\"") + ", walls: " + json.Contains("RightParallelepiped") + ", keys: " + string.Join(",", (JsonNode.Parse(json) as JsonObject)?.Select(k => k.Key) ?? [])+ ")"));
             RememberSceneName(json);
             KeepSavedMembers(json);
@@ -496,8 +498,8 @@ public partial class MainWindow : Window
         if (_naming is { } naming) { naming.TrySetResult(words); return; }       // the name of a sound, not a command
         HeardText.Text = words;
         if (System.Text.RegularExpressions.Regex.IsMatch(words.ToLowerInvariant().TrimEnd('.', '!'), @"^(?:please )?(?:close|hide|remove)(?: the)? (?:acoustic )?(?:profile|properties|panel|room acoustics)(?: panel| window)?$"))
-        { _panel?.Hide(); AnswerText.Text = "Done: the acoustic properties are closed."; return; }
-        if (TryOutputWords(words)) return;                                        // the sound output is the User Agent's: it does not go to the Module
+        { _panel?.Hide(); AnswerText.Text = "Done: the acoustic properties are closed."; Interlocked.Increment(ref _answers); return; }
+        if (TryOutputWords(words)) { Interlocked.Increment(ref _answers); return; }                                        // the sound output is the User Agent's: it does not go to the Module
         SetStatus("Thinking...");
         GiveText(words);
         WatchForAnAnswer();
@@ -1193,6 +1195,36 @@ public partial class MainWindow : Window
         catch (Exception) { return null; }
     }
 
+    // THE LINE "Wait while the avatar loads" GOES WHEN SHE HAS LOADED. The page hides its "Loading the ASM Face..." note when the Face is in; until 2026-11-24 nothing changed the line, and it
+    // said "Wait while the avatar loads" for the whole session (N-47). The line then gives the instruction of the welcome; a Face that does not load is said, with the page's own words.
+    public volatile bool FaceLoaded;
+    private async Task WatchTheFaceAsync()
+    {
+        const string Ask = "(function(){var e=document.getElementById('loading');return e?(e.style.display==='none'?'':e.textContent):'(the page is not there yet)';})()";
+        var waited = System.Diagnostics.Stopwatch.StartNew();
+        var note = "";
+        while (waited.Elapsed < TimeSpan.FromSeconds(90))
+        {
+            try { note = System.Text.Json.JsonSerializer.Deserialize<string>(await Web.CoreWebView2.ExecuteScriptAsync(Ask)) ?? ""; }
+            catch (Exception) { note = "?"; }
+            if (note.Length == 0) break;
+            if (note.StartsWith("Could not load", StringComparison.Ordinal)) break;
+            await Task.Delay(250);
+        }
+        if (note.Length == 0)
+        {
+            FaceLoaded = true;
+            App.Log($"[avatar page] the Face is loaded ({waited.Elapsed.TotalSeconds:0.0} s)");
+            if (InstructionText.Text.StartsWith("Wait while the avatar loads", StringComparison.Ordinal))
+                InstructionText.Text = "Speak to the audio scene, or type, and press Enter. To bring in a sound, press Load a sound.";
+        }
+        else
+        {
+            App.Log($"[avatar page] the Face did not load in {waited.Elapsed.TotalSeconds:0} s: {note}");
+            InstructionText.Text = note == "?" ? "The avatar could not be shown." : note;
+        }
+    }
+
     private async Task TellAsync(string words)
     {
         Interlocked.Increment(ref _answers);
@@ -1203,7 +1235,10 @@ public partial class MainWindow : Window
     }
 
     // THE REAL WINDOW, DRIVEN BY A SCRIPT: each line is `load <name> <file.wav>`, `say <words>` or `stop`, with `=> <what the answer contains> | <what the scene description contains>` to be checked.
+    // Added 2026-11-24 (N-47): `loadspeech <name> <file.wav>` (Load speech...), `hear <file.wav>` (an utterance given as the microphone gives one), `mode voice|text` (the buttons),
+    // `face` (whether the avatar has loaded: `=> loaded`), `instruction` (the line at the top: `=> <what it contains>`); a third check `| spoken` or `| silent` says whether she said the answer.
     // What the window shows after each line (the words heard, the answer box, the status line, the scene) is written to <script>.dump.txt.
+    private int _spoken; private double _spokenSeconds; private DateTime _lastSceneAt;
     private async Task RunScriptAsync(string path)
     {
         var dump = new System.Text.StringBuilder(); var failed = 0;
@@ -1215,27 +1250,52 @@ public partial class MainWindow : Window
             {
                 var line = raw.Trim();
                 if (line.Length == 0 || line.StartsWith('#')) continue;
-                string? answerHas = null, sceneHas = null;
+                string? answerHas = null, sceneHas = null, spokenWanted = null;
                 var arrow = line.IndexOf("=>", StringComparison.Ordinal);
-                if (arrow >= 0) { var checks = line[(arrow + 2)..].Split('|'); answerHas = checks[0].Trim(); sceneHas = checks.Length > 1 ? checks[1].Trim() : null; line = line[..arrow].Trim(); }
-                var before = _answers;
+                if (arrow >= 0) { var checks = line[(arrow + 2)..].Split('|'); answerHas = checks[0].Trim(); sceneHas = checks.Length > 1 ? checks[1].Trim() : null; spokenWanted = checks.Length > 2 ? checks[2].Trim() : null; line = line[..arrow].Trim(); }
+                if (answerHas == "") answerHas = null; if (sceneHas == "") sceneHas = null;
+                var before = _answers; var spokenBefore = _spoken;
                 dump.AppendLine("> " + line);
+                if (line is "mode voice" or "mode text") { Dispatcher.Invoke(() => ModeButton_Click(line == "mode text" ? TextModeButton : VoiceModeButton, new RoutedEventArgs())); dump.AppendLine("  (mode: " + Shown(() => TextModeButton.IsChecked == true ? "text" : "voice") + ")"); await Task.Delay(1000); continue; }
+                if (line == "face" || line == "instruction")
+                {
+                    var face = System.Diagnostics.Stopwatch.StartNew();
+                    while (line == "face" && !FaceLoaded && face.Elapsed < TimeSpan.FromSeconds(90)) await Task.Delay(200);
+                    var said = line == "face" ? (FaceLoaded ? "loaded" : "NOT loaded") : Shown(() => InstructionText.Text);
+                    var ok = answerHas is null || said.Contains(answerHas, StringComparison.OrdinalIgnoreCase);
+                    if (!ok) failed++;
+                    dump.AppendLine($"  {line.ToUpperInvariant()}: {said}").AppendLine(ok ? "  PASS" : $"  FAIL (wanted '{answerHas}')");
+                    continue;
+                }
+                if (line.StartsWith("wait ", StringComparison.Ordinal)) { await Task.Delay(TimeSpan.FromSeconds(double.Parse(line[5..], System.Globalization.CultureInfo.InvariantCulture))); continue; }
                 if (line.StartsWith("load ", StringComparison.Ordinal))
                 {
                     var parts = line[5..].Trim().Split(' ', 2);
                     Dispatcher.Invoke(() => LoadSound(parts[0], File.ReadAllBytes(parts[1].Trim())));
                 }
                 else if (line.StartsWith("say ", StringComparison.Ordinal)) Dispatcher.Invoke(() => { InputBox.Text = line[4..].Trim(); Submit(); });
+                else if (line.StartsWith("loadspeech ", StringComparison.Ordinal))
+                {
+                    var parts = line[11..].Trim().Split(' ', 2);
+                    Dispatcher.Invoke(() => LoadSpeech(parts[0], File.ReadAllBytes(parts[1].Trim())));
+                }
+                else if (line.StartsWith("hear ", StringComparison.Ordinal)) _voiceDevice!.Utter(File.ReadAllBytes(line[5..].Trim()));
                 else if (line == "stop") { Dispatcher.Invoke(() => StopButton_Click(this, new RoutedEventArgs())); dump.AppendLine("  (Stop speaking pressed; button enabled: " + Shown(() => StopButton.IsEnabled.ToString()) + ")"); await Task.Delay(500); continue; }
                 var waited = System.Diagnostics.Stopwatch.StartNew();
                 while (_answers == before && waited.Elapsed < TimeSpan.FromSeconds(90)) await Task.Delay(100);
                 var timeout = _answers == before;
                 await Task.Delay(1500);
+                { var quiet = System.Diagnostics.Stopwatch.StartNew(); while (DateTime.UtcNow - _lastSceneAt < TimeSpan.FromSeconds(1.5) && quiet.Elapsed < TimeSpan.FromSeconds(10)) await Task.Delay(100); }   // the scene settles: a command brings several scenes
                 var heard = Shown(() => HeardText.Text); var answer = Shown(() => AnswerText.Text); var status = Shown(() => StatusText.Text);
                 dump.AppendLine("  HEARD:  " + heard.Replace("\n", " ")).AppendLine("  ANSWER: " + answer.Replace("\n", " ")).AppendLine("  STATUS: " + status).AppendLine("  SCENE:  " + _sceneDescription).AppendLine($"  ({waited.Elapsed.TotalSeconds:0.0} s)");
-                var pass = !timeout && (answerHas is null || answer.Contains(answerHas, StringComparison.OrdinalIgnoreCase)) && (sceneHas is null || _sceneDescription.Contains(sceneHas, StringComparison.OrdinalIgnoreCase));
+                if (spokenWanted == "spoken") { var s = System.Diagnostics.Stopwatch.StartNew(); while (_spoken == spokenBefore && s.Elapsed < TimeSpan.FromSeconds(45)) await Task.Delay(100); }
+                else if (spokenWanted == "silent") await Task.Delay(3000);
+                var saidAloud = _spoken != spokenBefore;
+                dump.AppendLine("  SPOKEN: " + (saidAloud ? $"yes ({_spokenSeconds:0.0} s of speech)" : "no"));
+                var pass = !timeout && (answerHas is null || answer.Contains(answerHas, StringComparison.OrdinalIgnoreCase)) && (sceneHas is null || _sceneDescription.Contains(sceneHas, StringComparison.OrdinalIgnoreCase))
+                           && (spokenWanted is null or "" || (spokenWanted == "spoken") == saidAloud);
                 if (!pass) failed++;
-                dump.AppendLine(pass ? "  PASS" : "  FAIL" + (timeout ? " (no answer in 90 s)" : $" (wanted answer containing '{answerHas}', scene containing '{sceneHas}')"));
+                dump.AppendLine(pass ? "  PASS" : "  FAIL" + (timeout ? " (no answer in 90 s)" : $" (wanted answer containing '{answerHas}', scene containing '{sceneHas}'" + (spokenWanted is { Length: > 0 } ? $", {spokenWanted}" : "") + ")"));
             }
         }
         catch (Exception e) { dump.AppendLine("SCRIPT FAILED: " + e); failed++; }

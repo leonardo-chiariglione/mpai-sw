@@ -25,6 +25,7 @@ internal static class Program
 
     private static int Main(string[] args)
     {
+        var (controller, rest) = ModuleConnection.Take(args); args = rest;          // --controller <url>: the Module on that Controller (Thalia's, or an MPAI as a Service instance)
         try
         {
             var o = new Options(args, "--tape", "--film-audio", "--film-frames", "--fps", "--out");
@@ -34,7 +35,7 @@ internal static class Program
             Directory.CreateDirectory(output);
 
             Console.WriteLine("Starting the Module (a first start takes a while)...");
-            using var module = ModuleHost.Start(Module, null, Console.WriteLine);
+            using var module = ModuleConnection.Open(Module, controller, null, Console.WriteLine);
             using var ua = new ModuleSession(module.Api, Path.Combine(ModuleHost.Root, "Apps", "CAE", "ARP", "ARP.orch"),
                 ("TapeIn", "OSD-BAO-V1.5"), ("FilmIn", "OSD-BMO-V1.5"), ("AccessCopyOut", "OSD-BAO-V1.5"), ("MasterOut", "OSD-BAO-V1.5"));
             ua.Start();

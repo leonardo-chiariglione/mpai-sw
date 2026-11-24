@@ -1,5 +1,6 @@
 # TELEVISION MEDIA ANALYSIS, picked with dialogs: you choose the video of the programme, say how much of it to analyse and, if you like, what it is about; the App is built if it is not, run, and the
 # folder of the result (the Multimodal Event Descriptors) is opened.
+param([string]$Controller = '')          # Thalia gives the address of the Controller it started for the App (N-49); the launcher gives none
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName Microsoft.VisualBasic
@@ -23,5 +24,6 @@ if ($text -ne '') { $arguments += @('--text', $text) }
 Write-Host "Building $title (a first build takes a while)..." -ForegroundColor Cyan
 & dotnet build $project -nologo -v q 2>&1 | Out-Null
 if ($LASTEXITCODE -ne 0) { Write-Host "The build of $project failed." -ForegroundColor Red; exit 1 }
+if ($Controller) { $arguments += @('--controller', $Controller) }
 & $exe @arguments
 if ($LASTEXITCODE -eq 0) { Write-Host "`nResults in $out" -ForegroundColor Green; Invoke-Item $out } else { Write-Host "`nThe App stopped: see what it said above." -ForegroundColor Yellow }

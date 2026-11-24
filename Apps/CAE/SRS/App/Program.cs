@@ -31,6 +31,7 @@ internal static class Program
 
     private static int Main(string[] args)
     {
+        var (controller, rest) = ModuleConnection.Take(args); args = rest;          // --controller <url>: the Module on that Controller (Thalia's, or an MPAI as a Service instance)
         try
         {
             var voice = new List<string>(); var say = new List<string>(); string? damaged = null, sections = null, output = null, demo = null, original = null, network = null; var standIn = false;
@@ -55,7 +56,7 @@ internal static class Program
             if (damagedSections.Count != say.Count) throw new ArgumentException($"{damagedSections.Count} damaged section(s) and {say.Count} --say: one text for each section.");
 
             Console.WriteLine("Starting the Module (a first start takes a while)...");
-            using var module = ModuleHost.Start(Module, standIn ? null : network is not null ? "network" : "openvoice", Console.WriteLine);
+            using var module = ModuleConnection.Open(Module, controller, standIn ? null : network is not null ? "network" : "openvoice", Console.WriteLine);
             // THE SAME WORKFLOW AS IN THE MAS APP, answered from the command line: the damaged recording is the WAV file given (the workflow's WAV alternative);
             // the voice is the speech given, named by the network (--network) - it answers the alternative of that network, or the first one when there is no
             // --network (the deployment's own Speech Model Creation then models it); the table of damaged sections is --sections and --say. The workflow repeats

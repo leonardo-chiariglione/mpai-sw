@@ -21,13 +21,14 @@ internal static class Program
 
     private static int Main(string[] args)
     {
+        var (controller, rest) = ModuleConnection.Take(args); args = rest;          // --controller <url>: the Module on that Controller (Thalia's, or an MPAI as a Service instance)
         try
         {
             var o = new Options(args, "--speech", "--model", "--out");
             var speech = o.Need("--speech"); var model = o.Need("--model"); var output = o.Need("--out");
 
             Console.WriteLine("Starting the Module (a first start takes a while)...");
-            using var module = ModuleHost.Start(Module, null, Console.WriteLine);
+            using var module = ModuleConnection.Open(Module, controller, null, Console.WriteLine);
 
             // THE SAME WORKFLOW AS IN THE MAS APP: the speech and then the model are acquired (here the files given, as WAV files, in that order); the Mode Selector is the
             // workflow's own. The workflow repeats until it is stopped: the App stops it when it has the speech with the emotion.

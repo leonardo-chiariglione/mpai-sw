@@ -102,8 +102,7 @@ public sealed class DoorUseCase
         var app = MmmServer.Build(m, url, Path.Combine(repo, "AllApps", "MMM", "Viewer"));
         using var voice = new SummaryServices(repo);
         var llm = Array.IndexOf(args, "--llm") is var k and >= 0 && k + 1 < args.Length ? args[k + 1] : "llama3.2:3b";   // the language model of Basic Knowledge
-        var whisper = new WhisperAsr(repo);
-        if (whisper.Available) whisper.Start();
+        var whisper = new WhisperAsr(repo);          // started by the warm-up, AFTER the language model is loaded (N-48)
         var http = new HttpClient { BaseAddress = new Uri(url) };
         var door = new DoorUseCase(m, http, voice, whisper.Available ? whisper : null, repo, llm);
         // The human's side (outside the MMM-API): the command to its User, written or spoken; what its User tells it; the sound of the room, rendered (MU-Actuate).
@@ -211,6 +210,10 @@ public sealed class DoorUseCase
         var asrTask = Task.Run(async () =>
         {
             if (whisper is null) return;
+            // THE LANGUAGE MODEL FIRST, THEN WHISPER (N-48, 2026-11-24). Both use the 4 GB card. When Whisper was started first, the model loaded after it read and wrote 2.3 times slower
+            // (the same 83 % of it on the card): the command was accepted in 10-16 s instead of 4-5 and the door opened 17-20 s after the bell instead of 10. Loaded first, it keeps its speed.
+            await llmTask;
+            whisper.Start();
             using var probe = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
             var up = false;
             for (var i = 0; i < 120 && !up; i++)

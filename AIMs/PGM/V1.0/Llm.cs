@@ -76,6 +76,13 @@ public sealed class OllamaModel : ILanguageModel
         using var response = await Http.PostAsync(_url + "/api/chat", new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json"));
         var text = await response.Content.ReadAsStringAsync();
         if (!response.IsSuccessStatusCode) throw new InvalidOperationException($"Ollama answered {(int)response.StatusCode}: {text}");
-        return (string?)JsonNode.Parse(text)?["message"]?["content"] ?? throw new InvalidOperationException("Ollama gave no content.");
+        var answer = JsonNode.Parse(text);
+        // WHERE THE TIME GOES (MPAI_LLM_TIMING=1, N-48 2026-11-24): what Ollama says of each answer - the prompt read (tokens, seconds), the answer written (tokens, seconds), the loading.
+        if (Environment.GetEnvironmentVariable("MPAI_LLM_TIMING") == "1")
+        {
+            double S(string k) => (answer?[k]?.GetValue<long>() ?? 0) / 1e9;
+            Console.WriteLine($"[LLM timing] {DateTime.Now:HH:mm:ss.fff} {_model}: total {S("total_duration"):0.00} s, load {S("load_duration"):0.00} s, prompt {answer?["prompt_eval_count"]} tok in {S("prompt_eval_duration"):0.00} s, answer {answer?["eval_count"]} tok in {S("eval_duration"):0.00} s; system {system.Length} chars, user {user.Length} chars");
+        }
+        return (string?)answer?["message"]?["content"] ?? throw new InvalidOperationException("Ollama gave no content.");
     }
 }

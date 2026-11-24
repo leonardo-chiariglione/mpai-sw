@@ -27,6 +27,7 @@ internal static class Program
 
     private static int Main(string[] args)
     {
+        var (controller, rest) = ModuleConnection.Take(args); args = rest;          // --controller <url>: the Module on that Controller (Thalia's, or an MPAI as a Service instance)
         try
         {
             var o = new Options(args, "--capture", "--array", "--out", "--demo", "--speech", "--noise", "--radius");
@@ -40,7 +41,7 @@ internal static class Program
             Directory.CreateDirectory(output);
 
             Console.WriteLine("Starting the Module (a first start takes a while)...");
-            using var module = ModuleHost.Start(Module, null, Console.WriteLine);
+            using var module = ModuleConnection.Open(Module, controller, null, Console.WriteLine);
             string? scene = null;
             var devices = new DeviceRegistry()
                 .RegisterDevice("Capture", new GivenDevice("OSD-BAO-V1.5", AudioObject.MakeMultichannel("capture", audio, array)))
