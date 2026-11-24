@@ -21,5 +21,6 @@
         "it"
     ],
     "Asks": [],
-    "Keeps": "Nothing."
+    "Keeps": "Nothing.",
+    "NotAnApp": "A video that Thalia shows in its About MPAI tab: it is not listed as an App, in the Store or in the MPAI as a Service instance."
 }

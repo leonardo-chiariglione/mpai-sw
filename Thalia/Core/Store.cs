@@ -268,7 +268,7 @@ static class StoreRoutes
             foreach (var folder in Directory.EnumerateDirectories(c.AppsRoot).SelectMany(Directory.EnumerateDirectories))
             {
                 var f = Path.Combine(folder, "app.json");
-                try { if (File.Exists(f) && JsonNode.Parse(File.ReadAllText(f))?["ComponentOf"] is not null) ids.Add(Path.GetFileName(folder)); } catch { }
+                try { if (File.Exists(f) && JsonNode.Parse(File.ReadAllText(f)) is { } d && (d["ComponentOf"] is not null || d["NotAnApp"] is not null)) ids.Add(Path.GetFileName(folder)); } catch { }      // NotAnApp: About MPAI is a video (Thalia shows it in its own tab), not an App
             }
         }
         catch { }
@@ -288,7 +288,7 @@ static class StoreRoutes
             {
                 if (!File.Exists(Path.Combine(folder, "app.json")) || !Directory.EnumerateFiles(folder, "*.orch").Any()) continue;
                 // the descriptors of the MAS App itself are not Apps of a standard, and a component of an App (ComponentOf: ADT of the HSP App) is not an App of its own: neither goes on the shelf
-                try { var d0 = JsonNode.Parse(File.ReadAllText(Path.Combine(folder, "app.json"))); if ((string?)d0?["Standard"] is null || d0?["ComponentOf"] is not null) continue; } catch { continue; }
+                try { var d0 = JsonNode.Parse(File.ReadAllText(Path.Combine(folder, "app.json"))); if ((string?)d0?["Standard"] is null || d0?["ComponentOf"] is not null || d0?["NotAnApp"] is not null) continue; } catch { continue; }
                 using var ms = new MemoryStream();
                 using (var zip = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
                     foreach (var f in Directory.EnumerateFiles(folder).Where(f => Path.GetFileName(f) == "app.json" || new[] { ".orch", ".svg", ".png", ".jpg" }.Contains(Path.GetExtension(f).ToLowerInvariant())))
