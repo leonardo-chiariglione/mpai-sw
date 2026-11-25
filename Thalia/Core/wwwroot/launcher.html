@@ -82,7 +82,10 @@
   .rail .dock button.logo { width:100%; padding:6px 10px; background:#fff; border:2px solid transparent; border-radius:10px; cursor:pointer; }
   .rail .dock button.logo img { display:block; height:46px; margin:0 auto; }
   .rail .dock button.logo:hover, .rail .dock button.logo.on { border-color:var(--accent); }
-  .face { width:104px; height:104px; border-radius:50%; object-fit:cover; border:2px solid var(--line); background:#222; }
+  .face { width:104px; height:104px; border-radius:50%; object-fit:cover; border:2px solid var(--line); background:#222; transition:opacity .25s; }
+  /* THALIA MOVES INTO THE APP: while an App that has her runs on the stage, her face leaves the corner (a picture of her flies to the App and back) */
+  .face.away { opacity:0; }
+  .flyface { position:fixed; z-index:50; border-radius:50%; object-fit:cover; border:2px solid var(--accent); pointer-events:none; transition:left .7s ease-in-out, top .7s ease-in-out, width .7s ease-in-out, height .7s ease-in-out, opacity .7s ease-in; }
   .dock .name { font-size:13px; color:var(--muted); margin-top:-4px; }
   .sw { width:100%; display:grid; grid-template-columns:1fr 1fr; gap:6px; }
   .sw button { all:unset; cursor:pointer; text-align:center; font-size:12.5px; padding:6px 4px; border-radius:8px; border:1px solid var(--line); color:var(--muted); }
@@ -588,6 +591,27 @@ function stage(id, where) {
 function unstage() {
   staged = null; stagedUrl = ''; $('#stFrame').src = 'about:blank';
   document.querySelector('.body').classList.remove('playing');
+  thaliaIn(false);
+}
+
+// THALIA MOVES INTO THE APP. The lady of an App is Thalia: while an App that has her runs on the stage, her face leaves the corner and goes into the App;
+// when the App is stopped (or hidden) she comes back. The Apps without her: those that work on a programme, a meeting, a performance or a door.
+const WITHOUT_HER = new Set(['TMA', 'LTP', 'VMS', 'AUA']);
+let thaliaInApp = false;
+function fly(from, to, toOpacity) {
+  const f = document.createElement('img'); f.className = 'flyface'; f.src = $('.face').src; f.alt = '';
+  Object.assign(f.style, { left: from.left + 'px', top: from.top + 'px', width: from.width + 'px', height: from.height + 'px', opacity: '1' });
+  document.body.appendChild(f);
+  requestAnimationFrame(() => requestAnimationFrame(() => Object.assign(f.style, { left: to.left + 'px', top: to.top + 'px', width: to.width + 'px', height: to.height + 'px', opacity: toOpacity })));
+  setTimeout(() => f.remove(), 800);
+}
+function thaliaIn(inApp) {
+  if (inApp === thaliaInApp) return;
+  thaliaInApp = inApp;
+  const face = $('.face'), corner = face.getBoundingClientRect(), st = $('#stage').getBoundingClientRect();
+  const size = Math.min(220, st.width * 0.4), into = { left: st.left + (st.width - size) / 2, top: st.top + st.height * 0.22, width: size, height: size };
+  if (inApp) { face.classList.add('away'); if (st.width) fly(corner, into, '0'); }
+  else { if (st.width) fly(into, corner, '1'); setTimeout(() => face.classList.remove('away'), st.width ? 650 : 0); }
 }
 const liveRun = r => r && !r.phase.startsWith('failed') && !r.phase.startsWith('stopped');
 function drawStage() {
@@ -598,6 +622,7 @@ function drawStage() {
   const msg = $('#stMsg'), frame = $('#stFrame');
   const say = (title, text, bad) => { msg.hidden = false; frame.style.visibility = 'hidden'; msg.innerHTML = '<h3></h3><p></p>'; msg.querySelector('h3').textContent = title; const p = msg.querySelector('p'); p.textContent = text; if (bad) p.className = 'bad'; };
   $('#stStop').textContent = liveRun(run) ? 'Stop' : 'Close';
+  if (!liveRun(run)) thaliaIn(false);                 // the App ended, however: she is back in her corner
   if (!run) { $('#stPhase').textContent = ''; say(a ? a.name : id, 'It is not running: it was stopped.'); }
   else if (run.phase === 'running' && run.url) {
     $('#stPhase').textContent = run.paused ? 'paused' : 'running'; $('#stPhase').className = 'status ' + (run.paused ? 'busy' : 'ok');
@@ -605,8 +630,9 @@ function drawStage() {
     const u = new URL(run.url); if (P.micLabel) u.searchParams.set('mic', P.micLabel); if (P.camLabel) u.searchParams.set('cam', P.camLabel);
     if (stagedUrl !== u.href) { stagedUrl = u.href; frame.src = u.href; }
     msg.hidden = true; frame.style.visibility = 'visible';
+    thaliaIn(!WITHOUT_HER.has(id));
   }
-  else if (run.phase === 'running') { $('#stPhase').textContent = 'running'; $('#stPhase').className = 'status ok'; say(a ? a.name : id, 'It runs in a window of its own on this screen. Stop it here, or close its window.'); }
+  else if (run.phase === 'running') { $('#stPhase').textContent = 'running'; $('#stPhase').className = 'status ok'; say(a ? a.name : id, 'It runs in a window of its own on this screen. Stop it here, or close its window.'); thaliaIn(!WITHOUT_HER.has(id)); }
   else if (!liveRun(run)) { $('#stPhase').textContent = ''; say(a ? a.name : id, run.phase, true); }
   else { $('#stPhase').textContent = 'starting'; $('#stPhase').className = 'status busy'; say(`Starting ${a ? a.name : id}...`, run.phase + '...'); }
   // the other Apps that are running: a click shows one of them here
