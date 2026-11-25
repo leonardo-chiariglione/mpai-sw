@@ -10,7 +10,10 @@
   html, body { height:100%; margin:0; }
   body { color:var(--ink); font:15px/1.45 "Segoe UI", system-ui, sans-serif; background:#10141c center/cover no-repeat fixed; overflow:hidden; }
   body::before { content:""; position:fixed; inset:0; background:rgba(8,11,18,.28); pointer-events:none; }
-  .shell { position:relative; height:100vh; display:grid; grid-template-rows:auto 1fr; }
+  .shell { position:relative; height:100vh; display:grid; grid-template-rows:auto auto 1fr; }
+  /* THE DEVICE BAR: Thalia says when it has no microphone of its own, or when one comes or goes, and offers the buttons to set it */
+  .devbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:8px 22px; background:rgba(243,192,106,.22); border-bottom:1px solid var(--line); font-size:14px; backdrop-filter:blur(10px); }
+  .devbar[hidden] { display:none; } .devbar .msg { flex:1; min-width:240px; } .devbar .lvl { width:120px; height:8px; border-radius:4px; background:rgba(255,255,255,.15); overflow:hidden; } .devbar .lvl div { height:100%; width:0; background:var(--ok); }
   .top { display:flex; align-items:center; gap:14px; padding:12px 22px; background:var(--panel); border-bottom:1px solid var(--line); backdrop-filter:blur(10px); }
   .top h1 { margin:0; font-size:22px; font-weight:600; letter-spacing:.5px; }
   .top .sub { color:var(--muted); font-size:13px; }
@@ -108,6 +111,7 @@
     <button class="ret" id="ret" title="Hide Thalia: it keeps running">Return to Windows</button>
     <button class="ret" id="quit" title="End Thalia, and the Apps it started">Close</button>
   </div>
+  <div class="devbar" id="devbar" hidden role="status"><span class="msg" id="devmsg"></span><span class="lvl" id="devlvl" hidden><div></div></span><span class="buttons" id="devbtns" style="display:flex;gap:8px"></span></div>
   <div class="body">
     <nav class="rail"><button class="on" data-view="home">Home</button><button data-view="apps">Apps</button><button data-view="running">Running</button><button data-view="devices">Devices</button><button data-view="settings">Settings</button>
 <aside class="dock" aria-label="Thalia">
@@ -511,8 +515,14 @@ async function devicesView() {
     ['Camera', 'videoinput', 'camLabel', 'cam']
   ];
   for (const [title, kind, pref, what] of kinds) {
-    const devices = list.filter(d => d.kind === kind && d.label);
-    v.appendChild(deviceCard(title, devices.map(d => ({ label: d.label, id: d.deviceId })), pref, what));
+    const devices = realDevices(list, kind);           // each device once: not again as "Default - ..." and "Communications - ..."
+    const card = deviceCard(title, devices.map(d => ({ label: d.label, id: d.deviceId })), pref, what);
+    if (what === 'mic' && devices.length > 1) {
+      const find = document.createElement('button'); find.className = 'act'; find.textContent = 'Find my microphone'; find.title = 'Speak while Thalia listens to each microphone: it keeps the one that hears you';
+      find.onclick = async () => { find.disabled = true; await findMic(card.querySelector('.verdict'), card.querySelector('.preview')); devicesDrawn = false; render(); };
+      card.querySelector('.buttons').appendChild(find);
+    }
+    v.appendChild(card);
   }
   // The screens: the browser tells them to a page that the User allows (window management); one screen when it does not.
   let screens = [];
@@ -544,6 +554,82 @@ function deviceCard(title, devices, pref, what) {
   };
   return c;
 }
+
+// ---- ONE MICROPHONE FOR THALIA -----------------------------------------------------------------------------------------------------------------------
+// A computer may have several (a headset, a webcam, a USB microphone), and Windows' default is not always the one that hears you. Thalia keeps one, the one it found hearing
+// the User, and gives it to every App. The browser lists each device once more as "Default - ..." and "Communications - ...": those are the same devices, and are left out.
+const realDevices = (list, kind) => list.filter(d => d.kind === kind && d.label && d.deviceId !== 'default' && d.deviceId !== 'communications');
+async function microphones() {
+  let list = await MpaiUnits.devices.list();
+  if (!list.some(d => d.kind === 'audioinput' && d.label)) { await MpaiUnits.devices.reveal(); list = await MpaiUnits.devices.list(); }
+  return realDevices(list, 'audioinput');
+}
+// FIND MY MICROPHONE: the User speaks while Thalia listens to each microphone for a moment; the one that heard the User loudest is kept. say: where the steps are told; bar: where the level is drawn.
+async function findMic(say, bar) {
+  const tell = t => { if (say) say.textContent = t; };
+  let mics = [];
+  try { mics = await microphones(); } catch { }
+  if (!mics.length) { tell('Thalia finds no microphone: is one connected, and has the browser been allowed to use it?'); return null; }
+  let fill = null;
+  if (bar) { bar.innerHTML = ''; const b = document.createElement('div'); b.style.cssText = 'height:10px;border-radius:5px;background:rgba(255,255,255,.15);overflow:hidden;margin-top:6px'; fill = document.createElement('div'); fill.style.cssText = 'height:100%;width:0;background:var(--ok)'; b.appendChild(fill); bar.appendChild(b); }
+  const heard = [];
+  for (const [i, m] of mics.entries()) {
+    tell(`Speak now, and keep speaking - listening to ${m.label} (${i + 1} of ${mics.length})...`);
+    try { heard.push({ m, peak: await MpaiUnits.microphone.test(m.deviceId, x => { if (fill) fill.style.width = Math.min(100, x * 400) + '%'; }, 2500) }); }
+    catch { heard.push({ m, peak: 0 }); }
+  }
+  const best = heard.sort((a, b) => b.peak - a.peak)[0];
+  if (!best || best.peak < 0.02) { tell(`No microphone heard you (${heard.map(h => `${h.m.label}: ${h.peak.toFixed(2)}`).join(', ')}): is it muted, or far from you? Try again.`); return null; }
+  setPref('micLabel', best.m.label); knownMics = mics.map(m => m.label);
+  tell(`Thalia uses ${best.m.label}: it heard you (${heard.map(h => `${h.m.label}: ${h.peak.toFixed(2)}`).join(', ')}). Every App you start from now on gets it.`);
+  return best.m.label;
+}
+
+// THE DEVICE BAR: when Thalia has no microphone of its own, and whenever a microphone is connected or disconnected, it says so and offers the buttons.
+let knownMics = null, devbarDismissed = false;
+function devbar(text, buttons) {
+  const bar = $('#devbar'); if (!text) { bar.hidden = true; return; }
+  $('#devmsg').textContent = text; const bs = $('#devbtns'); bs.innerHTML = '';
+  for (const [label, act, primary] of buttons) { const b = document.createElement('button'); b.className = 'act' + (primary ? '' : ' secondary'); b.textContent = label; b.onclick = act; bs.appendChild(b); }
+  bar.hidden = false;
+}
+const devbarFind = async () => {
+  const lvl = $('#devlvl'); lvl.hidden = false; $('#devbtns').innerHTML = '';
+  const fill = lvl.firstElementChild, msg = $('#devmsg');
+  let mics = []; try { mics = await microphones(); } catch { }
+  const heard = [];
+  for (const [i, m] of mics.entries()) {
+    msg.textContent = `Speak now, and keep speaking - listening to ${m.label} (${i + 1} of ${mics.length})...`;
+    try { heard.push({ m, peak: await MpaiUnits.microphone.test(m.deviceId, x => { fill.style.width = Math.min(100, x * 400) + '%'; }, 2500) }); } catch { heard.push({ m, peak: 0 }); }
+  }
+  lvl.hidden = true;
+  const best = heard.sort((a, b) => b.peak - a.peak)[0];
+  if (!best || best.peak < 0.02) { devbar('No microphone heard you: is it muted, or far from you?', [['Try again', devbarFind, true], ['Devices', () => { devbar(null); goView('devices'); }], ['Not now', () => { devbarDismissed = true; devbar(null); }]]); return; }
+  setPref('micLabel', best.m.label); knownMics = mics.map(m => m.label);
+  devbar(`Thalia uses ${best.m.label}: it heard you. Every App you start from now on gets it.`, [['OK', () => devbar(null), true]]);
+  if (staged) devbar(`Thalia uses ${best.m.label}: it heard you. The App that is running gets it when it starts again.`, [['OK', () => devbar(null), true]]);
+};
+async function checkMics(changed) {
+  let mics = []; try { mics = (await MpaiUnits.devices.list()).filter(d => d.kind === 'audioinput' && d.label && d.deviceId !== 'default' && d.deviceId !== 'communications'); } catch { }
+  const labels = mics.map(m => m.label), chosen = P.micLabel;
+  const before = knownMics; knownMics = labels;
+  const findBtn = ['Find my microphone', devbarFind, true], devBtn = ['Devices', () => { devbar(null); goView('devices'); }], notNow = ['Not now', () => { devbarDismissed = true; devbar(null); }];
+  if (changed && before) {
+    const added = labels.filter(l => !before.includes(l)), gone = before.filter(l => !labels.includes(l));
+    if (chosen && gone.includes(chosen)) { devbar(`The microphone Thalia uses, ${chosen}, is no longer connected.`, [findBtn, devBtn, notNow]); return; }
+    if (added.length) {
+      devbar(`A microphone was connected: ${added.join(', ')}.${chosen ? ` Thalia uses ${chosen}.` : ''}`,
+        [...added.map(l => [`Use ${l}`, () => { setPref('micLabel', l); devbar(`Thalia uses ${l}. Every App you start from now on gets it.`, [['OK', () => devbar(null), true]]); }, false]), findBtn, ['Keep it as it is', () => devbar(null)]]);
+      return;
+    }
+    if (gone.length) { devbar(`A microphone was disconnected: ${gone.join(', ')}.`, [['OK', () => devbar(null), true], devBtn]); return; }
+  }
+  if (!chosen && !devbarDismissed && labels.length !== 1)
+    devbar(labels.length ? `This computer has ${labels.length} microphones and Thalia has not chosen one yet: the Apps get whichever Windows gives them, which may not hear you.`
+                         : 'Thalia has not chosen a microphone yet: the Apps get whichever Windows gives them, which may not hear you.', [findBtn, devBtn, notNow]);
+}
+navigator.mediaDevices?.addEventListener?.('devicechange', () => checkMics(true));
+setTimeout(() => checkMics(false), 1500);
 
 // Three seconds of the microphone: its level is drawn, and it is judged by the loudest it heard.
 async function testMic(id, into) {
