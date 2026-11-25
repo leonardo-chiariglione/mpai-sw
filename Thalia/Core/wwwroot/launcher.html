@@ -42,6 +42,8 @@
   .stage.msgonly .stagebar { border-radius:12px; border:1px solid var(--line); background:var(--panel2); backdrop-filter:blur(10px); }
   .stmsg .note { max-width:440px; padding:22px 28px; border-radius:14px; background:var(--panel2); border:1px solid var(--line); backdrop-filter:blur(10px); display:flex; flex-direction:column; align-items:center; gap:10px; }
   .stmsg .note img { width:64px; height:64px; } .stmsg .note p { margin:0; color:var(--muted); }
+  .stmsg .note { max-width:640px; } .stmsg pre.said { align-self:stretch; margin:4px 0 0; padding:10px 12px; border-radius:8px; background:rgba(0,0,0,.35); color:var(--ink); font:12.5px/1.45 Consolas, monospace; text-align:left; white-space:pre-wrap; word-break:break-all; }
+  .stmsg pre.said[hidden] { display:none; }
   .content { scrollbar-color:rgba(255,255,255,.35) transparent; scrollbar-width:thin; padding:18px 24px 24px; overflow:auto; width:min(600px, 100%); margin-left:auto; padding-bottom:24px; }   /* a column on the right: the abbey, left of centre in the pictures, stays visible */
   .searchbar { display:flex; gap:12px; align-items:center; margin-bottom:6px; }
   .searchbar[hidden] { display:none; }
@@ -287,7 +289,7 @@ function render() {
     const a = sides.local || sides.mas;
     if (!ws.some(w => sides[w])) continue;                                   // an App that is not in the place(s) chosen is not shown
     if (q && !`${a.name} ${id} ${a.description} ${a.module || ''}`.toLowerCase().includes(q)) continue;
-    if (view === 'running' && !ws.some(w => { const r = runOf(id, w); return r && !r.phase.startsWith('failed') && !r.phase.startsWith('stopped'); })) continue;
+    if (view === 'running' && !ws.some(w => { const r = runOf(id, w); return liveRun(r); })) continue;
     if (!ws.length) continue;
     const card = document.createElement('section'); card.className = 'card';
     card.innerHTML = `<div class="head"><img alt="" src="${a.icon}"><div><h3></h3><div class="id"></div></div></div><p class="desc"></p>`;
@@ -686,6 +688,17 @@ function openApp(url) {
 
 // ---- the stage ---------------------------------------------------------------------------------------------------------------------------------------
 let staged = null, stagedUrl = '';            // the App shown on the stage: { id, where }; the address its frame shows
+let stageLog = { key: '', lines: [] };         // what the App on the stage wrote (an App with its own window): its lines, as Thalia keeps them
+setInterval(async () => {
+  if (!staged || !catalogue) return;
+  const run = runOf(staged.id, staged.where); if (!run || run.url) return;
+  const key = `${staged.where}:${staged.id}`;
+  try {
+    const r = await fetch(`/api/log/${staged.where}/${encodeURIComponent(staged.id)}`, { cache: 'no-store' }); if (!r.ok) return;
+    const lines = (await r.text()).split('\n').filter(l => l.startsWith('[client] ')).map(l => l.slice(9).trimEnd()).filter(l => l.trim());
+    if (stageLog.key !== key || lines.join('\n') !== stageLog.lines.join('\n')) { stageLog = { key, lines }; drawStage(); }
+  } catch { }
+}, 1500);
 const appOf = (id, where) => catalogue && catalogue.apps.find(a => a.id === id && a.where === where) || catalogue && catalogue.apps.find(a => a.id === id);
 function stage(id, where) {
   staged = { id, where }; stagedUrl = ''; $('#stFrame').src = 'about:blank';
@@ -717,19 +730,25 @@ function thaliaIn(inApp) {
   if (inApp) { face.classList.add('away'); if (st.width) fly(corner, into, '0'); }
   else { if (st.width) fly(into, corner, '1'); setTimeout(() => face.classList.remove('away'), st.width ? 650 : 0); }
 }
-const liveRun = r => r && !r.phase.startsWith('failed') && !r.phase.startsWith('stopped');
+function liveRun(r) { return !!r && !r.phase.startsWith('failed') && !r.phase.startsWith('stopped') && !r.phase.startsWith('ended'); }   // an App that ended by itself is not running any more
 function drawStage() {
   if (!staged || !catalogue) return;
   const { id, where } = staged, run = runOf(id, where), a = appOf(id, where);
   $('#stIcon').src = a ? a.icon : ''; $('#stName').textContent = a ? a.name : id;
   $('#stWhere').textContent = where === 'local' ? 'on this machine' : 'on MPAI as a Service';
   const msg = $('#stMsg'), frame = $('#stFrame');
-  const say = (title, text, bad) => {
+  const say = (title, text, bad, lines, buttons) => {
     msg.hidden = false; frame.style.visibility = 'hidden'; $('#stage').classList.add('msgonly');
-    msg.innerHTML = '<div class="note"><img alt=""><h3></h3><p></p></div>';
+    msg.innerHTML = '<div class="note"><img alt=""><h3></h3><p></p><pre class="said" hidden></pre><div class="buttons"></div></div>';
     const img = msg.querySelector('img'); if (a && a.icon) img.src = a.icon; else img.remove();
     msg.querySelector('h3').textContent = title; const p = msg.querySelector('p'); p.textContent = text; if (bad) p.className = 'bad';
+    if (lines && lines.length) { const pre = msg.querySelector('pre'); pre.hidden = false; pre.textContent = lines.join('\n'); }
+    for (const [label, act] of buttons || []) { const b = document.createElement('button'); b.className = 'act'; b.textContent = label; b.onclick = act; msg.querySelector('.buttons').appendChild(b); }
   };
+  // WHAT AN APP WITH ITS OWN WINDOW SAYS (its progress, where its results are): Thalia keeps what it writes; the last lines are shown here
+  const said = stageLog.key === `${where}:${id}` ? stageLog.lines : [];
+  const results = (said.findLast ? said.findLast(l => /^Results in /.test(l)) : [...said].reverse().find(l => /^Results in /.test(l)));
+  const seeThem = ['Show the results', async () => { try { await fetch('/api/windows', { method: 'POST' }); } catch { } }];   // the folder opened under Thalia: Thalia steps aside
   $('#stStop').textContent = liveRun(run) ? 'Stop' : 'Close';
   if (!liveRun(run)) thaliaIn(false);                 // the App ended, however: she is back in her corner
   if (!run) { $('#stPhase').textContent = ''; say(a ? a.name : id, 'It is not running: it was stopped.'); }
@@ -741,8 +760,17 @@ function drawStage() {
     msg.hidden = true; frame.style.visibility = 'visible'; $('#stage').classList.remove('msgonly');
     thaliaIn(!WITHOUT_HER.has(id));
   }
-  else if (run.phase === 'running') { $('#stPhase').textContent = 'running'; $('#stPhase').className = 'status ok'; say(a ? a.name : id, 'It runs in a window of its own on this screen. Stop it here, or close its window.'); thaliaIn(!WITHOUT_HER.has(id)); }
-  else if (!liveRun(run)) { $('#stPhase').textContent = ''; say(a ? a.name : id, run.phase, true); }
+  else if (run.phase === 'running') {
+    $('#stPhase').textContent = 'running'; $('#stPhase').className = 'status ok';
+    say(a ? a.name : id, said.length ? 'It works in a window of its own: what it is doing -' : 'It asks you in a window of its own, on this screen: answer it there. Stop it here.', false, said.slice(-7));
+    thaliaIn(!WITHOUT_HER.has(id));
+  }
+  else if (!liveRun(run) && results && /exit code 0/.test(run.phase)) {
+    $('#stPhase').textContent = 'done'; $('#stPhase').className = 'status ok';
+    say('Done', results.replace(/^Results in /, 'The results are in ') + '.', false, said.slice(-7, -1), [seeThem]);
+  }
+  else if (!liveRun(run) && /exit code 0/.test(run.phase)) { $('#stPhase').textContent = 'ended'; say(a ? a.name : id, 'It has ended.', false, said.slice(-7)); }
+  else if (!liveRun(run)) { $('#stPhase').textContent = ''; say(a ? a.name : id, run.phase, true, said.slice(-7)); }
   else { $('#stPhase').textContent = 'starting'; $('#stPhase').className = 'status busy'; say(`Starting ${a ? a.name : id}...`, run.phase + '...'); }
   // the other Apps that are running: a click shows one of them here
   const others = $('#stOthers'); others.innerHTML = '';
@@ -814,14 +842,14 @@ function row(id, where, entry) {
   if (!entry && !run) { text = where === 'mas' ? (catalogue.masProblem ? 'the Service is not running: Run starts it' : 'not offered by the Service') : 'not on this machine'; }
   else if (run && run.phase === 'running') { text = run.paused ? 'paused' : 'running'; cls = run.paused ? 'busy' : 'ok'; }
   else if (run && run.phase.startsWith('failed')) { text = run.phase; cls = 'bad'; }
-  else if (run && run.phase.startsWith('stopped')) { text = run.phase; }
+  else if (run && (run.phase.startsWith('stopped') || run.phase.startsWith('ended'))) { text = /exit code 0/.test(run.phase) ? 'ended' : run.phase; }
   else if (run) { text = run.phase + '...'; cls = 'busy'; }
   else { text = where === 'local' ? (entry.canRun ? 'ready to run' : 'cannot run: ' + entry.why) : 'offered'; }
   div.innerHTML = `<span class="label"></span><span class="status ${cls}"></span><span class="buttons"></span>`;
   div.querySelector('.label').textContent = label;
   div.querySelector('.status').textContent = text;
   const b = div.querySelector('.buttons');
-  const live = run && !run.phase.startsWith('failed') && !run.phase.startsWith('stopped');
+  const live = liveRun(run);
   if (live && !otherScreen() && !(staged && staged.id === id && staged.where === where)) { const o = document.createElement('button'); o.className = 'act'; o.textContent = 'Show'; o.title = 'Show the App here, between the rail and the functions'; o.onclick = () => stage(id, where); b.appendChild(o); }
   else if (live && run.url && otherScreen()) { const o = document.createElement('a'); o.className = 'btn'; o.href = run.url; o.target = '_blank'; o.rel = 'noopener'; o.textContent = 'Open'; b.appendChild(o); }
   const go = document.createElement('button'); go.className = 'act'; go.textContent = 'Run';
@@ -852,7 +880,7 @@ function obtainedFooter(a) {
   d.innerHTML = '<span class="label">Obtained</span><span class="status"></span><span class="buttons"></span>';
   d.querySelector('.status').textContent = `version ${a.version || '?'}, from the Store at ${a.from ? new URL(a.from).host : '?'}`;
   const rm = document.createElement('button'); rm.className = 'act secondary'; rm.textContent = 'Remove';
-  const live = runOf(a.id, 'local') && !runOf(a.id, 'local').phase.startsWith('failed') && !runOf(a.id, 'local').phase.startsWith('stopped');
+  const live = liveRun(runOf(a.id, 'local'));
   rm.disabled = !!live; rm.title = live ? 'Stop it first' : 'Remove the App from this machine; its Module stays';
   rm.onclick = async () => { if (!confirm(`Remove ${a.name} from this machine? Its Module and AIMs stay with the Controller.`)) return; rm.disabled = true; await appAct(a.id, 'remove'); };
   d.querySelector('.buttons').appendChild(rm);
