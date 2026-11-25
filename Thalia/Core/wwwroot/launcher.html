@@ -37,6 +37,11 @@
   .stbody iframe { position:absolute; inset:0; width:100%; height:100%; border:0; background:#10141c; }
   .stmsg { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:24px; text-align:center; color:var(--muted); }
   .stmsg[hidden] { display:none; } .stmsg h3 { margin:0; color:var(--ink); font-size:19px; font-weight:600; } .stmsg .bad { color:var(--bad); }
+  /* only a message on the stage (the App has a window of its own, or is starting): the picture stays sharp behind it, and the message is a card */
+  .stage.msgonly { background:transparent; backdrop-filter:none; border-color:transparent; } .stage.msgonly .stbody { background:transparent; }
+  .stage.msgonly .stagebar { border-radius:12px; border:1px solid var(--line); background:var(--panel2); backdrop-filter:blur(10px); }
+  .stmsg .note { max-width:440px; padding:22px 28px; border-radius:14px; background:var(--panel2); border:1px solid var(--line); backdrop-filter:blur(10px); display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .stmsg .note img { width:64px; height:64px; } .stmsg .note p { margin:0; color:var(--muted); }
   .content { scrollbar-color:rgba(255,255,255,.35) transparent; scrollbar-width:thin; padding:18px 24px 24px; overflow:auto; width:min(600px, 100%); margin-left:auto; padding-bottom:24px; }   /* a column on the right: the abbey, left of centre in the pictures, stays visible */
   .searchbar { display:flex; gap:12px; align-items:center; margin-bottom:6px; }
   .searchbar[hidden] { display:none; }
@@ -719,7 +724,12 @@ function drawStage() {
   $('#stIcon').src = a ? a.icon : ''; $('#stName').textContent = a ? a.name : id;
   $('#stWhere').textContent = where === 'local' ? 'on this machine' : 'on MPAI as a Service';
   const msg = $('#stMsg'), frame = $('#stFrame');
-  const say = (title, text, bad) => { msg.hidden = false; frame.style.visibility = 'hidden'; msg.innerHTML = '<h3></h3><p></p>'; msg.querySelector('h3').textContent = title; const p = msg.querySelector('p'); p.textContent = text; if (bad) p.className = 'bad'; };
+  const say = (title, text, bad) => {
+    msg.hidden = false; frame.style.visibility = 'hidden'; $('#stage').classList.add('msgonly');
+    msg.innerHTML = '<div class="note"><img alt=""><h3></h3><p></p></div>';
+    const img = msg.querySelector('img'); if (a && a.icon) img.src = a.icon; else img.remove();
+    msg.querySelector('h3').textContent = title; const p = msg.querySelector('p'); p.textContent = text; if (bad) p.className = 'bad';
+  };
   $('#stStop').textContent = liveRun(run) ? 'Stop' : 'Close';
   if (!liveRun(run)) thaliaIn(false);                 // the App ended, however: she is back in her corner
   if (!run) { $('#stPhase').textContent = ''; say(a ? a.name : id, 'It is not running: it was stopped.'); }
@@ -728,7 +738,7 @@ function drawStage() {
     // THE DEVICES THE USER CHOSE (APP-7) go with the App: the client opens that microphone and that camera.
     const u = new URL(run.url); if (P.micLabel) u.searchParams.set('mic', P.micLabel); if (P.camLabel) u.searchParams.set('cam', P.camLabel);
     if (stagedUrl !== u.href) { stagedUrl = u.href; frame.src = u.href; }
-    msg.hidden = true; frame.style.visibility = 'visible';
+    msg.hidden = true; frame.style.visibility = 'visible'; $('#stage').classList.remove('msgonly');
     thaliaIn(!WITHOUT_HER.has(id));
   }
   else if (run.phase === 'running') { $('#stPhase').textContent = 'running'; $('#stPhase').className = 'status ok'; say(a ? a.name : id, 'It runs in a window of its own on this screen. Stop it here, or close its window.'); thaliaIn(!WITHOUT_HER.has(id)); }
