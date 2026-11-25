@@ -5,19 +5,20 @@ param([Parameter(Mandatory)][ValidateSet('SRS', 'AES', 'SME', 'ARP', 'EAE', 'EES
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName Microsoft.VisualBasic
+. "$PSScriptRoot\_front.ps1"      # its dialogs come up in front of Thalia
 $root = $env:MPAI_ROOT; if (-not $root) { $root = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path }
 
 function Pick([string]$title, [string]$filter = 'All files (*.*)|*.*', [bool]$multi = $false) {
     $d = New-Object Windows.Forms.OpenFileDialog; $d.Title = $title; $d.Filter = $filter; $d.Multiselect = $multi
-    if ($d.ShowDialog() -ne 'OK') { throw 'Cancelled.' }
+    if ($d.ShowDialog($Front) -ne 'OK') { throw 'Cancelled.' }
     if ($multi) { $d.FileNames } else { $d.FileName }
 }
 function Ask([string]$prompt, [string]$title, [string]$default = '') {
-    $a = [Microsoft.VisualBasic.Interaction]::InputBox($prompt, $title, $default)
+    $a = InputBoxFront($prompt, $title, $default)
     if ($a -eq '') { throw 'Cancelled.' }
     $a
 }
-function Yes([string]$question, [string]$title) { [Windows.Forms.MessageBox]::Show($question, $title, 'YesNo', 'Question') -eq 'Yes' }
+function Yes([string]$question, [string]$title) { [Windows.Forms.MessageBox]::Show($Front, $question, $title, 'YesNo', 'Question') -eq 'Yes' }
 
 $names = @{ SRS = 'Speech Restoration System'; AES = 'Add Emotion to Speech'; SME = 'Speak Model with Emotion'; ARP = 'Audio Recording Preservation'; EAE = 'Enhanced Audioconference Experience'; EES = 'Emotion Enhanced Speech' }
 $title = $names[$App]
@@ -66,7 +67,7 @@ try {
             if (Yes "Is there a film of the playback head?`n`nYes: you pick its audio and the folder of its frames (grey PNG files)." $title) {
                 $arguments += @('--film-audio', (Pick 'The audio of the film' $wav))
                 $f = New-Object Windows.Forms.FolderBrowserDialog; $f.Description = 'The folder of the frames of the film (grey PNG files, in the order of their names)'
-                if ($f.ShowDialog() -ne 'OK') { throw 'Cancelled.' }
+                if ($f.ShowDialog($Front) -ne 'OK') { throw 'Cancelled.' }
                 $arguments += @('--film-frames', $f.SelectedPath, '--fps', (Ask 'Frames a second of the film' $title '10'))
             }
         }

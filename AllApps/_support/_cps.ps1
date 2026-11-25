@@ -4,15 +4,16 @@ param([string]$Controller = '')          # Thalia gives the address of the Contr
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName Microsoft.VisualBasic
+. "$PSScriptRoot\_front.ps1"      # its dialogs come up in front of Thalia
 $root = $env:MPAI_ROOT; if (-not $root) { $root = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path }
 $title = 'Conversation with Personal Status'
 
 function Pick([string]$caption, [string]$filter) {
     $d = New-Object Windows.Forms.OpenFileDialog; $d.Title = $caption; $d.Filter = $filter
-    if ($d.ShowDialog() -ne 'OK') { throw 'Cancelled.' }
+    if ($d.ShowDialog($Front) -ne 'OK') { throw 'Cancelled.' }
     $d.FileName
 }
-function Yes([string]$question) { [Windows.Forms.MessageBox]::Show($question, $title, 'YesNo', 'Question') -eq 'Yes' }
+function Yes([string]$question) { [Windows.Forms.MessageBox]::Show($Front, $question, $title, 'YesNo', 'Question') -eq 'Yes' }
 
 $project = Join-Path $root 'Apps\MMC\CPS\App\CpsApp.csproj'
 $exe = Join-Path $root 'Apps\MMC\CPS\App\bin\Debug\net10.0-windows10.0.19041.0\CpsApp.exe'
@@ -26,7 +27,7 @@ try {
         $arguments += @('--face', (Pick 'A picture of your face' 'Pictures (*.jpg;*.jpeg;*.png)|*.jpg;*.jpeg;*.png|All files (*.*)|*.*'))
         do {
             if (Yes "Do you type what you say?`n`nYes: you type it.`nNo: you pick a WAV file of your voice.") {
-                $words = [Microsoft.VisualBasic.Interaction]::InputBox('What do you say?', $title, 'I am so excited about the concert tonight! Do you know what time it starts?')
+                $words = InputBoxFront('What do you say?', $title, 'I am so excited about the concert tonight! Do you know what time it starts?')
                 if ($words -eq '') { throw 'Cancelled.' }
                 $arguments += @('--text', $words)
             } else { $arguments += @('--speech', (Pick 'What you say (a 16-bit WAV file)' 'WAV files (*.wav)|*.wav|All files (*.*)|*.*')) }

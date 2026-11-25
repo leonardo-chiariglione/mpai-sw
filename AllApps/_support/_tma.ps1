@@ -4,6 +4,7 @@ param([string]$Controller = '')          # Thalia gives the address of the Contr
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName Microsoft.VisualBasic
+. "$PSScriptRoot\_front.ps1"      # its dialogs come up in front of Thalia
 $root = $env:MPAI_ROOT; if (-not $root) { $root = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path }
 $title = 'Television Media Analysis'
 
@@ -13,10 +14,10 @@ $out = Join-Path (Join-Path $env:USERPROFILE 'Downloads') "MPAI OSD\TMA\$(Get-Da
 
 try {
     $d = New-Object Windows.Forms.OpenFileDialog; $d.Title = 'The video of the programme'; $d.Filter = 'Videos (*.mp4;*.mkv;*.avi;*.mov;*.webm)|*.mp4;*.mkv;*.avi;*.mov;*.webm|All files (*.*)|*.*'
-    if ($d.ShowDialog() -ne 'OK') { throw 'Cancelled.' }
-    $seconds = [Microsoft.VisualBasic.Interaction]::InputBox("How many seconds of the programme, from its start?`n`nThe analysis takes several times as long as the part analysed.", $title, '30')
+    if ($d.ShowDialog($Front) -ne 'OK') { throw 'Cancelled.' }
+    $seconds = InputBoxFront("How many seconds of the programme, from its start?`n`nThe analysis takes several times as long as the part analysed.", $title, '30')
     if ($seconds -eq '') { throw 'Cancelled.' }
-    $text = [Microsoft.VisualBasic.Interaction]::InputBox("What is the programme about, and who is in it? (an auxiliary text: you may leave it empty)", $title, '')
+    $text = InputBoxFront("What is the programme about, and who is in it? (an auxiliary text: you may leave it empty)", $title, '')
 } catch { Write-Host $_.Exception.Message; Start-Sleep 2; exit 1 }
 $arguments = @('--video', $d.FileName, '--seconds', $seconds, '--out', $out)
 if ($text -ne '') { $arguments += @('--text', $text) }

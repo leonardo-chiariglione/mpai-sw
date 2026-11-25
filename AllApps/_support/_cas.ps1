@@ -3,15 +3,16 @@
 param([string]$Controller = '')          # Thalia gives the address of the Controller it started for the App (N-49); the launcher gives none
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Windows.Forms
+. "$PSScriptRoot\_front.ps1"      # its dialogs come up in front of Thalia
 $root = $env:MPAI_ROOT; if (-not $root) { $root = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path }
 $title = 'Conversation About a Scene'
 
 function Pick([string]$caption, [string]$filter) {
     $d = New-Object Windows.Forms.OpenFileDialog; $d.Title = $caption; $d.Filter = $filter
-    if ($d.ShowDialog() -ne 'OK') { throw 'Cancelled.' }
+    if ($d.ShowDialog($Front) -ne 'OK') { throw 'Cancelled.' }
     $d.FileName
 }
-function Yes([string]$question) { [Windows.Forms.MessageBox]::Show($question, $title, 'YesNo', 'Question') -eq 'Yes' }
+function Yes([string]$question) { [Windows.Forms.MessageBox]::Show($Front, $question, $title, 'YesNo', 'Question') -eq 'Yes' }
 
 $project = Join-Path $root 'Apps\MMC\CAS\App\CasApp.csproj'
 $exe = Join-Path $root 'Apps\MMC\CAS\App\bin\Debug\net10.0-windows10.0.19041.0\CasApp.exe'
