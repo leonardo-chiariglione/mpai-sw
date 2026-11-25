@@ -96,6 +96,11 @@
   .ret { font:inherit; font-size:13px; padding:6px 14px; border-radius:8px; border:1px solid var(--line); background:var(--panel2); color:var(--ink); cursor:pointer; }
   .ret:hover { border-color:var(--accent); }
   .dock { margin-top:auto; display:flex; flex-direction:column; align-items:center; gap:8px; padding:12px 4px 4px; border-top:1px solid var(--line); }
+  /* THE LADY'S PLACE (2026-11-25, the author): immediately below the menu - her face, Voice and Text below it, what was heard and what she answered below them; the MPAI card at the
+     bottom of the pane. An App that has her (ASM) puts its own lady, with its Voice, Text and words, in this place. */
+  .slot { flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; gap:8px; margin-top:10px; padding:10px 2px 0; border-top:1px solid var(--line); }
+  .slot .talk { align-self:stretch; flex:1; min-height:60px; overflow:auto; padding:8px 10px; border-radius:8px; border:1px solid var(--line); background:var(--panel2); font-size:12.5px; }
+  .slot .talk b { display:block; color:var(--ink); font-weight:600; } .slot .talk div { color:var(--muted); margin:2px 0 6px; min-height:1.2em; }
   .rail .dock button.logo { width:100%; padding:6px 10px; background:#fff; border:2px solid transparent; border-radius:10px; cursor:pointer; }
   .rail .dock button.logo img { display:block; height:46px; margin:0 auto; }
   .rail .dock button.logo:hover, .rail .dock button.logo.on { border-color:var(--accent); }
@@ -103,11 +108,12 @@
   /* THALIA MOVES INTO THE APP: while an App that has her runs on the stage, her face leaves the corner (a picture of her flies to the App and back) */
   .face.away { opacity:0; }
   .flyface { position:fixed; z-index:50; border-radius:50%; object-fit:cover; border:2px solid var(--accent); pointer-events:none; transition:left .7s ease-in-out, top .7s ease-in-out, width .7s ease-in-out, height .7s ease-in-out, opacity .7s ease-in; }
-  .dock .name { font-size:13px; color:var(--muted); margin-top:-4px; }
+  .slot .name { font-size:13px; color:var(--muted); margin-top:-4px; }
   .sw { width:100%; display:grid; grid-template-columns:1fr 1fr; gap:6px; }
   .sw button { all:unset; cursor:pointer; text-align:center; font-size:12.5px; padding:6px 4px; border-radius:8px; border:1px solid var(--line); color:var(--muted); }
-  .sw button:disabled { opacity:.45; cursor:default; }
-  .sw button.on { background:rgba(157,185,255,.25); color:var(--ink); border-color:var(--accent); }
+  /* red: not enabled; blue: enabled (as in the Apps) */
+  .sw button { background:#b3261e; color:#fff; border-color:#b3261e; font-weight:600; } .sw button:disabled { cursor:default; }
+  .sw button:not(:disabled) { background:#1d3f9e; border-color:#1d3f9e; }
   body:has(.body.flip) .credit { left:12px; }
   .ack { font-size:10.5px; line-height:1.3; color:var(--muted); text-align:center; }
   .credit { position:fixed; left:calc(var(--rail) + 12px); bottom:8px; font-size:11px; color:rgba(255,255,255,.75); text-shadow:0 1px 2px #000; max-width:calc(100% - 230px); }
@@ -128,12 +134,15 @@
   <div class="devbar" id="devbar" hidden role="status"><span class="msg" id="devmsg"></span><span class="lvl" id="devlvl" hidden><div></div></span><span class="buttons" id="devbtns" style="display:flex;gap:8px"></span></div>
   <div class="body">
     <nav class="rail"><button class="on" data-view="home">Home</button><button data-view="apps">Apps</button><button data-view="running">Running</button><button data-view="devices">Devices</button><button data-view="settings">Settings</button>
-<aside class="dock" aria-label="Thalia">
-  <button data-view="about" class="logo" title="About MPAI: a video that tells what MPAI proposes" aria-label="About MPAI"><img src="/mpai-logo.png" alt="About MPAI"></button>
+<div class="slot" id="faceSlot" aria-label="Thalia">
   <img class="face" src="/thalia.png?v=2" alt="Thalia">
   <div class="name">Thalia</div>
-  <div class="sw" id="sw"><button disabled title="Coming: Thalia listens to you">Listen</button><button disabled title="Coming: Thalia speaks to you">Speak</button></div>
+  <div class="sw" id="sw"><button disabled title="Coming: Thalia listens to you">Voice</button><button title="Thalia is used by writing and pressing">Text</button></div>
+  <div class="talk"><b>What I heard:</b><div id="heard"></div><b>What she answered:</b><div id="answered"></div></div>
   <div class="ack">Avatar by Ready Player Me (CC BY-NC-SA 4.0), used for demonstration. Other uses are subject to restrictions.</div>
+</div>
+<aside class="dock" aria-label="MPAI">
+  <button data-view="about" class="logo" title="About MPAI: a video that tells what MPAI proposes" aria-label="About MPAI"><img src="/mpai-logo.png" alt="About MPAI"></button>
 </aside>
     </nav>
     <section class="stage" id="stage" aria-label="The App that is running">
@@ -745,7 +754,8 @@ function placeOwnWindow(on, hide) {
   if (!on) return;
   const r = $('.stbody').getBoundingClientRect();
   const sx = window.screenX + (window.outerWidth - window.innerWidth) / 2, sy = window.screenY + (window.outerHeight - window.innerHeight) - (window.outerWidth - window.innerWidth) / 2;
-  const q = new URLSearchParams({ x: Math.round(sx + r.left), y: Math.round(sy + r.top), w: Math.round(r.width), h: Math.round(r.height), hide: hide ? 'true' : 'false' });
+  const f = $('#faceSlot').getBoundingClientRect();         // where the App's lady goes (a window of the App titled "[face] ...")
+  const q = new URLSearchParams({ x: Math.round(sx + r.left), y: Math.round(sy + r.top), w: Math.round(r.width), h: Math.round(r.height), fx: Math.round(sx + f.left), fy: Math.round(sy + f.top), fw: Math.round(f.width), fh: Math.round(f.height), hide: hide ? 'true' : 'false' });
   fetch(`/api/place/${on.where}/${encodeURIComponent(on.id)}?${q}`, { method: 'POST' }).catch(() => { });
 }
 const ownWindowShown = () => { const r = staged && runOf(staged.id, staged.where); return r && liveRun(r) && !r.url && r.phase === 'running' ? staged : null; };
@@ -765,7 +775,10 @@ function unstage() {
 // THALIA MOVES INTO THE APP. The lady of an App is Thalia: while an App that has her runs on the stage, her face leaves the corner and goes into the App;
 // when the App is stopped (or hidden) she comes back. The Apps without her: those that work on a programme, a meeting, a performance or a door.
 const WITHOUT_HER = new Set(['TMA', 'LTP', 'VMS', 'AUA', 'ARP', 'EES', 'EAE']);
-let thaliaInApp = false;
+// THE APPS WHOSE LADY IS IN THALIA'S PANE (2026-11-25, the author: "the lady should not navigate inside the scene but stay outside where she was"): ASM puts her, with her Voice, Text
+// and words, in the lady's place of the pane; Thalia's face gives her that place, and nothing flies into the stage.
+const LADY_IN_PANE = new Set(['ASM']);
+let thaliaInApp = false, ladyApp = null;
 function fly(from, to, toOpacity) {
   const f = document.createElement('img'); f.className = 'flyface'; f.src = $('.face').src; f.alt = '';
   Object.assign(f.style, { left: from.left + 'px', top: from.top + 'px', width: from.width + 'px', height: from.height + 'px', opacity: '1' });
@@ -778,8 +791,10 @@ function thaliaIn(inApp) {
   thaliaInApp = inApp;
   const face = $('.face'), corner = face.getBoundingClientRect(), st = $('#stage').getBoundingClientRect();
   const size = Math.min(220, st.width * 0.4), into = { left: st.left + (st.width - size) / 2, top: st.top + st.height * 0.22, width: size, height: size };
-  if (inApp) { face.classList.add('away'); if (st.width) fly(corner, into, '0'); }
-  else { if (st.width) fly(into, corner, '1'); setTimeout(() => face.classList.remove('away'), st.width ? 650 : 0); }
+  if (inApp) ladyApp = staged ? staged.id : null;            // the App she went into: when it goes, the stage is already cleared
+  const flies = st.width && !LADY_IN_PANE.has(ladyApp || '');
+  if (inApp) { face.classList.add('away'); if (flies) fly(corner, into, '0'); }
+  else { if (flies) fly(into, corner, '1'); setTimeout(() => face.classList.remove('away'), flies ? 650 : 0); }
 }
 function liveRun(r) { return !!r && !r.phase.startsWith('failed') && !r.phase.startsWith('stopped') && !r.phase.startsWith('ended'); }   // an App that ended by itself is not running any more
 function drawStage() {

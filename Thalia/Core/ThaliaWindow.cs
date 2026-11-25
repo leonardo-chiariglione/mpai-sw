@@ -42,12 +42,13 @@ static class ThaliaWindow
     // THE WINDOW OF AN APP, ON THE STAGE: the visible top-level windows of these processes and of the processes they started are made owned by Thalia's window (in front of it, and with it);
     // a window that can be resized is placed on the rectangle (x, y, w, h: pixels of the screen), a dialog is only brought in front; hide: they are hidden. Returns how many windows.
     static readonly HashSet<IntPtr> hiddenByThalia = new();
-    public static int Place(IEnumerable<int> roots, int x, int y, int w, int h, bool hide)
+    // A window of the App titled "[face] ..." (its lady, with her Voice, Text and words) goes in the lady's place of Thalia's pane (fx, fy, fw, fh) instead (2026-11-25).
+    public static int Place(IEnumerable<int> roots, int x, int y, int w, int h, bool hide, int fx = 0, int fy = 0, int fw = 0, int fh = 0)
     {
         if (!OperatingSystem.IsWindows()) return 0;
         var thalia = Windows();
         var pids = Descendants(roots);
-        var mine = new List<IntPtr>();
+        var mine = new List<IntPtr>(); var faces = new HashSet<IntPtr>();
         EnumWindows((hw, _) =>
         {
             if (!IsWindowVisible(hw) && !hiddenByThalia.Contains(hw)) return true;   // an invisible window is shown again only when Thalia is the one that hid it
@@ -55,6 +56,7 @@ static class ThaliaWindow
             if (!pids.Contains(pid)) return true;
             var t = new StringBuilder(256); GetWindowText(hw, t, 256);
             if (t.Length == 0) return true;                                           // the invisible helpers of a program (IME, GDI+) have no title
+            if (t.ToString().StartsWith("[face]", StringComparison.Ordinal)) faces.Add(hw);
             mine.Add(hw); return true;
         }, IntPtr.Zero);
         var main = thalia.Count > 0 ? thalia[0] : IntPtr.Zero;
@@ -74,20 +76,22 @@ static class ThaliaWindow
         {
             // A window owned by another window of the App (a dialog of ASM's window) stays with its owner, in front of it: it is not placed, and is hidden and shown with it.
             var owner = GetWindow(hw, 4);                                             // GW_OWNER
-            if (owner != IntPtr.Zero && owner != main) continue;
+            if (owner != IntPtr.Zero && owner != main && !faces.Contains(hw)) continue;   // the lady's window has an owner of its own (WPF gives one to a window with no taskbar button): it is placed
             if (hide) { ShowWindow(hw, 0); lock (hiddenByThalia) hiddenByThalia.Add(hw); continue; }   // SW_HIDE
             var wasHidden = false; lock (hiddenByThalia) wasHidden = hiddenByThalia.Remove(hw);
             var first = owner != main;                                                // not yet Thalia's
             if (first && main != IntPtr.Zero) SetWindowLongPtr(hw, -8, main);         // GWLP_HWNDPARENT: owned by Thalia's window
             var cls = new StringBuilder(64); GetClassName(hw, cls, 64);
-            var resizable = (GetWindowLong(hw, -16) & 0x00040000) != 0 && cls.ToString() != "#32770";   // WS_THICKFRAME, and not a dialog
+            var face = faces.Contains(hw);
+            var resizable = face || (GetWindowLong(hw, -16) & 0x00040000) != 0 && cls.ToString() != "#32770";   // WS_THICKFRAME, and not a dialog (the lady's window is placed though it has no frame)
             if (wasHidden) ShowWindow(hw, 5);                                         // SW_SHOW
-            if (resizable && w > 100 && h > 100)
+            var (px, py, pw, ph) = face ? (fx, fy, fw, fh) : (x, y, w, h);
+            if (resizable && pw > 100 && ph > 100)
             {
                 GetWindowRect(hw, out var r);
                 if (IsIconic(hw) || IsZoomed(hw)) ShowWindow(hw, 9);                  // SW_RESTORE
-                if (r.L != x || r.T != y || r.R - r.L != w || r.B - r.T != h)         // placed only when it is not where it should be: nothing flickers
-                    SetWindowPos(hw, IntPtr.Zero, x, y, w, h, 0x0004 | 0x0010);      // SWP_NOZORDER | SWP_NOACTIVATE
+                if (r.L != px || r.T != py || r.R - r.L != pw || r.B - r.T != ph)     // placed only when it is not where it should be: nothing flickers
+                    SetWindowPos(hw, IntPtr.Zero, px, py, pw, ph, 0x0004 | 0x0010);  // SWP_NOZORDER | SWP_NOACTIVATE
             }
             if (first || wasHidden) BringWindowToTop(hw);
         }

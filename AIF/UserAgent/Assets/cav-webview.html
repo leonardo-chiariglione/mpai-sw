@@ -16,10 +16,10 @@
     font-size:20px; font-weight:600; letter-spacing:.3px; pointer-events:none;
     text-shadow:0 1px 4px rgba(0,0,0,.6); }
   /* The avatar's licence, under her (Ready Player Me, CC BY-NC-SA 4.0: attribution
-     required, non-commercial use only). */
-  #notice { position:absolute; bottom:8px; left:50%; transform:translateX(-50%); width:max-content;
-    max-width:calc(100% - 16px); text-align:center; font-size:11px; color:#c9d3df; pointer-events:none;
-    background:rgba(20,26,36,.78); padding:3px 10px; border-radius:4px; }
+     required, non-commercial use only): below the picture, never over her face - in a narrow
+     window it took three lines over her chin and mouth (2026-11-25). */
+  #notice { flex:0 0 auto; text-align:center; font-size:9px; line-height:1.25; color:#9fb0c6;
+    padding:3px 6px 4px; }
   #loading { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
     font-size:16px; color:#9fb0c6; }
   #panel { flex:0 0 auto; background:var(--panel); padding:12px; }
@@ -36,9 +36,9 @@
 <div id="app">
   <div id="stage">
     <canvas id="canvas"></canvas>
-    <div id="notice">Avatar by Ready Player Me (CC BY-NC-SA 4.0), used for demonstration. Other uses are subject to restrictions.</div>
     <div id="loading">Loading the Face…</div>
   </div>
+  <div id="notice">Avatar by Ready Player Me (CC BY-NC-SA 4.0), used for demonstration. Other uses are subject to restrictions.</div>
 </div>
 
 <script src="https://mpaiunits.local/mpai-units.js"></script>

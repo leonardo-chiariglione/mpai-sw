@@ -54,12 +54,34 @@ public partial class MainWindow : Window
     private TaskCompletionSource<string?>? _naming;      // the name the person is giving a sound
     private string? _lastScene;                          // the last Audio Scene Descriptors the Module gave
 
+    // IN THALIA, THE LADY IS IN THALIA'S PANE (2026-11-25, the author): her face, smaller, with Voice and Text below it and what was heard and what she answered below them, in the
+    // right pane of Thalia, under its menu - the place the lady has there. The column is taken out of this window into a window of its own, with no frame, titled "[face] ...", which
+    // Thalia places in that place (and the rest of this window on its stage). Started apart from Thalia, the window is as it was.
+    private Window? _pane;
+    private void InThaliasPane()
+    {
+        if (SideColumn.Parent is not System.Windows.Controls.Grid grid) return;
+        grid.Children.Remove(SideColumn);
+        grid.ColumnDefinitions[1].Width = new GridLength(0);
+        SideColumn.Margin = new Thickness(6);
+        _pane = new Window
+        {
+            Title = "[face] " + Title, Content = SideColumn, WindowStyle = WindowStyle.None, ResizeMode = ResizeMode.NoResize, ShowInTaskbar = false,
+            Width = 200, Height = 620, Background = System.Windows.Media.Brushes.White, ShowActivated = false
+        };
+        _pane.PreviewKeyDown += (_, args) => { if (args.Key == Key.Escape) { StopButton_Click(this, new RoutedEventArgs()); args.Handled = true; } };
+        Loaded += (_, _) => _pane.Show();
+        Closed += (_, _) => _pane.Close();
+        App.Log("[window] in Thalia: the lady, Voice/Text and the words are in a window of their own, for Thalia's pane");
+    }
+
     public MainWindow()
     {
         InitializeComponent();
         Loaded += OnLoaded;
         // Her face is 0.866 of the height it had (the column less the room the words took) and of the width it had, so its surface is three quarters of what it was.
-        SideColumn.SizeChanged += (_, args) => Web.Height = Math.Max(150, (args.NewSize.Height - 195) * 0.866);
+        SideColumn.SizeChanged += (_, args) => Web.Height = Math.Max(150, Math.Min(args.NewSize.Width * 1.15, (args.NewSize.Height - 195) * 0.866));      // no taller than her width allows (narrow in Thalia's pane)
+        if (Environment.GetEnvironmentVariable("MPAI_IN_THALIA") == "1") InThaliasPane();
         PreviewKeyDown += (_, args) => { if (args.Key == Key.Escape) { StopButton_Click(this, new RoutedEventArgs()); args.Handled = true; } };
         StopButton.Background = IdleStop;                              // off (red) until she speaks
         TextModeButton.IsChecked = true; ApplyMode();          // the window starts in Text: the microphone off, and she does not speak

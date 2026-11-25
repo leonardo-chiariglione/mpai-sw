@@ -202,10 +202,10 @@ app.MapPost("/api/windows", () =>
 // THE WINDOW OF AN APP, ON THE STAGE (2026-11-25). An App with a window of its own (ASM's) is shown where Thalia shows Apps: its page says where the stage is on the screen, and Thalia
 // places the App's window there, in front of Thalia's (owned by it: it stays in front of Thalia and goes with it); hide=true hides it, when the User hides the App or shows another.
 // A dialog (it cannot be resized) is only brought in front. Only the windows of the processes this run started, and of theirs.
-app.MapPost("/api/place/{where}/{id}", (string where, string id, int x, int y, int w, int h, bool? hide) =>
+app.MapPost("/api/place/{where}/{id}", (string where, string id, int x, int y, int w, int h, bool? hide, int? fx, int? fy, int? fw, int? fh) =>
 {
     if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || !running.TryGetValue($"{where}:{id}", out var run)) return Results.NotFound();
-    return Results.Json(new { windows = ThaliaWindow.Place(run.Pids(), x, y, w, h, hide == true) });
+    return Results.Json(new { windows = ThaliaWindow.Place(run.Pids(), x, y, w, h, hide == true, fx ?? 0, fy ?? 0, fw ?? 0, fh ?? 0) });
 });
 
 // THE RESULTS OF AN APP, SHOWN IN THALIA (2026-11-25). An App that works with files (ARP, EES, EAE, CAS, ...) writes its results in a folder under the User's Downloads and says where;
@@ -451,7 +451,8 @@ async Task StartOwnAsync(Run run, OwnClients.Own own, string? serviceUrl = null)
     }
     if (own.ClientBuilt is { } built && !File.Exists(built)) throw new InvalidOperationException($"the App is not built: {built}");
     run.Phase = "starting the App's own client";
-    var env = own.Env?.ToDictionary(kv => kv.Key, kv => Fill(kv.Value));
+    var env = own.Env?.ToDictionary(kv => kv.Key, kv => Fill(kv.Value)) ?? new Dictionary<string, string>();
+    env["MPAI_IN_THALIA"] = "1";          // the App's client knows it is in Thalia (ASM puts its lady in Thalia's pane)
     var client = run.Spawn("client", own.ClientFile, Fill(clientArgs), root, env);
     if (own.Page is { } page)
     {
