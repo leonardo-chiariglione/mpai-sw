@@ -241,6 +241,15 @@ public sealed class SseAimProcessor : IAimProcessor
         var items = scene?.BasicSpeechSceneItems.ToList() ?? new List<BasicSpeechSceneItem>();
         var before = _open;
         var changed = false;
+        // THE NAME OF A SPEECH SCENE THAT IS MADE (2026-11-25): the command's (ObjectID of AddedObjects, or NewScene, as the JSON Interface gives the name of a Scene the first add makes);
+        // when it gives none, the name of the one Audio Scene the Module keeps - the person makes one scene, of sounds and speech alike, and the speech goes in it. Several, or none: not guessed.
+        string? NameOfTheSceneMade()
+        {
+            if (NameBook.Clean(data.AddedObjects?.ObjectID ?? data.NewScene) is { } given) return given;
+            var audio = _store.All(Kinds.AudioScene).Select(s => s.Id).Distinct(StringComparer.Ordinal).ToList();
+            return audio.Count == 1 ? audio[0] : null;
+        }
+        var made = scene is null ? NameOfTheSceneMade() : null;
 
         if (data.AddedObjects is { Objects.Count: > 0 } added)
             foreach (var entry in added.Objects)
@@ -251,7 +260,7 @@ public sealed class SseAimProcessor : IAimProcessor
                 var parts = SpeechStore.Leaves(_store, id, Placement(entry.SpatialAttitude));
                 if (id is null || parts.Count == 0) { report.Failed("AddedObjects", id, "no such Basic Speech Object"); continue; }
                 if (Amounts.PlaceProblem(entry.SpatialAttitude) is { } problem) { report.Failed("AddedObjects", id, problem); continue; }
-                if (scene is null && NameBook.Clean(added.ObjectID) is null)
+                if (scene is null && made is null)
                 { report.Failed("AddedObjects", id, "a name is needed for the Speech Scene that is made: the command gives it in ObjectID"); continue; }
                 foreach (var (part, at) in parts)
                     items.Add(new BasicSpeechSceneItem { ObjectSpaceTime = at, SpeechObject = new BasicSpeechObject { BasicSpeechObjectID = part } });
@@ -293,7 +302,7 @@ public sealed class SseAimProcessor : IAimProcessor
         }
 
         if (!changed) return;
-        _open = Save(items, listener ?? scene?.UserPoV ?? Origin(), scene, before, data.AddedObjects?.ObjectID);
+        _open = Save(items, listener ?? scene?.UserPoV ?? Origin(), scene, before, made ?? data.AddedObjects?.ObjectID);
         report.Produced(N(_open)!);   // every action done made this version, which the Scene's name now designates
     }
 

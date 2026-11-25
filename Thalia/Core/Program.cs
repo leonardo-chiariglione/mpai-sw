@@ -199,6 +199,15 @@ app.MapPost("/api/windows", () =>
     return Results.Ok();
 });
 
+// THE WINDOW OF AN APP, ON THE STAGE (2026-11-25). An App with a window of its own (ASM's) is shown where Thalia shows Apps: its page says where the stage is on the screen, and Thalia
+// places the App's window there, in front of Thalia's (owned by it: it stays in front of Thalia and goes with it); hide=true hides it, when the User hides the App or shows another.
+// A dialog (it cannot be resized) is only brought in front. Only the windows of the processes this run started, and of theirs.
+app.MapPost("/api/place/{where}/{id}", (string where, string id, int x, int y, int w, int h, bool? hide) =>
+{
+    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || !running.TryGetValue($"{where}:{id}", out var run)) return Results.NotFound();
+    return Results.Json(new { windows = ThaliaWindow.Place(run.Pids(), x, y, w, h, hide == true) });
+});
+
 // THE RESULTS OF AN APP, SHOWN IN THALIA (2026-11-25). An App that works with files (ARP, EES, EAE, CAS, ...) writes its results in a folder under the User's Downloads and says where;
 // Thalia lists that folder and gives its files to its page (a WAV to play, a JSON to read), and opens it in Windows when the User asks. Only folders under Downloads.
 string? UnderDownloads(string? path)
@@ -686,6 +695,9 @@ sealed class Run(string key, string app, string where)
     }
 
     public JsonObject Json() => new() { ["key"] = Key, ["app"] = App, ["where"] = Where, ["phase"] = Phase, ["url"] = Url, ["controller"] = Controller?.ToString(), ["paused"] = Paused };
+
+    // the processes this run started that still run (their windows are the App's own)
+    public int[] Pids() { lock (processes) return processes.Where(x => { try { return !x.P.HasExited; } catch { return false; } }).Select(x => x.P.Id).ToArray(); }
 }
 
 static class NativeWindows

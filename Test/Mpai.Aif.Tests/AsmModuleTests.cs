@@ -58,6 +58,80 @@ public class AsmModuleTests
         lock (AIF.Metadata.PublishedSchemas.Lock) return s.Evaluate(doc.RootElement).IsValid ? "valid" : "not valid";
     }
 
+    // A SPEECH FIRST, IN A SCENE NAMED BY NewScene (2026-11-25). The JSON Interface gives the name of a Scene the first add makes as NewScene (ASE makes the Scene), not as the
+    // ObjectID of AddedObjects; Speech Scene Editing must take it from there too, or a speech loaded first is placed nowhere ("a name is needed for the Speech Scene that is made").
+    [SkippableFact]
+    public void ASpeechAddedFirstGoesInTheSceneThatNewSceneNames()
+    {
+        Skip.IfNot(SpatialRenderer.Available(Steam), "Models/SteamAudio is absent: Steam Audio is obtained separately (docs/models-provenance.md).");
+        var work = Path.Combine(Path.GetTempPath(), "asm-newscene-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(work);
+        var settings = Path.Combine(work, "aim-settings.json");
+        File.WriteAllText(settings, JsonNode.Parse(File.ReadAllText(Path.Combine(Repository.Root, "AIMs", "aim-settings.json")))!.ToJsonString());
+        using var api = new ControllerApi(Repository.Amds, settings, store => new CompositeProvider(new AsmProvider(Repository.Amds), new LeafAimsProvider(store), new VciStandIn()));
+        try
+        {
+            Assert.Equal(AifError.OK, api.StartFlow(Asm, out var id));
+            api.SharedStorageInit(id, Path.Combine(work, "assets"));
+            var hello = new BasicSpeechObject { BasicSpeechObjectID = "hello", Data = SceneAudio.Wav(Tone(300), 1, 48000) };
+            api.InputWrite(id, "CAE-UCM-V1.0", 3, Forms.Acquire(MpaiJson.ToJson(hello)));
+            Assert.Equal(AifError.OK, api.OutputRead(id, "OSD-SPO-V1.5", 1, 60_000).Error);
+            api.InputWrite(id, "CAE-UCM-V1.0", 4, Command(new UserCommandRQ
+            {
+                NewScene = "stage",
+                AddedObjects = new ObjectPlacements { Objects = [new ObjectPlacement { ObjectID = new ManagedObject { ObjectID = "hello" }, SpatialAttitude = At(0, 0) }] }
+            }));
+            var report = api.OutputRead(id, "CAE-UCM-V1.0", 4, 60_000);
+            Assert.Equal(AifError.OK, report.Error);
+            var done = MpaiJson.FromJson<UserCommand>(report.Json!).UserCommandRS!;
+            Assert.Contains(done.Actions, a => a.Action == "AddedObjects" && a.Outcome == "Done");
+            var speechScene = api.OutputRead(id, "OSD-SSD-V1.5", 1, 60_000);
+            Assert.Equal(AifError.OK, speechScene.Error);
+            Assert.Single(JsonNode.Parse(Forms.Bss(speechScene.Json!))!["BasicSpeechSceneDescriptors"]!.AsArray());
+        }
+        finally { try { Directory.Delete(work, true); } catch { } }
+    }
+
+    // A SPEECH ADDED TO THE SCENE OF SOUNDS (2026-11-25): the scene exists, so the JSON Interface gives no name; Speech Scene Editing makes its Speech Scene under the name of the one
+    // Audio Scene the Module keeps - one scene for the person, of sounds and speech alike.
+    [SkippableFact]
+    public void ASpeechAddedToTheSceneOfSoundsTakesItsName()
+    {
+        Skip.IfNot(SpatialRenderer.Available(Steam), "Models/SteamAudio is absent: Steam Audio is obtained separately (docs/models-provenance.md).");
+        var work = Path.Combine(Path.GetTempPath(), "asm-samename-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(work);
+        var settings = Path.Combine(work, "aim-settings.json");
+        File.WriteAllText(settings, JsonNode.Parse(File.ReadAllText(Path.Combine(Repository.Root, "AIMs", "aim-settings.json")))!.ToJsonString());
+        using var api = new ControllerApi(Repository.Amds, settings, store => new CompositeProvider(new AsmProvider(Repository.Amds), new LeafAimsProvider(store), new VciStandIn()));
+        try
+        {
+            Assert.Equal(AifError.OK, api.StartFlow(Asm, out var id));
+            api.SharedStorageInit(id, Path.Combine(work, "assets"));
+            api.InputWrite(id, "CAE-UCM-V1.0", 1, Forms.Acquire(Forms.Auo(Captured("low", 440))));
+            Assert.Equal(AifError.OK, api.OutputRead(id, "OSD-AUO-V1.5", 1, 60_000).Error);
+            api.InputWrite(id, "CAE-UCM-V1.0", 2, Command(new UserCommandRQ
+            {
+                AddedObjects = new ObjectPlacements { ObjectID = "stage", Objects = [new ObjectPlacement { ObjectID = new ManagedObject { ObjectID = "low" }, SpatialAttitude = At(1, 1) }] }
+            }));
+            Assert.Equal(AifError.OK, api.OutputRead(id, "OSD-ASD-V1.5", 1, 60_000).Error);
+            api.OutputRead(id, "CAE-UCM-V1.0", 2, 5_000);
+            var hello = new BasicSpeechObject { BasicSpeechObjectID = "hello", Data = SceneAudio.Wav(Tone(300), 1, 48000) };
+            api.InputWrite(id, "CAE-UCM-V1.0", 3, Forms.Acquire(MpaiJson.ToJson(hello)));
+            Assert.Equal(AifError.OK, api.OutputRead(id, "OSD-SPO-V1.5", 1, 60_000).Error);
+            api.InputWrite(id, "CAE-UCM-V1.0", 4, Command(new UserCommandRQ          // as the JSON Interface gives it when the scene exists: no name
+            {
+                AddedObjects = new ObjectPlacements { Objects = [new ObjectPlacement { ObjectID = new ManagedObject { ObjectID = "hello" }, SpatialAttitude = At(0, 0) }] }
+            }));
+            var report = api.OutputRead(id, "CAE-UCM-V1.0", 4, 60_000);
+            Assert.Equal(AifError.OK, report.Error);
+            Assert.Contains(MpaiJson.FromJson<UserCommand>(report.Json!).UserCommandRS!.Actions, a => a.Action == "AddedObjects" && a.Outcome == "Done");
+            var speechScene = api.OutputRead(id, "OSD-SSD-V1.5", 1, 60_000);
+            Assert.Equal(AifError.OK, speechScene.Error);
+            Assert.Equal("stage", (string?)JsonNode.Parse(speechScene.Json!)!["SpeechSceneDescriptorsID"]);
+        }
+        finally { try { Directory.Delete(work, true); } catch { } }
+    }
+
     [SkippableFact]
     public void OneModuleOneSession()
     {

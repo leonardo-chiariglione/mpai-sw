@@ -36,6 +36,7 @@ internal static class Program
     internal const string AmqModule = "1MMC-AMQ-V2.5-I01";
     private const string MacModule = "1OSD-MAC-V1.5-I01";
     internal const string MasModule = "1MAS-APP-V1.1-I01";
+    private const string AsmModule = "1CAE-ASM-V1.0-I01";
 
     // THE MODULES THIS SERVICE RUNS: those of the Apps it offers - the Module each App's app.json names - and the launcher's. A Service given no Apps runs
     // the four of MPAI as a Service. What a Service offers is what it is configured with, so the same program is the AIF of a user of the MPAI Store.
@@ -361,6 +362,15 @@ internal static class Program
         if (config.ForgetOnClose)
             north.SharedStorageKeep(gallery, AIF.SharedStorage.RuledStore.Default, new AIF.SharedStorage.StorageTime(AIF.SharedStorage.StorageLifetime.Session));
         Console.WriteLine($"  Gallery:       {gallery}{(config.ForgetOnClose ? ", what a session registers deleted when it closes" : "")}");
+
+        // THE SCENES OF AUDIO SCENE MANAGEMENT (2026-11-25): its Objects and Scenes, with their versions, are kept in an area of this server's Shared Storage, as the ASM Controller of a
+        // machine keeps them in its folder: they outlive the session, the App and a restart of the server.
+        if (modules.Contains(AsmModule))
+        {
+            var asmArea = Path.Combine(gallery, "CAE-ASM");
+            Directory.CreateDirectory(asmArea);
+            Console.WriteLine($"  ASM storage:   {asmArea} ({north.SharedStorageInit(runner.IdOf(AsmModule), asmArea)})");
+        }
 
         // THE FIRST ANSWER WARM (WarmUp.cs): every engine's first-request work done
         // here, before anyone connects, not at the first person's first question.

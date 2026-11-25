@@ -39,6 +39,91 @@ static class ThaliaWindow
         thread.Start();
     }
 
+    // THE WINDOW OF AN APP, ON THE STAGE: the visible top-level windows of these processes and of the processes they started are made owned by Thalia's window (in front of it, and with it);
+    // a window that can be resized is placed on the rectangle (x, y, w, h: pixels of the screen), a dialog is only brought in front; hide: they are hidden. Returns how many windows.
+    static readonly HashSet<IntPtr> hiddenByThalia = new();
+    public static int Place(IEnumerable<int> roots, int x, int y, int w, int h, bool hide)
+    {
+        if (!OperatingSystem.IsWindows()) return 0;
+        var thalia = Windows();
+        var pids = Descendants(roots);
+        var mine = new List<IntPtr>();
+        EnumWindows((hw, _) =>
+        {
+            if (!IsWindowVisible(hw) && !hiddenByThalia.Contains(hw)) return true;   // an invisible window is shown again only when Thalia is the one that hid it
+            GetWindowThreadProcessId(hw, out var pid);
+            if (!pids.Contains(pid)) return true;
+            var t = new StringBuilder(256); GetWindowText(hw, t, 256);
+            if (t.Length == 0) return true;                                           // the invisible helpers of a program (IME, GDI+) have no title
+            mine.Add(hw); return true;
+        }, IntPtr.Zero);
+        var main = thalia.Count > 0 ? thalia[0] : IntPtr.Zero;
+        foreach (var hw in mine)
+        {
+            // A window owned by another window of the App (a dialog of ASM's window) stays with its owner, in front of it: it is not placed, and is hidden and shown with it.
+            var owner = GetWindow(hw, 4);                                             // GW_OWNER
+            if (owner != IntPtr.Zero && owner != main) continue;
+            if (hide) { ShowWindow(hw, 0); lock (hiddenByThalia) hiddenByThalia.Add(hw); continue; }   // SW_HIDE
+            var wasHidden = false; lock (hiddenByThalia) wasHidden = hiddenByThalia.Remove(hw);
+            var first = owner != main;                                                // not yet Thalia's
+            if (first && main != IntPtr.Zero) SetWindowLongPtr(hw, -8, main);         // GWLP_HWNDPARENT: owned by Thalia's window
+            var cls = new StringBuilder(64); GetClassName(hw, cls, 64);
+            var resizable = (GetWindowLong(hw, -16) & 0x00040000) != 0 && cls.ToString() != "#32770";   // WS_THICKFRAME, and not a dialog
+            if (wasHidden) ShowWindow(hw, 5);                                         // SW_SHOW
+            if (resizable && w > 100 && h > 100)
+            {
+                GetWindowRect(hw, out var r);
+                if (IsIconic(hw) || IsZoomed(hw)) ShowWindow(hw, 9);                  // SW_RESTORE
+                if (r.L != x || r.T != y || r.R - r.L != w || r.B - r.T != h)         // placed only when it is not where it should be: nothing flickers
+                    SetWindowPos(hw, IntPtr.Zero, x, y, w, h, 0x0004 | 0x0010);      // SWP_NOZORDER | SWP_NOACTIVATE
+            }
+            if (first || wasHidden) BringWindowToTop(hw);
+        }
+        return mine.Count;
+    }
+
+    // the processes started by these, and by those, as Windows records who started whom
+    static HashSet<uint> Descendants(IEnumerable<int> roots)
+    {
+        var parent = new Dictionary<uint, uint>();
+        var snap = CreateToolhelp32Snapshot(0x2, 0);                                  // TH32CS_SNAPPROCESS
+        try
+        {
+            var e = new ProcessEntry { dwSize = (uint)Marshal.SizeOf<ProcessEntry>() };
+            if (Process32First(snap, ref e)) do { parent[e.th32ProcessID] = e.th32ParentProcessID; } while (Process32Next(snap, ref e));
+        }
+        finally { CloseHandle(snap); }
+        var set = new HashSet<uint>(roots.Select(r => (uint)r));
+        for (var grew = true; grew;)
+        {
+            grew = false;
+            foreach (var (child, par) in parent) if (!set.Contains(child) && set.Contains(par)) { set.Add(child); grew = true; }
+        }
+        return set;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    struct ProcessEntry
+    {
+        public uint dwSize, cntUsage, th32ProcessID; public IntPtr th32DefaultHeapID; public uint th32ModuleID, cntThreads, th32ParentProcessID; public int pcPriClassBase; public uint dwFlags;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)] public string szExeFile;
+    }
+    [DllImport("kernel32.dll")] static extern IntPtr CreateToolhelp32Snapshot(uint flags, uint pid);
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, EntryPoint = "Process32FirstW")] static extern bool Process32First(IntPtr snap, ref ProcessEntry e);
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, EntryPoint = "Process32NextW")] static extern bool Process32Next(IntPtr snap, ref ProcessEntry e);
+    [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr h);
+    [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr h, int cmd);
+    [DllImport("user32.dll")] static extern bool SetWindowPos(IntPtr h, IntPtr after, int x, int y, int cx, int cy, uint flags);
+    [DllImport("user32.dll")] static extern bool BringWindowToTop(IntPtr h);
+    [DllImport("user32.dll")] static extern IntPtr GetWindow(IntPtr h, uint cmd);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int GetClassName(IntPtr h, StringBuilder s, int n);
+    [DllImport("user32.dll")] static extern bool IsIconic(IntPtr h);
+    [DllImport("user32.dll")] static extern bool IsZoomed(IntPtr h);
+    [StructLayout(LayoutKind.Sequential)] struct Rect { public int L, T, R, B; }
+    [DllImport("user32.dll")] static extern bool GetWindowRect(IntPtr h, out Rect r);
+    [DllImport("user32.dll")] static extern int GetWindowLong(IntPtr h, int i);
+    [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW")] static extern IntPtr SetWindowLongPtr(IntPtr h, int i, IntPtr v);
+
     // The windows of the browser that show Thalia: visible, top-level, of msedge or chrome, titled Thalia...
     static List<IntPtr> Windows()
     {

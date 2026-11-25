@@ -740,12 +740,23 @@ setInterval(async () => {
   } catch { }
 }, 1500);
 const appOf = (id, where) => catalogue && catalogue.apps.find(a => a.id === id && a.where === where) || catalogue && catalogue.apps.find(a => a.id === id);
+// THE WINDOW OF AN APP ON THE STAGE: an App with a window of its own (ASM) has it placed by Thalia where the stage is, in front of Thalia; hidden when the App is hidden or another is shown
+function placeOwnWindow(on, hide) {
+  if (!on) return;
+  const r = $('.stbody').getBoundingClientRect();
+  const sx = window.screenX + (window.outerWidth - window.innerWidth) / 2, sy = window.screenY + (window.outerHeight - window.innerHeight) - (window.outerWidth - window.innerWidth) / 2;
+  const q = new URLSearchParams({ x: Math.round(sx + r.left), y: Math.round(sy + r.top), w: Math.round(r.width), h: Math.round(r.height), hide: hide ? 'true' : 'false' });
+  fetch(`/api/place/${on.where}/${encodeURIComponent(on.id)}?${q}`, { method: 'POST' }).catch(() => { });
+}
+const ownWindowShown = () => { const r = staged && runOf(staged.id, staged.where); return r && liveRun(r) && !r.url && r.phase === 'running' ? staged : null; };
 function stage(id, where) {
+  placeOwnWindow(ownWindowShown(), true);                 // the window of the App shown before goes away
   staged = { id, where }; stagedUrl = ''; shownResults = null; resultsDrawnFor = null; $('#stFrame').src = 'about:blank';
   document.querySelector('.body').classList.add('playing');
   drawStage();
 }
 function unstage() {
+  placeOwnWindow(ownWindowShown(), true);
   staged = null; stagedUrl = ''; shownResults = null; resultsDrawnFor = null; $('#stFrame').src = 'about:blank';
   document.querySelector('.body').classList.remove('playing');
   thaliaIn(false);
@@ -804,6 +815,7 @@ function drawStage() {
     $('#stPhase').textContent = 'running'; $('#stPhase').className = 'status ok';
     say(a ? a.name : id, said.length ? 'It works in a window of its own: what it is doing -' : 'It asks you in a window of its own, on this screen: answer it there. Stop it here.', false, said.slice(-7));
     thaliaIn(!WITHOUT_HER.has(id));
+    placeOwnWindow(staged, false);                          // its window, on the stage (a dialog is only brought in front)
   }
   else if (!liveRun(run) && results && /exit code 0/.test(run.phase)) {
     $('#stPhase').textContent = 'done'; $('#stPhase').className = 'status ok';
