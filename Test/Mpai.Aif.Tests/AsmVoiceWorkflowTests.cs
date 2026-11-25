@@ -68,7 +68,7 @@ public class AsmVoiceWorkflowTests
         public readonly ControllerApi Api;
         public readonly PushDevice Voice = new("OSD-BSO-V1.5"), SoundIn = new("CAE-UCM-V1.0");
         public readonly RecordDevice HeardText = new(), ReplyText = new(), ReplySpeech = new(), Scene = new(), Unused = new(), SpeechReport = new(), SpeechSceneRep = new(), SceneReport = new(), SpeechScene = new();
-        public readonly PushDevice TypedIn = new("OSD-BTO-V1.5"), SpeechCommand = new("CAE-UCM-V1.0");
+        public readonly PushDevice TypedIn = new("OSD-BTO-V1.5"), SpeechCommand = new("CAE-UCM-V1.0"), SpeechSceneCommand = new("CAE-UCM-V1.0");
         private readonly CancellationTokenSource _stop = new();
         private Task? _run;
         public string Said = "";
@@ -103,7 +103,7 @@ public class AsmVoiceWorkflowTests
             var devices = new DeviceRegistry();
             devices.RegisterDevice("Voice", Voice).RegisterDevice("SoundIn", SoundIn).RegisterDevice("SceneIn", new PushDevice("OSD-ASD-V1.5")).RegisterDevice("TypedIn", TypedIn)
                    .RegisterDevice("Heard", HeardText).RegisterDevice("ReplyText", ReplyText).RegisterDevice("ReplySpeech", ReplySpeech)
-                   .RegisterDevice("Scene", Scene).RegisterDevice("Unused", Unused).RegisterDevice("SpeechOut", Unused).RegisterDevice("SpeechScene", SpeechScene).RegisterDevice("SpeechSceneCommand", new PushDevice("CAE-UCM-V1.0")).RegisterDevice("ObjectReport", new RecordDevice())
+                   .RegisterDevice("Scene", Scene).RegisterDevice("Unused", Unused).RegisterDevice("SpeechOut", Unused).RegisterDevice("SpeechScene", SpeechScene).RegisterDevice("SpeechSceneCommand", SpeechSceneCommand).RegisterDevice("ObjectReport", new RecordDevice())
                    // The other User Command Ports of the Module (CAE-UCM Ports 2 to 5: scene, speech, speech scene and multimodal commands and their reports), which ASM-VCI.orch binds too.
                    .RegisterDevice("SceneCommand", new PushDevice("CAE-UCM-V1.0")).RegisterDevice("SpeechCommand", SpeechCommand).RegisterDevice("SceneReport", SceneReport).RegisterDevice("SpeechReport", SpeechReport)
                    .RegisterDevice("SpeechSceneRep", SpeechSceneRep).RegisterDevice("MultimodalRep", new RecordDevice());
@@ -287,6 +287,49 @@ public class AsmVoiceWorkflowTests
             Assert.True(placed, $"\"put {name} at the centre\" did not put it in a Speech Scene." + Why());
         }
         finally { AimLog.Sink = sink; }
+    }
+
+    // A SCENE DELETED IS FORGOTTEN (2026-11-25, the author's second run): the JSON Interface had seen the Speech Scene "stage" of an earlier session; the window deleted it at its start;
+    // a speech loaded after was put "into stage", which was gone, and Audio Scene Editing refused. A refresh of the state must forget what is no longer listed.
+    [Fact]
+    public async Task ASceneDeletedAtTheStartIsForgottenAndTheNewSpeechIsPlaced()
+    {
+        using var rig = new Rig(Model, Dialogue);
+        rig.Start();
+        await Until(() => rig.ReplyText.All().Count >= 1, 30000);
+        BasicSpeechObject Speech(string name) => new() { BasicSpeechObjectID = name, DescrMetadata = name, Data = Mpai.SpatialAudio.SceneAudio.Wav(Enumerable.Range(0, 16000).Select(i => (float)(0.3 * Math.Sin(i / 10.0))).ToArray(), 1, 16000) };
+        void Type(string words) => rig.TypedIn.Push(MpaiJson.ToJson(BasicTextObject.FromText(words)));
+        string Replies() => string.Join(" | ", rig.ReplyText.All().Select(j => MpaiJson.FromJson<BasicTextObject>(j)!.GetText()));
+
+        // the earlier session: "old" in the Speech Scene "stage", which the JSON Interface sees
+        rig.SpeechCommand.Push(AsmRig.Json(AsmRig.Command(new UserCommandRQ { AcquiredObject = new ManagedObject { SpeechObject = Speech("old") } })));
+        Assert.True(await Until(() => rig.SpeechReport.All().Count >= 1, 30000));
+        await Task.Delay(700);
+        Type("put old at the centre");
+        Assert.True(await Until(() => rig.SpeechScene.All().Count >= 1, 20000), "the old speech was not placed: " + Replies());
+        await Task.Delay(1500);
+        // the window's start lists what the Module keeps (not the JSON Interface's question: it reads the state from these answers too)
+        foreach (var port in new[] { rig.SpeechCommand, rig.SpeechSceneCommand })
+            port.Push(AsmRig.Json(AsmRig.Command(new UserCommandRQ { ListedObjects = new ObjectListing { Kind = "All" } })));
+        await Task.Delay(2500);
+
+        // the window's start: the Speech Scene and the speech that were not saved are deleted
+        rig.SpeechSceneCommand.Push(AsmRig.Json(AsmRig.Command(new UserCommandRQ { DeletedObjects = new ObjectPlacements { Objects = [new ObjectPlacement { ObjectID = AsmRig.Ref("stage") }] } })));
+        await Task.Delay(900);
+        rig.SpeechCommand.Push(AsmRig.Json(AsmRig.Command(new UserCommandRQ { DeletedObjects = new ObjectPlacements { Objects = [new ObjectPlacement { ObjectID = AsmRig.Ref("old") }] } })));
+        await Task.Delay(1500);
+
+        // the new speech, placed as the window places it
+        var scenesBefore = rig.SpeechScene.All().Count;
+        rig.SpeechCommand.Push(AsmRig.Json(AsmRig.Command(new UserCommandRQ { AcquiredObject = new ManagedObject { SpeechObject = Speech("speech1") } })));
+        await Task.Delay(1500);
+        Type("what have i loaded");
+        await Task.Delay(1500);
+        Type("put speech1 at the centre");
+        Assert.True(await Until(() => rig.SpeechScene.All().Count > scenesBefore, 20000), "\"put speech1 at the centre\" did not place it: " + Replies());
+        var last = rig.SpeechScene.All()[^1];
+        Assert.Contains("speech1", last);
+        Assert.DoesNotContain("\"old\"", last);
     }
 
     [Fact]

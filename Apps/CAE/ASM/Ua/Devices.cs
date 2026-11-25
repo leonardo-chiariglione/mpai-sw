@@ -17,7 +17,7 @@ namespace Mpai.Cae.AsmUa;
 public sealed class GivingDevice(string dataType) : IDevice
 {
     private readonly Channel<string> _queue = Channel.CreateUnbounded<string>();
-    public void Give(string json) { App.Log($"[device giving {dataType}] {(json.Length > 120 ? json[..120] + "..." : json)}"); _queue.Writer.TryWrite(json); }
+    public void Give(string json) { App.Log($"[device giving {dataType}] {LogText.Of(json)}"); _queue.Writer.TryWrite(json); }
     public Task DeliverAsync(string type, string json, CancellationToken cancel) => Task.CompletedTask;
     public async IAsyncEnumerable<(string DataType, string Json)> ReadAsync([EnumeratorCancellation] CancellationToken cancel)
     {
@@ -26,12 +26,31 @@ public sealed class GivingDevice(string dataType) : IDevice
     public Task SafeStopAsync() => Task.CompletedTask;
 }
 
+// WHAT THE LOG KEEPS OF WHAT PASSES: a User Command whole - its identifier and its request or its report (2026-11-25: cut at 120 characters, no report said what was done, and an old
+// scene that came back could not be traced); anything else, its first 120 characters.
+static class LogText
+{
+    public static string Of(string json)
+    {
+        try
+        {
+            if (System.Text.Json.Nodes.JsonNode.Parse(json) is System.Text.Json.Nodes.JsonObject o && (string?)o["Header"] == "CAE-UCM-V1.0")
+            {
+                var part = o["UserCommandRQ"] ?? o["UserCommandRS"];
+                if (part is System.Text.Json.Nodes.JsonObject p) { p = (System.Text.Json.Nodes.JsonObject)p.DeepClone(); p.Remove("ReportTime"); var text = p.ToJsonString(); return $"{(string?)o["UserCommandID"]} {(o["UserCommandRQ"] is null ? "RS" : "RQ")} {(text.Length > 3000 ? text[..3000] + "..." : text)}"; }
+            }
+        }
+        catch (Exception) { }
+        return json.Length > 120 ? json[..120] + "..." : json;
+    }
+}
+
 // A DEVICE THAT ACTS ON WHAT THE MODULE GIVES: the window shows it, says it, draws it.
 public sealed class ActingDevice(string name, Func<string, Task> act) : IDevice
 {
     public async Task DeliverAsync(string type, string json, CancellationToken cancel)
     {
-        App.Log($"[device {name}] delivered {type}: {(json.Length > 120 && !json.Contains("\"AddedObjects\"") ? json[..120] + "..." : json)}");
+        App.Log($"[device {name}] delivered {type}: {(json.Contains("\"AddedObjects\"") ? json : LogText.Of(json))}");
         try { await act(json); }
         catch (Exception e) { App.Record("device " + name, e); App.Log($"[device {name}] FAILED: {e.Message}"); }
     }
