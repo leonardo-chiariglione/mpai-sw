@@ -47,6 +47,10 @@
   .stmsg .note img { width:64px; height:64px; } .stmsg .note p { margin:0; color:var(--muted); }
   .stmsg .note { max-width:640px; } .stmsg pre.said { align-self:stretch; margin:4px 0 0; padding:10px 12px; border-radius:8px; background:rgba(0,0,0,.35); color:var(--ink); font:12.5px/1.45 Consolas, monospace; text-align:left; white-space:pre-wrap; word-break:break-all; }
   .stmsg pre.said[hidden] { display:none; }
+  .stmsg .note.results { max-height:calc(100% - 40px); overflow:auto; width:min(640px, 100%); align-items:stretch; } .stmsg .note.results img:first-child, .stmsg .note.results h3, .stmsg .note.results .where { align-self:center; }
+  .stmsg .results .where { font-size:12.5px; word-break:break-all; text-align:center; } .stmsg .files { display:flex; flex-direction:column; gap:10px; text-align:left; }
+  .stmsg .file { border-top:1px solid var(--line); padding-top:8px; display:flex; flex-direction:column; gap:6px; } .stmsg .fname { display:flex; justify-content:space-between; align-items:center; gap:10px; color:var(--ink); font-size:13.5px; word-break:break-all; }
+  .stmsg .file audio { width:100%; } .stmsg .results .buttons { display:flex; gap:8px; justify-content:center; }
   .content { scrollbar-color:rgba(255,255,255,.35) transparent; scrollbar-width:thin; padding:18px 24px 24px; overflow:auto; width:min(600px, 100%); margin-left:auto; padding-bottom:24px; }   /* a column on the right: the abbey, left of centre in the pictures, stays visible */
   .searchbar { display:flex; gap:12px; align-items:center; margin-bottom:6px; }
   .searchbar[hidden] { display:none; }
@@ -692,6 +696,39 @@ function openApp(url) {
 // ---- the stage ---------------------------------------------------------------------------------------------------------------------------------------
 let staged = null, stagedUrl = '';            // the App shown on the stage: { id, where }; the address its frame shows
 let stageLog = { key: '', lines: [] };         // what the App on the stage wrote (an App with its own window): its lines, as Thalia keeps them
+let shownResults = null, resultsDrawnFor = null;   // the folder of results shown on the stage, and the one drawn
+
+// THE RESULTS OF AN APP, HERE IN THALIA: the files of its folder (Thalia gives them: only under Downloads); a WAV is played, a JSON or a text is read, the folder can be opened in Windows.
+async function showResults(dir, a) {
+  resultsDrawnFor = dir;
+  const msg = $('#stMsg'); msg.hidden = false; $('#stFrame').style.visibility = 'hidden'; $('#stage').classList.add('msgonly');
+  msg.innerHTML = '<div class="note results"><img alt=""><h3>The results</h3><p class="where"></p><div class="files">Reading the folder...</div><div class="buttons"></div></div>';
+  const img = msg.querySelector('img'); if (a && a.icon) img.src = a.icon; else img.remove();
+  msg.querySelector('.where').textContent = dir;
+  const bs = msg.querySelector('.buttons');
+  const btn = (label, act, primary) => { const b = document.createElement('button'); b.className = 'act' + (primary ? '' : ' secondary'); b.textContent = label; b.onclick = act; bs.appendChild(b); };
+  btn('Open the folder in Windows', async () => { try { await fetch('/api/results/open?dir=' + encodeURIComponent(dir), { method: 'POST' }); await fetch('/api/windows', { method: 'POST' }); } catch { } }, false);
+  btn('Back', () => { shownResults = null; resultsDrawnFor = null; drawStage(); }, true);
+  const box = msg.querySelector('.files');
+  let list;
+  try { const r = await fetch('/api/results?dir=' + encodeURIComponent(dir), { cache: 'no-store' }); if (!r.ok) throw new Error('not found'); list = await r.json(); }
+  catch { box.textContent = 'Thalia cannot read that folder: it is not under your Downloads, or it is gone.'; return; }
+  box.innerHTML = '';
+  if (!list.files.length) { box.textContent = 'The folder is empty.'; return; }
+  for (const f of list.files) {
+    const row = document.createElement('div'); row.className = 'file';
+    const head = document.createElement('div'); head.className = 'fname'; head.textContent = `${f.name}  (${f.size < 1024 ? f.size + ' bytes' : Math.round(f.size / 1024) + ' KB'})`; row.appendChild(head);
+    const src = '/api/results/file?path=' + encodeURIComponent(f.path), ext = (f.name.split('.').pop() || '').toLowerCase();
+    if (['wav', 'mp3'].includes(ext)) { const au = document.createElement('audio'); au.controls = true; au.preload = 'none'; au.src = src; row.appendChild(au); }
+    else if (['json', 'txt', 'log', 'csv'].includes(ext)) {
+      const b = document.createElement('button'); b.className = 'act secondary'; b.textContent = 'Read'; const pre = document.createElement('pre'); pre.className = 'said'; pre.hidden = true;
+      b.onclick = async () => { if (pre.hidden && !pre.textContent) { try { let t = await (await fetch(src)).text(); if (ext === 'json') try { t = JSON.stringify(JSON.parse(t), null, 2); } catch { } pre.textContent = t.length > 20000 ? t.slice(0, 20000) + '\n...' : t; } catch { pre.textContent = 'It cannot be read.'; } } pre.hidden = !pre.hidden; b.textContent = pre.hidden ? 'Read' : 'Close'; };
+      head.appendChild(b); row.appendChild(pre);
+    }
+    else if (['png', 'jpg', 'jpeg'].includes(ext)) { const im = document.createElement('img'); im.src = src; im.style.cssText = 'max-width:100%;border-radius:6px'; row.appendChild(im); }
+    box.appendChild(row);
+  }
+}
 setInterval(async () => {
   if (!staged || !catalogue) return;
   const run = runOf(staged.id, staged.where); if (!run || run.url) return;
@@ -704,12 +741,12 @@ setInterval(async () => {
 }, 1500);
 const appOf = (id, where) => catalogue && catalogue.apps.find(a => a.id === id && a.where === where) || catalogue && catalogue.apps.find(a => a.id === id);
 function stage(id, where) {
-  staged = { id, where }; stagedUrl = ''; $('#stFrame').src = 'about:blank';
+  staged = { id, where }; stagedUrl = ''; shownResults = null; resultsDrawnFor = null; $('#stFrame').src = 'about:blank';
   document.querySelector('.body').classList.add('playing');
   drawStage();
 }
 function unstage() {
-  staged = null; stagedUrl = ''; $('#stFrame').src = 'about:blank';
+  staged = null; stagedUrl = ''; shownResults = null; resultsDrawnFor = null; $('#stFrame').src = 'about:blank';
   document.querySelector('.body').classList.remove('playing');
   thaliaIn(false);
 }
@@ -751,7 +788,7 @@ function drawStage() {
   // WHAT AN APP WITH ITS OWN WINDOW SAYS (its progress, where its results are): Thalia keeps what it writes; the last lines are shown here
   const said = stageLog.key === `${where}:${id}` ? stageLog.lines : [];
   const results = (said.findLast ? said.findLast(l => /^Results in /.test(l)) : [...said].reverse().find(l => /^Results in /.test(l)));
-  const seeThem = ['Show the results', async () => { try { await fetch('/api/windows', { method: 'POST' }); } catch { } }];   // the folder opened under Thalia: Thalia steps aside
+  const seeThem = ['Show the results', () => { shownResults = results ? results.replace(/^Results in /, '').trim() : null; drawStage(); }];   // the results, here in Thalia (showResults)
   $('#stStop').textContent = liveRun(run) ? 'Stop' : 'Close';
   if (!liveRun(run)) thaliaIn(false);                 // the App ended, however: she is back in her corner
   if (!run) { $('#stPhase').textContent = ''; say(a ? a.name : id, 'It is not running: it was stopped.'); }
@@ -770,7 +807,8 @@ function drawStage() {
   }
   else if (!liveRun(run) && results && /exit code 0/.test(run.phase)) {
     $('#stPhase').textContent = 'done'; $('#stPhase').className = 'status ok';
-    say('Done', results.replace(/^Results in /, 'The results are in ') + '.', false, said.slice(-7, -1), [seeThem]);
+    if (shownResults) { if (resultsDrawnFor !== shownResults) showResults(shownResults, a); }      // drawn once: a playing WAV is not cut by the next look at the runs
+    else say('Done', results.replace(/^Results in /, 'The results are in ') + '.', false, said.slice(-7, -1), [seeThem]);
   }
   else if (!liveRun(run) && /exit code 0/.test(run.phase)) { $('#stPhase').textContent = 'ended'; say(a ? a.name : id, 'It has ended.', false, said.slice(-7)); }
   else if (!liveRun(run)) { $('#stPhase').textContent = ''; say(a ? a.name : id, run.phase, true, said.slice(-7)); }

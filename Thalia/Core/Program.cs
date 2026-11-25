@@ -199,6 +199,38 @@ app.MapPost("/api/windows", () =>
     return Results.Ok();
 });
 
+// THE RESULTS OF AN APP, SHOWN IN THALIA (2026-11-25). An App that works with files (ARP, EES, EAE, CAS, ...) writes its results in a folder under the User's Downloads and says where;
+// Thalia lists that folder and gives its files to its page (a WAV to play, a JSON to read), and opens it in Windows when the User asks. Only folders under Downloads.
+string? UnderDownloads(string? path)
+{
+    if (string.IsNullOrWhiteSpace(path)) return null;
+    var downloads = Path.GetFullPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads")) + Path.DirectorySeparatorChar;
+    try { var full = Path.GetFullPath(path); return full.StartsWith(downloads, StringComparison.OrdinalIgnoreCase) ? full : null; } catch { return null; }
+}
+app.MapGet("/api/results", (string dir) =>
+{
+    if (UnderDownloads(dir) is not { } d || !Directory.Exists(d)) return Results.NotFound();
+    var files = Directory.GetFiles(d, "*", SearchOption.AllDirectories).Take(200)
+        .Select(f => new { path = f, name = Path.GetRelativePath(d, f), size = new FileInfo(f).Length });
+    return Results.Json(new { dir = d, files });
+});
+app.MapGet("/api/results/file", (string path) =>
+{
+    if (UnderDownloads(path) is not { } f || !File.Exists(f)) return Results.NotFound();
+    var type = Path.GetExtension(f).ToLowerInvariant() switch
+    {
+        ".wav" => "audio/wav", ".mp3" => "audio/mpeg", ".json" => "application/json; charset=utf-8", ".txt" or ".log" or ".csv" => "text/plain; charset=utf-8",
+        ".png" => "image/png", ".jpg" or ".jpeg" => "image/jpeg", ".html" => "text/plain; charset=utf-8", ".mp4" => "video/mp4", _ => "application/octet-stream"
+    };
+    return Results.File(f, type, enableRangeProcessing: true);
+});
+app.MapPost("/api/results/open", (string dir) =>
+{
+    if (UnderDownloads(dir) is not { } d || !Directory.Exists(d)) return Results.NotFound();
+    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) Process.Start(new ProcessStartInfo("explorer.exe", $"\"{d}\"") { UseShellExecute = true });
+    return Results.Ok();
+});
+
 // CLOSE: Thalia ends. The windows of the browser that show it (those titled Thalia) are closed, and Thalia stops with the Apps it started (ApplicationStopping below). Return to Windows only
 // hides the window; this ends Thalia.
 app.MapPost("/api/quit", () =>
