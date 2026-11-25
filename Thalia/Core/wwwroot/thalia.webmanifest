@@ -1,0 +1,14 @@
+{
+  "name": "Thalia",
+  "short_name": "Thalia",
+  "description": "The MPAI AI Framework user environment",
+  "start_url": "/",
+  "display": "fullscreen",
+  "background_color": "#10141c",
+  "theme_color": "#2b3d6b",
+  "icons": [
+    { "src": "/thalia-icon-32.png", "sizes": "32x32", "type": "image/png" },
+    { "src": "/thalia-icon-256.png", "sizes": "256x256", "type": "image/png" },
+    { "src": "/thalia-icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

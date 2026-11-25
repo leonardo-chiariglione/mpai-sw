@@ -297,6 +297,13 @@ if (Directory.Exists(seasons))
 app.UseStaticFiles();
 
 app.Lifetime.ApplicationStopping.Register(() => { foreach (var r in running.Values) r.Stop("Thalia closed"); try { if (Shared.Store is { HasExited: false }) Shared.Store.Kill(entireProcessTree: true); } catch { } });
+// THALIA'S WINDOW IS THALIA'S (ThaliaWindow.cs): on the taskbar with Thalia's icon, apart from Edge; pinned, it starts this Thalia again (the demonstration or the User's)
+if (!remote && builder.Configuration["NoWindows"] != "true")
+{
+    var demo = thaliaData.TrimEnd('\\', '/').EndsWith("Thalia-demo", StringComparison.OrdinalIgnoreCase);
+    ThaliaWindow.Keep(Path.Combine(app.Environment.WebRootPath, "thalia.ico"), $"\"{Path.Combine(root, "Thalia", demo ? "Thalia-demo.bat" : "Thalia.bat")}\"",
+                      () => app.Lifetime.ApplicationStopping.IsCancellationRequested);
+}
 
 Console.WriteLine($"=== Thalia (MPAI-THL V1.0, {(remote ? "Remote" : "Full")} Profile, first version) ===");
 Console.WriteLine($"  Launcher:  {builder.Configuration["Urls"] ?? "http://localhost:5199"}");

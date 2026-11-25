@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- THALIA, STYLIZED: the face of the avatar of Thalia (her straight fringe, her long dark hair, her round glasses) on Thalia's blue; the taskbar and window icon -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2b3d6b"/><stop offset="1" stop-color="#0f1626"/></linearGradient>
+    <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6d3bd"/><stop offset="1" stop-color="#e5b398"/></linearGradient>
+    <clipPath id="tile"><rect x="8" y="8" width="240" height="240" rx="56"/></clipPath>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#bg)"/>
+  <g clip-path="url(#tile)">
+    <!-- the hair behind: long, falling to the shoulders -->
+    <path d="M60 118 C60 62 92 40 128 40 C164 40 196 62 196 118 L204 236 L52 236 Z" fill="#17121a"/>
+    <!-- neck and shoulders -->
+    <path d="M110 178 L146 178 L150 206 C178 210 200 222 210 248 L46 248 C56 222 78 210 106 206 Z" fill="url(#skin)"/>
+    <path d="M46 248 C58 226 82 214 106 212 L128 226 L150 212 C174 214 198 226 210 248 Z" fill="#9db9ff"/>
+    <!-- the face -->
+    <ellipse cx="128" cy="128" rx="50" ry="60" fill="url(#skin)"/>
+    <!-- the straight fringe -->
+    <path d="M74 112 C72 74 96 56 128 56 C160 56 184 74 182 112 L182 104 C170 100 150 98 128 98 C106 98 86 100 74 104 Z" fill="#17121a"/>
+    <rect x="74" y="92" width="108" height="14" fill="#17121a"/>
+    <!-- the round glasses -->
+    <g fill="none" stroke="#141419" stroke-width="6">
+      <circle cx="106" cy="128" r="17"/><circle cx="150" cy="128" r="17"/><path d="M123 127 Q128 123 133 127"/>
+    </g>
+    <circle cx="106" cy="129" r="4.5" fill="#3a2a22"/><circle cx="150" cy="129" r="4.5" fill="#3a2a22"/>
+    <!-- the smile -->
+    <path d="M114 164 Q128 172 142 164" fill="none" stroke="#b5655a" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="none" stroke="#9db9ff" stroke-width="6"/>
+</svg>
