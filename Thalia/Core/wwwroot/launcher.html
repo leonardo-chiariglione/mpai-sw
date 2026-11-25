@@ -19,7 +19,21 @@
   .rail { padding:14px 10px; background:var(--panel); border-right:1px solid var(--line); backdrop-filter:blur(10px); display:flex; flex-direction:column; gap:4px; }
   .rail button { all:unset; cursor:pointer; padding:8px 12px; border-radius:8px; color:var(--muted); }
   .rail button.on { background:rgba(157,185,255,.2); color:var(--ink); }
-  .body.flip { grid-template-columns:1fr var(--rail); } .flip .rail { order:2; border-right:0; border-left:1px solid var(--line); } .flip .content { order:1; margin-left:0; margin-right:auto; }
+  .body.flip { grid-template-columns:1fr var(--rail); } .flip .rail { order:3; border-right:0; border-left:1px solid var(--line); } .flip .content { order:1; margin-left:0; margin-right:auto; }
+  /* THE STAGE: an App Thalia runs is shown between the rail and the functions, with a bar to stop it. */
+  .stage { display:none; order:2; min-width:0; min-height:0; margin:12px; flex-direction:column; border:1px solid var(--line); border-radius:12px; background:var(--panel2); overflow:hidden; backdrop-filter:blur(10px); }
+  .content { order:3; } .flip .content { order:1; }
+  .body.playing { grid-template-columns:var(--rail) 1fr min(560px, 36%); } .body.flip.playing { grid-template-columns:min(560px, 36%) 1fr var(--rail); }
+  .body.playing .stage { display:flex; } .body.playing .content { width:100%; margin:0; }
+  body:has(.body.playing) .credit { display:none; }
+  .stagebar { display:flex; align-items:center; gap:10px; padding:8px 12px; border-bottom:1px solid var(--line); background:var(--panel); }
+  .stagebar img { width:28px; height:28px; } .stagebar b { font-size:15px; } .stagebar .space { flex:1; }
+  .stagebar .tabs { display:flex; gap:6px; } .stagebar .tabs button { all:unset; cursor:pointer; font-size:12px; padding:3px 9px; border-radius:20px; border:1px solid var(--line); color:var(--muted); }
+  .stagebar .tabs button:hover { border-color:var(--accent); color:var(--ink); }
+  .stbody { position:relative; flex:1; min-height:0; }
+  .stbody iframe { position:absolute; inset:0; width:100%; height:100%; border:0; background:#10141c; }
+  .stmsg { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:24px; text-align:center; color:var(--muted); }
+  .stmsg[hidden] { display:none; } .stmsg h3 { margin:0; color:var(--ink); font-size:19px; font-weight:600; } .stmsg .bad { color:var(--bad); }
   .content { scrollbar-color:rgba(255,255,255,.35) transparent; scrollbar-width:thin; padding:18px 24px 24px; overflow:auto; width:min(600px, 100%); margin-left:auto; padding-bottom:24px; }   /* a column on the right: the abbey, left of centre in the pictures, stays visible */
   .searchbar { display:flex; gap:12px; align-items:center; margin-bottom:6px; }
   .searchbar[hidden] { display:none; }
@@ -101,6 +115,15 @@
   <div class="ack">Avatar by Ready Player Me (CC BY-NC-SA 4.0), used for demonstration. Other uses are subject to restrictions.</div>
 </aside>
     </nav>
+    <section class="stage" id="stage" aria-label="The App that is running">
+      <div class="stagebar">
+        <img id="stIcon" alt=""><div><b id="stName"></b> <span class="status" id="stWhere"></span></div><span class="status" id="stPhase"></span><span class="space"></span>
+        <span class="tabs" id="stOthers" title="Other Apps that are running: show one here"></span>
+        <button class="act secondary" id="stHide" title="The App keeps running: show it again from Running or from its card">Hide</button>
+        <button class="act" id="stStop" title="Stop the App: Thalia ends it and what it started">Stop</button>
+      </div>
+      <div class="stbody"><iframe id="stFrame" title="The App" allow="microphone; camera; autoplay; fullscreen; display-capture; clipboard-read; clipboard-write"></iframe><div class="stmsg" id="stMsg"></div></div>
+    </section>
     <main class="content">
       <div class="searchbar">
         <input type="search" id="q" placeholder="Search Apps" autocomplete="off">
@@ -216,11 +239,11 @@ async function load() {
   let text;
   try { text = await (await fetch('/api/catalogue', { cache: 'no-store' })).text(); }
   catch { $('#notice').hidden = false; $('#notice').textContent = 'Thalia does not answer.'; return; }
-  if (text === shown) return;
+  if (text === shown) { drawStage(); return; }
   shown = text; catalogue = JSON.parse(text);
   if (new URLSearchParams(location.search).has('first')) { catalogue.apps = []; catalogue.running = []; }   // ?first=1 shows Thalia as a User sees it the first time: no Apps yet
   const open = new Set([...document.querySelectorAll('details[open]')].map(d => d.dataset.id));
-  render();
+  render(); drawStage();
   for (const d of document.querySelectorAll('details')) if (open.has(d.dataset.id)) d.open = true;
 }
 
@@ -545,19 +568,61 @@ function testScreen(sc) {
   return 'A window opened on that screen for a moment: did you see it there?';
 }
 
-// The App opens in a tab, or - when the User chose a screen other than this one - in a window on that screen (the click itself opens it, so no pop-up is blocked).
+// WHERE AN APP IS SHOWN. On this screen: on the stage, between the rail and the functions, with a bar to stop it - Thalia stays in sight and the App is
+// never in the way. When the User chose another screen (Devices): in a window on that screen (the click itself opens it, so no pop-up is blocked).
 let screenChoice = null;
 (async () => { try { if (P.screenLabel && window.getScreenDetails) { const det = await window.getScreenDetails(); screenChoice = det.screens.find(x => x.label === P.screenLabel) || null; } } catch { } })();
+const otherScreen = () => !!(screenChoice && !screenChoice.isPrimary);
 function openApp(url) {
-  if (screenChoice && !screenChoice.isPrimary) window.open(url, '_blank', `popup,left=${screenChoice.availLeft},top=${screenChoice.availTop},width=${screenChoice.availWidth},height=${screenChoice.availHeight}`);
-  else {
-    // A window of its own, smaller than the screen and centred, so that Thalia stays in sight behind it; a tab would fill the whole screen of Thalia.
-    const aw = screen.availWidth || 1280, ah = screen.availHeight || 800;
-    const w = Math.min(1100, Math.round(aw * 0.8)), h = Math.min(860, Math.round(ah * 0.85));
-    const l = (screen.availLeft || 0) + Math.round((aw - w) / 2), t = (screen.availTop || 0) + Math.round((ah - h) / 2);
-    window.open(url, '_blank', `popup,left=${l},top=${t},width=${w},height=${h}`) || window.open(url, '_blank');
+  window.open(url, '_blank', `popup,left=${screenChoice.availLeft},top=${screenChoice.availTop},width=${screenChoice.availWidth},height=${screenChoice.availHeight}`);
+}
+
+// ---- the stage ---------------------------------------------------------------------------------------------------------------------------------------
+let staged = null, stagedUrl = '';            // the App shown on the stage: { id, where }; the address its frame shows
+const appOf = (id, where) => catalogue && catalogue.apps.find(a => a.id === id && a.where === where) || catalogue && catalogue.apps.find(a => a.id === id);
+function stage(id, where) {
+  staged = { id, where }; stagedUrl = ''; $('#stFrame').src = 'about:blank';
+  document.querySelector('.body').classList.add('playing');
+  drawStage();
+}
+function unstage() {
+  staged = null; stagedUrl = ''; $('#stFrame').src = 'about:blank';
+  document.querySelector('.body').classList.remove('playing');
+}
+const liveRun = r => r && !r.phase.startsWith('failed') && !r.phase.startsWith('stopped');
+function drawStage() {
+  if (!staged || !catalogue) return;
+  const { id, where } = staged, run = runOf(id, where), a = appOf(id, where);
+  $('#stIcon').src = a ? a.icon : ''; $('#stName').textContent = a ? a.name : id;
+  $('#stWhere').textContent = where === 'local' ? 'on this machine' : 'on MPAI as a Service';
+  const msg = $('#stMsg'), frame = $('#stFrame');
+  const say = (title, text, bad) => { msg.hidden = false; frame.style.visibility = 'hidden'; msg.innerHTML = '<h3></h3><p></p>'; msg.querySelector('h3').textContent = title; const p = msg.querySelector('p'); p.textContent = text; if (bad) p.className = 'bad'; };
+  $('#stStop').textContent = liveRun(run) ? 'Stop' : 'Close';
+  if (!run) { $('#stPhase').textContent = ''; say(a ? a.name : id, 'It is not running: it was stopped.'); }
+  else if (run.phase === 'running' && run.url) {
+    $('#stPhase').textContent = run.paused ? 'paused' : 'running'; $('#stPhase').className = 'status ' + (run.paused ? 'busy' : 'ok');
+    // THE DEVICES THE USER CHOSE (APP-7) go with the App: the client opens that microphone and that camera.
+    const u = new URL(run.url); if (P.micLabel) u.searchParams.set('mic', P.micLabel); if (P.camLabel) u.searchParams.set('cam', P.camLabel);
+    if (stagedUrl !== u.href) { stagedUrl = u.href; frame.src = u.href; }
+    msg.hidden = true; frame.style.visibility = 'visible';
+  }
+  else if (run.phase === 'running') { $('#stPhase').textContent = 'running'; $('#stPhase').className = 'status ok'; say(a ? a.name : id, 'It runs in a window of its own on this screen. Stop it here, or close its window.'); }
+  else if (!liveRun(run)) { $('#stPhase').textContent = ''; say(a ? a.name : id, run.phase, true); }
+  else { $('#stPhase').textContent = 'starting'; $('#stPhase').className = 'status busy'; say(`Starting ${a ? a.name : id}...`, run.phase + '...'); }
+  // the other Apps that are running: a click shows one of them here
+  const others = $('#stOthers'); others.innerHTML = '';
+  for (const r of (catalogue.running || []).filter(r => liveRun(r) && !(r.app === id && r.where === where))) {
+    const b = document.createElement('button'); const o = appOf(r.app, r.where); b.textContent = o ? o.name : r.app;
+    b.title = `Show ${o ? o.name : r.app} (${r.where === 'local' ? 'this machine' : 'MPAI as a Service'}) here`; b.onclick = () => stage(r.app, r.where); others.appendChild(b);
   }
 }
+$('#stStop').onclick = async () => {
+  if (!staged) return;
+  const { id, where } = staged; $('#stStop').disabled = true;
+  try { await fetch(`/api/stop/${where}/${id}`, { method: 'POST' }); } catch { }
+  $('#stStop').disabled = false; unstage(); shown = ''; load();
+};
+$('#stHide').onclick = () => unstage();
 
 // ---- Settings (APP-1): where Thalia looks -------------------------------------------------------------------------------------------------------------
 // ---- About MPAI: the video that tells what MPAI proposes (it is not an App: it has no Module work to do; the MAS instance offers it as the App About MPAI) ----------------
@@ -622,11 +687,18 @@ function row(id, where, entry) {
   div.querySelector('.status').textContent = text;
   const b = div.querySelector('.buttons');
   const live = run && !run.phase.startsWith('failed') && !run.phase.startsWith('stopped');
-  if (live && run.url) { const o = document.createElement('a'); o.className = 'btn'; o.href = run.url; o.target = '_blank'; o.rel = 'noopener'; o.textContent = 'Open'; b.appendChild(o); }
+  if (live && !otherScreen() && !(staged && staged.id === id && staged.where === where)) { const o = document.createElement('button'); o.className = 'act'; o.textContent = 'Show'; o.title = 'Show the App here, between the rail and the functions'; o.onclick = () => stage(id, where); b.appendChild(o); }
+  else if (live && run.url && otherScreen()) { const o = document.createElement('a'); o.className = 'btn'; o.href = run.url; o.target = '_blank'; o.rel = 'noopener'; o.textContent = 'Open'; b.appendChild(o); }
   const go = document.createElement('button'); go.className = 'act'; go.textContent = 'Run';
   go.disabled = !!live || (where === 'local' && entry && !entry.canRun) || (!entry && where === 'local');
   // The App's tab is opened by the click itself (a tab opened later is blocked as a pop-up); it shows the start and becomes the App when ready.
-  go.onclick = async () => { go.disabled = true; openApp(`/wait.html?where=${where}&id=${encodeURIComponent(id)}`); await fetch(`/api/run/${where}/${id}`, { method: 'POST' }); load(); };
+  go.onclick = async () => {
+    go.disabled = true;
+    if (otherScreen()) openApp(`/wait.html?where=${where}&id=${encodeURIComponent(id)}`);
+    await fetch(`/api/run/${where}/${id}`, { method: 'POST' });
+    if (!otherScreen()) stage(id, where);
+    shown = ''; load();
+  };
   const stop = document.createElement('button'); stop.className = 'act secondary'; stop.textContent = 'Stop'; stop.disabled = !live;
   stop.onclick = async () => { stop.disabled = true; await fetch(`/api/stop/${where}/${id}`, { method: 'POST' }); load(); };
   b.appendChild(go); b.appendChild(stop);
@@ -664,6 +736,7 @@ syncControls();
 render();
 load();
 setInterval(load, 2000);
+setInterval(() => { if (staged && !(runOf(staged.id, staged.where) || {}).url && liveRun(runOf(staged.id, staged.where))) load(); }, 700);   // an App starting on the stage: seen sooner
 </script>
 </body>
 </html>

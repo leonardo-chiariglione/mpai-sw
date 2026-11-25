@@ -46,8 +46,8 @@ if (usage is not null)
     app.MapGet("/MPAI/Usage", usage.Summary);
 }
 // WHAT A PUBLIC SITE SENDS (M3248 3.1): HTTPS only from now on; content types as
-// declared; no referrer to other sites; framed by this origin only (the avatar's
-// page is); the camera and the microphone for this origin alone.
+// declared; no referrer to other sites; framed by this origin (the avatar's page is)
+// or by Thalia on this machine; the camera and the microphone for this origin alone.
 if (!app.Environment.IsDevelopment())
 {
     app.UseHsts();
@@ -56,7 +56,8 @@ if (!app.Environment.IsDevelopment())
         var h = ctx.Response.Headers;
         h["X-Content-Type-Options"] = "nosniff";
         h["Referrer-Policy"] = "same-origin";
-        h["X-Frame-Options"] = "SAMEORIGIN";
+        // framed by this origin, or by Thalia on this same machine (it shows the App between its rail and its functions); no other site may frame it
+        h["Content-Security-Policy"] = "frame-ancestors 'self' http://localhost:* http://127.0.0.1:*";
         h["Permissions-Policy"] = "camera=(self), microphone=(self)";
         await next();
     });
