@@ -13,7 +13,7 @@
   .shell { position:relative; height:100vh; display:grid; grid-template-rows:auto auto 1fr; }
   /* THE DEVICE BAR: Thalia says when it has no microphone of its own, or when one comes or goes, and offers the buttons to set it */
   .devbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:8px 22px; background:rgba(243,192,106,.22); border-bottom:1px solid var(--line); font-size:14px; backdrop-filter:blur(10px); }
-  .devbar[hidden] { display:none; } .devbar .msg { flex:1; min-width:240px; } .devbar .lvl { width:120px; height:8px; border-radius:4px; background:rgba(255,255,255,.15); overflow:hidden; } .devbar .lvl div { height:100%; width:0; background:var(--ok); }
+  .devbar[hidden] { display:none; } .devbar .act.secondary { color:var(--ink); border-color:var(--ink); background:rgba(14,18,28,.45); } .devbar .msg { flex:1; min-width:240px; } .devbar .lvl { width:120px; height:8px; border-radius:4px; background:rgba(255,255,255,.15); overflow:hidden; } .devbar .lvl div { height:100%; width:0; background:var(--ok); }
   .top { display:flex; align-items:center; gap:14px; padding:12px 22px; background:var(--panel); border-bottom:1px solid var(--line); backdrop-filter:blur(10px); }
   .top h1 { margin:0; font-size:22px; font-weight:600; letter-spacing:.5px; }
   .top .sub { color:var(--muted); font-size:13px; }
@@ -596,15 +596,28 @@ function devbar(text, buttons) {
 const devbarFind = async () => {
   const lvl = $('#devlvl'); lvl.hidden = false; $('#devbtns').innerHTML = '';
   const fill = lvl.firstElementChild, msg = $('#devmsg');
-  let mics = []; try { mics = await microphones(); } catch { }
+  let mics = [], seeErr = ''; try { mics = await microphones(); } catch (e) { seeErr = String(e && e.message || e); }
+  const notNow = ['Not now', () => { devbarDismissed = true; devbar(null); }], devBtn = ['Devices', () => { devbar(null); goView('devices'); }];
+  // WHAT HAPPENED, kept with Thalia's choices (on this machine), so that it can be looked at afterwards
+  const record = (result, heard) => setPref('micCheck', JSON.stringify({ at: new Date().toISOString(), result, seeError: seeErr || null, heard: (heard || []).map(h => ({ microphone: h.m.label, peak: +h.peak.toFixed(3), error: h.err || null })) }));
+  if (!mics.length) {
+    // The browser shows the microphones to a page only after the User has let it use one: Thalia asks, and the browser asks the User.
+    lvl.hidden = true; record('no microphone visible', []);
+    devbar('Thalia cannot see your microphones: the browser has not let Thalia use them yet. Press Allow, and accept when the browser asks.',
+      [['Allow the microphone', async () => { try { await MpaiUnits.microphone.test(null, null, 300); } catch (e) { seeErr = String(e && e.message || e); } devbarFind(); }, true], devBtn, notNow]);
+    return;
+  }
   const heard = [];
   for (const [i, m] of mics.entries()) {
     msg.textContent = `Speak now, and keep speaking - listening to ${m.label} (${i + 1} of ${mics.length})...`;
-    try { heard.push({ m, peak: await MpaiUnits.microphone.test(m.deviceId, x => { fill.style.width = Math.min(100, x * 400) + '%'; }, 2500) }); } catch { heard.push({ m, peak: 0 }); }
+    try { heard.push({ m, peak: await MpaiUnits.microphone.test(m.deviceId, x => { fill.style.width = Math.min(100, x * 400) + '%'; }, 3000) }); } catch (e) { heard.push({ m, peak: 0, err: String(e && e.message || e) }); }
   }
   lvl.hidden = true;
-  const best = heard.sort((a, b) => b.peak - a.peak)[0];
-  if (!best || best.peak < 0.02) { devbar('No microphone heard you: is it muted, or far from you?', [['Try again', devbarFind, true], ['Devices', () => { devbar(null); goView('devices'); }], ['Not now', () => { devbarDismissed = true; devbar(null); }]]); return; }
+  const all = heard.map(h => `${h.m.label}: ${h.err ? 'could not be opened' : h.peak.toFixed(2)}`).join('; ');
+  const best = [...heard].sort((a, b) => b.peak - a.peak)[0];
+  // a quiet microphone that hears is still the one: the loudest is kept when it heard more than the hiss of a dead one
+  if (!best || best.peak < 0.005) { record('none heard', heard); devbar(`No microphone heard you (how loud each heard: ${all}). Is it muted, or far from you?`, [['Try again', devbarFind, true], devBtn, notNow]); return; }
+  record('chosen ' + best.m.label, heard);
   setPref('micLabel', best.m.label); knownMics = mics.map(m => m.label);
   devbar(`Thalia uses ${best.m.label}: it heard you. Every App you start from now on gets it.`, [['OK', () => devbar(null), true]]);
   if (staged) devbar(`Thalia uses ${best.m.label}: it heard you. The App that is running gets it when it starts again.`, [['OK', () => devbar(null), true]]);

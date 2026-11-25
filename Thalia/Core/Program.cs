@@ -172,7 +172,7 @@ app.MapGet("/api/log/{where}/{id}", (string where, string id) =>
     running.TryGetValue($"{where}:{id}", out var r) ? Results.Text(string.Join('\n', r.Lines.TakeLast(200))) : Results.NotFound());
 
 // The User's choices (season, side of the functions, search scope, welcome): one small file for this User on this machine, so that they stay whatever window shows Thalia.
-var prefsKeys = new[] { "season", "side", "welcomeHidden", "micLabel", "camLabel", "screenLabel", "masUrl", "storeUrl" };
+var prefsKeys = new[] { "season", "side", "welcomeHidden", "micLabel", "camLabel", "screenLabel", "masUrl", "storeUrl", "micCheck" };   // micCheck: what the last Find my microphone found (text)
 var prefsLock = new object();
 JsonObject ReadPrefs() { try { return File.Exists(prefsFile) ? (JsonNode.Parse(File.ReadAllText(prefsFile)) as JsonObject ?? new JsonObject()) : new JsonObject(); } catch { return new JsonObject(); } }
 app.MapGet("/api/prefs", () => { lock (prefsLock) return Results.Json(ReadPrefs()); });
