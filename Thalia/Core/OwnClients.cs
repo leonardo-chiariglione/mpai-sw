@@ -31,6 +31,11 @@ static class OwnClients
                          "powershell", Asking("_cps.ps1"), true),
             "TMA" => new(P(@"Apps\OSD\TMA\Controller\bin\Debug\net10.0\TmaController.exe"), @"Apps\OSD\TMA\Controller\TmaController.csproj",
                          "powershell", Asking("_tma.ps1"), false),
+            // ARP, EES, EAE (2026-11-25): their workflows take files and give files through devices of their own (the tape, the selectors, the room's capture) that the browser client has
+            // not; their launcher asks for the files with dialogs, as AllApps\CAE does, and runs the App on the Controller - Thalia's local one, or the MPAI as a Service instance
+            "ARP" or "EES" or "EAE" => new(P(@"Thalia\Controller\bin\Debug\net10.0\ThaliaController.exe"), @"Thalia\Controller\ThaliaController.csproj",
+                         "powershell", $"-NoProfile -ExecutionPolicy Bypass -File \"{P(@"AllApps\_support\_usc.ps1")}\" -App {id} -Controller {{controller}}", false,
+                         ControllerArgs: $"--app {id}"),
             // the Live Theatrical Performance demonstration: one program (its User Agent and its Controller), as XRV\LTP-demo.bat runs it
             "LTP" => new(null, null, "dotnet", $"run --no-build --project \"{P(@"Apps\XRV\LTP\TwoMetaverses")}\" -- --live", false,
                          ClientBuilt: P(@"Apps\XRV\LTP\TwoMetaverses\bin\Debug\net10.0\XrvTwoMetaverses.dll")),

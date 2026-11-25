@@ -1,6 +1,7 @@
 # THE APPS OF CAE-USC, picked with dialogs: you choose the files and say the few words each App needs; the App is built if it is not, run, and the folder of its results is opened.
 #   _usc.ps1 -App SRS | AES | SME | ARP | EAE | EES
-param([Parameter(Mandatory)][ValidateSet('SRS', 'AES', 'SME', 'ARP', 'EAE', 'EES')][string]$App)
+#   _usc.ps1 -App ARP -Controller <address>   (Thalia: the Controller it started for the App, or the MPAI as a Service instance; the launcher gives none, and the App runs its own Module)
+param([Parameter(Mandatory)][ValidateSet('SRS', 'AES', 'SME', 'ARP', 'EAE', 'EES')][string]$App, [string]$Controller = '')
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName Microsoft.VisualBasic
@@ -88,5 +89,6 @@ try {
 Write-Host "Building $title (a first build takes a while)..." -ForegroundColor Cyan
 & dotnet build $project -nologo -v q 2>&1 | Out-Null
 if ($LASTEXITCODE -ne 0) { Write-Host "The build of $project failed." -ForegroundColor Red; exit 1 }
+if ($Controller) { $arguments += @('--controller', $Controller) }      # the Module is the Controller's that Thalia named
 & $exe @arguments
 if ($LASTEXITCODE -eq 0) { Write-Host "`nResults in $out" -ForegroundColor Green; Invoke-Item $out } else { Write-Host "`nThe App stopped: see what it said above." -ForegroundColor Yellow }

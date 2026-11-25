@@ -695,7 +695,7 @@ function unstage() {
 
 // THALIA MOVES INTO THE APP. The lady of an App is Thalia: while an App that has her runs on the stage, her face leaves the corner and goes into the App;
 // when the App is stopped (or hidden) she comes back. The Apps without her: those that work on a programme, a meeting, a performance or a door.
-const WITHOUT_HER = new Set(['TMA', 'LTP', 'VMS', 'AUA']);
+const WITHOUT_HER = new Set(['TMA', 'LTP', 'VMS', 'AUA', 'ARP', 'EES', 'EAE']);
 let thaliaInApp = false;
 function fly(from, to, toOpacity) {
   const f = document.createElement('img'); f.className = 'flyface'; f.src = $('.face').src; f.alt = '';
