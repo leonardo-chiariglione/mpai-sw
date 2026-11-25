@@ -524,6 +524,11 @@
           "minLength": 1,
           "description": "The name the open Audio Scene is given: from now on it is kept under that name, and under no other. The name must be free. Audio Scene Editing's."
         },
+        "ClosedScene": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The name of the open Scene to close: it stays kept, under its name and with all its versions, and is no longer open; no Scene is open until one is made or opened. A Scene that is not open is reported, not closed. Audio Scene Editing's, and Speech Scene Editing's for a Speech Scene of that name."
+        },
         "ClosedSpace": {
           "type": "array",
           "minItems": 1,
@@ -649,7 +654,8 @@
                   "ListedObjects",
                   "NewScene",
                   "OpenedScene",
-                  "NamedScene"
+                  "NamedScene",
+                  "ClosedScene"
                 ],
                 "description": "The field of UserCommandRQ the action comes from."
               },

@@ -140,10 +140,12 @@ public sealed class SoeAimProcessor : IAimProcessor
             var id = IdOf(pending.Entry.ObjectID);
             if (id is not null && SpeechStore.Get(_store, id) is { } original && MpaiJson.FromJson<BasicSpeechObject>(translationJson) is { } translation)
             {
-                // THE TRANSLATION TAKES THE PLACE OF THE ORIGINAL, under the name of the original with "-trans" added (the author, 2026/11/10): the original is not kept - the person loads it again if
-                // they need it; the translation is of the Scene, not kept beyond it.
-                var translated = SpeechStore.With(SpeechStore.Replacing(original, translation, pending.Entry.SpeechQualifier), id: id + "-trans");
-                if (SpeechStore.Holds(_store, id + "-trans")) Delete(id + "-trans");          // translated again: the earlier translation is replaced, the name stays as it is
+                // THE TRANSLATION TAKES THE PLACE OF THE ORIGINAL, under the name of the original with the two-letter code of the language it is translated into (the author, 2026/11/25:
+                // "clip777-fr", which says what it is, not "-trans"): the original is not kept - the person loads it again if they need it; the translation is of the Scene, not kept beyond it.
+                // A translation translated again takes the new code in place of the one it had ("clip777-fr" into German is "clip777-de").
+                var name = SpeechStore.TranslatedName(id, original, pending.Entry.TargetLanguage);
+                var translated = SpeechStore.With(SpeechStore.Replacing(original, translation, pending.Entry.SpeechQualifier), id: name);
+                if (name != id && SpeechStore.Holds(_store, name)) Delete(name);              // translated again into that language: the earlier translation is replaced
                 var made = SpeechStore.Keep(_store, translated);
                 Delete(id);
                 _open = made;

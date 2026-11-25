@@ -744,7 +744,7 @@ public partial class MainWindow : Window
                             _saved.Scenes[saved] = _sceneSounds.ToList(); _saved.Last = saved; WriteSaved();
                             App.Log("[window] scene saved: " + saved);
                             break;
-                        // TRANSLATED: the translation (the name with -trans added) takes the place of the original, which is taken out of the scene; it is put at the centre, for the person to drag or place
+                        // TRANSLATED: the translation (the name with the code of its language added, "clip777-fr") takes the place of the original, which is taken out of the scene; it is put at the centre, for the person to drag or place
                         case "TranslatedObjects" when (string?)a["ResultID"] is { Length: > 0 } made:
                             App.Log("[window] translated: " + made + " takes the place of " + (string?)a["ObjectID"]);
                             if ((string?)a["ObjectID"] is { Length: > 0 } original && original != made)          // the original is gone: Speech Scene Editing takes it out of its Scene

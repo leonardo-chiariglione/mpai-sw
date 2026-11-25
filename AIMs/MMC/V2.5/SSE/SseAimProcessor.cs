@@ -246,10 +246,20 @@ public sealed class SseAimProcessor : IAimProcessor
         string? NameOfTheSceneMade()
         {
             if (NameBook.Clean(data.AddedObjects?.ObjectID ?? data.NewScene) is { } given) return given;
+            var speech = _store.All(Kinds.SpeechScene).Select(s => s.Id).Distinct(StringComparer.Ordinal).ToList();
+            if (speech.Count == 1) return speech[0];                                    // the one Speech Scene kept: the speech goes on in it
             var audio = _store.All(Kinds.AudioScene).Select(s => s.Id).Distinct(StringComparer.Ordinal).ToList();
             return audio.Count == 1 ? audio[0] : null;
         }
-        var made = scene is null ? NameOfTheSceneMade() : null;
+        var made = scene is null && data.AddedObjects is { Objects.Count: > 0 } ? NameOfTheSceneMade() : null;
+        // A SPEECH SCENE KEPT IS OPENED AGAIN, NOT MADE AGAIN (2026-11-25): after a restart nothing is open, and a speech added to the person's scene goes on in its Speech Scene,
+        // with the members it has - not into a new "stage 2".
+        if (scene is null && KeptScene(made) is { } keptScene)
+        {
+            _open = keptScene; scene = Load(keptScene);
+            items = scene?.BasicSpeechSceneItems.ToList() ?? new List<BasicSpeechSceneItem>();
+            before = keptScene; made = null;
+        }
 
         if (data.AddedObjects is { Objects.Count: > 0 } added)
             foreach (var entry in added.Objects)

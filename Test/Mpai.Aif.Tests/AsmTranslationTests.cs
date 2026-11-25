@@ -99,12 +99,12 @@ public class AsmTranslationTests
                 r["the translated speech"] = $"{(translated.Data.Length > 10_000 ? "speech" : "no speech")}, {(valid ? "valid" : "not valid")}, language {language.Split('-')[0]}";
             }
 
-            // The original is not kept; the translation is named as the original with -trans added.
+            // The original is not kept; the translation is named as the original with the code of the language it is in added ("-it").
             var kept = Stored(api.SharedStorage(id), english.BasicSpeechObjectID);
             r["the Speech Object under the original's identifier"] = kept is null ? "none"
                 : $"{(kept.Data.SequenceEqual(english.Data) ? "still the original" : "changed")}, language {(kept.SpeechQualifier?.Attributes?.Metadata?.Language?.LanguageCode ?? "none").Split('-')[0]}";
-            var stored = Stored(api.SharedStorage(id), english.BasicSpeechObjectID + "-trans");
-            r["the Speech Object under the identifier with -trans"] = stored is null ? "none"
+            var stored = Stored(api.SharedStorage(id), english.BasicSpeechObjectID + "-it");
+            r["the Speech Object under the identifier with the code of its language"] = stored is null ? "none"
                 : $"{(stored.Data.SequenceEqual(english.Data) ? "the original" : "the translation")}, language {(stored.SpeechQualifier?.Attributes?.Metadata?.Language?.LanguageCode ?? "none").Split('-')[0]}";
         }
         finally
@@ -160,8 +160,8 @@ public class AsmTranslationTests
             var storage = api.SharedStorage(id)!;
             BasicSpeechObject? Stored() => AsmTranslationTests.Stored(storage, english.BasicSpeechObjectID);
             Assert.Null(Stored());                                                                     // the original is not kept
-            BasicSpeechObject? Translation() => AsmTranslationTests.Stored(storage, english.BasicSpeechObjectID + "-trans");
-            Assert.False(Translation()!.Data.SequenceEqual(english.Data));                            // the translation stands under the identifier with -trans
+            BasicSpeechObject? Translation() => AsmTranslationTests.Stored(storage, english.BasicSpeechObjectID + "-it");
+            Assert.False(Translation()!.Data.SequenceEqual(english.Data));                            // the translation stands under the identifier with the code of its language
 
             api.InputWrite(id, "CAE-UCM-V1.0", 3, MpaiJson.ToJson(new UserCommand
             {

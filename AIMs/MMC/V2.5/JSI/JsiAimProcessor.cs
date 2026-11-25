@@ -442,7 +442,8 @@ public sealed class JsiAimProcessor : IAimProcessor
         {
             var lower = text.ToLowerInvariant();
             if (PatternQuestion(lower, guide) is { } partial) return (null, Said(partial));
-            if (guide.Asks.FirstOrDefault(a => a.Words.Any(w => lower.Contains(w.ToLowerInvariant()))) is { Say.Length: > 0 } ask) return (null, Said(ask.Say));
+            // a question is asked only for its words as words ("remove the" is not "move the")
+            if (guide.Asks.FirstOrDefault(a => a.Words.Any(w => Regex.IsMatch(lower, @"(?<![\p{L}\p{N}])" + Regex.Escape(w.ToLowerInvariant())))) is { Say.Length: > 0 } ask) return (null, Said(ask.Say));
             var known = guide.Triggers.SelectMany(t => t.Words).Concat(_state.NameSets.Values.SelectMany(v => v)).Where(w => w.Length > 2 && !w.StartsWith("{"))
                              .Any(w => Regex.IsMatch(lower, @"\b" + Regex.Escape(w.Trim().ToLowerInvariant())));
             if (!known && guide.Try.Length > 0) return (null, DidNotUnderstand(text, guide));
@@ -655,6 +656,9 @@ public sealed class JsiAimProcessor : IAimProcessor
                 instance = (JsonObject)JsonNode.Parse(MpaiJson.ToJson(UserCommandMerge.Merge(id, gathered.Answers)))!;
             }
         }
+        // NOTHING TO TELL (2026-11-25): answers that only said "not mine" (merged into no action at all) are not said - the AIM the command belongs to answers, and that is told.
+        if (instance["UserCommandRS"] is JsonObject nothing && (string?)nothing["Outcome"] == "Ignored" && nothing["Actions"] is not JsonArray { Count: > 0 } && nothing["ListedObjects"] is not JsonArray { Count: > 0 })
+        { outcome = ResponseKind.Foreign; return null; }
         return Tell(instance, id, out outcome);
     }
 

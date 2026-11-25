@@ -17,10 +17,28 @@ namespace Mpai.Mmc.Soe;
 // storage key (BSO000001 ...) is private to it; the Module's NameBook is the table between
 // the two (the author, 2026/10/26). A name is unique among the Speech Objects the Module
 // keeps: a second Object given a name that is taken is "hello 2". An Object with no name
-// is not kept. Its translation takes its place, named as the original with "-trans" added
-// (the author, 2026/11/10); the original is not kept.
+// is not kept. Its translation takes its place, named as the original with the two-letter
+// code of the language it is translated into ("clip777-fr"; the author, 2026/11/25, in place
+// of "-trans" of 2026/11/10); the original is not kept.
 public static class SpeechStore
 {
+    // The name of a translation: the name of the original with the code of the language it is translated into. A translation translated again takes the new code in place of the
+    // one it had ("clip777-fr" into German: "clip777-de"), as does one named in the earlier way ("clip777-trans").
+    public static string TranslatedName(string id, BasicSpeechObject original, string? targetLanguage)
+    {
+        static string? Two(string? code)
+        {
+            if (string.IsNullOrWhiteSpace(code)) return null;
+            var primary = code.Trim().ToLowerInvariant().Split('-', '_')[0];
+            return primary.Length >= 2 ? primary[..2] : null;
+        }
+        var to = Two(targetLanguage) ?? "translated";
+        var stem = id;
+        if (stem.EndsWith("-trans", StringComparison.Ordinal) && stem.Length > 6) stem = stem[..^6];
+        else if (Two(original.SpeechQualifier?.Attributes?.Metadata?.Language?.LanguageCode) is { } from && stem.Length > from.Length + 1 && stem.EndsWith("-" + from, StringComparison.Ordinal)) stem = stem[..^(from.Length + 1)];
+        return stem + "-" + to;
+    }
+
     public static bool Holds(ModuleStore storage, string? name) =>
         NameBook.Clean(name) is { } n && (storage.Holds(Kinds.BasicSpeechObject, n) || storage.Holds(Kinds.SpeechObject, n));
 

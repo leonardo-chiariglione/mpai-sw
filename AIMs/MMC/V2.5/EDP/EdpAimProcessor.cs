@@ -291,7 +291,8 @@ public sealed class EdpAimProcessor : IAimProcessor
         // A Response Hint that is already what is to be said is said as it is: no language model is asked.
         if (facts.StartsWith("SAY: ", StringComparison.Ordinal))
         {
-            reply = facts["SAY: ".Length..].Trim();
+            // several Response Hints that came together are said one after the other, each as it is: the mark is never said (2026-11-25: "Done: ... SAY: I could not ...")
+            reply = string.Join(" ", facts.Split("SAY: ", StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).Where(p => p.Length > 0));
             if (!string.IsNullOrWhiteSpace(heard)) memory.Add("User: " + heard.Replace(Nl, ' ').Trim());
             memory.Add(_persona + ": " + reply.Replace(Nl, ' ').Trim());
             while (memory.Count > RecentExchanges * 2) memory.RemoveAt(0);
