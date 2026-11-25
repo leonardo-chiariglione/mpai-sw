@@ -21,6 +21,8 @@ public sealed class SceneView : FrameworkElement
 
     // A sound dragged with the mouse and let go: its name and the place, in metres. The window sends it as the command it is; the scene then says where the sound is.
     public event Action<string, double, double, double>? Dropped;
+    // A sound let go that the scene did not then show where it was let go: drawn back where the scene has it (the move was not done).
+    public event Action<string>? DropNotDone;
     private Room? _room;
     private static readonly Brush[] Colours =
         [Brushes.SteelBlue, Brushes.IndianRed, Brushes.SeaGreen, Brushes.DarkOrange, Brushes.MediumPurple, Brushes.Teal, Brushes.Goldenrod, Brushes.SlateGray];
@@ -159,7 +161,15 @@ public sealed class SceneView : FrameworkElement
         if (_drag is not { } d) return;
         _drag = null; ReleaseMouseCapture();
         var was = _sounds.FirstOrDefault(s => s.Name == d.Name);
-        if (was is not null && (Math.Abs(was.X - d.X) > 0.04 || Math.Abs(was.Y - d.Y) > 0.04)) { _dropped = d; Dropped?.Invoke(d.Name, d.X, d.Y, was.Z); }
+        if (was is not null && (Math.Abs(was.X - d.X) > 0.04 || Math.Abs(was.Y - d.Y) > 0.04))
+        {
+            _dropped = d; Dropped?.Invoke(d.Name, d.X, d.Y, was.Z);
+            // NOT LEFT WHERE IT WAS LET GO IF IT WAS NOT MOVED (2026-11-25): a speech dragged to (-2, 0) stayed drawn there while the Module had it at the centre ("Which object do you
+            // mean?"), and its translation then went to the centre. If no scene has come within 4 s, the sound is drawn where the scene has it.
+            var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(4) };
+            timer.Tick += (_, _) => { timer.Stop(); if (_dropped == d) { _dropped = null; InvalidateVisual(); DropNotDone?.Invoke(d.Name); } };
+            timer.Start();
+        }
         InvalidateVisual();
     }
 

@@ -65,6 +65,7 @@ public partial class MainWindow : Window
         TextModeButton.IsChecked = true; ApplyMode();          // the window starts in Text: the microphone off, and she does not speak
         Room.ListenerDropped += (x, y, yaw) => { _wantedListener = (x + 0.0, y + 0.0, yaw + 0.0); _wantedGiven = false; App.Log($"[window] the listener is put at {x:0.##}, {y:0.##}, facing {yaw:0}: kept until the Module's scene says the same"); Quiet(string.Create(System.Globalization.CultureInfo.InvariantCulture, $"move me to x {x + 0.0:0.0#}, y {y + 0.0:0.0#}, facing {yaw + 0.0:0} degrees")); };
         Room.Dropped += (name, x, y, z) => Quiet(string.Create(System.Globalization.CultureInfo.InvariantCulture, $"move {name} to x {x + 0.0:0.0#}, y {y + 0.0:0.0#}, z {z + 0.0:0.0#}"));
+        Room.DropNotDone += name => { App.Log("[window] the drag of " + name + " was not done: drawn back"); _ = TellAsync($"I could not move {name} there: it is still where it was."); };
         InputBox.KeyDown += (_, e) => { if (e.Key == Key.Enter) Submit(); };
         InputBox.PreviewKeyDown += (_, e) => { if (_naming is null && (e.Key == Key.Up || e.Key == Key.Down)) { Recall(e.Key == Key.Up ? -1 : 1); e.Handled = true; } };
     }
@@ -749,9 +750,10 @@ public partial class MainWindow : Window
                             _saved.Scenes[saved] = _sceneSounds.ToList(); _saved.Last = saved; WriteSaved();
                             App.Log("[window] scene saved: " + saved);
                             break;
-                        // TRANSLATED: the translation (the name with the code of its language added, "clip777-fr") takes the place of the original, which is taken out of the scene; it is put at the centre, for the person to drag or place
+                        // TRANSLATED: the translation (the name with the code of its language added, "clip777-fr") takes the place of the original, which is taken out of the scene; it is put where the original was, facing as it did
                         case "TranslatedObjects" when (string?)a["ResultID"] is { Length: > 0 } made:
                             App.Log("[window] translated: " + made + " takes the place of " + (string?)a["ObjectID"]);
+                            var was = (string?)a["ObjectID"] is { Length: > 0 } of ? _speechSounds.Concat(_audioSounds).FirstOrDefault(x => x.Name == of) : null;      // where the original is, before it is taken out
                             if ((string?)a["ObjectID"] is { Length: > 0 } original && original != made)          // the original is gone: Speech Scene Editing takes it out of its Scene
                                 foreach (var scenes in new[] { _speechSceneCommand, _sceneCommand })          // out of the Speech Scene and of the Audio Scene that hold it: only the translation is left
                                     scenes.Give(MpaiJson.ToJson(new UserCommand
@@ -759,7 +761,7 @@ public partial class MainWindow : Window
                                         UserCommandID = Guid.NewGuid().ToString("N")[..8], UserCommandTime = SimpleTime.At(DateTimeOffset.UtcNow),
                                         UserCommandRQ = new UserCommandRQ { RemovedObjects = new ObjectPlacements { Objects = [new ObjectPlacement { ObjectID = new ManagedObject { ObjectID = original } }] } }
                                     }));
-                            PlaceAtTheCentre(made, true);
+                            PlaceAtTheCentre(made, true, at: was, insteadOf: (string?)a["ObjectID"]);
                             break;
                         case "ModifiedScene" when _panel is { IsVisible: true }:
                             AskProfile();
@@ -843,9 +845,12 @@ public partial class MainWindow : Window
         }
     }
 
-    private void PlaceAtTheCentre(string name, bool learnFirst = false, string more = "")
+    // at: where to put it instead of the centre (a translation goes where its original was, facing as it did: until 2026-11-25 it went to the centre).
+    private void PlaceAtTheCentre(string name, bool learnFirst = false, string more = "", SceneView.Sound? at = null, string? insteadOf = null)
     {
-        App.Log("[window] the sound " + name + " is placed at the centre");
+        static string N(double v) => Math.Round(v, 2).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var where = at is null ? "at the centre" : $"at x {N(at.X)}, y {N(at.Y)}, z {N(at.Z)}";
+        App.Log("[window] the sound " + name + " is placed " + where);
         _ = Task.Run(async () =>
         {
             // An attempt waits 3 s for the Module before the next: at 1.5 s the second "put" went while the first was still being done, and "Done" was said twice (2026-11-25).
@@ -854,11 +859,14 @@ public partial class MainWindow : Window
                 await Task.Delay(attempt == 0 ? 700 : 3000);
                 if (_sceneSounds.Contains(name)) break;
                 if (learnFirst && attempt == 0) { Dispatcher.Invoke(() => Quiet("what have i loaded")); await Task.Delay(1500); }      // a sound just loaded is not known to the interface yet: it is told what the Module keeps first, then the sound is put at the centre
-                Dispatcher.Invoke(() => Quiet($"put {name} at the centre"));      // a sound the Module knows is placed; one it does not know yet is not guessed at: it is asked again
+                Dispatcher.Invoke(() => Quiet($"put {name} {where}"));      // a sound the Module knows is placed; one it does not know yet is not guessed at: it is asked again
             }
+            // facing as the original did (180, facing the listener, is how a sound is put)
+            if (at is not null && _sceneSounds.Contains(name) && Math.Abs(at.Yaw - 180) > 0.5) { await Task.Delay(1500); Dispatcher.Invoke(() => Quiet($"turn {name} to {N(at.Yaw)} degrees")); await Task.Delay(1500); }
             if (!_sceneSounds.Contains(name)) await Task.Delay(1500);
             // WHAT HAPPENED, SAID ONCE: where it is, or that it could not be put in the scene (a sentence never starts with the name, which may be lower case).
-            await TellAsync(_sceneSounds.Contains(name) ? $"I put {name} at the centre. Drag it, or tell me where.{more}" : $"I loaded {name} but could not put it in the scene: tell me where to put it.{more}");
+            var placed = at is null ? $"I put {name} at the centre. Drag it, or tell me where." : $"I put {name} where {insteadOf ?? "the original"} was, {where}.";
+            await TellAsync(_sceneSounds.Contains(name) ? placed + more : $"I loaded {name} but could not put it in the scene: tell me where to put it.{more}");
         });
     }
 

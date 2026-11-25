@@ -12,7 +12,7 @@ namespace Mpai.Mmc.Jsi;
 public sealed class ApplicationState
 {
     public sealed record Member(string Name, IReadOnlyList<(string Label, string Value)> Facts);
-    public sealed record Scene(string Name, IReadOnlyList<Member> Members, bool Detailed = true);
+    public sealed record Scene(string Name, IReadOnlyList<Member> Members, bool Detailed = true, string Kind = "");      // Kind: the kind the application listed it as (an Audio Scene, a Speech Scene)
 
     public IReadOnlyList<Scene> Scenes { get; init; } = [];
     public IReadOnlyList<string> Stored { get; init; } = [];
@@ -51,9 +51,14 @@ public sealed class ApplicationState
     {
         var scenes = Scenes.Select(s =>
         {
-            if (s.Detailed || older.Scenes.FirstOrDefault(o => o.Name == s.Name) is not { } before) return s;
+            if (s.Detailed || older.Scenes.FirstOrDefault(o => o.Name == s.Name && o.Kind == s.Kind) is not { } before) return s;
             return s with { Members = s.Members.Select(m => before.Members.FirstOrDefault(b => b.Name == m.Name) ?? m).ToList() };
         }).ToList();
+        // ONE SCENE OF SEVERAL KINDS (2026-11-25): the person's scene "stage" is an Audio Scene and a Speech Scene of that name, listed by two AIMs in two answers. A newer answer that
+        // lists the scene as one kind leaves what the older said of it as another kind: the Audio Scene "stage", empty, had replaced the Speech Scene "stage" with its speech, and the
+        // speech could not be named ("Which object do you mean?" for a speech dragged).
+        foreach (var other in older.Scenes.Where(o => scenes.Any(s => s.Name == o.Name && s.Kind != o.Kind) && !scenes.Any(s => s.Name == o.Name && s.Kind == o.Kind)).ToList())
+            scenes.Add(other);
         var allScenes = scenes.Count > 0 ? scenes : older.Scenes;
         var stored = (ListsStored ? Stored : older.Stored).Where(n => !IsCopyOfAScene(n, allScenes)).ToList();      // a copy of the scene the application makes ("scene 1 2") is not a sound
         return new ApplicationState
@@ -109,7 +114,7 @@ public sealed class ApplicationState
             if (members.Count == 0 && memberNamesKey.Length > 0)
                 foreach (var n in Elements(o, memberNamesKey))
                     if ((string?)n is { Length: > 0 } named) { members.Add(new Member(named, [])); inScenes.Add(named); }
-            scenes.Add(new Scene(name, members, detailed));
+            scenes.Add(new Scene(name, members, detailed, (string?)o[kindKey] ?? ""));
         }
         var stored = listed.Where(l => !l.IsScene && !inScenes.Contains(l.Name) && !composites.Contains(l.Name)).Select(l => l.Name).Distinct(StringComparer.Ordinal).ToList();
         stored = stored.Where(n => !IsCopyOfAScene(n, scenes)).ToList();
