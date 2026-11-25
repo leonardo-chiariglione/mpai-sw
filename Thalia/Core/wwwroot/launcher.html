@@ -13,7 +13,7 @@
   html, body { height:100%; margin:0; }
   body { color:var(--ink); font:15px/1.45 "Segoe UI", system-ui, sans-serif; background:#10141c center/cover no-repeat fixed; overflow:hidden; }
   body::before { content:""; position:fixed; inset:0; background:rgba(8,11,18,.28); pointer-events:none; }
-  .shell { position:relative; height:100vh; display:grid; grid-template-rows:auto auto 1fr; }
+  .shell { position:relative; height:calc(100vh - var(--covered, 0px)); display:grid; grid-template-rows:auto auto 1fr; }
   /* THE DEVICE BAR: Thalia says when it has no microphone of its own, or when one comes or goes, and offers the buttons to set it */
   .devbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:8px 22px; background:rgba(243,192,106,.22); border-bottom:1px solid var(--line); font-size:14px; backdrop-filter:blur(10px); }
   .devbar[hidden] { display:none; } .devbar .act.secondary { color:var(--ink); border-color:var(--ink); background:rgba(14,18,28,.45); } .devbar .msg { flex:1; min-width:240px; } .devbar .lvl { width:120px; height:8px; border-radius:4px; background:rgba(255,255,255,.15); overflow:hidden; } .devbar .lvl div { height:100%; width:0; background:var(--ok); }
@@ -167,6 +167,14 @@
 <div class="credit" id="credit"></div>
 <script src="mpai-units.js"></script>
 <script>
+// ABOVE THE TASKBAR (2026-11-25): the window of Thalia fills the screen, and the taskbar of Windows stays over its bottom - the MPAI card at the foot of the pane was half under it. The
+// part of the window the taskbar covers (the screen less its work area) is left out of the page.
+function keepAboveTaskbar() {
+  const bottom = (screen.availTop || 0) + screen.availHeight, windowBottom = window.screenY + window.outerHeight;
+  const covered = Math.max(0, Math.min(120, windowBottom - bottom));
+  document.documentElement.style.setProperty('--covered', covered + 'px');
+}
+keepAboveTaskbar(); window.addEventListener('resize', keepAboveTaskbar); setInterval(keepAboveTaskbar, 3000);
 const $ = s => document.querySelector(s);
 
 // ---- the User's choices (season, side, scope, welcome) are kept by Thalia in a file on this machine, not in the browser: the window that shows Thalia

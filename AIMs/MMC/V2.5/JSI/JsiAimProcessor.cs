@@ -97,6 +97,7 @@ public sealed class JsiAimProcessor : IAimProcessor
     // one after another - each when the answer to the one before has come - at the first request, and again after every response the person is told; a request that comes
     // while the state is not fresh is held until it is, so that it is worked out from the scene as it is. What the application answers to them is the state; it is not told.
     private readonly HashSet<string> _stateAsked = new(StringComparer.Ordinal);
+    private string? _freshFrom;                // the first question of the last refresh of the state: its answer starts the state anew
     private bool _stale = true;
     private int _chain = -1;                 // the state request asked now, or -1 when none is
     private DateTime _askedAt;
@@ -358,6 +359,7 @@ public sealed class JsiAimProcessor : IAimProcessor
         if (_commandCheck.Violations(completed.ToJsonString()) is not { Count: 0 }) return null;
         if (IdOf(completed) is not { } id) return null;
         _stateAsked.Add(id);
+        if (index == 0) _freshFrom = id;
         return completed as JsonObject;
     }
 
@@ -756,7 +758,13 @@ public sealed class JsiAimProcessor : IAimProcessor
         if (_stateAsked.Remove(id))
         {
             outcome = ResponseKind.State;
-            if (_guide is not null && ApplicationState.IsListing(instance, _guide)) _state = ApplicationState.Read(instance, _guide, SceneIds()).OnTopOf(_state).Without(SceneIds());
+            // A REFRESH STARTS FROM NOTHING (2026-11-25). On MPAI as a Service one instance of the Module serves every session, and this AIM with it: what it knew of a scene stayed
+            // after the scene was deleted (a listing that names no scene kept the scenes known before), and the next session's "put speech1 at the centre" went into a scene that was
+            // gone - every AIM refused it. The answer to the first question of a refresh replaces what was known (the order in which the sounds were first seen stays); the answers to
+            // the next questions add to it.
+            var basis = id == _freshFrom ? new ApplicationState { Seen = _state.Seen } : _state;
+            if (_guide is not null && ApplicationState.IsListing(instance, _guide)) _state = ApplicationState.Read(instance, _guide, SceneIds()).OnTopOf(basis).Without(SceneIds());
+            else if (id == _freshFrom && (string?)instance["UserCommandRS"]?["Outcome"] == "Done") _state = basis;          // nothing listed, and that is the answer: nothing is kept (the merged answer then has no list at all)
             return null;
         }
         if (_configuration.SaysPlainly && _kindListings.Remove(id, out var kindAsked2)) return ResponseFacts.SayAsItIs + TellKind(kindAsked2, instance);      // the room, the listener, the profiles: said about that, and the state of the scenes is not read from it
