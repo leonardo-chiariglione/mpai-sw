@@ -166,7 +166,8 @@ public partial class MainWindow : Window
             Interlocked.Increment(ref _textsToSpeak); Interlocked.Increment(ref _answers);
             Interlocked.Exchange(ref _textSinceSpeech, 1);
             App.Log("[window] answer shown (and to be spoken): " + said);
-            Dispatcher.Invoke(() => AnswerText.Text = said);
+            // the line at the top says the last thing said too: left as it was, it said "I put speech1 at the centre" after speech1 had been dragged elsewhere (2026-11-25)
+            Dispatcher.Invoke(() => { AnswerText.Text = said; InstructionText.Text = said; });
             _stuck = 0;
             SetStatus("Ready.");
             return Task.CompletedTask;
@@ -279,9 +280,11 @@ public partial class MainWindow : Window
             _loading = null;
             // THE NAME THE MODULE GAVE: a name that is taken is given another ("pippo 2"); the sound is placed, and spoken of, under the name it has.
             var actual = StoredNameOf(json) ?? loading.Value.Name;
-            if (actual != loading.Value.Name) { said = $"Loaded as {actual}, because {loading.Value.Name} is already kept, at the centre. Drag it, or tell me where."; WriteHint(actual); }
-            if (said.StartsWith("Loaded ", StringComparison.Ordinal)) PlaceAtTheCentre(actual, true);      // at the centre: the person drags it, or says where
-            await TellAsync(said);
+            if (actual != loading.Value.Name) WriteHint(actual);
+            // LOADED: nothing is said yet - what is said is what happened when it is put at the centre (until 2026-11-25 "at the centre" was said before anything was placed, and it was not).
+            if (said.StartsWith("Loaded ", StringComparison.Ordinal))
+                PlaceAtTheCentre(actual, true, actual != loading.Value.Name ? $" It is called {actual}, because {loading.Value.Name} is already kept." : "");
+            else await TellAsync(said);
         }));
 
         // THE SCREEN: what the workflow says is shown and said.
@@ -711,6 +714,7 @@ public partial class MainWindow : Window
     // THE REPORTS THAT ARE NOT ABOUT A SOUND LOADED: the list the purge asked for, and a scene saved or opened (by name). True when the report was taken.
     private string? _listId;
     private readonly List<JsonObject> _listed = [];
+    private int _listReports; private DateTime _listLastAt;          // how many answers to the purge's lists came, and when the last did
     private bool TakeReport(string json)
     {
         try
@@ -733,6 +737,7 @@ public partial class MainWindow : Window
             {
                 App.Log("[window] a list came: " + (rs["ListedObjects"] as JsonArray)?.Count + " item(s), kinds " + string.Join(",", (rs["ListedObjects"] as JsonArray ?? []).Select(x => (string?)x?["Kind"]).Distinct()));
                 if (rs["ListedObjects"] is JsonArray items) lock (_listed) _listed.AddRange(items.OfType<JsonObject>().Select(o => (JsonObject)o.DeepClone()));
+                lock (_listed) { _listReports++; _listLastAt = DateTime.UtcNow; }
                 return true;
             }
             if (rs["Actions"] is JsonArray actions)
@@ -786,7 +791,16 @@ public partial class MainWindow : Window
             _soundIn.Give(MpaiJson.ToJson(new UserCommand { UserCommandID = _listId, UserCommandTime = SimpleTime.At(DateTimeOffset.UtcNow), UserCommandRQ = new UserCommandRQ { ListedObjects = new ObjectListing { Kind = "All" } } }));
             _sceneCommand.Give(MpaiJson.ToJson(new UserCommand { UserCommandID = _listId, UserCommandTime = SimpleTime.At(DateTimeOffset.UtcNow), UserCommandRQ = new UserCommandRQ { ListedObjects = new ObjectListing { Kind = "Audio Scene" } } }));
             _speechCommand.Give(MpaiJson.ToJson(new UserCommand { UserCommandID = _listId, UserCommandTime = SimpleTime.At(DateTimeOffset.UtcNow), UserCommandRQ = new UserCommandRQ { ListedObjects = new ObjectListing { Kind = "All" } } }));          // the speech segments the last session left
-            await Task.Delay(1800);
+            _speechSceneCommand.Give(MpaiJson.ToJson(new UserCommand { UserCommandID = _listId, UserCommandTime = SimpleTime.At(DateTimeOffset.UtcNow), UserCommandRQ = new UserCommandRQ { ListedObjects = new ObjectListing { Kind = "All" } } }));     // and the Speech Scenes
+            // THE LISTS ARE WAITED FOR (2026-11-25): a Module that is still starting answers late; the purge read the lists after a fixed 1.8 s, found nothing, and an old Speech Scene stayed
+            // (clip777-trans came back into the person's new scene). Up to 30 s for the first answer, then until no answer has come for 2 s.
+            var waitedFrom = DateTime.UtcNow;
+            while (DateTime.UtcNow - waitedFrom < TimeSpan.FromSeconds(30))
+            {
+                await Task.Delay(250);
+                int got; DateTime last; lock (_listed) { got = _listReports; last = _listLastAt; }
+                if (got > 0 && DateTime.UtcNow - last > TimeSpan.FromSeconds(2)) break;
+            }
             List<JsonObject> items; lock (_listed) items = [.. _listed];
             var savedScenes = _saved.Scenes.Keys.ToHashSet(StringComparer.Ordinal);
             var savedSounds = _saved.Scenes.Values.SelectMany(v => v).ToHashSet(StringComparer.Ordinal);
@@ -796,8 +810,11 @@ public partial class MainWindow : Window
             bool IsSpeech(JsonObject o) => ((string?)o["Kind"] ?? "").Contains("Speech", StringComparison.Ordinal);
             var sounds = items.Where(o => !IsScene(o) && !IsSpeech(o)).Select(Name).OfType<string>().Where(n => !savedScenes.Contains(n) && !savedSounds.Contains(n)).Distinct().ToList();
             var speeches = items.Where(o => !IsScene(o) && IsSpeech(o)).Select(Name).OfType<string>().Where(n => !savedScenes.Contains(n) && !savedSounds.Contains(n)).Distinct().ToList();
-            App.Log($"[window] the session before left {scenes.Count} scene(s), {sounds.Count} sound(s) and {speeches.Count} speech segment(s) that were not saved: deleted");
-            foreach (var (names, port) in new[] { (scenes, _sceneCommand), (sounds, _soundIn), (speeches, _speechCommand) })
+            var speechScenesLeft = items.Where(o => (string?)o["Kind"] == "Speech Scene").Select(Name).OfType<string>().Where(n => !savedScenes.Contains(n)).Distinct().Count();
+            App.Log($"[window] the session before left {scenes.Count} scene(s) (of them {speechScenesLeft} Speech Scene(s)), {sounds.Count} sound(s) and {speeches.Count} speech segment(s) that were not saved: deleted");
+            var speechScenes = items.Where(o => (string?)o["Kind"] == "Speech Scene").Select(Name).OfType<string>().Where(n => !savedScenes.Contains(n)).Distinct().ToList();      // deleted by Speech Scene Editing, which keeps them
+            scenes.RemoveAll(speechScenes.Contains);
+            foreach (var (names, port) in new[] { (speechScenes, _speechSceneCommand), (scenes, _sceneCommand), (sounds, _soundIn), (speeches, _speechCommand) })
             {
                 if (names.Count == 0) continue;
                 port.Give(MpaiJson.ToJson(new UserCommand
@@ -809,7 +826,7 @@ public partial class MainWindow : Window
             }
             // WHAT WAS DELETED IS NO LONGER SHOWN: the window showed the scene the Module held at the start, and the Module has none now - left on the screen, a scene that is not there is one the person
             // goes on working with (and cannot save).
-            if (scenes.Count > 0 || sounds.Count > 0 || speeches.Count > 0)
+            if (scenes.Count > 0 || speechScenes.Count > 0 || sounds.Count > 0 || speeches.Count > 0)
             {
                 _lastScene = null; _sceneSounds = new HashSet<string>(StringComparer.Ordinal); _sceneDescription = "no sounds, no room";
                 Dispatcher.Invoke(() => Room.Show(new List<SceneView.Sound>(), null, _wantedListener));          // what was deleted is no longer shown; the listener stays where the person put it
@@ -826,20 +843,22 @@ public partial class MainWindow : Window
         }
     }
 
-    private void PlaceAtTheCentre(string name, bool learnFirst = false)
+    private void PlaceAtTheCentre(string name, bool learnFirst = false, string more = "")
     {
         App.Log("[window] the sound " + name + " is placed at the centre");
         _ = Task.Run(async () =>
         {
-            for (var attempt = 0; attempt < 4 && !_sceneSounds.Contains(name); attempt++)
+            // An attempt waits 3 s for the Module before the next: at 1.5 s the second "put" went while the first was still being done, and "Done" was said twice (2026-11-25).
+            for (var attempt = 0; attempt < 3 && !_sceneSounds.Contains(name); attempt++)
             {
-                await Task.Delay(attempt == 0 ? 700 : 1500);
-                if (_sceneSounds.Contains(name)) return;
+                await Task.Delay(attempt == 0 ? 700 : 3000);
+                if (_sceneSounds.Contains(name)) break;
                 if (learnFirst && attempt == 0) { Dispatcher.Invoke(() => Quiet("what have i loaded")); await Task.Delay(1500); }      // a sound just loaded is not known to the interface yet: it is told what the Module keeps first, then the sound is put at the centre
                 Dispatcher.Invoke(() => Quiet($"put {name} at the centre"));      // a sound the Module knows is placed; one it does not know yet is not guessed at: it is asked again
             }
-            await Task.Delay(1500);
-            if (!_sceneSounds.Contains(name)) await TellAsync($"{name} is loaded. Tell me where to put it.");
+            if (!_sceneSounds.Contains(name)) await Task.Delay(1500);
+            // WHAT HAPPENED, SAID ONCE: where it is, or that it could not be put in the scene (a sentence never starts with the name, which may be lower case).
+            await TellAsync(_sceneSounds.Contains(name) ? $"I put {name} at the centre. Drag it, or tell me where.{more}" : $"I loaded {name} but could not put it in the scene: tell me where to put it.{more}");
         });
     }
 
@@ -987,7 +1006,7 @@ public partial class MainWindow : Window
         _loading = (command.UserCommandID!, name);
         WriteHint(name);
         _soundIn.Give(MpaiJson.ToJson(command));
-        SetStatus($"The sound {name} is sent.");
+        SetStatus($"Sent: {name}.");
     }
 
     // A SPEECH SEGMENT FROM A FILE: chosen and named by the person like a sound, but brought in as a Basic Speech Object, which Speech Object Editing keeps and translates.
@@ -1039,7 +1058,7 @@ public partial class MainWindow : Window
         };
         _loadingSpeech = (command.UserCommandID!, name);
         _speechCommand.Give(MpaiJson.ToJson(command));         // to the Port of Speech Object Editing (CAE-UCM-V1.0:3), not to the one of Audio Object Editing
-        SetStatus($"The speech {name} is sent.");
+        SetStatus($"Sent: {name}.");
     }
 
     // What is said when Speech Object Editing has answered the command that acquires a speech segment: that it is loaded and how to translate it, or why it is not.
@@ -1052,11 +1071,8 @@ public partial class MainWindow : Window
         var actual = StoredNameOf(json) ?? loading.Value.Name;
         App.Log("[window] speech segment " + actual + ": " + said);
         if (said.StartsWith("Loaded ", StringComparison.Ordinal))
-        {
-            said = $"Loaded the speech {actual}. To translate it, say: translate {actual} into french.";
-            PlaceAtTheCentre(actual, true);          // a speech segment is put in the scene like a sound
-        }
-        await TellAsync(said);
+            PlaceAtTheCentre(actual, true, $" To translate it, say: translate {actual} into French.");          // a speech segment is put in the scene like a sound; what happened is said then, once
+        else await TellAsync(said);
     }
 
     // THE SCENE ON THE LOUDSPEAKERS: the Audio Scene Descriptors the Module gave, rendered as the listener hears them.
@@ -1243,7 +1259,7 @@ public partial class MainWindow : Window
             if (report?["UserCommandRS"] is not JsonObject rs) return null;
             if ((string?)report["UserCommandID"] is { } rid && rid != id && (string?)rs["UserCommandID"] != id) return null;
             if ((string?)rs["Outcome"] == "Done" || (string?)rs["Outcome"] == "Succeeded")
-                return $"Loaded {name}, at the centre. Drag it, or tell me where.";
+                return $"Loaded {name}.";
             var reasons = (rs["Actions"] as JsonArray)?.OfType<JsonObject>().Select(a => (string?)a["Reason"]).Where(r => !string.IsNullOrWhiteSpace(r)).Distinct().ToList() ?? [];
             return $"I could not load {name}" + (reasons.Count > 0 ? ": " + string.Join("; ", reasons).TrimEnd('.') : "") + ".";
         }

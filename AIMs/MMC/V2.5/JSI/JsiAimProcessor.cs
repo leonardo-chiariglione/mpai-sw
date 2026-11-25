@@ -657,7 +657,10 @@ public sealed class JsiAimProcessor : IAimProcessor
             }
         }
         // NOTHING TO TELL (2026-11-25): answers that only said "not mine" (merged into no action at all) are not said - the AIM the command belongs to answers, and that is told.
-        if (instance["UserCommandRS"] is JsonObject nothing && (string?)nothing["Outcome"] == "Ignored" && nothing["Actions"] is not JsonArray { Count: > 0 } && nothing["ListedObjects"] is not JsonArray { Count: > 0 })
+        // Only for a command sent for the person: the answer to a question this interface asked (the state, a listing, a property) is always taken, even when it lists nothing -
+        // taken as nothing told, the state was never fresh and every request after it was held unanswered (2026-11-25, "put speech at the centre" four times, no answer).
+        var askedHere = _stateAsked.Contains(id) || _sceneListings.Contains(id) || _kindListings.ContainsKey(id) || _propertyAsks.ContainsKey(id);
+        if (!askedHere && instance["UserCommandRS"] is JsonObject nothing && (string?)nothing["Outcome"] == "Ignored" && nothing["Actions"] is not JsonArray { Count: > 0 } && nothing["ListedObjects"] is not JsonArray { Count: > 0 })
         { outcome = ResponseKind.Foreign; return null; }
         return Tell(instance, id, out outcome);
     }
@@ -668,7 +671,7 @@ public sealed class JsiAimProcessor : IAimProcessor
         foreach (var (id, gathered) in _gathering.Where(g => DateTime.UtcNow - g.Value.Since > GatherFor).ToList())
         {
             _gathering.Remove(id);
-            yield return MpaiJson.ToJson(UserCommandMerge.Merge(id, gathered.Answers));
+            yield return MpaiJson.ToJson(UserCommandMerge.Merge(id, gathered.Answers, complete: false));
         }
     }
 

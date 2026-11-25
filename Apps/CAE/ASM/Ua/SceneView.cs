@@ -100,7 +100,9 @@ public sealed class SceneView : FrameworkElement
             g2.LineTo(new Point(arrowTip.X - Math.Cos(look) * 6, arrowTip.Y + Math.Sin(look) * 6), true, false);
         }
         dc.DrawGeometry(Brushes.DimGray, null, head);
-        Text(dc, "you", me + new Vector(12, 6), 12, Brushes.DimGray);
+        // "you" where no object's name is written: an object at the listener's place has its name under it, where "you" was (2026-11-25, "clip777-trans" over "you")
+        var crowded = _sounds.Any(o => (At(o.X, o.Y) - me).Length < 40);
+        Text(dc, "you", me + (crowded ? new Vector(16, -22) : new Vector(12, 6)), 12, Brushes.DimGray);
 
         var i = 0;
         foreach (var shown in _sounds)

@@ -254,7 +254,9 @@ public sealed class SseAimProcessor : IAimProcessor
         var made = scene is null && data.AddedObjects is { Objects.Count: > 0 } ? NameOfTheSceneMade() : null;
         // A SPEECH SCENE KEPT IS OPENED AGAIN, NOT MADE AGAIN (2026-11-25): after a restart nothing is open, and a speech added to the person's scene goes on in its Speech Scene,
         // with the members it has - not into a new "stage 2".
-        if (scene is null && KeptScene(made) is { } keptScene)
+        // Only a scene the command did not name (the one kept): a name given is a new Scene, numbered if the name is taken ("dialogue 2"), as Audio Scene Editing does.
+        var named = NameBook.Clean(data.AddedObjects?.ObjectID ?? data.NewScene) is not null;
+        if (scene is null && !named && KeptScene(made) is { } keptScene)
         {
             _open = keptScene; scene = Load(keptScene);
             items = scene?.BasicSpeechSceneItems.ToList() ?? new List<BasicSpeechSceneItem>();

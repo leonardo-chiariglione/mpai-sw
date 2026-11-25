@@ -67,7 +67,8 @@ public class AsmVoiceWorkflowTests
         public readonly AsmVoiceModules.Prepared Prepared;
         public readonly ControllerApi Api;
         public readonly PushDevice Voice = new("OSD-BSO-V1.5"), SoundIn = new("CAE-UCM-V1.0");
-        public readonly RecordDevice HeardText = new(), ReplyText = new(), ReplySpeech = new(), Scene = new(), Unused = new();
+        public readonly RecordDevice HeardText = new(), ReplyText = new(), ReplySpeech = new(), Scene = new(), Unused = new(), SpeechReport = new(), SpeechSceneRep = new(), SceneReport = new(), SpeechScene = new();
+        public readonly PushDevice TypedIn = new("OSD-BTO-V1.5"), SpeechCommand = new("CAE-UCM-V1.0");
         private readonly CancellationTokenSource _stop = new();
         private Task? _run;
         public string Said = "";
@@ -100,12 +101,12 @@ public class AsmVoiceWorkflowTests
         public void Start()
         {
             var devices = new DeviceRegistry();
-            devices.RegisterDevice("Voice", Voice).RegisterDevice("SoundIn", SoundIn).RegisterDevice("SceneIn", new PushDevice("OSD-ASD-V1.5")).RegisterDevice("TypedIn", new PushDevice("OSD-BTO-V1.5"))
+            devices.RegisterDevice("Voice", Voice).RegisterDevice("SoundIn", SoundIn).RegisterDevice("SceneIn", new PushDevice("OSD-ASD-V1.5")).RegisterDevice("TypedIn", TypedIn)
                    .RegisterDevice("Heard", HeardText).RegisterDevice("ReplyText", ReplyText).RegisterDevice("ReplySpeech", ReplySpeech)
-                   .RegisterDevice("Scene", Scene).RegisterDevice("Unused", Unused).RegisterDevice("SpeechOut", Unused).RegisterDevice("SpeechScene", Unused).RegisterDevice("SpeechSceneCommand", new PushDevice("CAE-UCM-V1.0")).RegisterDevice("ObjectReport", new RecordDevice())
+                   .RegisterDevice("Scene", Scene).RegisterDevice("Unused", Unused).RegisterDevice("SpeechOut", Unused).RegisterDevice("SpeechScene", SpeechScene).RegisterDevice("SpeechSceneCommand", new PushDevice("CAE-UCM-V1.0")).RegisterDevice("ObjectReport", new RecordDevice())
                    // The other User Command Ports of the Module (CAE-UCM Ports 2 to 5: scene, speech, speech scene and multimodal commands and their reports), which ASM-VCI.orch binds too.
-                   .RegisterDevice("SceneCommand", new PushDevice("CAE-UCM-V1.0")).RegisterDevice("SpeechCommand", new PushDevice("CAE-UCM-V1.0")).RegisterDevice("SceneReport", new RecordDevice()).RegisterDevice("SpeechReport", new RecordDevice())
-                   .RegisterDevice("SpeechSceneRep", new RecordDevice()).RegisterDevice("MultimodalRep", new RecordDevice());
+                   .RegisterDevice("SceneCommand", new PushDevice("CAE-UCM-V1.0")).RegisterDevice("SpeechCommand", SpeechCommand).RegisterDevice("SceneReport", SceneReport).RegisterDevice("SpeechReport", SpeechReport)
+                   .RegisterDevice("SpeechSceneRep", SpeechSceneRep).RegisterDevice("MultimodalRep", new RecordDevice());
             devices.RegisterPresent("screen", _ => Task.CompletedTask);
             var workflow = new WorkflowReader().Read(File.ReadAllText(Orch));
             var interpreter = new WorkflowInterpreter(Api.Async(), devices, line => { lock (this) Said += line + "\n"; });
@@ -253,6 +254,39 @@ public class AsmVoiceWorkflowTests
             Assert.Equal(AifError.NotStarted, api.SharedStorageStore(-1, "k", [1]));                    // a MODULE_ID the Controller did not return
         }
         finally { try { api.StopFlow(id); Directory.Delete(prepared.Folder, true); } catch { } }
+    }
+
+    // A SPEECH LOADED IS PUT AT THE CENTRE (2026-11-25, the author's run in Thalia: "speech is loaded. Tell me where to put it." and nothing in the scene). The window loads a speech
+    // segment on the Port of Speech Object Editing, then, as the window does, types "what have i loaded" and "put <name> at the centre": the speech must end up in a Speech Scene.
+    [Theory]
+    [InlineData("speech")]
+    [InlineData("hello")]
+    public async Task ASpeechLoadedIsPutAtTheCentre(string name)
+    {
+        using var rig = new Rig(Model, Dialogue);
+        var trace = new List<string>();
+        var sink = AimLog.Sink;
+        AimLog.Sink = (aim, m) => { lock (trace) trace.Add($"{DateTime.Now:ss.fff} [{aim}] {m}"); };
+        try
+        {
+            rig.Start();
+            await Until(() => rig.ReplyText.All().Count >= 1, 30000);          // the welcome
+            var speech = new BasicSpeechObject { BasicSpeechObjectID = name, DescrMetadata = name, Data = Mpai.SpatialAudio.SceneAudio.Wav(Enumerable.Range(0, 16000).Select(i => (float)(0.3 * Math.Sin(i / 10.0))).ToArray(), 1, 16000) };
+            rig.SpeechCommand.Push(AsmRig.Json(AsmRig.Command(new UserCommandRQ { AcquiredObject = new ManagedObject { SpeechObject = speech } })));
+            Assert.True(await Until(() => rig.SpeechReport.All().Count >= 1, 30000), "the speech was not loaded");
+            await Task.Delay(700);
+            void Type(string words) => rig.TypedIn.Push(MpaiJson.ToJson(BasicTextObject.FromText(words)));
+            Type("what have i loaded");
+            await Task.Delay(1500);
+            Type($"put {name} at the centre");
+            var placed = await Until(() => rig.SpeechScene.All().Count >= 1, 20000);
+            string Why() => "\n--- replies: " + string.Join(" | ", rig.ReplyText.All().Select(j => MpaiJson.FromJson<BasicTextObject>(j)!.GetText())) +
+                            "\n--- speech reports: " + string.Join("\n", rig.SpeechReport.All()) + "\n--- speech scene reports: " + string.Join("\n", rig.SpeechSceneRep.All()) +
+                            "\n--- scene reports: " + string.Join("\n", rig.SceneReport.All().Select(j => j.Length > 600 ? j[..600] : j)) +
+                            "\n--- trace:\n" + string.Join("\n", trace.TakeLast(80));
+            Assert.True(placed, $"\"put {name} at the centre\" did not put it in a Speech Scene." + Why());
+        }
+        finally { AimLog.Sink = sink; }
     }
 
     [Fact]

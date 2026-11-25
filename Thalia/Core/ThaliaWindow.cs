@@ -58,6 +58,18 @@ static class ThaliaWindow
             mine.Add(hw); return true;
         }, IntPtr.Zero);
         var main = thalia.Count > 0 ? thalia[0] : IntPtr.Zero;
+        // INSIDE WHAT THE SCREEN SHOWS (2026-11-25): the stage is measured on the whole screen, but the taskbar of Windows stays over its bottom - ASM's buttons were under it. The rectangle
+        // is kept inside the work area of the screen it is on.
+        var mon = MonitorFromPoint(new Pt { X = x + w / 2, Y = y + h / 2 }, 2);          // MONITOR_DEFAULTTONEAREST
+        var info = new MonitorInfo { cbSize = Marshal.SizeOf<MonitorInfo>() };
+        if (mon != IntPtr.Zero && GetMonitorInfo(mon, ref info))
+        {
+            var work = info.rcWork;
+            if (x < work.L) { w -= work.L - x; x = work.L; }
+            if (y < work.T) { h -= work.T - y; y = work.T; }
+            if (x + w > work.R) w = work.R - x;
+            if (y + h > work.B) h = work.B - y;
+        }
         foreach (var hw in mine)
         {
             // A window owned by another window of the App (a dialog of ASM's window) stays with its owner, in front of it: it is not placed, and is hidden and shown with it.
@@ -120,6 +132,10 @@ static class ThaliaWindow
     [DllImport("user32.dll")] static extern bool IsIconic(IntPtr h);
     [DllImport("user32.dll")] static extern bool IsZoomed(IntPtr h);
     [StructLayout(LayoutKind.Sequential)] struct Rect { public int L, T, R, B; }
+    [StructLayout(LayoutKind.Sequential)] struct Pt { public int X, Y; }
+    [StructLayout(LayoutKind.Sequential)] struct MonitorInfo { public int cbSize; public Rect rcMonitor, rcWork; public uint dwFlags; }
+    [DllImport("user32.dll")] static extern IntPtr MonitorFromPoint(Pt p, uint flags);
+    [DllImport("user32.dll")] static extern bool GetMonitorInfo(IntPtr mon, ref MonitorInfo info);
     [DllImport("user32.dll")] static extern bool GetWindowRect(IntPtr h, out Rect r);
     [DllImport("user32.dll")] static extern int GetWindowLong(IntPtr h, int i);
     [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW")] static extern IntPtr SetWindowLongPtr(IntPtr h, int i, IntPtr v);

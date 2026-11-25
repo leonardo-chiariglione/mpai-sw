@@ -21,15 +21,16 @@ public static class UserCommandMerge
         return reason.Contains("Audio", StringComparison.Ordinal) ? 1 : 2;
     }
 
-    public static UserCommand Merge(string id, IReadOnlyList<UserCommand> answers)
+    // complete: every AIM that answers commands has answered (false: the answers that came before the gathering gave up waiting).
+    public static UserCommand Merge(string id, IReadOnlyList<UserCommand> answers, bool complete = true)
     {
         var first = answers.FirstOrDefault();
         var actions = new List<ReportAction>();
         foreach (var group in answers.SelectMany(a => a.UserCommandRS?.Actions ?? []).GroupBy(a => (a.Action, a.ObjectID)))
         {
-            // ONLY "NOT MINE" (2026-11-25): an action every answering AIM declines as another's - the one it belongs to has not answered yet (a translation takes seconds) - is no failure
-            // to tell: it is left out, and the owner's answer, when it comes, is told.
-            if (!group.Any(a => a.Outcome == "Done") && group.All(a => Rank(a) == 3)) continue;
+            // ONLY "NOT MINE", BEFORE ALL HAVE ANSWERED (2026-11-25): an action every AIM that answered declines as another's, when the one it belongs to has not answered yet (a translation
+            // takes seconds), is no failure to tell: it is left out, and the owner's answer, when it comes, is told. When all have answered, no AIM has the thing: that is told.
+            if (!complete && !group.Any(a => a.Outcome == "Done") && group.All(a => Rank(a) == 3)) continue;
             var chosen = group.Any(a => a.Outcome == "Done") ? group.Where(a => a.Outcome == "Done") : group.OrderBy(Rank).Take(1);   // none did it: the reason of the one that keeps the thing and could not, not of those that keep none
             actions.AddRange(chosen.DistinctBy(a => (a.Outcome, a.ResultID, a.Reason)));
         }
