@@ -903,7 +903,7 @@ async function mmmUserCard() {
     <label style="display:block;margin:4px 0"><span class="desc" style="display:block">Account Level</span><select id="mmLevel" style="font:inherit;padding:6px 8px;border-radius:7px;background:rgba(0,0,0,.25);color:var(--ink);border:1px solid var(--line)"><option>Visitor</option><option>Participant</option><option>Officer</option></select></label>
     ${input('mmFirst', 'First name', '')}${input('mmLast', 'Last name', '')}${input('mmOrg', 'Organisation (not needed for a Visitor)', '')}${input('mmMail', 'Email (not needed for a Visitor)', '', 'email')}
     ${input('mmPass', a.hasPassword ? 'Password (kept; type a new one to change it)' : 'Password (at least 6 characters)', '', 'password')}
-    <div class="buttons" style="display:flex;gap:8px;margin-top:6px"><button class="act secondary s">Keep</button><button class="act r">Register</button><button class="act e">Enter the MMM</button></div><div class="out desc"></div>`;
+    <div class="buttons" style="display:flex;gap:8px;margin-top:6px"><button class="act secondary s">Keep</button><button class="act r">Register</button><button class="act e">Enter the MMM</button><button class="act secondary l" title="You have an Account already: link this Thalia to it, approving it once in the world, so that Thalia enters as you without your password">Link to my Account</button></div><div class="lk desc"></div><div class="out desc"></div>`;
   const $d = s => d.querySelector(s), out = $d('.out');
   $d('#mmAddr').value = a.address || ''; $d('#mmLevel').value = a.level || 'Visitor'; $d('#mmFirst').value = a.first || ''; $d('#mmLast').value = a.last || ''; $d('#mmOrg').value = a.organisation || ''; $d('#mmMail').value = a.email || '';
   const keep = async () => {
@@ -911,6 +911,32 @@ async function mmmUserCard() {
     if ($d('#mmPass').value && $d('#mmPass').value.length < 6) { out.style.color = 'var(--bad)'; out.textContent = 'The password needs at least 6 characters.'; return false; }
     const r = await fetch('/api/mmm/account', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
     $d('#mmPass').value = ''; return r.ok;
+  };
+  // LINKED (2026-11-26): this Thalia has a key of its own for your Account; the password is not needed here.
+  const lk = $d('.lk');
+  const showLink = st => {
+    if (st.linked) { lk.style.color = 'var(--ok)'; lk.innerHTML = `Linked to your Account${st.user ? ' (' + esc(st.user) + ')' : ''}: Thalia enters as you without your password. <a href="#" class="ul">Forget the link</a>`; lk.querySelector('.ul').onclick = async e => { e.preventDefault(); const r = await (await fetch('/api/mmm/unlink', { method: 'POST' })).json(); lk.style.color = ''; lk.textContent = r.text; }; }
+    else if (st.linkPending) { lk.style.color = ''; lk.textContent = 'Waiting for your approval in the world window...'; }
+    else if (st.linkResult && st.linkResult !== 'linked') { lk.style.color = 'var(--bad)'; lk.textContent = `The link was not made (${st.linkResult}): press Link to my Account again.`; }
+    else lk.textContent = '';
+  };
+  showLink(a);
+  $d('.l').onclick = async () => {
+    await keep();
+    const tab = isRemote() ? null : window.open('about:blank', '_blank');
+    out.style.color = ''; out.textContent = 'Asking the M-Instance for a link...';
+    const r = await (await fetch('/api/mmm/link' + (isRemote() ? '?launch=1' : ''), { method: 'POST' })).json().catch(() => ({ ok: false, text: 'Thalia does not answer.' }));
+    out.style.color = r.ok ? '' : 'var(--bad)';
+    out.innerHTML = r.ok ? `The world opens: enter with your password there and approve. Check that it shows this code: <b style="font-size:20px;letter-spacing:3px">${esc(r.code)}</b>` : esc(r.text);
+    if (r.ok && tab) tab.location = r.url; else tab?.close();
+    if (!r.ok) return;
+    for (let i = 0; i < 330; i++) {                                         // until approved, refused or expired (a request lasts 10 minutes)
+      await new Promise(res => setTimeout(res, 2000));
+      const st = await (await fetch('/api/mmm/account', { cache: 'no-store' })).json().catch(() => null);
+      if (!st) continue;
+      showLink(st);
+      if (!st.linkPending) { out.textContent = st.linked ? 'Done.' : ''; break; }
+    }
   };
   $d('.s').onclick = async () => { if (await keep()) { out.style.color = 'var(--ok)'; out.textContent = 'Kept.'; } };
   $d('.r').onclick = async () => {

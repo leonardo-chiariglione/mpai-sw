@@ -26,7 +26,8 @@ static class MmmAccount
             return Results.Json(new JsonObject
             {
                 ["address"] = (string?)a["address"] ?? defaultAddress, ["first"] = (string?)a["first"], ["last"] = (string?)a["last"], ["organisation"] = (string?)a["organisation"],
-                ["email"] = (string?)a["email"], ["level"] = (string?)a["level"] ?? "Visitor", ["hasPassword"] = a["password"] is not null, ["user"] = (string?)a["user"]
+                ["email"] = (string?)a["email"], ["level"] = (string?)a["level"] ?? "Visitor", ["hasPassword"] = a["password"] is not null, ["user"] = (string?)a["user"],
+                ["linked"] = a["device"] is not null, ["linkPending"] = a["linkRequest"] is not null, ["linkResult"] = (string?)a["linkResult"]
             });
         });
 
@@ -50,13 +51,12 @@ static class MmmAccount
             {
                 await Task.Delay(TimeSpan.FromSeconds(3));
                 var a = Read();
-                if (a["user"] is not null && a["password"] is not null && (bool?)a["autoEnter"] != false)
+                if (a["user"] is not null && (a["password"] is not null || a["device"] is not null) && (bool?)a["autoEnter"] != false)
                     try { await RegisterOrEnter(true, true); } catch (Exception e) { Console.WriteLine("entering the MMM: " + e.Message); }
             }));
-        async Task<IResult> RegisterOrEnter(bool open, bool launch = false)
+        async Task<(Uri? Link, string? Problem)> WorldOf(JsonObject a)
         {
-            var a = Read();
-            if (((string?)a["address"] is { Length: > 0 } given ? given : defaultAddress) is not { Length: > 0 } address || !Uri.TryCreate(address, UriKind.Absolute, out var link)) return Results.Json(new { ok = false, text = "The address of the M-Instance is not set." });
+            if (((string?)a["address"] is { Length: > 0 } given ? given : defaultAddress) is not { Length: > 0 } address || !Uri.TryCreate(address, UriKind.Absolute, out var link)) return (null, "The address of the M-Instance is not set.");
             // THE JOIN PAGE (a stable address, AllApps\MMM\Join): it names the address of the meeting now (meeting.json), which changes from one meeting to the next.
             if (link.AbsolutePath.EndsWith("/join.html", StringComparison.OrdinalIgnoreCase) || link.AbsolutePath.TrimEnd('/').EndsWith("/mmm", StringComparison.OrdinalIgnoreCase))
             {
@@ -65,13 +65,78 @@ static class MmmAccount
                 {
                     using var j = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
                     var meeting = JsonNode.Parse(await j.GetStringAsync(new Uri(link, folder + "meeting.json"))) as JsonObject;
-                    if ((string?)meeting?["Address"] is not { Length: > 0 } now) return Results.Json(new { ok = false, text = $"The meeting is not on now{((string?)meeting?["When"] is { Length: > 0 } w ? ": it is " + w : "")}." });
+                    if ((string?)meeting?["Address"] is not { Length: > 0 } now) return (null, $"The meeting is not on now{((string?)meeting?["When"] is { Length: > 0 } w ? ": it is " + w : "")}.");
                     link = new Uri(now.TrimEnd('/') + "/viewer/?world=1&mic=1");
                 }
-                catch (Exception e) { return Results.Json(new { ok = false, text = "The meeting is not on now (its join page does not answer: " + e.Message + ")." }); }
+                catch (Exception e) { return (null, "The meeting is not on now (its join page does not answer: " + e.Message + ")."); }
             }
-            if (a["password"] is null) return Results.Json(new { ok = false, text = "The password is not set." });
-            var password = Encoding.UTF8.GetString(Unprotect(Convert.FromBase64String((string)a["password"]!)));
+            return (link, null);
+        }
+
+        // LINKING THIS THALIA TO AN ACCOUNT THAT EXISTS (2026-11-26): Thalia asks the M-Instance for a link and shows its code; the person, entered in the world with its password, approves
+        // it there (the world opens on the request); the M-Instance gives this Thalia a key of its own, which Thalia keeps encrypted for this Windows user and enters with - the password
+        // is never typed into Thalia. The person removes the link in the world (its list of devices) at any time.
+        app.MapPost("/api/mmm/link", async (string? launch) =>
+        {
+            var a = Read();
+            var (link, problem) = await WorldOf(a);
+            if (link is null) return Results.Json(new { ok = false, text = problem });
+            var origin = link.GetLeftPart(UriPartial.Authority);
+            using var http = new HttpClient { BaseAddress = new Uri(origin), Timeout = TimeSpan.FromSeconds(20) };
+            JsonObject? r;
+            try
+            {
+                using var rs = await http.PostAsync("/api/link/request", new StringContent(new JsonObject { ["device"] = $"Thalia on {Environment.MachineName}" }.ToJsonString(), Encoding.UTF8, "application/json"));
+                r = JsonNode.Parse(await rs.Content.ReadAsStringAsync()) as JsonObject;
+            }
+            catch (Exception e) { return Results.Json(new { ok = false, text = "The M-Instance does not answer: " + e.Message }); }
+            if ((string?)r?["id"] is not { } id) return Results.Json(new { ok = false, text = "This M-Instance does not link devices (its software is older)." });
+            a["linkRequest"] = id; a.Remove("linkResult"); Directory.CreateDirectory(thaliaData); await File.WriteAllTextAsync(file, a.ToJsonString());
+            var url = $"{origin}/viewer/?world=1&mic=1&link={id}";
+            if (launch == "1") OpenWorld(url);
+            _ = Task.Run(() => WaitForLink(origin, id));
+            return Results.Json(new { ok = true, code = (string?)r["code"], url, opened = launch == "1",
+                text = $"In the world window, enter with your password and approve the link. The code to check: {(string?)r["code"]}." });
+        });
+        app.MapPost("/api/mmm/unlink", async () =>
+        {
+            var a = Read(); a.Remove("device"); a.Remove("linkRequest"); await File.WriteAllTextAsync(file, a.ToJsonString());
+            return Results.Json(new { ok = true, text = "This Thalia forgot its key. Remove it also from the list of your devices in the world." });
+        });
+        async Task WaitForLink(string origin, string id)
+        {
+            using var http = new HttpClient { BaseAddress = new Uri(origin), Timeout = TimeSpan.FromSeconds(15) };
+            for (var i = 0; i < 330; i++)                                     // 11 minutes: a request lasts 10
+            {
+                await Task.Delay(TimeSpan.FromSeconds(2));
+                JsonObject? st = null;
+                try { st = JsonNode.Parse(await http.GetStringAsync($"/api/link/status?id={id}")) as JsonObject; } catch { continue; }
+                var status = (string?)st?["status"];
+                if (status == "pending") continue;
+                var a = Read();
+                if ((string?)a["linkRequest"] != id) return;                  // another request since
+                a.Remove("linkRequest");
+                if (status == "approved" && (string?)st!["key"] is { Length: > 0 } key)
+                {
+                    a["device"] = Convert.ToBase64String(Protect(Encoding.UTF8.GetBytes(key)));
+                    a["user"] = (string?)st["user"];
+                    a["linkResult"] = "linked";
+                }
+                else a["linkResult"] = status ?? "unknown";
+                await File.WriteAllTextAsync(file, a.ToJsonString());
+                return;
+            }
+        }
+
+        async Task<IResult> RegisterOrEnter(bool open, bool launch = false)
+        {
+            var a = Read();
+            var (link, problem) = await WorldOf(a);
+            if (link is null) return Results.Json(new { ok = false, text = problem });
+            // LINKED: this Thalia enters with its own key, as the person it is linked to.
+            var deviceKey = a["device"] is not null && (string?)a["user"] is { Length: > 0 } ? Encoding.UTF8.GetString(Unprotect(Convert.FromBase64String((string)a["device"]!))) : null;
+            if (deviceKey is null && a["password"] is null) return Results.Json(new { ok = false, text = "The password is not set (or link this Thalia to your Account)." });
+            var password = deviceKey is null ? Encoding.UTF8.GetString(Unprotect(Convert.FromBase64String((string)a["password"]!))) : "";
             var invite = System.Web.HttpUtility.ParseQueryString(link.Query)["invite"];
             var origin = link.GetLeftPart(UriPartial.Authority);
             using var http = new HttpClient { BaseAddress = new Uri(origin), Timeout = TimeSpan.FromSeconds(30) };
@@ -81,7 +146,7 @@ static class MmmAccount
             catch (Exception e) { return Results.Json(new { ok = false, text = "The M-Instance does not answer: " + e.Message }); }
             if (me is null || me["accounts"] is null) return Results.Json(new { ok = false, text = "This M-Instance has no Accounts: open it in the browser." });
             var visitor = (bool?)me["byAccount"] == true || (string?)me["kind"] == "visitor";      // the person is the Account it registers with
-            var user = visitor ? AccountId((string?)a["first"] ?? "", (string?)a["last"] ?? "") : (string?)me["name"] ?? "";
+            var user = deviceKey is not null ? (string)a["user"]! : visitor ? AccountId((string?)a["first"] ?? "", (string?)a["last"] ?? "") : (string?)me["name"] ?? "";
             if (user.Length == 0) return Results.Json(new { ok = false, text = "Your first and last name are not set." });
             var data = new JsonObject { ["FirstName"] = (string?)a["first"], ["LastName"] = (string?)a["last"] };
             if ((string?)a["organisation"] is { Length: > 0 } org) data["Organisation"] = org;
@@ -89,11 +154,17 @@ static class MmmAccount
             var profile = new JsonObject
             {
                 ["Header"] = "MMM-PPR-V2.2", ["MInstanceID"] = "MI1", ["humanID"] = user + "-human", ["PersonalProfileID"] = $"Profile-{user}-human",
-                ["PersonalProfile"] = new JsonObject
-                {
-                    ["AccountLevel"] = (string?)a["level"] ?? "Visitor", ["Credential"] = password, ["Data"] = new JsonArray(data),
-                    ["Processes"] = new JsonArray(new JsonObject { ["ProcessIDOrProcess"] = new JsonArray(new JsonObject { ["ProcessID"] = user }), ["PersonaIDOrPersona"] = new JsonArray(new JsonObject { ["PersonaID"] = user + "-Persona" }) })
-                }
+                ["PersonalProfile"] = deviceKey is not null
+                    ? new JsonObject      // entering with the key of this device
+                    {
+                        ["DeviceKey"] = deviceKey,
+                        ["Processes"] = new JsonArray(new JsonObject { ["ProcessIDOrProcess"] = new JsonArray(new JsonObject { ["ProcessID"] = user }), ["PersonaIDOrPersona"] = new JsonArray(new JsonObject { ["PersonaID"] = user + "-Persona" }) })
+                    }
+                    : new JsonObject
+                    {
+                        ["AccountLevel"] = (string?)a["level"] ?? "Visitor", ["Credential"] = password, ["Data"] = new JsonArray(data),
+                        ["Processes"] = new JsonArray(new JsonObject { ["ProcessIDOrProcess"] = new JsonArray(new JsonObject { ["ProcessID"] = user }), ["PersonaIDOrPersona"] = new JsonArray(new JsonObject { ["PersonaID"] = user + "-Persona" }) })
+                    }
             };
             using var rq = new HttpRequestMessage(HttpMethod.Post, "/api/v2.2/identity/register")
             {

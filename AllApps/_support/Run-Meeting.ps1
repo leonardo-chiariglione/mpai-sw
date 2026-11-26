@@ -70,13 +70,27 @@ if ($Group) {
 }
 if (-not $Chair) { $Chair = Read-Host 'Your name in the meeting (the chair)' }
 if (-not $HostName) { $HostName = $Chair }      # after the chair is known: asked at the prompt, it was empty here and the host had no name
-if (-not $Guests) { $Guests = Read-Host 'The guests: the emails of their Accounts (or names of the group), separated by commas' }
+if (-not $Guests) { $Guests = Read-Host 'The guests: their names or the emails of their Accounts, separated by commas' }
 $names = @($Guests -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ -and $_ -ne $HostName })
 if ($names.Count -lt 1) { Write-Host 'No guests.'; exit 1 }
 
 # INVITED BY THE EMAIL OF THEIR ACCOUNT (2026-11-26). Every person registers with the M-Instance (an Account with a password, preferably Participant) and is that Account; nobody is
 # named by a link. The chair invites emails: the AVS Service gives the meeting's Rights (Rights Change) to the Account with that email when it asks to join. The chair's email first.
-function Email-Of($n) { if ($n -match '@') { $n } elseif ($people[$n] -and $people[$n].Email) { [string]$people[$n].Email } else { $null } }
+# A name typed without a group (2026-11-26): its email from the registry (AllApps\MMM\Registry\people.json: the Id, the first name or the whole name), else asked - and remembered for the
+# next meeting with the other settings.
+$registry = @(Get-Content "$here\Registry\people.json" -Raw -Encoding UTF8 | ConvertFrom-Json | ForEach-Object { $_ })
+$script:askedEmails = @{}
+if ($last -and $last.Emails) { foreach ($p in $last.Emails.PSObject.Properties) { $script:askedEmails[$p.Name] = [string]$p.Value } }
+function Email-Of($n) {
+    if ($n -match '@') { return $n }
+    if ($people[$n] -and $people[$n].Email) { return [string]$people[$n].Email }
+    $found = @($registry | Where-Object { $_.Email -and ($_.Id -eq $n -or $_.Name -eq $n -or ([string]($_.Name -split '\s+')[0]) -eq $n) })
+    if ($found.Count -eq 1) { return [string]$found[0].Email }
+    if ($script:askedEmails.ContainsKey($n)) { return $(if ($script:askedEmails[$n]) { $script:askedEmails[$n] } else { $null }) }
+    $typed = (Read-Host "The email of $n's Account (the email $n registers with in the MMM; Enter to leave $n out)").Trim()
+    $script:askedEmails[$n] = $typed
+    return $(if ($typed) { $typed } else { $null })
+}
 $emails = @(@($Chair, $HostName) + $names | ForEach-Object { Email-Of $_ } | Where-Object { $_ } | Select-Object -Unique)
 $noEmail = @(@($Chair) + $names | Where-Object { -not (Email-Of $_) } | Select-Object -Unique)
 if ($noEmail) { Write-Host "No email for: $($noEmail -join ', ') - with Accounts a person is invited by the email of its Account; give the email instead of the name." -ForegroundColor Yellow }
@@ -146,7 +160,7 @@ for ($i = 0; $i -lt 180 -and -not $up; $i++) {
 if (-not $up) { Write-Host 'The server did not start. Look at its window.'; exit 1 }
 # The settings of this meeting, for the next one (as last time).
 $saved = [ordered]@{ Saved = (Get-Date).ToString('yyyy-MM-dd HH:mm'); Chair = $Chair; HostName = $HostName; Guests = ($names -join ','); Group = $Group; Until = $Until; Hours = $Hours; Officers = $Officers
-                     Via = $Via; Join = $Join; Llm = $Llm; Visitors = [bool]$Visitors; Written = [bool]$Written; Manager = $Manager }
+                     Via = $Via; Join = $Join; Llm = $Llm; Visitors = [bool]$Visitors; Written = [bool]$Written; Manager = $Manager; Emails = $script:askedEmails }
 New-Item -ItemType Directory -Force $keptFolder | Out-Null
 [IO.File]::WriteAllText($settingsFile, ($saved | ConvertTo-Json -Depth 4), (New-Object Text.UTF8Encoding($false)))
 

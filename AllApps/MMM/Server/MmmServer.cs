@@ -133,6 +133,7 @@ public static class MmmServer
         // WHEN A VISIT ENDS (2026-11-26): every request a User makes with its token is noted; a Visitor heard from no more (its page closed) for VisitEnds has ended its visit, and its
         // Persona is offered again to whoever registers (MInstance.EndVisit).
         var lastSeen = new ConcurrentDictionary<string, DateTimeOffset>(StringComparer.Ordinal);
+        var links = new ConcurrentDictionary<string, LinkRequest>(StringComparer.Ordinal);      // the requests of devices to be linked to an Account (2026-11-26)
         string? Caller(HttpContext ctx)
         {
             var who = ctx.Request.Headers.Authorization.ToString() is { } a && a.StartsWith("Bearer ", StringComparison.Ordinal) ? m.ProcessOf(a["Bearer ".Length..].Trim()) : null;
@@ -310,6 +311,46 @@ public static class MmmServer
             });
             // What a User's own client is told when it comes with its token (from Thalia, or after entering): its Persona and where it stands.
             app.MapGet("/viewer/me", (HttpContext ctx) => Caller(ctx) is { } user && m.InfoOf(user) is { } info ? Results.Json(info) : Results.Unauthorized());
+            // LINKING A DEVICE TO AN ACCOUNT (2026-11-26). A device that acts for the person (Thalia) asks to be linked: it is given a request and a short code, which it shows. The
+            // person, entered in the world with its password, opens the request (the world page with ?link=) and, if the code is the one its device shows, approves it: the M-Instance
+            // makes a key for the device (MInstance.LinkDevice) and gives it ONCE to the device that asks for the request's state. A request lasts 10 minutes. The person lists its
+            // devices and removes a link at any time.
+            app.MapPost("/api/link/request", async (HttpContext ctx) =>
+            {
+                var body = await JsonNode.ParseAsync(ctx.Request.Body) as JsonObject;
+                var name = ((string?)body?["device"])?.Trim() is { Length: > 0 } d ? (d.Length > 80 ? d[..80] : d) : "a device";
+                var id = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(12)).ToLowerInvariant();
+                var code = System.Security.Cryptography.RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
+                foreach (var (k, old) in links.ToArray()) if (old.Until < DateTimeOffset.UtcNow.AddMinutes(-30)) links.TryRemove(k, out _);
+                links[id] = new LinkRequest { Id = id, Code = code, Device = name, Until = DateTimeOffset.UtcNow.AddMinutes(10) };
+                return Results.Json(new { id, code, minutes = 10 });
+            });
+            app.MapGet("/api/link/info", (string id) => links.TryGetValue(id, out var r) ? Results.Json(new { device = r.Device, code = r.Code, status = r.StatusNow() }) : Results.NotFound());
+            app.MapPost("/api/link/approve", (HttpContext ctx, string id, string? refuse) =>
+            {
+                if (Caller(ctx) is not { } user) return Results.Unauthorized();
+                if (!links.TryGetValue(id, out var r) || r.StatusNow() != "pending") return Results.Json(new { ok = false, text = "This request is no longer waiting (it expired, or was answered)." });
+                lock (r)
+                {
+                    if (refuse == "1") { r.Status = "refused"; return Results.Json(new { ok = true, text = "Refused: the device is not linked." }); }
+                    if (m.LinkDevice(user, r.Device) is not { } linked) return Results.Json(new { ok = false, text = "Your User has no Account here." });
+                    (r.User, r.DeviceId, r.Key, r.Status) = (user, linked.Id, linked.Key, "approved");
+                }
+                return Results.Json(new { ok = true, text = $"Linked: {r.Device} enters as you from now on. You can remove it at any time." });
+            });
+            app.MapGet("/api/link/status", (string id) =>
+            {
+                if (!links.TryGetValue(id, out var r)) return Results.Json(new { status = "unknown" });
+                lock (r)
+                {
+                    var status = r.StatusNow();
+                    if (status != "approved") return Results.Json(new { status });
+                    var key = r.Key; r.Key = null;                                     // the key is given once
+                    return Results.Json(new { status, user = r.User, device = r.DeviceId, key });
+                }
+            });
+            app.MapGet("/api/link/devices", (HttpContext ctx) => Caller(ctx) is { } user ? Results.Json(m.DevicesOf(user).Select(d => new { d.Id, d.Name, d.Linked })) : Results.Unauthorized());
+            app.MapPost("/api/link/remove", (HttpContext ctx, string id) => Caller(ctx) is { } user ? Results.Json(new { removed = m.UnlinkDevice(user, id) }) : Results.Unauthorized());
             // THE UNITS OF A BROWSER (AIF\UserAgent\PhysicalLayer\Browser\mpai-units.js): one file for every page, served from where it is, never copied.
             app.MapGet("/viewer/mpai-units.js", (HttpContext ctx) =>
             {
@@ -351,4 +392,18 @@ public static class MmmServer
         if (r.Tokens is not null) ctx.Response.Headers["MMM-Tokens"] = r.Tokens;
         return Results.Content(r.Body, "application/json", statusCode: r.Http);
     }
+}
+
+// A request of a device to be linked to an Account: its code, who approved it, and the key it is given once.
+public sealed class LinkRequest
+{
+    public required string Id { get; init; }
+    public required string Code { get; init; }
+    public required string Device { get; init; }
+    public required DateTimeOffset Until { get; init; }
+    public string Status { get; set; } = "pending";
+    public string? User { get; set; }
+    public string? DeviceId { get; set; }
+    public string? Key { get; set; }
+    public string StatusNow() => Status == "pending" && DateTimeOffset.UtcNow > Until ? "expired" : Status;
 }

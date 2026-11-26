@@ -122,6 +122,37 @@ public class MmmAccountsTests
         finally { http.Dispose(); await app.DisposeAsync(); Meeting.Reset(); }
     }
 
+    // A DEVICE LINKED TO AN ACCOUNT (2026-11-26): it enters with its key, not the password; a wrong key is refused; the link outlives a restart; removed, the device enters no more.
+    [Fact]
+    public async Task ALinkedDeviceEntersWithItsKeyUntilItIsRemoved()
+    {
+        JsonObject saved; string key, id;
+        var (m, app, http) = await WorldAsync();
+        try
+        {
+            Assert.Equal(201, (await Register(http, "Anna", new JsonObject { ["AccountLevel"] = "Participant", ["Credential"] = "secret2", ["Data"] = new JsonArray(Data("Anna", "Bianchi", "MPAI", "anna@example.com")) }, "Female_Adult_01")).Http);
+            var linked = m.LinkDevice("Anna", "Thalia on PC1");
+            Assert.NotNull(linked);
+            (id, key) = linked!.Value;
+            Assert.DoesNotContain(key.Split(':')[1], m.SaveState().ToJsonString());          // the key is kept as a hash
+            Assert.Equal(200, (await Register(http, "Anna", new JsonObject { ["DeviceKey"] = key })).Http);
+            Assert.Equal(403, (await Register(http, "Anna", new JsonObject { ["DeviceKey"] = id + ":wrong" })).Http);
+            Assert.Single(m.DevicesOf("Anna"));
+            saved = m.SaveState();
+        }
+        finally { http.Dispose(); await app.DisposeAsync(); Meeting.Reset(); }
+
+        var (m2, app2, http2) = await WorldAsync(saved);
+        try
+        {
+            Assert.Equal(200, (await Register(http2, "Anna", new JsonObject { ["DeviceKey"] = key })).Http);   // after a restart
+            Assert.True(m2.UnlinkDevice("Anna", id));
+            Assert.Equal(403, (await Register(http2, "Anna", new JsonObject { ["DeviceKey"] = key })).Http);   // removed
+            Assert.Equal(200, (await Register(http2, "Anna", new JsonObject { ["Credential"] = "secret2" })).Http);   // the password still opens it
+        }
+        finally { http2.Dispose(); await app2.DisposeAsync(); Meeting.Reset(); }
+    }
+
     [Fact]
     public void AnOfficerOfMpaiIsAnMpaiOfficer()
     {

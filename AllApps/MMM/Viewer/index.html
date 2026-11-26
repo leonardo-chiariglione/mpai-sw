@@ -587,14 +587,19 @@ async function accountForm(note = '') {
   const field = (id, label, type = 'text', value = '') => `<label id="${id}L" style="display:block;text-align:left;margin:6px 0"><span style="display:block;font-size:13px;color:var(--muted)">${label}</span><input id="${id}" type="${type}" value="${value}" autocomplete="${type === 'password' ? 'new-password' : 'off'}" style="width:100%;box-sizing:border-box;font-size:17px;padding:6px 8px;border-radius:6px;border:1px solid #556;background:#252b34;color:inherit"></label>`;
   box.innerHTML = `<h2 style="margin:0">${me.registered ? 'Enter the M-Instance' : 'Register with this M-Instance'}</h2>
     <div style="max-width:520px;text-align:center;color:var(--muted)">${me.registered ? `You have an Account, ${me.name}: give its password.` : 'Registration opens your Account. Next time you enter with your password. Nothing is paid.'}</div>
-    ${visitor ? '<div style="display:flex;gap:8px"><button id="acNew" style="font-size:16px;padding:6px 14px;border-radius:6px;cursor:pointer">Register</button><button id="acOld" style="font-size:16px;padding:6px 14px;border-radius:6px;cursor:pointer">I have an Account</button></div>' : ''}
+    ${visitor ? '<div style="display:flex;gap:8px"><button id="acNew" style="font-size:16px;padding:6px 14px;border-radius:6px;cursor:pointer">New Account</button><button id="acOld" style="font-size:16px;padding:6px 14px;border-radius:6px;cursor:pointer">I have an Account</button></div>' : ''}
     <div id="acBody" style="width:min(520px,100%)"></div>
     <div id="acErr" style="color:#f2994a;min-height:1.2em;max-width:520px;text-align:center">${note}</div>
     <button id="acGo" style="font-size:20px;padding:8px 28px;border-radius:8px;cursor:pointer"></button>`;
   document.body.appendChild(box);
   const body = box.querySelector('#acBody'), go = box.querySelector('#acGo'), err = t => box.querySelector('#acErr').textContent = t;
   let mode = me.registered || (visitor && remembered.first) ? 'enter' : 'new';
+  // What the person typed and chose is kept when it switches between New Account and I have an Account (2026-11-26: the switch redrew the form and the level went back to Visitor).
+  const kept = { level: 'Participant' };
+  const keep = () => { for (const i of body.querySelectorAll('input')) { if (i.name === 'lvl') { if (i.checked) kept.level = i.value; } else if (i.type !== 'password') kept[i.id] = i.value; } };
+  const restore = () => { for (const i of body.querySelectorAll('input')) { if (i.name === 'lvl') i.checked = i.value === kept.level; else if (i.type !== 'password' && kept[i.id] !== undefined && kept[i.id] !== '') i.value = kept[i.id]; } };
   const draw = () => {
+    for (const [id, m] of [['acNew', 'new'], ['acOld', 'enter']]) { const t = box.querySelector('#' + id); if (t) { t.style.background = mode === m ? '#3d6a99' : ''; t.style.color = mode === m ? '#fff' : ''; } }
     if (mode === 'enter') {
       body.innerHTML = (visitor ? field('acFirst', 'First name', 'text', remembered.first ?? '') + field('acLast', 'Last name', 'text', remembered.last ?? '') : '') + field('acPass', 'Password', 'password');
       go.textContent = 'Enter';
@@ -606,10 +611,12 @@ async function accountForm(note = '') {
         ${field('acPass', `Password (at least ${me.minimumPassword ?? 6} characters)`, 'password')}${field('acPass2', 'The password again', 'password')}`;
       const needs = () => { const lvl = box.querySelector('input[name=lvl]:checked')?.value; for (const id of ['acOrg', 'acMail']) box.querySelector('#' + id + 'L span').textContent = (id === 'acOrg' ? 'Organisation' : 'Email') + (lvl === 'Visitor' ? ' (not needed for a Visitor)' : ''); };
       body.querySelectorAll('input[name=lvl]').forEach(r => r.onchange = needs); needs();
-      go.textContent = 'Next: choose your Persona';
+      go.textContent = 'Register and choose your Persona';
     }
+    restore();
+    if (mode === 'new') { const lvl = box.querySelector('input[name=lvl]:checked')?.value; for (const id of ['acOrg', 'acMail']) { const span = box.querySelector('#' + id + 'L span'); if (span) span.textContent = (id === 'acOrg' ? 'Organisation' : 'Email') + (lvl === 'Visitor' ? ' (not needed for a Visitor)' : ''); } }
   };
-  if (visitor) { box.querySelector('#acNew').onclick = () => { mode = 'new'; err(''); draw(); }; box.querySelector('#acOld').onclick = () => { mode = 'enter'; err(''); draw(); }; }
+  if (visitor) { box.querySelector('#acNew').onclick = () => { keep(); mode = 'new'; err(''); draw(); }; box.querySelector('#acOld').onclick = () => { keep(); mode = 'enter'; err(''); draw(); }; }
   draw();
   return await new Promise(res => {
     go.onclick = () => {
@@ -674,6 +681,38 @@ async function enterWithAccount() {
   }
   await resumeWith(client.token, info);
   if (info.AccountLevelName) client.status += ` (${info.AccountLevelName})`;
+  const q = new URLSearchParams(location.search);
+  if (q.get('link') || q.has('devices')) linkPanel(q.get('link'));
+}
+// LINKING A DEVICE TO THE ACCOUNT (2026-11-26). Thalia - or another program acting for the person - asked to be linked and shows a code; opened with ?link=<request>, after the person
+// entered with its password, this panel shows the device and the code: approved, the device is given a key of its own and enters as the person without the password. The panel
+// lists the devices linked to the Account, each with Remove (also opened with ?devices=1).
+async function linkPanel(request) {
+  const auth = { Authorization: 'Bearer ' + client.token };
+  const box = document.createElement('div');
+  Object.assign(box.style, { position: 'fixed', inset: '0', zIndex: 45, background: 'rgba(15,18,24,.94)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', padding: '16px', boxSizing: 'border-box', textAlign: 'center' });
+  const btn = (id, t) => `<button id="${id}" style="font-size:18px;padding:8px 22px;border-radius:8px;cursor:pointer">${t}</button>`;
+  const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  document.body.appendChild(box);
+  const drawDevices = async (note = '') => {
+    const list = await fetch('/api/link/devices', { headers: auth, cache: 'no-store' }).then(r => r.ok ? r.json() : []).catch(() => []);
+    box.innerHTML = `<h2 style="margin:0">Devices linked to your Account</h2><div style="color:#9fd28c;min-height:1.2em;max-width:520px">${esc(note)}</div>
+      <div style="width:min(520px,100%)">${list.length ? list.map(d => `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;background:#252b34;border-radius:8px;padding:8px 10px;margin:6px 0;text-align:left"><span><b>${esc(d.name)}</b><br><span style="font-size:13px;color:var(--muted)">linked ${esc(d.linked)}</span></span><button data-id="${esc(d.id)}" style="cursor:pointer;padding:4px 12px;border-radius:6px">Remove</button></div>`).join('') : '<div style="color:var(--muted)">None.</div>'}</div>
+      ${btn('lkClose', 'Back to the world')}`;
+    box.querySelectorAll('button[data-id]').forEach(b => b.onclick = async () => { await fetch('/api/link/remove?id=' + encodeURIComponent(b.dataset.id), { method: 'POST', headers: auth }); drawDevices('Removed: that device enters no more.'); });
+    box.querySelector('#lkClose').onclick = () => box.remove();
+  };
+  if (!request) return drawDevices();
+  const info = await fetch('/api/link/info?id=' + encodeURIComponent(request), { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
+  if (!info || info.status !== 'pending') return drawDevices(info ? `The request is ${info.status}: ask the device to request the link again.` : 'There is no such request: ask the device to request the link again.');
+  box.innerHTML = `<h2 style="margin:0">Link a device to your Account</h2>
+    <div style="max-width:560px"><b>${esc(info.device)}</b> asks to enter the MMM as you, <b>${esc(client.name)}</b>, without your password.</div>
+    <div style="max-width:560px;color:var(--muted)">Approve only if that device shows this code:</div>
+    <div style="font-size:40px;letter-spacing:6px;font-weight:700">${esc(info.code)}</div>
+    <div style="display:flex;gap:12px">${btn('lkYes', 'Approve')}${btn('lkNo', 'Refuse')}</div>`;
+  const answer = async refuse => { const r = await fetch(`/api/link/approve?id=${encodeURIComponent(request)}${refuse ? '&refuse=1' : ''}`, { method: 'POST', headers: auth }).then(r => r.json()).catch(() => ({ text: 'The M-Instance does not answer.' })); drawDevices(r.text); };
+  box.querySelector('#lkYes').onclick = () => answer(false);
+  box.querySelector('#lkNo').onclick = () => answer(true);
 }
 async function join() {
   if (me?.resume) return resume();

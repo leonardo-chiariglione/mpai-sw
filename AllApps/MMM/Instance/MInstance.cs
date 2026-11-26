@@ -552,13 +552,15 @@ public sealed class MInstance
         var human = profile?["humanID"]?.GetValue<string>();
         if (profile is null || human is null) return Fail(422, service, "FaultyPA", "Register takes a Personal Profile with its humanID");
         var secret = profile["PersonalProfile"]?["Credential"]?.GetValue<string>();
-        // A human that has an Account ENTERS with its credentials (or as one of its Users, holding its token): its Users are given new tokens.
+        var deviceKey = profile["PersonalProfile"]?["DeviceKey"]?.GetValue<string>();      // "<device id>:<secret>": a device linked to the Account (2026-11-26)
+        // A human that has an Account ENTERS with its credentials, with the key of a device linked to it, or as one of its Users (holding its token): its Users are given new tokens.
         if (processes.ContainsKey(human))
         {
-            if (secret is null && (caller is null || processes.GetValueOrDefault(caller)?.HumanID != human)) return Fail(409, service, "Clash", $"{human} is registered already");
+            if (secret is null && deviceKey is null && (caller is null || processes.GetValueOrDefault(caller)?.HumanID != human)) return Fail(409, service, "Clash", $"{human} is registered already");
+            if (deviceKey is not null && secret is null && !VerifiesDevice(human, deviceKey)) return Fail(403, service, "InsRights", "this device is not linked to the Account (or its link was removed)");
             return Enter(service, human, secret, profile);
         }
-        if (RequireCredentials && secret is not null && profile["PersonalProfile"]?["Data"] is null) return Fail(404, service, "IncID", $"there is no Account of {human}");   // entering an Account that is not there
+        if (RequireCredentials && (secret is not null || deviceKey is not null) && profile["PersonalProfile"]?["Data"] is null) return Fail(404, service, "IncID", $"there is no Account of {human}");   // entering an Account that is not there
         if (RequireCredentials)
         {
             var d = profile["PersonalProfile"]?["Data"]?[0];
@@ -1197,6 +1199,46 @@ public sealed class MInstance
     }
 
     public bool IsRegistered(string human) { lock (gate) return processes.TryGetValue(human, out var p) && p.Kind == "Human"; }
+
+    // DEVICES LINKED TO AN ACCOUNT (2026-11-26). A program that acts for the person - Thalia, the person's User - is linked to the Account once, when the person, entered in the world with
+    // its password, approves the link; the device is then given a key of its own, kept here as a salted hash (as the password), with which it enters without the password. The person
+    // sees its devices and removes a link at any time; a removed device enters no more.
+    public sealed record LinkedDevice(string Id, string Name, string Hash, string Linked);
+    private readonly Dictionary<string, List<LinkedDevice>> devices = new(StringComparer.Ordinal);   // human -> its linked devices
+
+    public (string Id, string Key)? LinkDevice(string user, string name)
+    {
+        lock (gate)
+        {
+            if (!processes.TryGetValue(user, out var p) || p.HumanID is not { } human) return null;
+            var id = "dev-" + Convert.ToHexString(RandomNumberGenerator.GetBytes(5)).ToLowerInvariant();
+            var key = NewToken();
+            if (!devices.TryGetValue(human, out var list)) devices[human] = list = [];
+            list.Add(new LinkedDevice(id, name, HashOf(key), DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm")));
+            return (id, $"{id}:{key}");
+        }
+    }
+
+    public IReadOnlyList<LinkedDevice> DevicesOf(string user)
+    {
+        lock (gate) return processes.GetValueOrDefault(user)?.HumanID is { } h && devices.TryGetValue(h, out var l) ? l.Select(d => d with { Hash = "" }).ToList() : [];
+    }
+
+    public bool UnlinkDevice(string user, string id)
+    {
+        lock (gate) return processes.GetValueOrDefault(user)?.HumanID is { } h && devices.TryGetValue(h, out var l) && l.RemoveAll(d => d.Id == id) > 0;
+    }
+
+    private bool VerifiesDevice(string human, string deviceKey)
+    {
+        var colon = deviceKey.IndexOf(':');
+        if (colon <= 0 || !devices.TryGetValue(human, out var list)) return false;
+        var d = list.FirstOrDefault(x => x.Id == deviceKey[..colon]);
+        if (d is null) return false;
+        var parts = d.Hash.Split(':');
+        var again = HashOf(deviceKey[(colon + 1)..], Convert.FromBase64String(parts[0])).Split(':')[1];
+        return CryptographicOperations.FixedTimeEquals(Convert.FromBase64String(again), Convert.FromBase64String(parts[1]));
+    }
     public bool HasCredentials(string human) { lock (gate) return credentials.ContainsKey(human); }
 
     // A human with an Account enters: its credentials verified (an Account of a run before Accounts had credentials takes the first it is given), its Users given new tokens, and the
@@ -1318,6 +1360,7 @@ public sealed class MInstance
                 ["AccountLevels"] = System.Text.Json.JsonSerializer.SerializeToNode(accountLevels),
                 ["Registered"] = registered,
                 ["Credentials"] = System.Text.Json.JsonSerializer.SerializeToNode(credentials),
+                ["Devices"] = System.Text.Json.JsonSerializer.SerializeToNode(devices),
                 ["Activity"] = System.Text.Json.JsonSerializer.SerializeToNode(activity.Skip(Math.Max(0, activity.Count - KeptActivity)).ToList())
             };
         }
@@ -1347,6 +1390,7 @@ public sealed class MInstance
             foreach (var (k, v) in state["AccountLevels"]?.Deserialize<Dictionary<string, string>>() ?? []) accountLevels[k] = v;
             registered = Math.Max(registered, (int?)state["Registered"] ?? 0);
             foreach (var (k, v) in state["Credentials"]?.Deserialize<Dictionary<string, string>>() ?? []) credentials[k] = v;
+            foreach (var (k, v) in state["Devices"]?.Deserialize<Dictionary<string, List<LinkedDevice>>>() ?? []) devices[k] = v;
             activity.InsertRange(0, state["Activity"]?.Deserialize<List<Activity>>() ?? []);
             return $"{users} Users, {restored} Items and {holdings.Count} holdings of Rights of the run that closed at {(string?)state["Saved"]}";
         }
