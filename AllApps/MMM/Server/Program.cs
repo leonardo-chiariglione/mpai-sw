@@ -63,6 +63,14 @@ if (worldMode)
     foreach (var pair in (Arg("--models") ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(p => p.Split('=', 2)).Where(p => p.Length == 2))
         m.SetModel($"{pair[0]}-Persona", pair[1]);
 }
+// THE WORLD GOES ON FROM ITS LAST RUN (2026-11-26, KeptState.cs): the Users that registered, their Personae where they were, the Items, the Rights, the Messages. --state <folder>: where
+// the state is kept (default %LOCALAPPDATA%\MPAI\MMM\<M-Instance>-world); --fresh: start as the first time. The demonstrations (Use Case 2, the door) start as the first time, always.
+KeptState? kept = null;
+if (worldMode)
+{
+    kept = new KeptState(m, Arg("--state") ?? KeptState.DefaultFolder(m.ID + "-world"));
+    Console.WriteLine(kept.Restore(args.Contains("--fresh")));
+}
 else
 {
     Uc2.Setup(m);
@@ -130,6 +138,11 @@ var avatarFolder = Path.Combine(repo, "Apps", "ABV", "AVS", "Server", "avatars")
 var app = MmmServer.Build(m, url, Path.Combine(repo, "AllApps", "MMM", "Viewer"), manual ? Next : null, manual ? Back : null, manual ? Shown : null, code, Directory.Exists(avatarFolder) ? avatarFolder : null, internalKey, identity, officerNames);
 await app.StartAsync();
 Console.WriteLine($"M-Instance {m.ID} on {url}; its viewer at {url.TrimEnd('/')}/viewer/");
+if (kept is not null)
+{
+    _ = Task.Run(() => kept.KeepAsync(app.Lifetime.ApplicationStopping));
+    app.Lifetime.ApplicationStopping.Register(() => { try { kept.Save(); Console.WriteLine($"The state of the M-Instance is kept in {kept.Folder}."); } catch (Exception e) { Console.Error.WriteLine("keeping the state: " + e.Message); } });
+}
 // The meeting's Processes: the AVS Service and the Secretary, acting through the MMM-API like any Process.
 // The ASR Service recognises with Whisper (from Access: the L3 of ASR declares the program and the model), if they can be had.
 // --no-asr: no speech recognition (no Whisper): no minutes, and the participants write to the Secretary.

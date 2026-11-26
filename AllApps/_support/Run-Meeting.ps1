@@ -17,9 +17,31 @@
 # the meeting's own address; mail filters distrust trycloudflare.com links (2026-11-18). The meeting itself does not go through Funnel (too slow for the avatars). -Join none: the emails carry the meeting's address.
 # -Officers A,B: the people, besides the chair, who may register with the MPAI Officer Account Level (the Rights to every place of the building).
 param([string]$Chair = '', [string]$Guests = '', [string]$Until = '', [double]$Hours = 3, [int]$Port = 7099, [ValidateSet('funnel', 'cloudflare')][string]$Via = 'cloudflare', [switch]$Visitors,
-      [string]$Group = '', [string]$When = '', [string]$Officers = '', [string]$HostName = '', [ValidateSet('ask', 'draft', 'send', 'none')][string]$Mail = 'ask', [switch]$Preview, [switch]$Stay, [switch]$Written, [ValidateSet('funnel', 'none')][string]$Join = 'funnel', [string]$Llm = 'llama3.2:3b')
+      [string]$Group = '', [string]$When = '', [string]$Officers = '', [string]$HostName = '', [ValidateSet('ask', 'draft', 'send', 'none')][string]$Mail = 'ask', [switch]$Preview, [switch]$Stay, [switch]$Written, [ValidateSet('funnel', 'none')][string]$Join = 'funnel', [string]$Llm = 'llama3.2:3b', [switch]$Spoken, [switch]$Fresh)
 
 $here = (Resolve-Path (Join-Path $PSScriptRoot "..\MMM")).Path
+
+# AS LAST TIME (2026-11-26). The MMM world goes on from its last run (the server keeps its state in %LOCALAPPDATA%\MPAI\MMM\MI1-world), and so do the settings of the meeting: what is not
+# given here is what was used last time - the chair, the host, the guests or the group, the end, the Officers, the way to the internet, spoken or written, the language model - and each guest's
+# personal link stays the same, so a link sent before still opens the meeting. -Spoken: spoken, even if last time was written. -Fresh: the world and the settings start as the first time
+# (the server keeps the old state beside the new one). The date of the emails (-When) and whether to send them (-Mail) are asked each time.
+$keptFolder = Join-Path $env:LOCALAPPDATA 'MPAI\MMM\MI1-world'
+$settingsFile = Join-Path $keptFolder 'meeting-settings.json'
+$last = $null; $fromLast = @()
+if (-not $Fresh -and (Test-Path $settingsFile)) {
+    try { $last = Get-Content $settingsFile -Raw -Encoding UTF8 | ConvertFrom-Json } catch { Write-Host "The settings of the last meeting could not be read ($settingsFile): starting without them." }
+}
+if ($last) {
+    foreach ($k in 'Chair', 'HostName', 'Guests', 'Group', 'Until', 'Hours', 'Officers', 'Via', 'Join', 'Llm') {
+        if ($k -eq 'Until' -and $PSBoundParameters.ContainsKey('Hours')) { continue }      # -Hours given: the end is in that many hours, not at last time's hour
+        if (-not $PSBoundParameters.ContainsKey($k) -and $null -ne $last.$k -and "$($last.$k)" -ne '') { Set-Variable -Name $k -Value $last.$k; $fromLast += "$k $($last.$k)" }
+    }
+    foreach ($k in 'Visitors', 'Written') {
+        if (-not $PSBoundParameters.ContainsKey($k) -and $last.$k -eq $true -and -not ($k -eq 'Written' -and $Spoken)) { Set-Variable -Name $k -Value ([switch]$true); $fromLast += $k }
+    }
+    if ($fromLast) { Write-Host "As last time ($($last.Saved)): $($fromLast -join '; ')." -ForegroundColor Cyan }
+}
+if ($Spoken) { $Written = [switch]$false }
 $local = "http://127.0.0.1:$Port"
 $people = @{}      # the name in the M-Instance -> the person (Email, Name), for the emails
 if ($Group) {
@@ -53,9 +75,13 @@ if ($names.Count -lt 1) { Write-Host 'No guests.'; exit 1 }
 
 # A personal token for each guest: 18 hexadecimal characters, from the system's random numbers.
 $tokens = @{}
-foreach ($n in $names) { $b = New-Object byte[] 9; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); $tokens[$n] = ([BitConverter]::ToString($b) -replace '-', '').ToLower() }
+foreach ($n in $names) {
+    if ($last -and $last.Tokens -and $last.Tokens.$n) { $tokens[$n] = $last.Tokens.$n; continue }      # the link sent last time still works
+    $b = New-Object byte[] 9; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); $tokens[$n] = ([BitConverter]::ToString($b) -replace '-', '').ToLower()
+}
 # the host has a link of its own too, for another device (a laptop away from this PC); on this PC it needs none
 $b = New-Object byte[] 9; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); $hostToken = ([BitConverter]::ToString($b) -replace '-', '').ToLower()
+if ($last -and $last.HostToken -and $last.HostName -eq $HostName) { $hostToken = $last.HostToken }
 $invites = (@($names | ForEach-Object { "$_=$($tokens[$_])" }) + "$HostName=$hostToken") -join ','      # @(): with ONE guest the pipeline gives a string, and + would glue the host's token onto it
 
 function Get-Mails($base, $joinAt = $null) {
@@ -95,7 +121,7 @@ if (Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyCon
 $dotnet = (Get-Command dotnet -ErrorAction SilentlyContinue).Source
 if (-not $dotnet) { $dotnet = 'C:\Program Files\dotnet\dotnet.exe' }
 $period = if ($Until) { "--until $Until" } else { "--hours $Hours" }      # not $when: PowerShell names ignore case, and $when was $When, the date the emails give (they said "--hours 3")
-$arguments = "run --project `"$here\Server\Mpai.Mmm.Server.csproj`" -c Release -- $local --world --identity --chair $Chair --host $HostName --invites $invites --invite $((@($Chair) + @($HostName) + $names | Select-Object -Unique) -join ',') $period" + $(if ($Visitors) { ' --visitors' } else { '' }) + $(if ($Officers) { " --officers $Officers" } else { '' }) + $(if ($Written) { ' --no-asr --no-summary' } else { " --llm $Llm" })
+$arguments = "run --project `"$here\Server\Mpai.Mmm.Server.csproj`" -c Release -- $local --world --identity --chair $Chair --host $HostName --invites $invites --invite $((@($Chair) + @($HostName) + $names | Select-Object -Unique) -join ',') $period" + $(if ($Visitors) { ' --visitors' } else { '' }) + $(if ($Officers) { " --officers $Officers" } else { '' }) + $(if ($Written) { ' --no-asr --no-summary' } else { " --llm $Llm" }) + $(if ($Fresh) { ' --fresh' } else { '' })
 # SPOKEN (without -Written): the language model of the Secretary and of the summary is loaded on the card now (the first load takes about 20 s), so the first request is answered at once.
 if (-not $Written) {
     Write-Host "Loading the language model $Llm..."
@@ -115,6 +141,11 @@ for ($i = 0; $i -lt 180 -and -not $up; $i++) {
     try { Invoke-WebRequest "$local/viewer/" -UseBasicParsing -TimeoutSec 3 | Out-Null; $up = $true } catch { if ($_.Exception.Response) { $up = $true } }
 }
 if (-not $up) { Write-Host 'The server did not start. Look at its window.'; exit 1 }
+# The settings of this meeting, for the next one (as last time).
+$saved = [ordered]@{ Saved = (Get-Date).ToString('yyyy-MM-dd HH:mm'); Chair = $Chair; HostName = $HostName; Guests = ($names -join ','); Group = $Group; Until = $Until; Hours = $Hours; Officers = $Officers
+                     Via = $Via; Join = $Join; Llm = $Llm; Visitors = [bool]$Visitors; Written = [bool]$Written; Tokens = $tokens; HostToken = $hostToken }
+New-Item -ItemType Directory -Force $keptFolder | Out-Null
+[IO.File]::WriteAllText($settingsFile, ($saved | ConvertTo-Json -Depth 4), (New-Object Text.UTF8Encoding($false)))
 
 # THE SCREEN HELPER on this PC (the one the chair shares from): it shares a window with no browser "Stop sharing" bar. Started here, so nobody has to find it; it stays in the tray until Quit.
 $helperDll = Join-Path $here 'ScreenHelper\bin\Release\net10.0-windows\Mpai.Mmm.ScreenHelper.dll'

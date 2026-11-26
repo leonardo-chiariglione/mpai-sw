@@ -42,6 +42,21 @@ The meeting ends by itself at its time as well.
 **On this PC only**, no Tailscale: `dotnet run --project AllApps/MMM/Server -- http://127.0.0.1:7099 --world --invite Leonardo,Anna,Bruno,Carla --hours 3`, and open
 `http://127.0.0.1:7099/viewer/?world=1&mic=1&user=Leonardo`. (`AllApps\MMM\Run-Conference.bat` is the older way for guests outside the network: a meeting code and a Cloudflare tunnel.)
 
+## The world goes on from its last run
+
+The M-Instance of the world starts once; when it closes and starts again, it goes on from where it was (2026-11-26). The server keeps its state in `%LOCALAPPDATA%\MPAI\MMM\MI1-world\state.json`
+(`--state <folder>` for another place), written a few seconds after each change and when it closes, so a window closed or a PC switched off loses at most those seconds.
+
+- **Kept:** the Users that registered (their Accounts, Account Levels and chosen Personae), where each Persona is, the Items the Processes placed and their Item Properties (a door left open is open),
+  the Rights, the Messages to the Users, the log of the activity. A User that comes back is given a new token, as when its browser was closed.
+- **Not kept:** what is momentary (speech and sound on their way, a shared screen, Data captured and not identified, a walk in progress: the Persona is where it was going), and what the Services were
+  handling (their inboxes, so that no request is handled twice). The minutes and the seats of a meeting are the meeting's: a new meeting starts them again.
+- **The Locations** are those of the world the server starts with (`world.json`): a changed building is seen at once.
+- **The settings of the meeting** are kept too (`meeting-settings.json`, by `Run-Meeting.ps1`): what is not given is what the last meeting used - the chair, the host, the guests or the group, the end,
+  the Officers, the way to the internet, spoken or written, the language model - and each guest's personal link stays the same. `MMM meeting.bat` asks only spoken or written (Enter: as last time).
+  The date of the emails and whether to send them are asked each time.
+- **Anew:** `Run-Meeting.ps1 -Fresh` (or the server's `--fresh`) starts the world and the settings as the first time; the old state is kept beside, as `state-<when>.json`.
+
 ## Sharing a screen
 
 The chair has the buttons *Share screen* and *Edit slides* (bottom left, with the other buttons of the meeting: *Mic*, *Raise hand*, *Summary*, *Secretary*, *Close meeting*). The shared screen is in the room, on its walls:

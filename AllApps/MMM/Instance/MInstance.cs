@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text.Json.Nodes;
+using System.Text.Json;
 
 namespace Mpai.Mmm;
 
@@ -1131,4 +1132,65 @@ public sealed class MInstance
 
     private static Outcome Fail(int http, string service, string code, string detail) =>
         new(http, new ProcessActionResponse { DestinationProcessID = service, PaStatus = new PAStatus { Code = code, Detail = detail } });
+
+    // ---------------------------------------------------------------- WHAT IT KEEPS FROM ONE RUN TO THE NEXT (2026-11-26)
+    // An M-Instance starts once; when it closes and starts again it goes on from where it was: the Users that registered (their Accounts, Account Levels and Personae), where
+    // each Persona is, the Items the Processes placed and their Item Properties, the Rights, the Messages to the Users, the Process Actions the Rights name, the log of the activity.
+    // What is not kept: what was momentary (speech and sound on their way, a shared screen, Data captured and not identified, a walk or an animation in progress: the Item is where
+    // it was going), the tokens (a User that comes back is given a new one), and what the Services were handling (their inboxes: a request is not handled twice). The Locations
+    // are those of the world the M-Instance starts with: a new building is seen at once.
+    private static readonly HashSet<string> Momentary = new(StringComparer.Ordinal) { "OSD-BSO-V1.5", "OSD-AUO-V1.5", "OSD-BAO-V1.5", ScreenHeader, "PAF-AMO-V1.6", "MMM-DAT", "OSD-STM-V1.5" };
+    private static readonly System.Text.Json.JsonSerializerOptions StateJson = new()
+    {
+        IncludeFields = true, PreferredObjectCreationHandling = System.Text.Json.Serialization.JsonObjectCreationHandling.Populate
+    };
+    private const int KeptActivity = 5000;
+
+    public JsonObject SaveState()
+    {
+        lock (gate)
+        {
+            var kept = items.Values.Where(i => !Momentary.Contains(i.DataType) && !i.Streaming && i.Qualifier is null).ToList();
+            return new JsonObject
+            {
+                ["Kept"] = "The state of an M-Instance between its runs", ["Version"] = 1, ["MInstanceID"] = ID, ["Saved"] = DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss zzz"),
+                ["Items"] = System.Text.Json.JsonSerializer.SerializeToNode(kept, StateJson),
+                ["Processes"] = new JsonArray(processes.Values.Where(p => p.Kind != "Service").Select(p => (JsonNode)new JsonObject { ["ID"] = p.ID, ["Kind"] = p.Kind, ["HumanID"] = p.HumanID }).ToArray()),
+                ["Holdings"] = System.Text.Json.JsonSerializer.SerializeToNode(holdings),
+                ["Inboxes"] = System.Text.Json.JsonSerializer.SerializeToNode(inboxes.Where(kv => processes.GetValueOrDefault(kv.Key)?.Kind != "Service").ToDictionary(kv => kv.Key, kv => kv.Value)),
+                ["Models"] = System.Text.Json.JsonSerializer.SerializeToNode(models),
+                ["AccountLevels"] = System.Text.Json.JsonSerializer.SerializeToNode(accountLevels),
+                ["Registered"] = registered,
+                ["Activity"] = System.Text.Json.JsonSerializer.SerializeToNode(activity.Skip(Math.Max(0, activity.Count - KeptActivity)).ToList())
+            };
+        }
+    }
+
+    // The state of the last run, over the M-Instance as it was just set up (its world, its Services). Returns what was restored, in words.
+    public string RestoreState(JsonObject state)
+    {
+        lock (gate)
+        {
+            var restored = 0;
+            foreach (var it in state["Items"]?.Deserialize<List<Item>>(StateJson) ?? [])
+            {
+                if (Momentary.Contains(it.DataType) || it.Streaming || it.Qualifier is not null) continue;
+                if (items.TryGetValue(it.ID, out var now) && now.DataType is "MMM-LOC" or "MMM-ULC") continue;   // the world's Locations as the world now is
+                it.Animation = null; it.WalkFrom = null; it.WalkTo = null; it.WalkPath = null; it.WalkStart = 0; it.WalkEnd = 0; it.AnimatedUntil = 0;
+                items[it.ID] = it; restored++;
+            }
+            var users = 0;
+            foreach (var p in (state["Processes"] as JsonArray ?? []).OfType<JsonObject>())
+                if ((string?)p["ID"] is { } id && !processes.ContainsKey(id))
+                { processes[id] = new Process { ID = id, Kind = (string?)p["Kind"] ?? "User", HumanID = (string?)p["HumanID"] }; users++; }
+            foreach (var (k, v) in state["Holdings"]?.Deserialize<Dictionary<string, List<string>>>() ?? []) holdings[k] = v;
+            foreach (var (k, v) in state["Inboxes"]?.Deserialize<Dictionary<string, List<string>>>() ?? [])
+                if (processes.GetValueOrDefault(k)?.Kind != "Service") inboxes[k] = v.Where(items.ContainsKey).ToList();
+            foreach (var (k, v) in state["Models"]?.Deserialize<Dictionary<string, string>>() ?? []) models[k] = v;
+            foreach (var (k, v) in state["AccountLevels"]?.Deserialize<Dictionary<string, string>>() ?? []) accountLevels[k] = v;
+            registered = Math.Max(registered, (int?)state["Registered"] ?? 0);
+            activity.InsertRange(0, state["Activity"]?.Deserialize<List<Activity>>() ?? []);
+            return $"{users} Users, {restored} Items and {holdings.Count} holdings of Rights of the run that closed at {(string?)state["Saved"]}";
+        }
+    }
 }
