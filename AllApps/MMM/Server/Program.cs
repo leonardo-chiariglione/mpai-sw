@@ -68,6 +68,8 @@ if (worldMode)
 // ACCOUNTS (2026-11-26): in the world, nobody enters without registering and opening an Account with its credentials, then entering with them; --no-accounts: as before (a name is enough).
 if (worldMode && !args.Contains("--no-accounts")) m.RequireCredentials = true;
 if (identity is not null) identity.Accounts = m.RequireCredentials;
+// --manager <email>: the email of the Account of the MMM Manager (2026-11-26); the level is not offered to anybody, the Account with this email is the Manager's.
+if (Arg("--manager") is { Length: > 0 } managerEmail) { m.ManagerEmail = managerEmail; Console.WriteLine("The MMM Manager: the Account with the email given by --manager."); }
 KeptState? kept = null;
 if (worldMode)
 {

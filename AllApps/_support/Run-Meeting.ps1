@@ -18,7 +18,7 @@
 # the meeting's own address; mail filters distrust trycloudflare.com links (2026-11-18). The meeting itself does not go through Funnel (too slow for the avatars). -Join none: the emails carry the meeting's address.
 # -Officers A,B: the people, besides the chair, who may register with the MPAI Officer Account Level (the Rights to every place of the building).
 param([string]$Chair = '', [string]$Guests = '', [string]$Until = '', [double]$Hours = 3, [int]$Port = 7099, [ValidateSet('funnel', 'cloudflare')][string]$Via = 'cloudflare', [switch]$Visitors,
-      [string]$Group = '', [string]$When = '', [string]$Officers = '', [string]$HostName = '', [ValidateSet('ask', 'draft', 'send', 'none')][string]$Mail = 'ask', [switch]$Preview, [switch]$Stay, [switch]$Written, [ValidateSet('funnel', 'none')][string]$Join = 'funnel', [string]$Llm = 'llama3.2:3b', [switch]$Spoken, [switch]$Fresh)
+      [string]$Group = '', [string]$When = '', [string]$Officers = '', [string]$HostName = '', [ValidateSet('ask', 'draft', 'send', 'none')][string]$Mail = 'ask', [switch]$Preview, [switch]$Stay, [switch]$Written, [ValidateSet('funnel', 'none')][string]$Join = 'funnel', [string]$Llm = 'llama3.2:3b', [switch]$Spoken, [switch]$Fresh, [string]$Manager = '')
 
 $here = (Resolve-Path (Join-Path $PSScriptRoot "..\MMM")).Path
 
@@ -33,7 +33,7 @@ if (-not $Fresh -and (Test-Path $settingsFile)) {
     try { $last = Get-Content $settingsFile -Raw -Encoding UTF8 | ConvertFrom-Json } catch { Write-Host "The settings of the last meeting could not be read ($settingsFile): starting without them." }
 }
 if ($last) {
-    foreach ($k in 'Chair', 'HostName', 'Guests', 'Group', 'Until', 'Hours', 'Officers', 'Via', 'Join', 'Llm') {
+    foreach ($k in 'Chair', 'HostName', 'Guests', 'Group', 'Until', 'Hours', 'Officers', 'Via', 'Join', 'Llm', 'Manager') {
         if ($k -eq 'Until' -and $PSBoundParameters.ContainsKey('Hours')) { continue }      # -Hours given: the end is in that many hours, not at last time's hour
         if (-not $PSBoundParameters.ContainsKey($k) -and $null -ne $last.$k -and "$($last.$k)" -ne '') { Set-Variable -Name $k -Value $last.$k; $fromLast += "$k $($last.$k)" }
     }
@@ -81,6 +81,9 @@ $emails = @(@($Chair, $HostName) + $names | ForEach-Object { Email-Of $_ } | Whe
 $noEmail = @(@($Chair) + $names | Where-Object { -not (Email-Of $_) } | Select-Object -Unique)
 if ($noEmail) { Write-Host "No email for: $($noEmail -join ', ') - with Accounts a person is invited by the email of its Account; give the email instead of the name." -ForegroundColor Yellow }
 if (-not $emails) { Write-Host 'Nobody to invite: no email.'; exit 1 }
+# THE MMM MANAGER (2026-11-26): one person, the Account with this email (-Manager; by default the email of the President in the registry). The level is not offered to anybody.
+if (-not $Manager) { $pres = @($people.Values | Where-Object { $_.Role -eq 'President' -and $_.Email })[0]; if ($pres) { $Manager = [string]$pres.Email } }
+if (-not $Manager) { $Manager = Email-Of $HostName }
 $officerEmails = @(($Officers -split ',') | ForEach-Object { $_.Trim() } | Where-Object { $_ } | ForEach-Object { $e = Email-Of $_; if ($e) { $e } else { $_ } })
 
 
@@ -121,7 +124,7 @@ if (Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyCon
 $dotnet = (Get-Command dotnet -ErrorAction SilentlyContinue).Source
 if (-not $dotnet) { $dotnet = 'C:\Program Files\dotnet\dotnet.exe' }
 $period = if ($Until) { "--until $Until" } else { "--hours $Hours" }      # not $when: PowerShell names ignore case, and $when was $When, the date the emails give (they said "--hours 3")
-$arguments = "run --project `"$here\Server\Mpai.Mmm.Server.csproj`" -c Release -- $local --world --identity --chair $Chair --host $HostName --invite-emails $($emails -join ',') $period" + $(if ($Visitors) { ' --visitors' } else { '' }) + $(if ($officerEmails) { " --officers $($officerEmails -join ',')" } else { '' }) + $(if ($Written) { ' --no-asr --no-summary' } else { " --llm $Llm" }) + $(if ($Fresh) { ' --fresh' } else { '' })
+$arguments = "run --project `"$here\Server\Mpai.Mmm.Server.csproj`" -c Release -- $local --world --identity --chair $Chair --host $HostName --invite-emails $($emails -join ',') $period" + $(if ($Visitors) { ' --visitors' } else { '' }) + $(if ($officerEmails) { " --officers $($officerEmails -join ',')" } else { '' }) + $(if ($Manager) { " --manager $Manager" } else { '' }) + $(if ($Written) { ' --no-asr --no-summary' } else { " --llm $Llm" }) + $(if ($Fresh) { ' --fresh' } else { '' })
 # SPOKEN (without -Written): the language model of the Secretary and of the summary is loaded on the card now (the first load takes about 20 s), so the first request is answered at once.
 if (-not $Written) {
     Write-Host "Loading the language model $Llm..."
@@ -143,7 +146,7 @@ for ($i = 0; $i -lt 180 -and -not $up; $i++) {
 if (-not $up) { Write-Host 'The server did not start. Look at its window.'; exit 1 }
 # The settings of this meeting, for the next one (as last time).
 $saved = [ordered]@{ Saved = (Get-Date).ToString('yyyy-MM-dd HH:mm'); Chair = $Chair; HostName = $HostName; Guests = ($names -join ','); Group = $Group; Until = $Until; Hours = $Hours; Officers = $Officers
-                     Via = $Via; Join = $Join; Llm = $Llm; Visitors = [bool]$Visitors; Written = [bool]$Written }
+                     Via = $Via; Join = $Join; Llm = $Llm; Visitors = [bool]$Visitors; Written = [bool]$Written; Manager = $Manager }
 New-Item -ItemType Directory -Force $keptFolder | Out-Null
 [IO.File]::WriteAllText($settingsFile, ($saved | ConvertTo-Json -Depth 4), (New-Object Text.UTF8Encoding($false)))
 

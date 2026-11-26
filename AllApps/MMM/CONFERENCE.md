@@ -49,6 +49,10 @@ to the next: it chooses an Account Level and gives its data and a password - a *
 (Officer is taken only by the person on the host PC and the people the chair designates, by email; an Officer whose organisation is MPAI is called an **MPAI Officer**). The person is its Account:
 afterwards it enters with its first name, last name and password ("I have an Account"; the browser remembers the names, never the password). The Account carries the email.
 
+**The MMM Manager.** A fourth level, not offered to anybody: one person is the Manager of the M-Instance - the Account whose email is given to the server with `--manager` (`Run-Meeting.ps1 -Manager`,
+by default the email of the President in `Registry\people.json`). That Account is the Manager's whatever level was ticked, also an Account opened before; it is called *MMM Manager* and covers
+every other level: the Rights of an Officer to every place, and a seat in any meeting without an invitation.
+
 **An invitation is a Rights Change.** The chair invites the emails of the Accounts (`Run-Meeting.ps1 -Guests` takes emails, or the names of a group, turned into their emails; the server's
 `--invite-emails`, the chair's first). When the User of an Account with an invited email asks to join, the AVS Service gives it the meeting's Rights - the doors of the wing and of the room, a seat,
 for the convener the screen - by Rights Change, for the meeting; the first invited email convenes. The invitation email gives the world's address and the email to register with. The M-Instance keeps only a salted hash of the password, never the password, and the Accounts outlive a restart.

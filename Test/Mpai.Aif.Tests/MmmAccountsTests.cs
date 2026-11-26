@@ -85,6 +85,43 @@ public class MmmAccountsTests
         finally { http.Dispose(); await app.DisposeAsync(); Meeting.Reset(); }
     }
 
+    // THE MANAGER: not offered; the Account with the Manager's email is the Manager's whatever level it ticked (also an Account opened before), called MMM Manager, with a seat in any meeting.
+    [Fact]
+    public async Task TheManagerIsTheAccountWithTheManagersEmailAndCoversEveryLevel()
+    {
+        var (m, app, http) = await WorldAsync();
+        try
+        {
+            Assert.DoesNotContain(m.AccountLevels, l => l.Id == MInstance.Manager);
+            var options = await http.GetStringAsync("/api/v2.2/register/options");
+            Assert.DoesNotContain("Manager", options);
+            // an Account opened before the Manager was named: it becomes the Manager's when it enters
+            Assert.Equal(201, (await Register(http, "Boss", new JsonObject { ["AccountLevel"] = "Participant", ["Credential"] = "secret1", ["Data"] = new JsonArray(Data("Boss", "X", "MPAI", "boss@example.com")) }, "Male_Adult_01")).Http);
+            Assert.Equal("Participant", m.LevelNameOf("Boss"));
+            m.ManagerEmail = "Boss@Example.com";
+            var entered = await Register(http, "Boss", new JsonObject { ["Credential"] = "secret1" });
+            Assert.Equal(200, entered.Http);
+            Assert.Equal("MMM Manager", m.LevelNameOf("Boss"));
+            Assert.True(m.IsOfficerOrAbove("Boss"));
+            // a seat in a meeting it was not invited to
+            var services = new MeetingServices(http, m);
+            services.PreinviteEmails(["someone@example.com"]);
+            await services.StartAsync();
+            var boss = new MmmClient(http, "Boss", entered.Tokens["Boss"]);
+            Assert.Equal(200, (await boss.PerformAsync("MM-Add", Uc2.C("Boss-Persona", at: "MVS", with: Uc2.SpatialAttitude("SA-Boss", 3, 0)))).Http);
+            var id = $"Join-Boss-{Guid.NewGuid():N}";
+            await boss.PerformAsync("MM-Send", Uc2.C(id, to: Meeting.Avs, with: Uc2.Message(id, Meeting.JoinText("Boss-Persona"))));
+            await services.PumpAsync();
+            Assert.StartsWith("seat=", Meeting.TextOf((await boss.ReadAsync($"Seat-{id}")).Item));
+            // a new Account with the Manager's email is the Manager's whatever it ticked
+            m.ManagerEmail = "new.boss@example.com";
+            Assert.Equal(201, (await Register(http, "NewBoss", new JsonObject { ["AccountLevel"] = "Visitor", ["Credential"] = "secret2", ["Data"] = new JsonArray(Data("New", "Boss", "MPAI", "new.boss@example.com")) }, "Female_Adult_01")).Http);
+            Assert.Equal("MMM Manager", m.LevelNameOf("NewBoss"));
+            Assert.Equal(MInstance.Manager, (string?)m.Get("Account-NewBoss-human")!.Body!["AccountLevel"]);
+        }
+        finally { http.Dispose(); await app.DisposeAsync(); Meeting.Reset(); }
+    }
+
     [Fact]
     public void AnOfficerOfMpaiIsAnMpaiOfficer()
     {

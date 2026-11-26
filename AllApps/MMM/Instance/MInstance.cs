@@ -608,6 +608,13 @@ public sealed class MInstance
                 }
             }
         }
+        // THE MANAGER (2026-11-26): the Account whose email is the Manager's is the Manager's, whatever level was ticked.
+        if (IsManagerEmail(profile["PersonalProfile"]?["Data"]?[0]?["Email"]?.GetValue<string>()))
+        {
+            foreach (var u in users) accountLevels[u] = Manager;
+            if (items.GetValueOrDefault(account) is { Body: { } ab }) ab["AccountLevel"] = Manager;
+            level = Manager;
+        }
         // The credentials are kept as a salted hash, never as given; the Personal Profile kept as an Item does not carry them.
         if (secret is not null) credentials[human] = HashOf(secret);
         var keptProfile = (JsonObject)profile.DeepClone();
@@ -1163,6 +1170,14 @@ public sealed class MInstance
     // credentials are kept as a salted hash (PBKDF2, SHA-256), never as given. A Persona is chosen from the catalogue when the human registers or, if it has none (a Visitor whose
     // visit ended), when it enters. AT THE END OF A VISIT a Visitor's Persona is taken away and offered again to whoever registers; the Account stays.
     public bool RequireCredentials { get; set; }
+
+    // THE MANAGER LEVEL (2026-11-26): not an Account Level a person may choose (it is not offered); one person is the Manager of the M-Instance - the Account whose email is ManagerEmail
+    // (the server's --manager). The Manager covers every other level: the Rights of an Officer to every place, and a seat in any meeting.
+    public const string Manager = "Manager";
+    public string? ManagerEmail { get; set; }
+    private bool IsManagerEmail(string? email) => ManagerEmail is { Length: > 0 } m && email is { Length: > 0 } e && string.Equals(m.Trim(), e.Trim(), StringComparison.OrdinalIgnoreCase);
+    // An Officer's level or above.
+    public bool IsOfficerOrAbove(string user) { lock (gate) return accountLevels.GetValueOrDefault(user) is "Officer" or Manager; }
     public const int MinimumPassword = 6;
     private readonly Dictionary<string, string> credentials = new(StringComparer.Ordinal);   // human -> "salt:hash" (base64)
 
@@ -1194,6 +1209,11 @@ public sealed class MInstance
             else if (!Verifies(human, secret)) return Fail(403, service, "InsRights", "these are not the credentials of the Account");
         }
         var users = processes.Values.Where(p => p.Kind == "User" && p.HumanID == human).ToList();
+        if (items.GetValueOrDefault($"Account-{human}") is { Body: { } account } && IsManagerEmail(account["Email"]?.GetValue<string>()))
+        {
+            foreach (var u in users) accountLevels[u.ID] = Manager;
+            account["AccountLevel"] = Manager;
+        }
         foreach (var p in profile["PersonalProfile"]?["Processes"]?.AsArray() ?? [])
             foreach (var e in p?["PersonaIDOrPersona"]?.AsArray() ?? [])
                 if (e?["PersonaChoice"]?.GetValue<string>() is { } pick && e["PersonaID"]?.GetValue<string>() is { } pid && !items.ContainsKey(pid))
@@ -1239,6 +1259,7 @@ public sealed class MInstance
         lock (gate)
         {
             var level = accountLevels.GetValueOrDefault(user);
+            if (level == Manager) return "MMM Manager";
             if (level != "Officer" || !processes.TryGetValue(user, out var p)) return level;
             var org = items.Values.FirstOrDefault(i => i.DataType == "MMM-PPR-V2.2" && i.Owner == p.HumanID)?.Body?["PersonalProfile"]?["Data"]?[0]?["Organisation"]?.GetValue<string>();
             return string.Equals(org?.Trim(), "MPAI", StringComparison.OrdinalIgnoreCase) ? "MPAI Officer" : "Officer";
@@ -1256,6 +1277,7 @@ public sealed class MInstance
             var levelName = accountLevels.GetValueOrDefault(user);
             if (levelName == "Officer" && items.Values.FirstOrDefault(i => i.DataType == "MMM-PPR-V2.2" && i.Owner == p.HumanID)?.Body?["PersonalProfile"]?["Data"]?[0]?["Organisation"]?.GetValue<string>() is { } org
                 && string.Equals(org.Trim(), "MPAI", StringComparison.OrdinalIgnoreCase)) levelName = "MPAI Officer";
+            if (levelName == Manager) levelName = "MMM Manager";
             info["AccountLevelName"] = levelName;
             if (persona is not null)
             {

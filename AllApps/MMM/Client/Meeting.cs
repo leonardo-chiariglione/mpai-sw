@@ -297,7 +297,8 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
                 else if (text.StartsWith("join", StringComparison.Ordinal))
                 {
                     var level = m.AccountLevelOf(from);
-                    var officer = level == "Officer";
+                    var officer = level is "Officer" or MInstance.Manager;
+                    if (level == MInstance.Manager) invited.Add(from);       // the Manager covers every level: a seat in any meeting
                     if (officer) await Officer(from);                  // an MPAI Officer's Account holds the Rights to every place, whatever the meeting
                     if (ended) { await Say(avs, $"Seat-{id}", from, officer ? "officer" : "the meeting is over"); continue; }
                     InvitedByEmail(from);
