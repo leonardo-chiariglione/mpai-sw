@@ -96,6 +96,8 @@
   .fn.available .chip { color:var(--ok); border-color:var(--ok); } .fn.coming { opacity:.8; }
   .ret { font:inherit; font-size:13px; padding:6px 14px; border-radius:8px; border:1px solid var(--line); background:var(--panel2); color:var(--ink); cursor:pointer; }
   .ret:hover { border-color:var(--accent); }
+  .grid.tiles { grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); }
+  .dt { all:unset; cursor:pointer; font-size:12px; color:var(--muted); text-decoration:underline; margin-left:auto; } .dt:hover { color:var(--ink); }
   .dock { margin-top:auto; display:flex; flex-direction:column; align-items:center; gap:8px; padding:12px 4px 4px; border-top:1px solid var(--line); }
   /* THE LADY'S PLACE (2026-11-25, the author): immediately below the menu - her face, Voice and Text below it, what was heard and what she answered below them; the MPAI card at the
      bottom of the pane. An App that has her (ASM) puts its own lady, with its Voice, Text and words, in this place. */
@@ -409,28 +411,31 @@ function welcome() {
   welcomeHidden = P.welcomeHidden === true;
   if (!welcomeHidden) {
     const intro = document.createElement('section'); intro.className = 'card';
-    intro.innerHTML = `<div class="fh" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><h3 style="margin:0;font-size:26px;line-height:1.25">Welcome to Thalia</h3><p class="desc" style="font-size:16px;margin-top:2px">the MPAI AI Framework user environment</p></div><button class="act secondary" id="hideWelcome" title="Do not show this again">Hide</button></div>`;
+    intro.innerHTML = `<div class="fh" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><h3 style="margin:0;font-size:20px">Welcome to Thalia <span class="desc" style="font-size:14px;font-weight:400">- the MPAI AI Framework user environment</span></h3></div><button class="act secondary" id="hideWelcome" title="Do not show this again">Hide</button></div>`;
     v.appendChild(intro);
     intro.querySelector('#hideWelcome').onclick = () => { setPref('welcomeHidden', true); render(); };
   }
   if (q) { const p = document.createElement('p'); p.className = 'empty'; p.textContent = `Nothing found for "${q}"${wheres().length ? ' in ' + wheres().map(w => w === 'local' ? 'this machine' : 'MPAI as a Service').join(' and ') : ''}.`; v.appendChild(p); }
   const h = document.createElement('h2'); h.className = 'sec'; h.textContent = 'What Thalia does'; v.appendChild(h);
-  const list = document.createElement('div'); list.className = 'grid';
+  const list = document.createElement('div'); list.className = 'grid tiles';      // HOME ON ONE SCREEN (2026-11-26): a tile shows its name and its buttons; what it does is under Details
   for (const [name, text, state, links] of (isRemote() ? REMOTE_FUNCTIONS : FUNCTIONS)) {
     const c = document.createElement('section'); c.className = 'card fn ' + state;
-    c.innerHTML = `<div class="fh"><b></b><span class="chip"></span></div><p class="desc"></p>`;
+    c.innerHTML = `<div class="fh"><b></b><span class="chip"></span></div><p class="desc" hidden></p>`;
     c.querySelector('b').textContent = name; c.querySelector('.chip').textContent = state === 'available' ? 'available' : 'coming';
     c.querySelector('.desc').textContent = text; list.appendChild(c);
-    if (links) { const row = document.createElement('div'); row.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin-top:6px'; for (const [label, run] of links) { const b = document.createElement('button'); b.className = 'ret'; b.textContent = label; b.onclick = e => { e.stopPropagation(); run(); }; row.appendChild(b); } c.appendChild(row); }
+    const row = document.createElement('div'); row.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;align-items:center';
+    for (const [label, run] of (links || [])) { const b = document.createElement('button'); b.className = 'ret'; b.textContent = label; b.onclick = e => { e.stopPropagation(); run(); }; row.appendChild(b); }
+    const dt = document.createElement('button'); dt.className = 'dt'; dt.textContent = 'Details';
+    dt.onclick = e => { e.stopPropagation(); const p = c.querySelector('.desc'); p.hidden = !p.hidden; dt.textContent = p.hidden ? 'Details' : 'Less'; };
+    row.appendChild(dt); c.appendChild(row);
     const go = GOES[name];
     if (go && state === 'available') { c.style.cursor = 'pointer'; c.title = 'Open it'; c.onclick = () => { view = go; if (!scope) scope = 'local'; storeDrawn = false; devicesDrawn = false; settingsDrawn = false; save(); }; }
   }
   v.appendChild(list);
   // THE MMM WORLD on Home (2026-11-26): your MMM User - register once, then enter without barriers.
   {      // in a Remote Thalia too (the participants' Thalia, 2026-11-26)
-    const h2 = document.createElement('h2'); h2.className = 'sec'; h2.textContent = 'The MMM world'; v.appendChild(h2);
-    const holder = document.createElement('section'); holder.className = 'card'; v.appendChild(holder);
-    mmmUserCard().then(d => { d.style.borderTop = '0'; holder.appendChild(d); });
+    const holder = document.createElement('section'); holder.className = 'card fn available'; list.appendChild(holder);
+    mmmUserCard(true).then(d => { d.style.borderTop = '0'; d.style.paddingTop = '0'; holder.appendChild(d); });
   }
 }
 
@@ -894,17 +899,27 @@ function aboutView() {
 
 // YOUR MMM USER (2026-11-26): Thalia is your own User in the MMM world. It keeps your Account - the address of the M-Instance (the personal link you were sent, or the world's address),
 // your data, your Account Level and your password (encrypted for your Windows user) - and registers or enters for you, then opens the world already entered.
-async function mmmUserCard() {
+async function mmmUserCard(compact = false) {          // compact: the tile on Home (the form under Details); open in Settings
   let a = {}; try { a = await (await fetch('/api/mmm/account', { cache: 'no-store' })).json(); } catch { }
   const d = document.createElement('div'); d.className = 'detail';
   const input = (id, label, value, type = 'text', hint = '') => `<label style="display:block;margin:4px 0"><span class="desc" style="display:block">${label}</span><input id="${id}" type="${type}" placeholder="${hint}" style="width:100%;box-sizing:border-box;font:inherit;padding:6px 8px;border-radius:7px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--ink)"></label>`;
-  d.innerHTML = `<h4>Your MMM User</h4><div class="desc">Thalia is your User in the MMM world. Register once (Participant keeps your Persona from one visit to the next; to be invited to a meeting, give the email you were invited with); then Enter the MMM, with no password to type.</div>
+  const known = a.linked || (a.user && a.hasPassword);                     // Thalia can enter by itself: the one button that matters is Enter
+  d.innerHTML = `${compact ? '<div class="fh"><b>The MMM world</b><span class="chip"></span></div>' : '<h4>Your MMM User</h4>'}<div class="mmAbout desc"${compact ? ' hidden' : ''}>Thalia is your User in the MMM world. Register once (Participant keeps your Persona from one visit to the next; to be invited to a meeting, give the email you were invited with); then Enter the MMM, with no password to type. If you have an Account already, Link to my Account: you approve it once in the world.</div>
+    <div class="mmForm"${compact ? ' hidden' : ''}>
     ${input('mmAddr', 'The address of the M-Instance (your personal link, or the world\'s address)', '', 'text', 'https://...')}
     <label style="display:block;margin:4px 0"><span class="desc" style="display:block">Account Level</span><select id="mmLevel" style="font:inherit;padding:6px 8px;border-radius:7px;background:rgba(0,0,0,.25);color:var(--ink);border:1px solid var(--line)"><option>Visitor</option><option>Participant</option><option>Officer</option></select></label>
     ${input('mmFirst', 'First name', '')}${input('mmLast', 'Last name', '')}${input('mmOrg', 'Organisation (not needed for a Visitor)', '')}${input('mmMail', 'Email (not needed for a Visitor)', '', 'email')}
     ${input('mmPass', a.hasPassword ? 'Password (kept; type a new one to change it)' : 'Password (at least 6 characters)', '', 'password')}
-    <div class="buttons" style="display:flex;gap:8px;margin-top:6px"><button class="act secondary s">Keep</button><button class="act r">Register</button><button class="act e">Enter the MMM</button><button class="act secondary l" title="You have an Account already: link this Thalia to it, approving it once in the world, so that Thalia enters as you without your password">Link to my Account</button></div><div class="lk desc"></div><div class="out desc"></div>`;
+    <div style="margin-top:6px"><button class="act secondary s">Keep</button></div></div>
+    <div class="buttons" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;align-items:center"><button class="act e">Enter the MMM</button><button class="act secondary l" title="You have an Account already: link this Thalia to it, approving it once in the world, so that Thalia enters as you without your password">Link to my Account</button><button class="act secondary r">Register</button>${compact ? '<button class="dt">Details</button>' : ''}</div><div class="lk desc"></div><div class="out desc"></div>`;
   const $d = s => d.querySelector(s), out = $d('.out');
+  if (compact) {
+    $d('.chip').textContent = a.linked ? 'linked' : known ? 'registered' : 'not yet';
+    if (known) { $d('.l').hidden = true; $d('.r').hidden = true; }         // registered or linked: Enter only (the others come back with Details)
+    const unfold = open => { $d('.mmForm').hidden = !open; $d('.mmAbout').hidden = !open; $d('.dt').textContent = open ? 'Less' : 'Details'; if (open) { $d('.l').hidden = false; $d('.r').hidden = false; } };
+    $d('.dt').onclick = () => unfold($d('.mmForm').hidden);
+    d.unfold = unfold;
+  }
   $d('#mmAddr').value = a.address || ''; $d('#mmLevel').value = a.level || 'Visitor'; $d('#mmFirst').value = a.first || ''; $d('#mmLast').value = a.last || ''; $d('#mmOrg').value = a.organisation || ''; $d('#mmMail').value = a.email || '';
   const keep = async () => {
     const body = { address: $d('#mmAddr').value, level: $d('#mmLevel').value, first: $d('#mmFirst').value, last: $d('#mmLast').value, organisation: $d('#mmOrg').value, email: $d('#mmMail').value, password: $d('#mmPass').value };
@@ -929,7 +944,7 @@ async function mmmUserCard() {
     out.style.color = r.ok ? '' : 'var(--bad)';
     out.innerHTML = r.ok ? `The world opens: enter with your password there and approve. Check that it shows this code: <b style="font-size:20px;letter-spacing:3px">${esc(r.code)}</b>` : esc(r.text);
     if (r.ok && tab) tab.location = r.url; else tab?.close();
-    if (!r.ok) return;
+    if (!r.ok) { d.unfold?.(true); return; }
     for (let i = 0; i < 330; i++) {                                         // until approved, refused or expired (a request lasts 10 minutes)
       await new Promise(res => setTimeout(res, 2000));
       const st = await (await fetch('/api/mmm/account', { cache: 'no-store' })).json().catch(() => null);
@@ -940,6 +955,7 @@ async function mmmUserCard() {
   };
   $d('.s').onclick = async () => { if (await keep()) { out.style.color = 'var(--ok)'; out.textContent = 'Kept.'; } };
   $d('.r').onclick = async () => {
+    if (d.unfold && $d('.mmForm').hidden) { d.unfold(true); out.style.color = ''; out.textContent = 'Fill in your details, then press Register again.'; return; }
     if (!(await keep())) return;
     out.style.color = ''; out.textContent = 'Registering...';
     const r = await (await fetch('/api/mmm/register', { method: 'POST' })).json().catch(() => ({ ok: false, text: 'Thalia does not answer.' }));
@@ -956,6 +972,7 @@ async function mmmUserCard() {
       out.style.color = ''; out.textContent = 'Entering...';
       const r = await (await fetch('/api/mmm/enter?launch=1', { method: 'POST' })).json().catch(() => ({ ok: false, text: 'Thalia does not answer.' }));
       out.style.color = r.ok ? 'var(--ok)' : 'var(--bad)'; out.textContent = r.ok ? r.text.replace('the world opens.', 'the world opens in its own window.') : r.text;
+      if (!r.ok) d.unfold?.(true);
       return;
     }
     const tab = window.open('about:blank', '_blank');                     // opened by the click itself: a tab opened later is blocked as a pop-up
@@ -963,7 +980,7 @@ async function mmmUserCard() {
     out.style.color = ''; out.textContent = 'Entering...';
     const r = await (await fetch('/api/mmm/enter', { method: 'POST' })).json().catch(() => ({ ok: false, text: 'Thalia does not answer.' }));
     out.style.color = r.ok ? 'var(--ok)' : 'var(--bad)'; out.textContent = r.text;
-    if (r.ok && tab) tab.location = r.url; else tab?.close();
+    if (r.ok && tab) tab.location = r.url; else { tab?.close(); d.unfold?.(true); }
   };
   return d;
 }
