@@ -1,0 +1,44 @@
+# =============================================================================
+#  CAV-HCI.orch - MPAI Human-CAV Interaction (CAV-HCI of MPAI-CAV V2.0)
+#  Workflow Description Language v0.3, AIF V3.0
+#
+#  One Controller, one Module. The User Agent offers the Controller data
+#  identified by Data Type and Port Number, and asks for data identified the
+#  same way. It names no AIM.
+#
+#  The Module is Human-CAV Interaction: the passenger in the cabin speaks and
+#  shows the face; the cabin's LiDAR gives the scene. The Module describes the
+#  audio and visual scene, recognises the passenger and what is said, and
+#  answers with its Portable Avatar. The User Agent of this App is a window of
+#  its own (Apps\CAV\HCIApps\HciApp) with the camera and the microphone of the
+#  cabin.
+#
+#  Made 2026-11-25 from the turn of the HCI window (FrontEndTurnAsync).
+# =============================================================================
+
+workflow CAV-HCI over 1CAV-HCI-V2.0-I01
+
+on Start:
+
+    ask Controller to start
+
+    prompt "Human-CAV Interaction: look at the camera and talk with the car."
+
+    loop until Stop:
+
+        acquire CabinAudio (OSD-BAO-V1.5) via VAD
+        acquire Face (OSD-BVO-V1.5)
+        acquire CabinLiDAR (OSD-BLO-V1.5)
+
+        offer CabinAudio (OSD-BAO-V1.5:1)
+        offer Face (OSD-BVO-V1.5:1)
+        offer CabinLiDAR (OSD-BLO-V1.5:1)
+        offer AvatarModel (OSD-B3O-V1.5:1) = "cav-avatar.glb"
+        ask   PassengerID (OSD-IID-V1.5)
+        ask   RecognisedText (OSD-BTO-V1.5:2)
+        ask   MachinePortableAvatar (PAF-PAV-V1.6)
+        present MachinePortableAvatar
+
+on Stop:
+
+    ask Controller to stop

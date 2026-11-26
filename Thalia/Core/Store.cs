@@ -65,7 +65,9 @@ static class StoreRoutes
     // MPAI as a Service instance does, and each was run through Thalia with its own program on that Controller (--controller) and gave its result. ASM, CAS, CPS, TMA, LTP, VMS:
     // Thalia starts their own Controller and client (OwnClients.cs), run through Thalia the same night.
     public static readonly HashSet<string> RunsHere = new(StringComparer.Ordinal) { "AMC", "MCA", "MTS", "NPR", "AMQ", "ACR", "MAC", "AES", "SME", "SRS", "EES", "ARP", "EAE", "CPP",
-                                                                                     "ASM", "CAS", "CPS", "TMA", "LTP", "VMS", "AUA" };   // with their own Controller and client (OwnClients.cs)
+                                                                                     "ASM", "CAS", "CPS", "TMA", "LTP", "VMS", "AUA",    // with their own Controller and client (OwnClients.cs)
+                                                                                     "TST", "MQA", "CEC",
+                                                                                     "HCI" };    // 2026-11-25: with its own Controller and window (OwnClients.cs)      // 2026-11-25 (N-50 e): TST's AIMs are those of MTS (MtsProvider); MQA's MqaProvider's; CEC with its own Controller and client (OwnClients.cs)
 
     public static void Map(WebApplication app, StoreContext c)
     {

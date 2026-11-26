@@ -43,7 +43,13 @@
     <!-- MPAI-MMC CAS and CPS: the Modules of Conversation About a Scene and Conversation with Personal Status, as their own Controllers build them (N-49, 2026-11-24) -->
     <ProjectReference Include="..\..\..\MMC\CPS\Provider\Mpai.Mmc.Cps.csproj" />
     <ProjectReference Include="..\..\..\OSD\TMA\Provider\Mpai.Osd.Tma.Provider.csproj" />
+    <!-- CAV-HCI V2.0: the Human-CAV Interaction Module, as the HCI Controller builds it (N-50 l, 2026-11-25) -->
+    <ProjectReference Include="..\..\..\..\AIMs\CAV\V2.0\Hci\Mpai.Cav.Hci.csproj" />
     <!-- CAE-ASM: the AIMs of Audio Scene Management and the Voice Command Interface, as the ASM Controller builds them (N-49) -->
+    <!-- XRV-LTP V1.0: the Module of the Live Theatrical Performance App (2026-11-26) -->
+    <ProjectReference Include="..\..\..\..\AIMs\XRV1\V1.0\Provider\Mpai.Xrv.csproj" />
+    <!-- PGM-AUA V1.0: the A-User Module of the door App (2026-11-26) -->
+    <ProjectReference Include="..\..\..\..\AIMs\PGM\V1.0\Mpai.Pgm.csproj" />
     <ProjectReference Include="..\..\..\CAE\ASM\Voice\AsmVoice.csproj" />
     <ProjectReference Include="..\..\..\..\AIMs\MMC\V2.5\ASR\Mpai.Mmc.Asr.csproj" />
     <ProjectReference Include="..\..\..\..\AIMs\MMC\V2.5\TIQ\Mpai.Mmc.Tiq.csproj" />

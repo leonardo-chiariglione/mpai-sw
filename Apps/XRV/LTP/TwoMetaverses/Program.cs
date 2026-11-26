@@ -28,7 +28,7 @@ using Mpai.Xrv.VirtualVenue;
 //   5. Unless --no-video: the recording is drawn by stage/index.html in headless Edge, frame by frame (DevTools protocol), and made into an MP4 with the applause (ffmpeg).
 //   6. --live: no recording to draw afterwards - the two Venues are drawn on the screen while the show runs (stage/index.html?live=state.json in an Edge window),
 //      the page asking every 150 ms what the two M-Instances hold now.
-// Arguments: [--scale 1.0] [--out <folder>] [--video <mp4>] [--no-video] [--fps 20] [--live] [--port 8771] [--lead 10]
+// Arguments: [--scale 1.0] [--out <folder>] [--video <mp4>] [--no-video] [--fps 20] [--live] [--port 8771] [--lead 10] [--controller <MPAI as a Service>]
 static string Arg(string[] a, string name, string fallback) { var i = Array.IndexOf(a, name); return i >= 0 && i + 1 < a.Length ? a[i + 1] : fallback; }
 static string FindRoot()
 {
@@ -44,6 +44,7 @@ var outDir = Path.GetFullPath(Arg(args, "--out", Path.Combine(root, "Test", "Res
 var video = Arg(args, "--video", Path.Combine(outDir, "XRV-LTP-Real-Virtual-Environments-demo.mp4"));
 Directory.CreateDirectory(outDir);
 var showDir = Path.Combine(root, "Test", "Data", "XRV", "LongerEvening");
+var controller = Arg(args, "--controller", "") is { Length: > 0 } cu ? cu : null;   // the Module on that Controller (an instance of MPAI as a Service), not on one of this program
 var events = new List<string>();
 void Log(string line) { lock (events) events.Add(line); Console.WriteLine(line); }
 
@@ -58,7 +59,7 @@ if (args.Contains("--live"))                                                    
     if (edge is not null && !args.Contains("--no-window")) window = Process.Start(new ProcessStartInfo(edge, $"--user-data-dir=\"{Path.Combine(outDir, "live-profile")}\" --no-first-run --start-fullscreen --autoplay-policy=no-user-gesture-required --app={page}") { UseShellExecute = false });
     Log($"the stage: {page}; the show starts {(lead < 0 ? "when Start is pressed" : $"in {lead:0} s")}; Close (top right) ends it");
     _ = Show.Quit.Task.ContinueWith(_ => { try { window?.Kill(true); } catch { } Environment.Exit(0); });
-    var live = await Show.RunAsync(root, showDir, scale, outDir, Log, lead);
+    var live = await Show.RunAsync(root, showDir, scale, outDir, Log, lead, controller);
     File.WriteAllLines(Path.Combine(outDir, "events.txt"), events);
     Log("the show is over; the last picture stays until Close is pressed.");
     await Show.Quit.Task.WaitAsync(TimeSpan.FromHours(2)).ContinueWith(_ => { });
@@ -75,7 +76,7 @@ if (args.Contains("--render-only"))                                             
 }
 else
 {
-    result = await Show.RunAsync(root, showDir, scale, outDir, Log);
+    result = await Show.RunAsync(root, showDir, scale, outDir, Log, controller: controller);
     File.WriteAllText(Path.Combine(outDir, "sounds.json"), new JsonObject
     {
         ["duration"] = result.Duration,
@@ -153,7 +154,7 @@ static class Show
     public static readonly TaskCompletionSource Go = new(TaskCreationOptions.RunContinuationsAsynchronously);     // --live: the Start button
     public static readonly TaskCompletionSource Quit = new(TaskCreationOptions.RunContinuationsAsynchronously);   // --live: the Close button
 
-    public static async Task<ShowResult> RunAsync(string root, string showDir, double scale, string outDir, Action<string> log, double lead = 0)
+    public static async Task<ShowResult> RunAsync(string root, string showDir, double scale, string outDir, Action<string> log, double lead = 0, string? controller = null)
     {
         var theatrePlan = (JsonObject)JsonNode.Parse(File.ReadAllText(Path.Combine(showDir, "ProcessActions-Theatre.json")))!;
         var squarePlan = (JsonObject)JsonNode.Parse(File.ReadAllText(Path.Combine(showDir, "ProcessActions-Square.json")))!;
@@ -167,7 +168,10 @@ static class Show
 
         var work = Path.Combine(outDir, "controller"); Directory.CreateDirectory(work);
         var settings = Path.Combine(work, "aim-settings.json"); File.WriteAllText(settings, "{}");
-        using var api = new ControllerApi(Path.Combine(root, "AIMs", "AMDs"), settings, new XrvProvider());
+        IControllerApi api = controller is null ? new ControllerApi(Path.Combine(root, "AIMs", "AMDs"), settings, new XrvProvider())
+                                                : new Mpai.Mas.Client.RemoteControllerApi(controller, Environment.GetEnvironmentVariable("MPAI_MAS_TOKEN"));
+        using var disposeApi = api as IDisposable;
+        if (controller is not null) log($"the Module runs on the Controller at {controller}");
 
         DateTimeOffset start = DateTimeOffset.MaxValue;
         double Now() => start == DateTimeOffset.MaxValue ? 0 : (DateTimeOffset.UtcNow - start).TotalSeconds / scale;

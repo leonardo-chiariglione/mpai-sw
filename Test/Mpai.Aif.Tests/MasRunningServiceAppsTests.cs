@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 using AIF.Controller;
 using Mpai.Aif.Api;
 using Mpai.Core;
+using Mpai.Core.OSD;
 
 namespace Mpai.Aif.Tests;
 
@@ -61,5 +62,55 @@ public class MasRunningServiceAppsTests
         Assert.True(r.Ok, $"AMQ on the Service: {r.Error}");
         var said = AvatarUtterance.TextOfPortableAvatar(r.ByType("PAF-PAV-V1.6")) ?? "";
         Assert.Contains("red", said, StringComparison.OrdinalIgnoreCase);
+    }
+
+    // N-50 (e), 2026-11-25: TST and MQA on the Service (their MAS versions: the Module on the instance, the client of the App on this machine with --controller).
+    [SkippableFact]
+    public void TstTranslatesATypedTurnIntoTextAndSpeechOnTheService()
+    {
+        using var api = Service();
+        var languages = new ControllerApi.Datum("OSD-SEL-V1.5", 1, MpaiJson.ToJson(BasicSelectorObject.Languages("en", "it")));
+        var r = Turn(api, "1MMC-TST-V2.5-I01", languages, new ControllerApi.Datum("OSD-BTO-V1.5", MpaiJson.ToJson(BasicTextObject.FromText("Good morning. The concert starts at eight."))));
+        Assert.True(r.Ok, $"TST on the Service: {r.Error}");
+        Assert.Contains("concert", MpaiJson.FromJson<BasicTextObject>(r.ByType("OSD-BTO-V1.5")!)!.GetText(), StringComparison.OrdinalIgnoreCase);
+        Assert.True(MpaiJson.FromJson<BasicSpeechObject>(r.ByType("OSD-BSO-V1.5")!)!.Data.Length > 200, "TST on the Service gave no speech");
+    }
+
+    [SkippableFact]
+    public void MqaSaysWhatTheObjectIsOnTheService()
+    {
+        using var api = Service();
+        var photo = Directory.GetFiles(Path.Combine(Repository.Root, "Test", "Data", "Images", "Animals", "zebra")).OrderBy(f => f, StringComparer.Ordinal).First();
+        var picture = new ControllerApi.Datum("OSD-BVO-V1.5", MpaiJson.ToJson(BasicVisualObject.FromFile(Path.GetFileName(photo), File.ReadAllBytes(photo), "Visual Object")));
+        var r = Turn(api, "1MMC-MQA-V2.5-I01", picture, new ControllerApi.Datum("OSD-BTO-V1.5", MpaiJson.ToJson(BasicTextObject.FromText("What animal is this?"))), MachineId);
+        Assert.True(r.Ok, $"MQA on the Service: {r.Error}");
+        Assert.Contains("zebra", AvatarUtterance.TextOfPortableAvatar(r.ByType("PAF-PAV-V1.6")) ?? "", StringComparison.OrdinalIgnoreCase);
+    }
+
+    // N-50 (l), 2026-11-25: the MAS version of HCI - the Human-CAV Interaction Module on the instance; the cabin (camera, microphone) is the client's. One turn: what a
+    // passenger says (a Piper voice, as the cabin's microphone gives it), a face and the cabin's LiDAR frame (empty); the Module recognises the words and answers.
+    [SkippableFact]
+    public void HciHearsThePassengerOnTheService()
+    {
+        Skip.IfNot(TestModels.Can("tts-program"), "the voice of the passenger cannot be made");
+        using var api = Service();
+        var face = Directory.GetFiles(Path.Combine(Repository.Root, "Test", "Data", "Images", "Faces", "happy"), "*.jpg").OrderBy(f => f, StringComparer.Ordinal).First();
+        var started = api.StartFlow("1CAV-HCI-V2.0-I01", out var id);
+        Skip.If(started != AifError.OK, $"the Service does not offer 1CAV-HCI-V2.0-I01 ({started})");
+        try
+        {
+            api.SharedStorageInit(id, Path.Combine(Path.GetTempPath(), "mas-hci-" + Guid.NewGuid().ToString("N")));
+            var r = api.Advance(id, new[]
+            {
+                new ControllerApi.Datum("OSD-BAO-V1.5", 1, HciSpeechTests.Passenger("Good morning. Please take me to the station.", "en_GB-alan-medium")),
+                new ControllerApi.Datum("OSD-BVO-V1.5", MpaiJson.ToJson(BasicVisualObject.FromFile(Path.GetFileName(face), File.ReadAllBytes(face), "Face"))),
+                new ControllerApi.Datum("OSD-BLO-V1.5", 1, MpaiJson.ToJson(new BasicLiDARObject { BasicLiDARObjectID = Guid.NewGuid().ToString("N"), BasicLiDARData = [] })),
+                TestAvatar.Datum
+            });
+            Assert.True(r.Ok, $"HCI on the Service: {r.Error}");
+            var heard = r.ByType("OSD-BTO-V1.5", 2) is { } t ? MpaiJson.FromJson<BasicTextObject>(t)?.GetText() ?? "" : "";
+            Assert.Contains("station", heard, StringComparison.OrdinalIgnoreCase);
+        }
+        finally { api.StopFlow(id); }
     }
 }

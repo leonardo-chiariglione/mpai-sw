@@ -48,7 +48,8 @@ public sealed class DoorUseCase
     private readonly WhisperAsr? whisper;
     private readonly string repo, llm;
     private MmmClient host = null!, visitor = null!;
-    private ControllerApi api = null!;
+    private IControllerApi api = null!;
+    private readonly string? controllerUrl;   // --controller: the A-User Module runs on that Controller (an instance of MPAI as a Service), not on one of this program
     private int moduleId;
     private readonly List<string> log = [];
     private readonly HashSet<string> heard = new(StringComparer.Ordinal);
@@ -59,8 +60,9 @@ public sealed class DoorUseCase
     private string? pending, lastCommand;   // the page shows the last command accepted until the Module requests a Property Change
     private int acceptedOf;                 // the command (its number) whose first acceptance was seen
 
-    public DoorUseCase(MInstance m, HttpClient http, SummaryServices voice, WhisperAsr? whisper, string repo, string llm)
+    public DoorUseCase(MInstance m, HttpClient http, SummaryServices voice, WhisperAsr? whisper, string repo, string llm, string? controllerUrl = null)
     {
+        this.controllerUrl = controllerUrl;
         this.m = m; this.http = http; this.voice = voice; this.whisper = whisper; this.repo = repo; this.llm = llm;
     }
 
@@ -95,7 +97,7 @@ public sealed class DoorUseCase
     public const string Table = "Table";
     private static readonly double[] TableAt = [0.8, -0.4];
 
-    // dotnet run --project AllApps/MMM/Server -- [url] --door [--llm llama3.2:3b]: the M-Instance of the door, its page at <url>/viewer/door.html.
+    // dotnet run --project AllApps/MMM/Server -- [url] --door [--llm llama3.2:3b] [--controller <MPAI as a Service>]: the M-Instance of the door, its page at <url>/viewer/door.html.
     public static async Task<int> RunAsync(MInstance m, string url, string repo, string[] args)
     {
         Setup(m);
@@ -104,7 +106,8 @@ public sealed class DoorUseCase
         var llm = Array.IndexOf(args, "--llm") is var k and >= 0 && k + 1 < args.Length ? args[k + 1] : "llama3.2:3b";   // the language model of Basic Knowledge
         var whisper = new WhisperAsr(repo);          // started by the warm-up, AFTER the language model is loaded (N-48)
         var http = new HttpClient { BaseAddress = new Uri(url) };
-        var door = new DoorUseCase(m, http, voice, whisper.Available ? whisper : null, repo, llm);
+        var controller = Array.IndexOf(args, "--controller") is var c and >= 0 && c + 1 < args.Length ? args[c + 1] : null;
+        var door = new DoorUseCase(m, http, voice, whisper.Available ? whisper : null, repo, llm, controller);
         // The human's side (outside the MMM-API): the command to its User, written or spoken; what its User tells it; the sound of the room, rendered (MU-Actuate).
         app.MapPost("/door/command", async (HttpContext ctx) => { var text = await new StreamReader(ctx.Request.Body).ReadToEndAsync(); await door.CommandAsync(text); return Results.Ok(); });
         app.MapPost("/door/speak", async (HttpContext ctx) => { using var ms = new MemoryStream(); await ctx.Request.Body.CopyToAsync(ms); return Results.Text(await door.SpokenAsync(ms.ToArray())); });
@@ -134,7 +137,7 @@ public sealed class DoorUseCase
 
     public object ModuleStatus()
     {
-        var s = api.Status(moduleId);
+        var s = api.Status(moduleId);   // over MPAI-MAS: FAILED, no AIMs (the instance does not report them yet)
         var auc = provider?.Made.GetValueOrDefault("1PGM-AUC-V1.0-I01") as AucAim;
         return new
         {
@@ -142,7 +145,7 @@ public sealed class DoorUseCase
             auc = auc is null ? null : new { requested = auc.Requested, pending = auc.PendingGoal?.ToJsonString(), auc.Outcome, speech = auc.SpeechToCome, trace = auc.Trace },
             auf = provider?.Made.GetValueOrDefault("1PGM-AUF-V1.0-I01") is AufAim auf ? new { trace = auf.Trace } : null,
             made = provider?.Made.Keys.Order().ToArray(),
-            channels = api.ChannelAccounts(moduleId).Where(c => c.Contains("AUC") || c.Contains("AUF")).ToArray()
+            channels = (api as ControllerApi)?.ChannelAccounts(moduleId).Where(c => c.Contains("AUC") || c.Contains("AUF")).ToArray()
         };
     }
 
@@ -158,6 +161,16 @@ public sealed class DoorUseCase
         var r = await host.PerformAsync("MU-Actuate", Uc2.C(Room, at: Human));
         Say("M-Instance", $"MU-Actuate of the Room to the human of the Host: {r.Http} {r.Response.PaStatus.Code}");
 
+        // ON AN INSTANCE OF MPAI AS A SERVICE (2026-11-26): the A-User Module is the instance's, built with its settings and its language model; this program only asks its Controller.
+        if (controllerUrl is not null)
+        {
+            api = new Mpai.Mas.Client.RemoteControllerApi(controllerUrl, Environment.GetEnvironmentVariable("MPAI_MAS_TOKEN"));
+            var startedThere = await Task.Run(() => api.StartFlow(Module, out moduleId));
+            Say("Controller", $"the A-User Module {Module} started on {controllerUrl}: {startedThere}");
+            llmReady = true;   // the language model is the instance's
+        }
+        else
+        {
         // The A-User Module, on the Controller: the L3s of the repository, copied with the settings of this App.
         var folder = Path.Combine(Path.GetTempPath(), "door-a-user-" + Environment.ProcessId);
         Directory.CreateDirectory(folder);
@@ -175,6 +188,7 @@ public sealed class DoorUseCase
         api = new ControllerApi(folder, Path.Combine(folder, "settings.json"), store => provider = new Provider(store, model, new Voice(voice)));
         var started = api.StartFlow(Module, out moduleId);
         Say("Controller", $"the A-User Module {Module} started: {started} (Basic Knowledge with {llm})");
+        }
 
         foreach (var type in new[] { "PGM-HCM-V1.0", "MMM-ACT-V2.2", "MMM-PAC-V2.2", "PAF-PAV-V1.6" })
             _ = Task.Run(() => ReadLoopAsync(type));
@@ -182,7 +196,7 @@ public sealed class DoorUseCase
         _ = Task.Run(WarmUpAsync);
     }
 
-    private OllamaModel model = null!;
+    private OllamaModel? model;
 
     // READY WHEN THE PAGE OPENS (N-37 1): the language model, the voice and Whisper are loaded before the first command; the page says when the A-User is ready.
     private volatile bool llmReady, voiceReady;
@@ -198,7 +212,7 @@ public sealed class DoorUseCase
         var t = DateTime.Now;
         var llmTask = Task.Run(async () =>
         {
-            for (var i = 0; i < 30 && !llmReady; i++)
+            for (var i = 0; i < 30 && !llmReady && model is not null; i++)
                 try { await model.AnswerAsync("Answer in JSON.", "Say ready.", new JsonObject { ["type"] = "object" }); llmReady = true; Say("User Agent", $"the language model {llm} is loaded ({(DateTime.Now - t).TotalSeconds:0.0} s)"); }
                 catch (Exception e) { warmUpProblem = "the language model does not answer (is Ollama running?): " + e.Message; await Task.Delay(2000); }
         });

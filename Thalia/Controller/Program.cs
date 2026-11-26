@@ -66,7 +66,7 @@ internal static class Program
             s =>
             {
                 var compiled = new IAimProvider[] { new AmcProvider(s), new McaProvider(s), new MtsProvider(s), new NprProvider(s), new AmqProvider(s), new AcrProvider(s), new MacProvider(s),
-                                                  new Mpai.Cae.Usc.UscProvider(s), new Mpai.Cui.CuiProvider() };   // CAE-USC and CUI-CPP, as the MPAI as a Service instance (N-49)
+                                                  new Mpai.Cae.Usc.UscProvider(s), new Mpai.Cui.CuiProvider(), new MqaProvider(s) };   // CAE-USC and CUI-CPP, as the MPAI as a Service instance (N-49); MMC-MQA (N-50, after the others)
                 // The package provider is asked first: it builds what the Store approved from its package, and nothing else.
                 return repository is null ? new CompositeProvider(compiled)
                     : new CompositeProvider(compiled.Prepend(new PackageAimProvider(s, Path.Combine(aimsFolder!, "packages"), Console.WriteLine, source, PackageAdapters.All)).ToArray());

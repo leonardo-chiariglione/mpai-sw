@@ -1,0 +1,30 @@
+{
+    "Name": "Human-CAV Interaction",
+    "Description": "Talk with the Connected Autonomous Vehicle as its passenger: it sees your face, hears you, recognises you and answers with its avatar.",
+    "Icon": "icon.svg",
+    "Version": "1.0",
+    "Standard": "MPAI-CAV V2.0",
+    "UseCase": "HCI",
+    "Module": "1CAV-HCI-V2.0-I01",
+    "Client": "Apps/CAV/HCIApps/HciApp (its own window: --controller <the address of the Controller>)",
+    "Keywords": [
+        "car",
+        "vehicle",
+        "passenger",
+        "conversation",
+        "face",
+        "speech"
+    ],
+    "Categories": [
+        "Conversation",
+        "Mobility"
+    ],
+    "Languages": [
+        "en"
+    ],
+    "Asks": [
+        "the camera",
+        "the microphone"
+    ],
+    "Keeps": "The gallery of the people the Module knows."
+}

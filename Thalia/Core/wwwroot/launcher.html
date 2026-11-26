@@ -320,6 +320,8 @@ function render() {
     card.querySelector('h3').textContent = a.name;
     card.querySelector('.id').textContent = `${id} - Module ${a.module || '?'}`;
     card.querySelector('.desc').textContent = a.description;
+    const warnOf = Object.values(sides).map(s => s && s.warning).find(Boolean) || a.warning;
+    if (warnOf) { const w = document.createElement('p'); w.className = 'desc warning'; w.style.cssText = 'color:#fbbf24;font-weight:600'; w.textContent = '⚠ ' + warnOf; card.querySelector('.desc').after(w); }
     for (const where of ws) card.appendChild(row(id, where, sides[where]));
     if (!isRemote()) card.appendChild(needs(sides.local || a));
     if (!isRemote() && sides.local && sides.local.obtained) card.appendChild(obtainedFooter(sides.local));
@@ -467,6 +469,7 @@ function storeCard(a) {
   card.querySelector('h3').textContent = a.name;
   card.querySelector('.id').textContent = `${a.id} ${a.version} - Module ${a.module || '?'}${a.standard ? ' - ' + a.standard : ''}`;
   card.querySelector('.desc').textContent = a.description;
+  if (a.warning) { const w = document.createElement('p'); w.className = 'desc warning'; w.style.cssText = 'color:#fbbf24;font-weight:600'; w.textContent = '⚠ ' + a.warning; card.querySelector('.desc').after(w); }
   const chip = card.querySelector('.chip'); chip.textContent = (STATE_TEXT[a.state] || a.state) + (a.runsHere === false && a.state === 'available' ? ' - not run by Thalia yet' : ''); chip.classList.add(a.state);
   const more = card.querySelector('.more'), box = card.querySelector('.detail');
   // The way to obtain (or update) an App is through what it needs and the licences, shown first: the button says so, and the state tag opens the same place.
@@ -488,7 +491,7 @@ function fillDetail(box, a, d) {
   const licences = [...new Set(src.map(s => s.licence).filter(Boolean))];
   const personal = src.some(s => s.personalData);
   box.innerHTML = `
-    <h4>What the App is</h4><div>${esc(d.description)} Version ${esc(d.version)}${d.held ? `; you have ${esc(d.held.version)}` : ''}.</div>
+    <h4>What the App is</h4><div>${esc(d.description)} Version ${esc(d.version)}${d.held ? `; you have ${esc(d.held.version)}` : ''}.</div>${d.descriptor && d.descriptor.Warning ? `<div style="color:#fbbf24;font-weight:600">⚠ ${esc(d.descriptor.Warning)}</div>` : ''}
     <h4>What the App itself needs</h4>
     <div>${(d.descriptor && d.descriptor.Asks && d.descriptor.Asks.length) ? 'It will ask you for: ' + d.descriptor.Asks.map(esc).join(', ') + '.' : 'It asks you for nothing.'}${d.descriptor && d.descriptor.Keeps ? ' What it keeps: ' + esc(d.descriptor.Keeps) : ''}</div>
     <h4>What its Module needs</h4>

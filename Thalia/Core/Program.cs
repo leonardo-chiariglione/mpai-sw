@@ -363,7 +363,7 @@ async Task StartAsync(Run run)
         if (!remote && run.Where == "local" && OwnClients.Of(run.App, root) is { } own) { await StartOwnAsync(run, own); return; }
         // An App of the MPAI as a Service instance that needs its own window (ASM, CAS, CPS, TMA: the browser client has not the devices they use): the window is started on this machine and told where
         // the instance is. The Controller is the instance's: none is started here.
-        if (!remote && run.Where == "mas" && OwnClients.Of(run.App, root) is { ControllerExe: not null } ownMas) { await StartOwnAsync(run, ownMas, masUrl.ToString()); return; }
+        if (!remote && run.Where == "mas" && OwnClients.Of(run.App, root) is { } ownMas && (ownMas.ControllerExe is not null || ownMas.MasArgs is not null)) { await StartOwnAsync(run, ownMas, masUrl.ToString()); return; }
         if (!File.Exists(hostDll)) throw new InvalidOperationException($"the App client is not built: {hostDll} (dotnet build {hostProject})");
         var hostFile = remote && File.Exists(hostExe) ? hostExe : "dotnet";
         var hostArgs = hostFile == "dotnet" ? $"\"{hostDll}\" " : "";
@@ -433,6 +433,7 @@ async Task StartOwnAsync(Run run, OwnClients.Own own, string? serviceUrl = null)
     string Fill(string t) => t.Replace("{controller}", controller).Replace("{root}", root).Replace("{data}", thaliaData).Replace("{port}", clientPort.ToString()).Replace("{page}", (clientPort + 1).ToString());
     // On the instance of MPAI as a Service the Module's storage is the instance's: the window is not given a storage of its own.
     var clientArgs = serviceUrl is null ? own.ClientArgs : System.Text.RegularExpressions.Regex.Replace(own.ClientArgs, @"\s*--storage\s+""[^""]*""", "");
+    if (serviceUrl is not null && own.MasArgs is { } masArgs) clientArgs += " " + masArgs;   // an App whose Controller is inside its program (AUA): told to use the instance's
     if (own.ControllerExe is { } exe && serviceUrl is null)
     {
         if (!File.Exists(exe)) throw new InvalidOperationException($"its Controller is not built: {exe} (dotnet build {own.ControllerProject})");
@@ -531,13 +532,20 @@ static string VersionOf(Mpai.Mas.Server.AppCatalogue.Entry e)
     try { var d = JsonNode.Parse(e.Descriptor); return (d?["Asks"]?.DeepClone(), (string?)d?["Keeps"]); } catch { return (null, null); }
 }
 
+// AN APP THAT IS NOT STANDALONE (2026-11-26): the "Warning" of its app.json (VMS, bundled with Avatar-Based Videoconference).
+string? WarningOf(AppCatalogue.Entry? e)
+{
+    if (e is null) return null;
+    try { return (string?)JsonNode.Parse(e.Descriptor)?["Warning"]; } catch { return null; }
+}
+
 JsonObject Item(string id, string name, string description, string where, string? module, string icon, AppCatalogue.Entry? descriptor = null)
 {
     var needs = Needs(module);
     var (asks, keeps) = AsksOf(descriptor);
     return new JsonObject
     {
-        ["id"] = id, ["name"] = name, ["description"] = description, ["where"] = where, ["module"] = module, ["icon"] = icon, ["asks"] = asks, ["keeps"] = keeps,
+        ["id"] = id, ["name"] = name, ["description"] = description, ["where"] = where, ["module"] = module, ["icon"] = icon, ["asks"] = asks, ["keeps"] = keeps, ["warning"] = WarningOf(descriptor),
         ["aims"] = needs.Aims, ["licences"] = needs.Licences, ["resources"] = needs.Resources, ["accelerators"] = needs.Accelerators,
         ["canRun"] = where == "mas" ? true : needs.CanRun, ["why"] = needs.Why
     };

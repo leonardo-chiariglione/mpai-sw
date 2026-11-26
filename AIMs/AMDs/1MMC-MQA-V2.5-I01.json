@@ -1,0 +1,295 @@
+{
+ "Identifier": {
+  "ImplementerID": "1",
+  "ImplementationID": "MMC-MQA-V2.5-I01",
+  "AIMInstID": "1MMC-MQA-V2.5-I01"
+ },
+ "Header": "AIF-AMM-V3.0",
+ "AIMType": "MMC-MQA-V2.5",
+ "APIProfile": "Basic",
+ "OnDegraded": "Continue",
+ "Description": "Multimodal Question Answering: answers a question about a visual object, put as a Text Object or as speech, with a Portable Avatar. Visual Instance Identification gives the Instance Identifier of the object, Automatic Speech Recognition the text of a spoken question, Natural Language Understanding the Refined Text and the Text Descriptors Object, Question Analysis the Intention, Answer to Question the Machine Text, and Portable Avatar Multiplexing the Portable Avatar (with the ID of the machine). No Text-To-Speech: the Portable Avatar carries the answer as text.",
+ "InternalTypes": [],
+ "ExternalPorts": [
+  {
+   "Name": "InputSelector",
+   "Direction": "Input",
+   "DataType": "OSD-SEL-V1.5",
+   "IsOptional": true,
+   "Technology": "Software",
+   "Protocol": "",
+   "IsRemote": false
+  },
+  {
+   "Name": "TextObject",
+   "Direction": "Input",
+   "DataType": "OSD-BTO-V1.5",
+   "IsOptional": true,
+   "Technology": "Software",
+   "Protocol": "",
+   "IsRemote": false
+  },
+  {
+   "Name": "VisualObject",
+   "Direction": "Input",
+   "DataType": "OSD-BVO-V1.5",
+   "IsOptional": false,
+   "Technology": "Software",
+   "Protocol": "",
+   "IsRemote": false
+  },
+  {
+   "Name": "SpeechObject",
+   "Direction": "Input",
+   "DataType": "OSD-BSO-V1.5",
+   "IsOptional": true,
+   "Technology": "Software",
+   "Protocol": "",
+   "IsRemote": false
+  },
+  {
+   "Name": "MachineID",
+   "Direction": "Input",
+   "DataType": "string",
+   "IsOptional": false,
+   "Technology": "Software",
+   "Protocol": "",
+   "IsRemote": false
+  },
+  {
+   "Name": "PortableAvatar",
+   "Direction": "Output",
+   "DataType": "PAF-PAV-V1.6",
+   "IsOptional": false,
+   "Technology": "Software",
+   "Protocol": "",
+   "IsRemote": false
+  }
+ ],
+ "SubAIMs": [
+  {
+   "Identifier": {
+    "ImplementerID": "1",
+    "ImplementationID": "CVE-VII-V1.0-I01",
+    "AIMInstID": "1CVE-VII-V1.0-I01",
+    "Relation": "Internal"
+   }
+  },
+  {
+   "Identifier": {
+    "ImplementerID": "1",
+    "ImplementationID": "MMC-ASR-V2.5-I01",
+    "AIMInstID": "1MMC-ASR-V2.5-I01",
+    "Relation": "Internal"
+   }
+  },
+  {
+   "Identifier": {
+    "ImplementerID": "1",
+    "ImplementationID": "MMC-NLU-V2.5-I01",
+    "AIMInstID": "1MMC-NLU-V2.5-I01",
+    "Relation": "Internal"
+   }
+  },
+  {
+   "Identifier": {
+    "ImplementerID": "1",
+    "ImplementationID": "MMC-QAM-V2.5-I01",
+    "AIMInstID": "1MMC-QAM-V2.5-I01",
+    "Relation": "Internal"
+   }
+  },
+  {
+   "Identifier": {
+    "ImplementerID": "1",
+    "ImplementationID": "MMC-AQM-V2.5-I01",
+    "AIMInstID": "1MMC-AQM-V2.5-I01",
+    "Relation": "Internal"
+   }
+  },
+  {
+   "Identifier": {
+    "ImplementerID": "1",
+    "ImplementationID": "PAF-PMX-V1.6-I01",
+    "AIMInstID": "1PAF-PMX-V1.6-I01",
+    "Relation": "Internal"
+   }
+  }
+ ],
+ "Topology": [
+  {
+   "Output": {
+    "AIMInstID": "",
+    "DataType": "OSD-SEL-V1.5"
+   },
+   "Input": {
+    "AIMInstID": "1MMC-NLU-V2.5-I01",
+    "DataType": "OSD-SEL-V1.5"
+   }
+  },
+  {
+   "Output": {
+    "AIMInstID": "",
+    "DataType": "OSD-BTO-V1.5"
+   },
+   "Input": {
+    "AIMInstID": "1MMC-NLU-V2.5-I01",
+    "DataType": "OSD-BTO-V1.5",
+    "PortNumber": 1
+   }
+  },
+  {
+   "Output": {
+    "AIMInstID": "",
+    "DataType": "OSD-BVO-V1.5"
+   },
+   "Input": {
+    "AIMInstID": "1CVE-VII-V1.0-I01",
+    "DataType": "OSD-BVO-V1.5"
+   }
+  },
+  {
+   "Output": {
+    "AIMInstID": "",
+    "DataType": "OSD-BSO-V1.5"
+   },
+   "Input": {
+    "AIMInstID": "1MMC-ASR-V2.5-I01",
+    "DataType": "OSD-BSO-V1.5"
+   }
+  },
+  {
+   "Output": {
+    "AIMInstID": "1MMC-ASR-V2.5-I01",
+    "DataType": "OSD-BTO-V1.5"
+   },
+   "Input": {
+    "AIMInstID": "1MMC-NLU-V2.5-I01",
+    "DataType": "OSD-BTO-V1.5",
+    "PortNumber": 2
+   }
+  },
+  {
+   "Output": {
+    "AIMInstID": "1CVE-VII-V1.0-I01",
+    "DataType": "OSD-IID-V1.5"
+   },
+   "Input": {
+    "AIMInstID": "1MMC-NLU-V2.5-I01",
+    "DataType": "OSD-IID-V1.5"
+   }
+  },
+  {
+   "Output": {
+    "AIMInstID": "1MMC-NLU-V2.5-I01",
+    "DataType": "OSD-BTO-V1.5"
+   },
+   "Input": {
+    "AIMInstID": "1MMC-AQM-V2.5-I01",
+    "DataType": "OSD-BTO-V1.5"
+   }
+  },
+  {
+   "Output": {
+    "AIMInstID": "1MMC-NLU-V2.5-I01",
+    "DataType": "OSD-IID-V1.5"
+   },
+   "Input": {
+    "AIMInstID": "1MMC-AQM-V2.5-I01",
+    "DataType": "OSD-IID-V1.5"
+   }
+  },
+  {
+   "Output": {
+    "AIMInstID": "1MMC-NLU-V2.5-I01",
+    "DataType": "MMC-TDO-V2.5"
+   },
+   "Input": {
+    "AIMInstID": "1MMC-AQM-V2.5-I01",
+    "DataType": "MMC-TDO-V2.5"
+   }
+  },
+  {
+   "Output": {
+    "AIMInstID": "1MMC-NLU-V2.5-I01",
+    "DataType": "MMC-TDO-V2.5"
+   },
+   "Input": {
+    "AIMInstID": "1MMC-QAM-V2.5-I01",
+    "DataType": "MMC-TDO-V2.5"
+   }
+  },
+  {
+   "Output": {
+    "AIMInstID": "1MMC-QAM-V2.5-I01",
+    "DataType": "MMC-INT-V2.5"
+   },
+   "Input": {
+    "AIMInstID": "1MMC-AQM-V2.5-I01",
+    "DataType": "MMC-INT-V2.5"
+   }
+  },
+  {
+   "Output": {
+    "AIMInstID": "1MMC-AQM-V2.5-I01",
+    "DataType": "OSD-BTO-V1.5"
+   },
+   "Input": {
+    "AIMInstID": "1PAF-PMX-V1.6-I01",
+    "DataType": "OSD-BTO-V1.5",
+    "PortNumber": 2
+   }
+  },
+  {
+   "Output": {
+    "AIMInstID": "",
+    "DataType": "string"
+   },
+   "Input": {
+    "AIMInstID": "1PAF-PMX-V1.6-I01",
+    "DataType": "string"
+   }
+  },
+  {
+   "Output": {
+    "AIMInstID": "1PAF-PMX-V1.6-I01",
+    "DataType": "PAF-PAV-V1.6"
+   },
+   "Input": {
+    "AIMInstID": "",
+    "DataType": "PAF-PAV-V1.6"
+   }
+  }
+ ],
+ "Implementations": [
+  {
+   "ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/AIMs/AMDs/1MMC-MQA-V2.5-I01.json",
+   "BinaryName": "Mpai.Mmc.Mqa",
+   "Architecture": "x86-64",
+   "OperatingSystem": "Windows",
+   "Version": "2.5",
+   "Source": "AIMStorage"
+  }
+ ],
+ "ResourcePolicies": [
+  {
+   "Name": "Memory",
+   "Minimum": "3 GB",
+   "Request": "5 GB",
+   "Maximum": "8 GB"
+  },
+  {
+   "Name": "CPU:Class",
+   "Minimum": "Medium",
+   "Request": "High",
+   "Maximum": "High"
+  }
+ ],
+ "DataXMData": {},
+ "Documentation": [
+  {
+   "Type": "Specification",
+   "URI": "https://mpai.community/standards/mpai-mmc/v2-5/use-cases/answer-to-multimodal-question/"
+  }
+ ]
+}

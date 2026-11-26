@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- HmcController - THE CONTROLLER of Communicating Entities in Context (HMC-CEC V2.2), a program of its own (2026-11-25, N-50 e). The App is a User Agent: it reads its workflow
+       (HMC-CEC.orch) and the workflow asks this Controller, through the Controller API, to start the Module (1HMC-CEC-V2.2-I01); this Controller starts the Module and its AIMs as the L3 says,
+       with the providers of HMC (HmcProviders). The Controller API is carried over the routes of Mpai.Mas.Server, on the loopback. -->
+
+  <PropertyGroup>
+    <AssemblyName>HmcController</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RootNamespace>Mpai.Hmc.Cec.Controller</RootNamespace>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="..\..\..\MAS\Service\src\ControllerApiRunner.cs" Link="ControllerApiRunner.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\AIF\Controller\AIF.Controller.csproj" />
+    <ProjectReference Include="..\..\..\..\Store\AIF.Store.csproj" />
+    <ProjectReference Include="..\..\..\..\AIF\Communication\GlobalStorage\AIF.GlobalStorage.csproj" />
+    <ProjectReference Include="..\..\..\..\AIMs\Core\Mpai.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\AIF\ControllerApi\Mpai.Aif.Api.csproj" />
+    <ProjectReference Include="..\..\..\..\AIF\PortData\Mpai.Aif.PortData.csproj" />
+    <ProjectReference Include="..\..\..\MAS\Server\Mpai.Mas.Server.csproj" />
+    <ProjectReference Include="..\..\..\..\AIMs\HMC\V2.2\Provider\Mpai.Hmc.Provider.csproj" />
+  </ItemGroup>
+
+</Project>

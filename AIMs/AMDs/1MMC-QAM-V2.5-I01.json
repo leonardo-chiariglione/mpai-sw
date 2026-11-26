@@ -1,0 +1,66 @@
+{
+ "Identifier": {
+  "ImplementerID": "1",
+  "ImplementationID": "MMC-QAM-V2.5-I01",
+  "AIMInstID": "1MMC-QAM-V2.5-I01"
+ },
+ "Header": "AIF-AMM-V3.0",
+ "AIMType": "MMC-QAM-V2.5",
+ "APIProfile": "Basic",
+ "Description": "Question Analysis Module: analyses the Text Descriptors Object of a question and gives its Intention (MMC-INT): topic, focus, lexical and semantic answer type, domain. First version: rules on the words and the POS tagging of the Text Descriptors (the question word gives the semantic answer type).",
+ "InternalTypes": [],
+ "ExternalPorts": [
+  {
+   "Name": "TextDescriptorsObject",
+   "Direction": "Input",
+   "DataType": "MMC-TDO-V2.5",
+   "IsOptional": false,
+   "Technology": "Software",
+   "Protocol": "",
+   "IsRemote": false
+  },
+  {
+   "Name": "Intention",
+   "Direction": "Output",
+   "DataType": "MMC-INT-V2.5",
+   "IsOptional": false,
+   "Technology": "Software",
+   "Protocol": "",
+   "IsRemote": false
+  }
+ ],
+ "SubAIMs": [],
+ "Topology": [],
+ "Implementations": [
+  {
+   "ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/MMC/V2.5/QAM",
+   "MASPort": 443,
+   "BinaryName": "Mpai.Mmc.Qam",
+   "Architecture": "x86-64",
+   "OperatingSystem": "Windows",
+   "Version": "2.5",
+   "Source": "AIMStorage"
+  }
+ ],
+ "ResourcePolicies": [
+  {
+   "Name": "Memory",
+   "Minimum": "0.5 GB",
+   "Request": "1 GB",
+   "Maximum": "2 GB"
+  },
+  {
+   "Name": "CPU:Class",
+   "Minimum": "Low",
+   "Request": "Medium",
+   "Maximum": "High"
+  }
+ ],
+ "DataXMData": {},
+ "Documentation": [
+  {
+   "Type": "Tutorial",
+   "URI": "https://mpai.community/standards/mpai-mmc/v2-5/"
+  }
+ ]
+}

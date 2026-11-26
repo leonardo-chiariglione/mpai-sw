@@ -297,6 +297,10 @@ internal static class Program
             providers.Add(new Mpai.Cae.Asm.AsmProvider(amdDir));      // CAE-ASM (N-49): its editing AIMs, and the Voice Command Interface and the leaf AIMs it uses
             providers.Add(new Mpai.Providers.VciProvider(s));
             providers.Add(new Mpai.Providers.LeafAimsProvider(s));
+            providers.Add(new MqaProvider(s));                   // MPAI-MMC MQA (N-50, 2026-11-25): last, so that what the others build (ASR, NLU, PMX, VII of TMA) is built as before
+            providers.Add(new Mpai.Cav.Hci.HciProvider(s, Mpai.Core.MpaiPaths.Root));   // CAV-HCI (N-50 l, 2026-11-25): the Module of the HCI App on the instance; last, as MQA
+            providers.Add(new PgmAuaProvider(s, Mpai.Core.MpaiPaths.Root));        // PGM-AUA (2026-11-26): the A-User Module of the door App
+            providers.Add(new Mpai.Xrv.XrvProvider());                              // XRV-LTP (2026-11-26): the Module of the Live Theatrical Performance App
             return new CompositeProvider(providers.ToArray());
         });
 

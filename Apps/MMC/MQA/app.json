@@ -1,0 +1,31 @@
+{
+    "Name": "Ask about an object",
+    "Description": "Show a picture of an object and ask a question about it. The avatar says what the object is and answers.",
+    "Icon": "icon.svg",
+    "Pane": "wide",
+    "Version": "1.0",
+    "Standard": "MPAI-MMC V2.5",
+    "UseCase": "MQA",
+    "Module": "1MMC-MQA-V2.5-I01",
+    "Keywords": [
+        "object",
+        "picture",
+        "question",
+        "answer",
+        "identify",
+        "what is this"
+    ],
+    "Categories": [
+        "Vision",
+        "Question answering"
+    ],
+    "Languages": [
+        "en"
+    ],
+    "Asks": [
+        "microphone",
+        "typed text",
+        "a picture"
+    ],
+    "Keeps": "Nothing."
+}

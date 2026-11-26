@@ -10,9 +10,10 @@ using System.IO;
 //   ClientFile/Args  the App's client; {controller} is the Controller's address, {root} the folder of the software, {port} a port Thalia chose (an App that is a server),
 //                    {data} the folder of this User's Thalia (where an App keeps what the User makes with it: ASM's scenes and sounds, apart from those of the launcher's ASM)
 //   Page             where the User opens the App, for an App that is a server ({port}); null: the client is a window
+//   MasArgs          for an App with no Controller program apart: what its client is also given to run on the instance of MPAI as a Service ({controller}); null: not on MAS
 static class OwnClients
 {
-    public sealed record Own(string? ControllerExe, string? ControllerProject, string ClientFile, string ClientArgs, bool LanguageModel, string? Page = null, Dictionary<string, string>? Env = null, string? ClientBuilt = null, string ControllerArgs = "");
+    public sealed record Own(string? ControllerExe, string? ControllerProject, string ClientFile, string ClientArgs, bool LanguageModel, string? Page = null, Dictionary<string, string>? Env = null, string? ClientBuilt = null, string ControllerArgs = "", string? MasArgs = null);
 
     public static Own? Of(string id, string root)
     {
@@ -29,6 +30,12 @@ static class OwnClients
                          "powershell", Asking("_cas.ps1"), true),
             "CPS" => new(P(@"Apps\MMC\CPS\Controller\bin\Debug\net10.0\CpsController.exe"), @"Apps\MMC\CPS\Controller\CpsController.csproj",
                          "powershell", Asking("_cps.ps1"), true),
+            // HMC-CEC (2026-11-25, N-50 e): as CPS, with the Controller of HMC
+            "CEC" => new(P(@"Apps\HMC\CEC\Controller\bin\Debug\net10.0\HmcController.exe"), @"Apps\HMC\CEC\Controller\HmcController.csproj",
+                         "powershell", Asking("_cec.ps1"), true),
+            // CAV-HCI (2026-11-25): the passenger's window (camera, microphone, the avatar of the car) on the HCI Controller, as AllApps\CAV\HCI.bat starts them
+            "HCI" => new(P(@"Apps\CAV\HCIApps\Controller\bin\Debug\net10.0\HciController.exe"), @"Apps\CAV\HCIApps\Controller\HciController.csproj",
+                         P(@"Apps\CAV\HCIApps\HciApp\src\bin\Debug\net10.0-windows10.0.19041.0\HciApp.exe"), "--controller {controller}", false),
             "TMA" => new(P(@"Apps\OSD\TMA\Controller\bin\Debug\net10.0\TmaController.exe"), @"Apps\OSD\TMA\Controller\TmaController.csproj",
                          "powershell", Asking("_tma.ps1"), false),
             // ARP, EES, EAE (2026-11-25): their workflows take files and give files through devices of their own (the tape, the selectors, the room's capture) that the browser client has
@@ -38,12 +45,13 @@ static class OwnClients
                          ControllerArgs: $"--app {id}"),
             // the Live Theatrical Performance demonstration: one program (its User Agent and its Controller), as XRV\LTP-demo.bat runs it
             "LTP" => new(null, null, "dotnet", $"run --no-build --project \"{P(@"Apps\XRV\LTP\TwoMetaverses")}\" -- --live", false,
-                         ClientBuilt: P(@"Apps\XRV\LTP\TwoMetaverses\bin\Debug\net10.0\XrvTwoMetaverses.dll")),
+                         ClientBuilt: P(@"Apps\XRV\LTP\TwoMetaverses\bin\Debug\net10.0\XrvTwoMetaverses.dll"), MasArgs: "--controller {controller}"),
             // the Virtual Meeting Secretary: the ABV server of this PC, and its page
             "VMS" => new(null, null, "dotnet", $"run -c Release --project \"{P(@"Apps\ABV\AVS\Server")}\"", false, Page: "https://localhost:{page}/",
                          Env: new() { ["ABV_PORT"] = "{port}" }),
             // A-User opens the door (PGM-AUA): the MMM server of the room with its door, the Host User (the A-User App) and the Visitor, and its page; the language model of Basic Knowledge first
-            "AUA" => new(null, null, "dotnet", $"run --project \"{P(@"AllApps\MMM\Server\Mpai.Mmm.Server.csproj")}\" -- http://127.0.0.1:{{port}} --door --llm llama3.2:3b", true, Page: "http://127.0.0.1:{port}/viewer/door.html?from=thalia"),
+            "AUA" => new(null, null, "dotnet", $"run --project \"{P(@"AllApps\MMM\Server\Mpai.Mmm.Server.csproj")}\" -- http://127.0.0.1:{{port}} --door --llm llama3.2:3b", true, Page: "http://127.0.0.1:{port}/viewer/door.html?from=thalia",
+                         MasArgs: "--controller {controller}"),
             _ => null
         };
     }

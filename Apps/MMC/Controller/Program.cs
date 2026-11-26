@@ -14,7 +14,7 @@ using Mpai.Providers;
 
 namespace Mpai.Mmc.Controller;
 
-// MmcController - THE CONTROLLER of the stand-alone Apps of MPAI-MMC (ACR, AMC, AMQ, MAC, MCA, MTS, NPR), a program of its own.
+// MmcController - THE CONTROLLER of the stand-alone Apps of MPAI-MMC (ACR, AMC, AMQ, MAC, MCA, MTS, NPR; MQA and TST since 2026-11-25), a program of its own.
 //
 //   MmcController [--listen http://127.0.0.1:5058]
 //
@@ -38,7 +38,7 @@ internal static class Program
         store.Scan();
         using var north = new ControllerApi(amds, settings,
             s => new CompositeProvider(new AmcProvider(s), new McaProvider(s), new MtsProvider(s), new NprProvider(s), new AmqProvider(s),
-                new AcrProvider(s), new MacProvider(s)));
+                new AcrProvider(s), new MacProvider(s), new MqaProvider(s)));      // TST: its AIMs are MtsProvider's
         var runner = new ControllerApiRunner(north, store);
         var server = new MasServer(runner, PortDataCodecs.Default(), url);
         Console.WriteLine($"  Listening:   {url}");

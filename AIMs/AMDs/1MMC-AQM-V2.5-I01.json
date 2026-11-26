@@ -1,0 +1,134 @@
+{
+ "Identifier": {
+  "ImplementerID": "1",
+  "ImplementationID": "MMC-AQM-V2.5-I01",
+  "AIMInstID": "1MMC-AQM-V2.5-I01"
+ },
+ "Header": "AIF-AMM-V3.0",
+ "AIMType": "MMC-AQM-V2.5",
+ "APIProfile": "Basic",
+ "Description": "Answer to Question Module: answers a question from its Refined Text, its Text Descriptors Object, the Instance Identifier of the visual object it is about and its Intention, and gives the answer as a Text Object. Engine: a language model (Llama 3.2 3B through Ollama) told the question, the identity of the object and the Intention.",
+ "InternalTypes": [],
+ "ExternalPorts": [
+  {
+   "Name": "TextObject",
+   "Direction": "Input",
+   "DataType": "OSD-BTO-V1.5",
+   "IsOptional": false,
+   "Technology": "Software",
+   "Protocol": "",
+   "IsRemote": false
+  },
+  {
+   "Name": "TextDescriptorsObject",
+   "Direction": "Input",
+   "DataType": "MMC-TDO-V2.5",
+   "IsOptional": true,
+   "Technology": "Software",
+   "Protocol": "",
+   "IsRemote": false
+  },
+  {
+   "Name": "InstanceIdentifier",
+   "Direction": "Input",
+   "DataType": "OSD-IID-V1.5",
+   "IsOptional": true,
+   "Technology": "Software",
+   "Protocol": "",
+   "IsRemote": false
+  },
+  {
+   "Name": "Intention",
+   "Direction": "Input",
+   "DataType": "MMC-INT-V2.5",
+   "IsOptional": true,
+   "Technology": "Software",
+   "Protocol": "",
+   "IsRemote": false
+  },
+  {
+   "Name": "MachineText",
+   "Direction": "Output",
+   "DataType": "OSD-BTO-V1.5",
+   "IsOptional": false,
+   "Technology": "Software",
+   "Protocol": "",
+   "IsRemote": false
+  }
+ ],
+ "SubAIMs": [],
+ "Topology": [],
+ "AccessSources": [
+  {
+   "Name": "llm-weights",
+   "Uri": "https://registry.ollama.ai/v2/library/llama3.2/blobs/sha256:dde5aa3fc5ffc17176b5e8bdc82f587b24b2678c6c66101bf7da77af9f7ccdff",
+   "Sha256": "dde5aa3fc5ffc17176b5e8bdc82f587b24b2678c6c66101bf7da77af9f7ccdff",
+   "Terms": {
+    "Licence": "Llama 3.2 Community License",
+    "Uri": "https://www.llama.com/llama3_2/license/",
+    "PersonalData": false
+   },
+   "Description": "The weights of the language model of the dialogue (Llama 3.2, 3 billion parameters, Q4_K_M), in the form Ollama publishes them. Ollama is given them from Access and creates the model."
+  },
+  {
+   "Name": "llm-template",
+   "Uri": "https://registry.ollama.ai/v2/library/llama3.2/blobs/sha256:966de95ca8a62200913e3f8bfbf84c8494536f1b94b49166851e76644e966396",
+   "Sha256": "966de95ca8a62200913e3f8bfbf84c8494536f1b94b49166851e76644e966396",
+   "ValidWith": [
+    "dde5aa3fc5ffc17176b5e8bdc82f587b24b2678c6c66101bf7da77af9f7ccdff"
+   ],
+   "Description": "The chat template of the model.",
+   "Terms": {
+    "Licence": "Llama 3.2 Community License",
+    "Uri": "https://www.llama.com/llama3_2/license/",
+    "PersonalData": false
+   }
+  },
+  {
+   "Name": "llm-parameters",
+   "Uri": "https://registry.ollama.ai/v2/library/llama3.2/blobs/sha256:56bb8bd477a519ffa694fc449c2413c6f0e1d3b1c88fa7e3c9d88d3ae49d4dcb",
+   "Sha256": "56bb8bd477a519ffa694fc449c2413c6f0e1d3b1c88fa7e3c9d88d3ae49d4dcb",
+   "ValidWith": [
+    "dde5aa3fc5ffc17176b5e8bdc82f587b24b2678c6c66101bf7da77af9f7ccdff"
+   ],
+   "Description": "The default parameters of the model (its stop tokens).",
+   "Terms": {
+    "Licence": "Llama 3.2 Community License",
+    "Uri": "https://www.llama.com/llama3_2/license/",
+    "PersonalData": false
+   }
+  }
+ ],
+ "Implementations": [
+  {
+   "ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/MMC/V2.5/AQM",
+   "MASPort": 443,
+   "BinaryName": "Mpai.Mmc.Aqm",
+   "Architecture": "x86-64",
+   "OperatingSystem": "Windows",
+   "Version": "2.5",
+   "Source": "AIMStorage"
+  }
+ ],
+ "ResourcePolicies": [
+  {
+   "Name": "Memory",
+   "Minimum": "0.5 GB",
+   "Request": "1 GB",
+   "Maximum": "2 GB"
+  },
+  {
+   "Name": "CPU:Class",
+   "Minimum": "Low",
+   "Request": "Medium",
+   "Maximum": "High"
+  }
+ ],
+ "DataXMData": {},
+ "Documentation": [
+  {
+   "Type": "Tutorial",
+   "URI": "https://mpai.community/standards/mpai-mmc/v2-5/"
+  }
+ ]
+}

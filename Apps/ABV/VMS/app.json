@@ -1,6 +1,7 @@
 {
     "Name": "Virtual Meeting Secretary",
     "Description": "Hold a meeting with a secretary taking the minutes. Say \"secretary\" to ask it what was said, or to have something noted.",
+    "Warning": "Not a standalone App: the Virtual Meeting Secretary is bundled with Avatar-Based Videoconference, which needs it to run a videoconference.",
     "Icon": "icon.svg",
     "Pane": "wide",
     "Version": "1.0",

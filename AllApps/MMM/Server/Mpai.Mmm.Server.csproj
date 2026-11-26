@@ -31,6 +31,8 @@
     <!-- "Open the door when the bell rings" (the door mode): the A-User Module of PGM-AUA on the AIF Controller, through the Controller API -->
     <ProjectReference Include="..\..\..\AIF\Controller\AIF.Controller.csproj" />
     <ProjectReference Include="..\..\..\AIF\ControllerApi\Mpai.Aif.Api.csproj" />
+    <!-- the Controller API over MPAI-MAS: the door App with the A-User Module on an instance of MPAI as a Service (- -controller, 2026-11-26) -->
+    <ProjectReference Include="..\..\..\AIF\UserAgent\Remote\Mpai.Mas.Client.csproj" />
     <ProjectReference Include="..\..\..\AIMs\PGM\V1.0\Mpai.Pgm.csproj" />
     <ProjectReference Include="..\..\..\AIMs\PAF\V1.6\PDX\Mpai.Paf.Pdx.csproj" />
   </ItemGroup>

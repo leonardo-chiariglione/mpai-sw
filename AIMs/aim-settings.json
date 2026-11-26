@@ -58,5 +58,21 @@
     "1MMC-SIR-V2.5-I01":  {
                           },
     "1MMC-ESD-V2.5-I01":  {
+                          },
+    "1PGM-PRC-V1.0-I01":  {
+                              "Space.Items":  "Door",
+                              "Space.MLocations":  "Doorway"
+                          },
+    "1PGM-BKN-V1.0-I01":  {
+                              "Persona.ItemId":  "HostPersona",
+                              "Bkn.Level":  "1"
+                          },
+    "1PGM-AUC-V1.0-I01":  {
+                              "Auc.FunctionLevel":  "1",
+                              "Persona.ItemId":  "HostPersona"
+                          },
+    "1PGM-AUF-V1.0-I01":  {
+                              "Avatar.Id":  "HostPersona",
+                              "Persona.ItemId":  "HostPersona"
                           }
 }

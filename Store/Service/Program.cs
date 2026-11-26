@@ -245,7 +245,8 @@ app.MapPost("/MPAI/Store/Implementer/{id}/approve", (HttpRequest request, string
 //   GET  /MPAI/Store/App/{id}/package[?version=...]   the App as a package (zip: app.json, Workflow, icon)
 //   POST /MPAI/Store/App/{id}                 publish a package (header MPAI-Admin: the Store's operator, in this reference Store)
 app.MapGet("/MPAI/Store/App", (string? search) => Results.Json(shelf.Latest(search).Select(e => new
-    { id = e.Id, name = e.Name, description = e.Description, version = e.Version, module = e.Module, standard = e.Standard, useCase = e.UseCase, keywords = e.Keywords, size = e.Size })));
+    { id = e.Id, name = e.Name, description = e.Description, version = e.Version, module = e.Module, standard = e.Standard, useCase = e.UseCase, keywords = e.Keywords, size = e.Size,
+      warning = WarningOf(e.Descriptor) })));   // an App that is not standalone (VMS, bundled with ABV, 2026-11-26): its app.json says so in "Warning"
 
 app.MapGet("/MPAI/Store/App/{id}", (string id, string? version) =>
     shelf.Get(id, version) is { } e
@@ -410,4 +411,10 @@ static string? FindSchemas()
         if (Directory.Exists(Path.Combine(dir.FullName, "schemas", "MMC")))
             return Path.Combine(dir.FullName, "schemas");
     return null;
+}
+
+// The "Warning" of an App's app.json: what the User must know before obtaining it (an App that is not standalone).
+static string? WarningOf(string descriptor)
+{
+    try { return (string?)System.Text.Json.Nodes.JsonNode.Parse(descriptor)?["Warning"]; } catch { return null; }
 }

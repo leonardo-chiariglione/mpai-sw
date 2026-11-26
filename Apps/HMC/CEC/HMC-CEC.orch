@@ -1,0 +1,49 @@
+# =============================================================================
+#  HMC-CEC.orch - MPAI Communicating Entities in Context (HMC-CEC V2.2)
+#  Workflow Description Language v0.3, AIF V3.0
+#
+#  One Controller, one Module. The User Agent offers the Controller data
+#  identified by Data Type and Port Number, and asks for data identified the
+#  same way. It names no AIM.
+#
+#  The Module is Communicating Entities in Context: the person (an Entity in a
+#  real or virtual context) shows the face and speaks or types; the Machine
+#  understands the person and the context (Multimodal Frontend Description,
+#  Entity and Context Understanding), translates where the person speaks
+#  another language (Text and Speech Translation), answers (Entity Dialogue
+#  Processing, Text-to-Text Translation) and gives its Portable Avatar. The
+#  Selector of each turn says the input medium (text or speech) and the
+#  languages: the one the person speaks and the one of the answer.
+#
+#  Made 2026-11-25 (N-50 e) as the workflow of CPS, with the Module of HMC.
+# =============================================================================
+
+workflow HMC-CEC over 1HMC-CEC-V2.2-I01
+
+on Start:
+
+    ask Controller to start
+
+    prompt "Communicating Entities in Context: show your face and talk with me; I understand you and where you are, and I answer in the language you chose."
+
+    loop until Stop:
+
+        acquire Face (OSD-BVO-V1.5)
+        acquire UserAudio (OSD-BAO-V1.5) via VAD
+             or UserText  (OSD-BTO-V1.5)
+        acquire TurnSelector (OSD-SEL-V1.5)
+
+        offer Face (OSD-BVO-V1.5:1)
+        branch on UserText {
+            offer UserText (OSD-BTO-V1.5:1)
+        } else {
+            offer UserAudio (OSD-BAO-V1.5:1)
+        }
+        offer TurnSelector (OSD-SEL-V1.5:1)
+        offer MachineID (string:1) = "MPAI as a Service"
+        ask   MachinePortableAvatar (PAF-PAV-V1.6)
+        present MachinePortableAvatar
+
+on Stop:
+
+    ask Controller to stop

@@ -30,6 +30,8 @@ public static class AimBinaries
         ["1MMC-TIQ-V2.5-I01"] = typeof(TiqAimProcessor),
         ["1MMC-TTT-V2.5-I01"] = typeof(TttAimProcessor),
         ["1MMC-NLU-V2.5-I01"] = typeof(NluAimProcessor),
+        ["1MMC-QAM-V2.5-I01"] = typeof(Mpai.Mmc.Qam.QamAimProcessor),
+        ["1MMC-AQM-V2.5-I01"] = typeof(Mpai.Mmc.Aqm.AqmAimProcessor),
         ["1MMC-SPE-V2.5-I01"] = typeof(SpeAimProcessor),
         ["1MMC-PMX-V2.5-I01"] = typeof(PmxAimProcessor),
         ["1PAF-FPE-V1.6-I01"] = typeof(FpeAimProcessor),
