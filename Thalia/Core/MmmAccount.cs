@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Http;
 // the page takes it and removes it. The password is kept encrypted for this Windows user (DPAPI), never in clear, and goes only to the M-Instance named.
 static class MmmAccount
 {
-    public static void Map(WebApplication app, string thaliaData)
+    public static void Map(WebApplication app, string thaliaData, string? defaultAddress = null)
     {
         var file = Path.Combine(thaliaData, "mmm-account.json");
         JsonObject Read() { try { return File.Exists(file) ? JsonNode.Parse(File.ReadAllText(file))!.AsObject() : new JsonObject(); } catch { return new JsonObject(); } }
@@ -25,7 +25,7 @@ static class MmmAccount
             var a = Read();
             return Results.Json(new JsonObject
             {
-                ["address"] = (string?)a["address"], ["first"] = (string?)a["first"], ["last"] = (string?)a["last"], ["organisation"] = (string?)a["organisation"],
+                ["address"] = (string?)a["address"] ?? defaultAddress, ["first"] = (string?)a["first"], ["last"] = (string?)a["last"], ["organisation"] = (string?)a["organisation"],
                 ["email"] = (string?)a["email"], ["level"] = (string?)a["level"] ?? "Visitor", ["hasPassword"] = a["password"] is not null, ["user"] = (string?)a["user"]
             });
         });
@@ -47,7 +47,20 @@ static class MmmAccount
         async Task<IResult> RegisterOrEnter(bool open)
         {
             var a = Read();
-            if ((string?)a["address"] is not { Length: > 0 } address || !Uri.TryCreate(address, UriKind.Absolute, out var link)) return Results.Json(new { ok = false, text = "The address of the M-Instance is not set." });
+            if (((string?)a["address"] is { Length: > 0 } given ? given : defaultAddress) is not { Length: > 0 } address || !Uri.TryCreate(address, UriKind.Absolute, out var link)) return Results.Json(new { ok = false, text = "The address of the M-Instance is not set." });
+            // THE JOIN PAGE (a stable address, AllApps\MMM\Join): it names the address of the meeting now (meeting.json), which changes from one meeting to the next.
+            if (link.AbsolutePath.EndsWith("/join.html", StringComparison.OrdinalIgnoreCase) || link.AbsolutePath.TrimEnd('/').EndsWith("/mmm", StringComparison.OrdinalIgnoreCase))
+            {
+                var folder = link.AbsolutePath.EndsWith("/join.html", StringComparison.OrdinalIgnoreCase) ? link.AbsolutePath[..^"join.html".Length] : link.AbsolutePath.TrimEnd('/') + "/";
+                try
+                {
+                    using var j = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
+                    var meeting = JsonNode.Parse(await j.GetStringAsync(new Uri(link, folder + "meeting.json"))) as JsonObject;
+                    if ((string?)meeting?["Address"] is not { Length: > 0 } now) return Results.Json(new { ok = false, text = $"The meeting is not on now{((string?)meeting?["When"] is { Length: > 0 } w ? ": it is " + w : "")}." });
+                    link = new Uri(now.TrimEnd('/') + "/viewer/?world=1&mic=1");
+                }
+                catch (Exception e) { return Results.Json(new { ok = false, text = "The meeting is not on now (its join page does not answer: " + e.Message + ")." }); }
+            }
             if (a["password"] is null) return Results.Json(new { ok = false, text = "The password is not set." });
             var password = Encoding.UTF8.GetString(Unprotect(Convert.FromBase64String((string)a["password"]!)));
             var invite = System.Web.HttpUtility.ParseQueryString(link.Query)["invite"];

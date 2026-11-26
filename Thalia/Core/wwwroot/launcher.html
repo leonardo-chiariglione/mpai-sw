@@ -54,6 +54,7 @@
   .content { scrollbar-color:rgba(255,255,255,.35) transparent; scrollbar-width:thin; padding:18px 24px 24px; overflow:auto; width:min(600px, 100%); margin-left:auto; padding-bottom:24px; }   /* a column on the right: the abbey, left of centre in the pictures, stays visible */
   .searchbar { display:flex; gap:12px; align-items:center; margin-bottom:6px; }
   .searchbar[hidden] { display:none; }
+  .seg[hidden] { display:none; }      /* the places to look: hidden in a Remote Thalia (2026-11-26: the style of .seg showed them anyway) */
   input[type=search] { flex:1; font:inherit; padding:9px 14px; border-radius:9px; border:1px solid var(--line); background:var(--panel2); color:var(--ink); }
   input[type=search]::placeholder { color:var(--muted); }
   .seg { display:inline-flex; border:1px solid var(--line); border-radius:9px; overflow:hidden; background:var(--panel2); }
@@ -352,7 +353,12 @@ async function openRegistration() {          // the Store starts when it is firs
   try { const r = await (await fetch('/api/store/apps', { cache: 'no-store' })).json(); if (r.store) { window.open(new URL('MPAI/Store/Register', r.store).href, '_blank', 'noopener'); return; } } catch { }
   alert('The MPAI Store does not answer.');
 }
-const GOES = { 'Run and manage an App': 'apps' };
+// A REMOTE THALIA (the participants' Thalia, 2026-11-26) does what it can: the Apps of MPAI as a Service, and the MMM world (below) - not this machine, the Store or the AIMs.
+const REMOTE_FUNCTIONS = [
+  ['Use the Apps of MPAI as a Service', 'The Apps run on the machine of MPAI; the microphone, the camera and the screen they use are yours, the ones chosen in Devices. Run an App, stop it when you have finished.', 'available',
+    [['Apps', () => goView('apps')], ['Running', () => goView('running')], ['Devices', () => goView('devices')]]]
+];
+const GOES = { 'Run and manage an App': 'apps', 'Use the Apps of MPAI as a Service': 'apps' };
 // Store and Settings do not exist yet: each says what it would enable.
 const SECTIONS = {
   store: {
@@ -410,7 +416,7 @@ function welcome() {
   if (q) { const p = document.createElement('p'); p.className = 'empty'; p.textContent = `Nothing found for "${q}"${wheres().length ? ' in ' + wheres().map(w => w === 'local' ? 'this machine' : 'MPAI as a Service').join(' and ') : ''}.`; v.appendChild(p); }
   const h = document.createElement('h2'); h.className = 'sec'; h.textContent = 'What Thalia does'; v.appendChild(h);
   const list = document.createElement('div'); list.className = 'grid';
-  for (const [name, text, state, links] of FUNCTIONS) {
+  for (const [name, text, state, links] of (isRemote() ? REMOTE_FUNCTIONS : FUNCTIONS)) {
     const c = document.createElement('section'); c.className = 'card fn ' + state;
     c.innerHTML = `<div class="fh"><b></b><span class="chip"></span></div><p class="desc"></p>`;
     c.querySelector('b').textContent = name; c.querySelector('.chip').textContent = state === 'available' ? 'available' : 'coming';
@@ -421,7 +427,7 @@ function welcome() {
   }
   v.appendChild(list);
   // THE MMM WORLD on Home (2026-11-26): your MMM User - register once, then enter without barriers.
-  if (!isRemote()) {
+  {      // in a Remote Thalia too (the participants' Thalia, 2026-11-26)
     const h2 = document.createElement('h2'); h2.className = 'sec'; h2.textContent = 'The MMM world'; v.appendChild(h2);
     const holder = document.createElement('section'); holder.className = 'card'; v.appendChild(holder);
     mmmUserCard().then(d => { d.style.borderTop = '0'; holder.appendChild(d); });
@@ -945,7 +951,7 @@ async function settingsView() {
   card.appendChild(field('The MPAI as a Service instance you use', 'mas', st.mas, 'https://...', st.fixed));
   if (!st.fixed) card.appendChild(field('The MPAI Store you use', 'store', st.store, 'http://...', false));
   if (st.fixed) { const n = document.createElement('p'); n.className = 'desc'; n.textContent = 'This is a Remote Thalia: it uses the Service of its package.'; card.appendChild(n); }
-  if (!st.fixed) card.appendChild(await mmmUserCard());
+  card.appendChild(await mmmUserCard());
   if (st.data) {
     const d = document.createElement('div'); d.className = 'detail';
     d.innerHTML = '<h4>Where your things are kept</h4><div class="desc"></div>'; d.querySelector('.desc').textContent = `Your Apps: ${st.apps}. Your choices, the Store and what you obtained: ${st.data}.`; card.appendChild(d);

@@ -27,6 +27,7 @@ var remote = args.Zip(args.Skip(1)).Any(p => p.First.Equals("--Profile", StringC
 var root = remote ? RemotePackageRoot(AppContext.BaseDirectory) : RepositoryRoot(AppContext.BaseDirectory);
 string? masToken = null;
 string? remoteService = null;
+string? mmmJoin = null;            // the stable join page of the MMM meeting (remote.json MmmJoin): the MMM User's address by default (2026-11-26)
 if (remote)
 {
     var rj = Path.Combine(root, "remote.json");
@@ -34,6 +35,7 @@ if (remote)
     var j = JsonNode.Parse(File.ReadAllText(rj))!.AsObject();
     remoteService = (string?)j["Service"] ?? throw new InvalidOperationException("remote.json has no Service");
     masToken = (string?)j["Token"];
+    mmmJoin = (string?)j["MmmJoin"];
 }
 // The Launcher's page is in Thalia\Core\wwwroot (Full) or beside the program (Remote), wherever the program is started from.
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions { Args = args, ContentRootPath = remote ? AppContext.BaseDirectory : Path.Combine(root, "Thalia", "Core") });
@@ -111,7 +113,7 @@ app.MapGet("/api/catalogue", async () =>
         }
     }
     catch (Exception ex) { masProblem = remote
-        ? $"Your Service at {masUrl.Host} does not answer ({ex.GetBaseException().Message.Split('\n')[0]}). Is Tailscale connected here, and is Thalia-Service running on your desktop?"
+        ? $"MPAI as a Service ({masUrl.Host}) does not answer now: its Apps appear here while it is on (during the MPAI meetings). Your MMM User is on Home."
         : $"The MPAI as a Service instance at {masUrl} does not answer ({ex.GetBaseException().Message.Split('\n')[0]}). Its Apps appear when it runs; Run on MAS starts it if it is on this machine."; }
 
     return Results.Json(new JsonObject
@@ -272,7 +274,7 @@ if (!remote)
 
 // SETTINGS (APP-1): where Thalia looks. The MPAI as a Service instance and the Store the User uses: the address of each, tested before it is kept. A Remote Thalia has the Service of its package.
 // THE PERSON'S MMM USER (MmmAccount.cs, 2026-11-26): Thalia keeps the person's Account of the MMM world and registers or enters for it.
-if (!remote) MmmAccount.Map(app, thaliaData);
+MmmAccount.Map(app, thaliaData, mmmJoin);      // also in a Remote Thalia (the participants' Thalia, 2026-11-26)
 
 app.MapGet("/api/settings", () => Results.Json(new JsonObject
 {
@@ -368,8 +370,11 @@ async Task StartAsync(Run run)
         // the instance is. The Controller is the instance's: none is started here.
         if (!remote && run.Where == "mas" && OwnClients.Of(run.App, root) is { } ownMas && (ownMas.ControllerExe is not null || ownMas.MasArgs is not null)) { await StartOwnAsync(run, ownMas, masUrl.ToString()); return; }
         if (!File.Exists(hostDll)) throw new InvalidOperationException($"the App client is not built: {hostDll} (dotnet build {hostProject})");
-        var hostFile = remote && File.Exists(hostExe) ? hostExe : "dotnet";
-        var hostArgs = hostFile == "dotnet" ? $"\"{hostDll}\" " : "";
+        // A package with no program of its own (2026-11-26: an antivirus took the unsigned Thalia.exe of the participants' package for a threat): the App client is run by the same
+        // dotnet that runs Thalia - the package's own copy of Microsoft's, signed - not by a dotnet the PC may not have.
+        var ownDotnet = Environment.ProcessPath is { } pp && Path.GetFileNameWithoutExtension(pp).Equals("dotnet", StringComparison.OrdinalIgnoreCase) ? pp : "dotnet";
+        var hostFile = remote && File.Exists(hostExe) ? hostExe : ownDotnet;
+        var hostArgs = hostFile != hostExe ? $"\"{hostDll}\" " : "";
         if (run.App == "MCA") await EnsureOllamaAsync(run);
 
         Uri service;
@@ -393,7 +398,7 @@ async Task StartAsync(Run run)
             if (!await AnswersAsync(masUrl))
             {
                 if (!masUrl.IsLoopback) throw new InvalidOperationException(remote
-                    ? $"your Service at {masUrl.Host} does not answer: is Tailscale connected here, and is Thalia-Service running on your desktop?"
+                    ? $"MPAI as a Service ({masUrl.Host}) does not answer now: it is on during the MPAI meetings"
                     : $"the MPAI as a Service instance {masUrl} does not answer");
                 run.Phase = "starting the MPAI as a Service instance on this machine (the first time: several minutes)";
                 Shared.Mas ??= run.Spawn("mas-service", "dotnet", $"run --project \"{masProject}\" -- \"{masConfig}\"", root, null, keep: true);
