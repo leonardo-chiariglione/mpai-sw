@@ -547,8 +547,9 @@ async function choosePersona() {
   }, 2000);
   return await new Promise(res => { go.onclick = () => { box.remove(); pr.dispose(); res(current); }; });
 }
-async function resume() {
-  const p = me.resume.persona; client.token = me.resume.token; client.persona = p.Persona ?? client.persona;
+async function resume() { return resumeWith(me.resume.token, me.resume.persona); }
+async function resumeWith(token, p) {
+  client.token = token; client.persona = p.Persona ?? client.persona;
   const seat = W?.buildings.flatMap(b => b.rooms.flatMap(r => (r.seats ?? []).map(s => ({ s, b, r })))).find(x => x.s.id === p.Location);
   if (seat) {
     const wx = seat.b.x + seat.r.x + seat.s.x, wy = seat.b.y + seat.r.y + seat.s.y;
@@ -571,8 +572,112 @@ async function resume() {
   if (client.seated) { handAndSummary(); if (new URLSearchParams(location.search).get('mic') !== 'off' && !client.micOn) { client.micOn = true; microphone(); } }      // back in the seat: the hand, the Secretary and the microphone as before
   capture(); setInterval(capture, 200); setInterval(sendPose, 150);
 }
+// ACCOUNTS (2026-11-26). Nobody enters the world by being named: the person registers - opens an Account with its level, its data and a password - or, having one, enters with its
+// password (Register again, with its credentials). A Visitor gives its first name, last name and a password; a Participant or an Officer an email and an organisation too. A person
+// invited by the chair has its name already; a visitor, whom nobody named, is the name it registers with (its letters). Thalia, the person's own User, may open this page already
+// entered: it gives the User's token after #mmm-token= (never sent to the server in the address; removed from it at once).
+const fromThalia = (() => { const h = new URLSearchParams(location.hash.slice(1)); const t = h.get('mmm-token'), u = h.get('mmm-user'); if (t) history.replaceState(null, '', location.pathname + location.search); return t && u ? { token: t, user: u } : null; })();
+function nameTo(user) { Object.assign(client, { name: user, human: user + '-human', persona: user + '-Persona', personae: [user + '-Persona'] }); }
+const accountId = (first, last) => (first + last).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]/g, '');
+async function accountForm(note = '') {
+  const levels = await fetch('/api/v2.2/register/options', { cache: 'no-store' }).then(r => r.ok ? r.json() : []).catch(() => []);
+  const visitor = me.byAccount ?? me.kind === 'visitor', box = document.createElement('div');      // the person is the Account it registers or enters with
+  let remembered = {}; try { remembered = JSON.parse(localStorage.getItem('mmm-account') ?? '{}'); } catch { }   // this browser remembers the names (never the password)
+  Object.assign(box.style, { position: 'fixed', inset: '0', zIndex: 40, background: 'rgba(15,18,24,.97)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'safe center', gap: '10px', padding: '16px', overflow: 'auto', boxSizing: 'border-box' });
+  const field = (id, label, type = 'text', value = '') => `<label id="${id}L" style="display:block;text-align:left;margin:6px 0"><span style="display:block;font-size:13px;color:var(--muted)">${label}</span><input id="${id}" type="${type}" value="${value}" autocomplete="${type === 'password' ? 'new-password' : 'off'}" style="width:100%;box-sizing:border-box;font-size:17px;padding:6px 8px;border-radius:6px;border:1px solid #556;background:#252b34;color:inherit"></label>`;
+  box.innerHTML = `<h2 style="margin:0">${me.registered ? 'Enter the M-Instance' : 'Register with this M-Instance'}</h2>
+    <div style="max-width:520px;text-align:center;color:var(--muted)">${me.registered ? `You have an Account, ${me.name}: give its password.` : 'Registration opens your Account. Next time you enter with your password. Nothing is paid.'}</div>
+    ${visitor ? '<div style="display:flex;gap:8px"><button id="acNew" style="font-size:16px;padding:6px 14px;border-radius:6px;cursor:pointer">Register</button><button id="acOld" style="font-size:16px;padding:6px 14px;border-radius:6px;cursor:pointer">I have an Account</button></div>' : ''}
+    <div id="acBody" style="width:min(520px,100%)"></div>
+    <div id="acErr" style="color:#f2994a;min-height:1.2em;max-width:520px;text-align:center">${note}</div>
+    <button id="acGo" style="font-size:20px;padding:8px 28px;border-radius:8px;cursor:pointer"></button>`;
+  document.body.appendChild(box);
+  const body = box.querySelector('#acBody'), go = box.querySelector('#acGo'), err = t => box.querySelector('#acErr').textContent = t;
+  let mode = me.registered || (visitor && remembered.first) ? 'enter' : 'new';
+  const draw = () => {
+    if (mode === 'enter') {
+      body.innerHTML = (visitor ? field('acFirst', 'First name', 'text', remembered.first ?? '') + field('acLast', 'Last name', 'text', remembered.last ?? '') : '') + field('acPass', 'Password', 'password');
+      go.textContent = 'Enter';
+    } else {
+      body.innerHTML = `<div style="margin:6px 0;font-weight:600">1. Choose an Account Level <span style="font-weight:400;color:var(--muted)">(Participant keeps your Persona from one visit to the next)</span></div>
+        ${levels.map((l, i) => `<label style="display:block;text-align:left;background:#252b34;border-radius:8px;padding:8px 10px;margin:6px 0;cursor:pointer"><input type="radio" name="lvl" value="${l.id}" ${i === 0 ? 'checked' : ''}> <b>${l.name}</b><div style="font-size:13px;color:var(--muted);margin-left:22px">${l.description}</div></label>`).join('')}
+        <div style="margin:14px 0 2px;font-weight:600">2. Your data</div>
+        ${field('acFirst', 'First name', 'text', visitor ? '' : me.name)}${field('acLast', 'Last name')}${field('acOrg', 'Organisation')}${field('acMail', 'Email', 'email')}
+        ${field('acPass', `Password (at least ${me.minimumPassword ?? 6} characters)`, 'password')}${field('acPass2', 'The password again', 'password')}`;
+      const needs = () => { const lvl = box.querySelector('input[name=lvl]:checked')?.value; for (const id of ['acOrg', 'acMail']) box.querySelector('#' + id + 'L span').textContent = (id === 'acOrg' ? 'Organisation' : 'Email') + (lvl === 'Visitor' ? ' (not needed for a Visitor)' : ''); };
+      body.querySelectorAll('input[name=lvl]').forEach(r => r.onchange = needs); needs();
+      go.textContent = 'Next: choose your Persona';
+    }
+  };
+  if (visitor) { box.querySelector('#acNew').onclick = () => { mode = 'new'; err(''); draw(); }; box.querySelector('#acOld').onclick = () => { mode = 'enter'; err(''); draw(); }; }
+  draw();
+  return await new Promise(res => {
+    go.onclick = () => {
+      const v = id => box.querySelector('#' + id)?.value.trim() ?? '';
+      const pass = box.querySelector('#acPass').value;
+      if (mode === 'enter') {
+        if (visitor && (!v('acFirst') || !v('acLast'))) return err('Your first name and last name, as you registered them.');
+        if (!pass) return err('The password of your Account.');
+        try { if (visitor) localStorage.setItem('mmm-account', JSON.stringify({ first: v('acFirst'), last: v('acLast') })); } catch { }
+        box.remove(); return res({ mode, user: visitor ? accountId(v('acFirst'), v('acLast')) : me.name, pass });
+      }
+      const level = box.querySelector('input[name=lvl]:checked')?.value ?? 'Visitor';
+      if (!v('acFirst') || !v('acLast')) return err('The first name and the last name are needed.');
+      if (level !== 'Visitor' && (!v('acOrg') || !/^\S+@\S+\.\S+$/.test(v('acMail')))) return err(`The ${level} level needs your organisation and an email address too.`);
+      if (pass.length < (me.minimumPassword ?? 6)) return err(`The password needs at least ${me.minimumPassword ?? 6} characters.`);
+      if (pass !== box.querySelector('#acPass2').value) return err('The two passwords are not the same.');
+      const user = visitor ? accountId(v('acFirst'), v('acLast')) : me.name;
+      if (!user) return err('The name has no letters that can name a User.');
+      try { if (visitor) localStorage.setItem('mmm-account', JSON.stringify({ first: v('acFirst'), last: v('acLast') })); } catch { }
+      box.remove(); res({ mode, user, pass, level, first: v('acFirst'), last: v('acLast'), org: v('acOrg'), email: v('acMail') });
+    };
+  });
+}
+// The Personal Profile of a Register Request: the human, its User and its Persona; with the data, the level and the credentials when it registers; with the password when it enters.
+const profileOf = (user, extra, choice) => ({ Header: 'MMM-PPR-V2.2', MInstanceID: 'MI1', humanID: user + '-human', PersonalProfileID: 'Profile-' + user + '-human',
+  PersonalProfile: { ...extra, Processes: [{ ProcessIDOrProcess: [{ ProcessID: user }], PersonaIDOrPersona: [{ PersonaID: user + '-Persona', ...(choice ? { PersonaChoice: choice } : {}) }] }] } });
+const tokenOf = (reg, user) => (reg.tokens ?? '').split(',').map(p => p.split('=')).find(p => decodeURIComponent(p[0]) === user)?.[1];
+async function enterWithAccount() {
+  let info = null;
+  if (fromThalia) {                                                           // Thalia entered for the person: its token
+    nameTo(fromThalia.user); client.token = fromThalia.token;
+    info = await fetch('me', { headers: { Authorization: 'Bearer ' + client.token }, cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
+    if (!info) { client.token = null; client.status = 'The entry Thalia gave has expired: enter here.'; }
+  }
+  for (let note = ''; !info;) {
+    const f = await accountForm(note);
+    nameTo(f.user);
+    if (f.mode === 'enter') {
+      const reg = await act('identity/register', client.human, { With: [profileOf(f.user, { Credential: f.pass })] });
+      if (reg.http !== 200) { note = reg.http === 409 || reg.http === 404 ? 'There is no Account with that name.' : `Not entered: ${reg.body?.paStatus?.detail ?? reg.http}`; continue; }
+      client.token = tokenOf(reg, f.user);
+    } else {
+      let reg;
+      for (;;) {
+        const choice = await choosePersona();
+        reg = await act('identity/register', client.human, { With: [profileOf(f.user, { AccountLevel: f.level, Credential: f.pass, Data: [{ FirstName: f.first, LastName: f.last, ...(f.org ? { Organisation: f.org } : {}), ...(f.email ? { Email: f.email } : {}) }] }, choice)] });
+        if (reg.http === 409 && /was chosen by/.test(reg.body?.paStatus?.detail ?? '')) continue;
+        break;
+      }
+      if (reg.http !== 201) { note = reg.http === 409 ? `There is an Account with that name already: enter with its password, or register with another name.` : `Not registered: ${reg.body?.paStatus?.detail ?? reg.http}`; continue; }
+      client.token = tokenOf(reg, f.user);
+    }
+    info = await fetch('me', { headers: { Authorization: 'Bearer ' + client.token }, cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
+  }
+  // No Persona (a Visitor whose last visit ended, or an Account Thalia opened): the person chooses one now, as one of its Users (its token).
+  while (!info.Persona) {
+    const choice = await choosePersona();
+    const reg = await act('identity/register', client.human, { With: [profileOf(client.name, {}, choice)] });
+    if (reg.http === 200) client.token = tokenOf(reg, client.name) ?? client.token;
+    else if (!(reg.http === 409 && /was chosen by/.test(reg.body?.paStatus?.detail ?? ''))) { client.status = `cannot take the Persona: ${reg.body?.paStatus?.detail ?? reg.http}`; return; }
+    info = await fetch('me', { headers: { Authorization: 'Bearer ' + client.token }, cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null) ?? info;
+  }
+  await resumeWith(client.token, info);
+  if (info.AccountLevelName) client.status += ` (${info.AccountLevelName})`;
+}
 async function join() {
   if (me?.resume) return resume();
+  if (me?.accounts) return enterWithAccount();
   const form = await registrationOptions();
   let choice, profile, reg;
   for (;;) {                                                                  // a Persona chosen by someone else at the same moment is refused: the choice is made again

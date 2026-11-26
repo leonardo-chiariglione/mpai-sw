@@ -420,6 +420,12 @@ function welcome() {
     if (go && state === 'available') { c.style.cursor = 'pointer'; c.title = 'Open it'; c.onclick = () => { view = go; if (!scope) scope = 'local'; storeDrawn = false; devicesDrawn = false; settingsDrawn = false; save(); }; }
   }
   v.appendChild(list);
+  // THE MMM WORLD on Home (2026-11-26): your MMM User - register once, then enter without barriers.
+  if (!isRemote()) {
+    const h2 = document.createElement('h2'); h2.className = 'sec'; h2.textContent = 'The MMM world'; v.appendChild(h2);
+    const holder = document.createElement('section'); holder.className = 'card'; v.appendChild(holder);
+    mmmUserCard().then(d => { d.style.borderTop = '0'; holder.appendChild(d); });
+  }
 }
 
 // ---- the Store: Apps to obtain, with what each needs shown before the User accepts (APP-2, APP-3, APP-4, APP-5) -------------------------------------
@@ -880,6 +886,44 @@ function aboutView() {
   v.appendChild(card);
 }
 
+// YOUR MMM USER (2026-11-26): Thalia is your own User in the MMM world. It keeps your Account - the address of the M-Instance (the personal link you were sent, or the world's address),
+// your data, your Account Level and your password (encrypted for your Windows user) - and registers or enters for you, then opens the world already entered.
+async function mmmUserCard() {
+  let a = {}; try { a = await (await fetch('/api/mmm/account', { cache: 'no-store' })).json(); } catch { }
+  const d = document.createElement('div'); d.className = 'detail';
+  const input = (id, label, value, type = 'text', hint = '') => `<label style="display:block;margin:4px 0"><span class="desc" style="display:block">${label}</span><input id="${id}" type="${type}" placeholder="${hint}" style="width:100%;box-sizing:border-box;font:inherit;padding:6px 8px;border-radius:7px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--ink)"></label>`;
+  d.innerHTML = `<h4>Your MMM User</h4><div class="desc">Thalia is your User in the MMM world. Register once (Participant keeps your Persona from one visit to the next; to be invited to a meeting, give the email you were invited with); then Enter the MMM, with no password to type.</div>
+    ${input('mmAddr', 'The address of the M-Instance (your personal link, or the world\'s address)', '', 'text', 'https://...')}
+    <label style="display:block;margin:4px 0"><span class="desc" style="display:block">Account Level</span><select id="mmLevel" style="font:inherit;padding:6px 8px;border-radius:7px;background:rgba(0,0,0,.25);color:var(--ink);border:1px solid var(--line)"><option>Visitor</option><option>Participant</option><option>Officer</option></select></label>
+    ${input('mmFirst', 'First name', '')}${input('mmLast', 'Last name', '')}${input('mmOrg', 'Organisation (not needed for a Visitor)', '')}${input('mmMail', 'Email (not needed for a Visitor)', '', 'email')}
+    ${input('mmPass', a.hasPassword ? 'Password (kept; type a new one to change it)' : 'Password (at least 6 characters)', '', 'password')}
+    <div class="buttons" style="display:flex;gap:8px;margin-top:6px"><button class="act secondary s">Keep</button><button class="act r">Register</button><button class="act e">Enter the MMM</button></div><div class="out desc"></div>`;
+  const $d = s => d.querySelector(s), out = $d('.out');
+  $d('#mmAddr').value = a.address || ''; $d('#mmLevel').value = a.level || 'Visitor'; $d('#mmFirst').value = a.first || ''; $d('#mmLast').value = a.last || ''; $d('#mmOrg').value = a.organisation || ''; $d('#mmMail').value = a.email || '';
+  const keep = async () => {
+    const body = { address: $d('#mmAddr').value, level: $d('#mmLevel').value, first: $d('#mmFirst').value, last: $d('#mmLast').value, organisation: $d('#mmOrg').value, email: $d('#mmMail').value, password: $d('#mmPass').value };
+    if ($d('#mmPass').value && $d('#mmPass').value.length < 6) { out.style.color = 'var(--bad)'; out.textContent = 'The password needs at least 6 characters.'; return false; }
+    const r = await fetch('/api/mmm/account', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+    $d('#mmPass').value = ''; return r.ok;
+  };
+  $d('.s').onclick = async () => { if (await keep()) { out.style.color = 'var(--ok)'; out.textContent = 'Kept.'; } };
+  $d('.r').onclick = async () => {
+    if (!(await keep())) return;
+    out.style.color = ''; out.textContent = 'Registering...';
+    const r = await (await fetch('/api/mmm/register', { method: 'POST' })).json().catch(() => ({ ok: false, text: 'Thalia does not answer.' }));
+    out.style.color = r.ok ? 'var(--ok)' : 'var(--bad)'; out.textContent = r.text;
+  };
+  $d('.e').onclick = async () => {
+    const tab = window.open('about:blank', '_blank');                     // opened by the click itself: a tab opened later is blocked as a pop-up
+    if (!(await keep())) { tab?.close(); return; }
+    out.style.color = ''; out.textContent = 'Entering...';
+    const r = await (await fetch('/api/mmm/enter', { method: 'POST' })).json().catch(() => ({ ok: false, text: 'Thalia does not answer.' }));
+    out.style.color = r.ok ? 'var(--ok)' : 'var(--bad)'; out.textContent = r.text;
+    if (r.ok && tab) tab.location = r.url; else tab?.close();
+  };
+  return d;
+}
+
 async function settingsView() {
   settingsDrawn = true;
   const v = $('#view'); v.innerHTML = '';
@@ -901,6 +945,7 @@ async function settingsView() {
   card.appendChild(field('The MPAI as a Service instance you use', 'mas', st.mas, 'https://...', st.fixed));
   if (!st.fixed) card.appendChild(field('The MPAI Store you use', 'store', st.store, 'http://...', false));
   if (st.fixed) { const n = document.createElement('p'); n.className = 'desc'; n.textContent = 'This is a Remote Thalia: it uses the Service of its package.'; card.appendChild(n); }
+  if (!st.fixed) card.appendChild(await mmmUserCard());
   if (st.data) {
     const d = document.createElement('div'); d.className = 'detail';
     d.innerHTML = '<h4>Where your things are kept</h4><div class="desc"></div>'; d.querySelector('.desc').textContent = `Your Apps: ${st.apps}. Your choices, the Store and what you obtained: ${st.data}.`; card.appendChild(d);

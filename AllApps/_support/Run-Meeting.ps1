@@ -1,14 +1,15 @@
-﻿# A MEETING IN THE MMM WORLD: the guests install nothing, each opens a personal link.
-#   AllApps\_support\Run-Meeting.ps1 -Chair Leonardo -Guests Anna,Bruno,Carla -Until 19:00
+﻿# A MEETING IN THE MMM WORLD: the guests install nothing (or use Thalia); each registers once with the M-Instance (an Account with a password) and enters with it.
+#   AllApps\_support\Run-Meeting.ps1 -Chair leonardo@example.com -Guests anna@example.com,bruno@example.com -Until 19:00
 #   AllApps\_support\Run-Meeting.ps1 -Chair Leonardo -Guests Anna,Bruno,Carla -Via cloudflare
 # It starts the M-Instance with its world (the Metaverse Square, the MPAI building: a public atrium and the wings of rooms) and puts it on the internet at an https address (the microphone needs
 # https): -Via funnel (Tailscale Funnel, a stable address on this PC's Tailscale name; needs Tailscale logged in, Serve and Funnel enabled in its console) or -Via cloudflare (the default: a Cloudflare
 # quick tunnel: no account, a new address each time; cloudflared.exe).
-# THE CHAIR INVITES: each guest gets a personal link (?invite=...) that this script prints. The server turns it into the guest's name; the guests listed are the ones given the Rights to the wing of the
-# meeting rooms and to the MMM meeting room, for the meeting - the rights end with it. Without the link nobody is answered; with -Visitors anybody may come into the atrium (public), and no further.
+# THE CHAIR INVITES THE EMAILS OF ACCOUNTS (2026-11-26): everybody comes to the same address and registers (preferably as Participant) or enters with its password; the AVS Service gives the
+# meeting's Rights (Rights Change: the wing of the meeting rooms, the MMM meeting room, a seat; for the meeting, the rights end with it) to the Account whose email was invited. Names of a group are
+# turned into their emails (Registry\people.json).
 # You, on this PC: the address http://127.0.0.1:7099 - you are the chair. Close the server window when the meeting is over (the address goes with it).
 # A GROUP'S MEETING: -Group MMM -When "Thursday 22 October, 17:00 CEST" takes the people of the group from AllApps\MMM\Registry\people.json (see Registry\README.md): the chair is the one who chairs the group, the others
-# are the guests, each is sent an email with the personal link, composed through Outlook. -Mail ask (default): the recipients are shown and you are asked to confirm before anything is sent;
+# are the guests, each is sent an email with the world's address and the email to register with, composed through Outlook. -Mail ask (default): the recipients are shown and you are asked to confirm before anything is sent;
 # draft: the emails are saved as Outlook drafts, nothing is sent; send: they are sent without asking (only when you have said so); none: no emails.
 # -Stay: the script does not wait for Enter at the end and leaves the server and the tunnel running (to be started a day before the meeting); close the server window and end cloudflared when it is over.
 # -Written: no speech recognition (Whisper) and no language model (Ollama): the participants write their requests to the Secretary (the requests of the list); no minutes, no summary.
@@ -22,8 +23,8 @@ param([string]$Chair = '', [string]$Guests = '', [string]$Until = '', [double]$H
 $here = (Resolve-Path (Join-Path $PSScriptRoot "..\MMM")).Path
 
 # AS LAST TIME (2026-11-26). The MMM world goes on from its last run (the server keeps its state in %LOCALAPPDATA%\MPAI\MMM\MI1-world), and so do the settings of the meeting: what is not
-# given here is what was used last time - the chair, the host, the guests or the group, the end, the Officers, the way to the internet, spoken or written, the language model - and each guest's
-# personal link stays the same, so a link sent before still opens the meeting. -Spoken: spoken, even if last time was written. -Fresh: the world and the settings start as the first time
+# given here is what was used last time - the chair, the host, the guests or the group, the end, the Officers, the way to the internet, spoken or written, the language model - and the guests
+# (invited by the email of their Accounts). -Spoken: spoken, even if last time was written. -Fresh: the world and the settings start as the first time
 # (the server keeps the old state beside the new one). The date of the emails (-When) and whether to send them (-Mail) are asked each time.
 $keptFolder = Join-Path $env:LOCALAPPDATA 'MPAI\MMM\MI1-world'
 $settingsFile = Join-Path $keptFolder 'meeting-settings.json'
@@ -69,36 +70,35 @@ if ($Group) {
 }
 if (-not $Chair) { $Chair = Read-Host 'Your name in the meeting (the chair)' }
 if (-not $HostName) { $HostName = $Chair }      # after the chair is known: asked at the prompt, it was empty here and the host had no name
-if (-not $Guests) { $Guests = Read-Host 'The guests, their names separated by commas (for example Anna,Bruno,Carla)' }
+if (-not $Guests) { $Guests = Read-Host 'The guests: the emails of their Accounts (or names of the group), separated by commas' }
 $names = @($Guests -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ -and $_ -ne $HostName })
 if ($names.Count -lt 1) { Write-Host 'No guests.'; exit 1 }
 
-# A personal token for each guest: 18 hexadecimal characters, from the system's random numbers.
-$tokens = @{}
-foreach ($n in $names) {
-    if ($last -and $last.Tokens -and $last.Tokens.$n) { $tokens[$n] = $last.Tokens.$n; continue }      # the link sent last time still works
-    $b = New-Object byte[] 9; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); $tokens[$n] = ([BitConverter]::ToString($b) -replace '-', '').ToLower()
-}
-# the host has a link of its own too, for another device (a laptop away from this PC); on this PC it needs none
-$b = New-Object byte[] 9; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); $hostToken = ([BitConverter]::ToString($b) -replace '-', '').ToLower()
-if ($last -and $last.HostToken -and $last.HostName -eq $HostName) { $hostToken = $last.HostToken }
-$invites = (@($names | ForEach-Object { "$_=$($tokens[$_])" }) + "$HostName=$hostToken") -join ','      # @(): with ONE guest the pipeline gives a string, and + would glue the host's token onto it
+# INVITED BY THE EMAIL OF THEIR ACCOUNT (2026-11-26). Every person registers with the M-Instance (an Account with a password, preferably Participant) and is that Account; nobody is
+# named by a link. The chair invites emails: the AVS Service gives the meeting's Rights (Rights Change) to the Account with that email when it asks to join. The chair's email first.
+function Email-Of($n) { if ($n -match '@') { $n } elseif ($people[$n] -and $people[$n].Email) { [string]$people[$n].Email } else { $null } }
+$emails = @(@($Chair, $HostName) + $names | ForEach-Object { Email-Of $_ } | Where-Object { $_ } | Select-Object -Unique)
+$noEmail = @(@($Chair) + $names | Where-Object { -not (Email-Of $_) } | Select-Object -Unique)
+if ($noEmail) { Write-Host "No email for: $($noEmail -join ', ') - with Accounts a person is invited by the email of its Account; give the email instead of the name." -ForegroundColor Yellow }
+if (-not $emails) { Write-Host 'Nobody to invite: no email.'; exit 1 }
+$officerEmails = @(($Officers -split ',') | ForEach-Object { $_.Trim() } | Where-Object { $_ } | ForEach-Object { $e = Email-Of $_; if ($e) { $e } else { $_ } })
+
 
 function Get-Mails($base, $joinAt = $null) {
     $subject = "MPAI $($grp.Id) meeting" + $(if ($When) { " - $When" } else { '' })
     @(foreach ($n in $names) {
         $p = $people[$n]; if (-not $p -or -not $p.Email) { continue }
-        $link = if ($joinAt) { "$joinAt/join.html?invite=$($tokens[$n])" } else { "$base/viewer/?world=1&mic=1&invite=$($tokens[$n])" }
+        $link = if ($joinAt) { "$joinAt/join.html" } else { "$base/viewer/?world=1&mic=1" }
         $body = @"
 Dear $(($p.Name -split '\s+')[0]),
 
 you are invited to the $($grp.Name) meeting$(if ($When) { " on $When" }), in the MMM virtual world: the MPAI building, the meeting room of the group.
 
-$(if ($n -eq $Chair) { 'You chair the meeting: you can share your screen, and end the meeting for everybody.' + [Environment]::NewLine + [Environment]::NewLine })Your personal link (it is yours: please do not pass it on):
+$(if ($n -eq $Chair) { 'You chair the meeting: you can share your screen, and end the meeting for everybody.' + [Environment]::NewLine + [Environment]::NewLine })The address of the MMM world:
 
 $link
 
-What you need: a PC with Chrome or Edge, and a headset (no loudspeakers: the room has its own echo). Open the link. The first time you register: keep the Account Level *Participant*, give your first name, last name and email, and choose your avatar. Allow the microphone when the browser asks.
+What you need: a PC with Chrome or Edge, and a headset (no loudspeakers: the room has its own echo). Open the link. The first time you register: choose the Account Level *Participant*, give your first name, last name, organisation and THIS email address ($($p.Email)) - the invitation is for the Account with this email - choose a password (you will enter with it next time), and choose your avatar. If you use Thalia, register there instead (Settings, Your MMM User, with this address) and press Enter the MMM. Allow the microphone when the browser asks.
 You move by clicking the point you want to reach: your avatar walks there, through the doors of the MPAI building to the meeting rooms, and into the MMM meeting room, where you sit down by yourself.
 The mouse wheel turns you: wheel forward turns you counterclockwise, wheel backward clockwise. Ctrl + wheel forward zooms in, Ctrl + wheel backward zooms out.
 Q stands up, E sits again.
@@ -121,7 +121,7 @@ if (Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyCon
 $dotnet = (Get-Command dotnet -ErrorAction SilentlyContinue).Source
 if (-not $dotnet) { $dotnet = 'C:\Program Files\dotnet\dotnet.exe' }
 $period = if ($Until) { "--until $Until" } else { "--hours $Hours" }      # not $when: PowerShell names ignore case, and $when was $When, the date the emails give (they said "--hours 3")
-$arguments = "run --project `"$here\Server\Mpai.Mmm.Server.csproj`" -c Release -- $local --world --identity --chair $Chair --host $HostName --invites $invites --invite $((@($Chair) + @($HostName) + $names | Select-Object -Unique) -join ',') $period" + $(if ($Visitors) { ' --visitors' } else { '' }) + $(if ($Officers) { " --officers $Officers" } else { '' }) + $(if ($Written) { ' --no-asr --no-summary' } else { " --llm $Llm" }) + $(if ($Fresh) { ' --fresh' } else { '' })
+$arguments = "run --project `"$here\Server\Mpai.Mmm.Server.csproj`" -c Release -- $local --world --identity --chair $Chair --host $HostName --invite-emails $($emails -join ',') $period" + $(if ($Visitors) { ' --visitors' } else { '' }) + $(if ($officerEmails) { " --officers $($officerEmails -join ',')" } else { '' }) + $(if ($Written) { ' --no-asr --no-summary' } else { " --llm $Llm" }) + $(if ($Fresh) { ' --fresh' } else { '' })
 # SPOKEN (without -Written): the language model of the Secretary and of the summary is loaded on the card now (the first load takes about 20 s), so the first request is answered at once.
 if (-not $Written) {
     Write-Host "Loading the language model $Llm..."
@@ -143,7 +143,7 @@ for ($i = 0; $i -lt 180 -and -not $up; $i++) {
 if (-not $up) { Write-Host 'The server did not start. Look at its window.'; exit 1 }
 # The settings of this meeting, for the next one (as last time).
 $saved = [ordered]@{ Saved = (Get-Date).ToString('yyyy-MM-dd HH:mm'); Chair = $Chair; HostName = $HostName; Guests = ($names -join ','); Group = $Group; Until = $Until; Hours = $Hours; Officers = $Officers
-                     Via = $Via; Join = $Join; Llm = $Llm; Visitors = [bool]$Visitors; Written = [bool]$Written; Tokens = $tokens; HostToken = $hostToken }
+                     Via = $Via; Join = $Join; Llm = $Llm; Visitors = [bool]$Visitors; Written = [bool]$Written }
 New-Item -ItemType Directory -Force $keptFolder | Out-Null
 [IO.File]::WriteAllText($settingsFile, ($saved | ConvertTo-Json -Depth 4), (New-Object Text.UTF8Encoding($false)))
 
@@ -207,15 +207,16 @@ if ($Join -eq 'funnel' -and $Via -ne 'funnel') {
 
 Write-Host ''
 Write-Host '  For each guest - send them THEIR OWN link (Chrome or Edge on a PC, a headset, allow the microphone):' -ForegroundColor Green
-foreach ($n in $names) { Write-Host ("    {0,-12} {1}/viewer/?world=1&mic=1&invite={2}" -f $n, $base, $tokens[$n]) }
+Write-Host "    the address, the same for everybody: $base/viewer/?world=1&mic=1"
+Write-Host "    invited (the emails of their Accounts; each registers once, with that email): $($emails -join ', ')"
 Write-Host "    the meeting ends: $(if ($Until) { 'at ' + $Until } else { 'in ' + $Hours + ' hours' }), or when you press the button (bottom left); the rights of everybody end with it"
 Write-Host ''
 Write-Host '  For you, on this PC:' -ForegroundColor Green
 Write-Host "    $local/viewer/?world=1&mic=1&user=$HostName"
-Write-Host "  For you, on another device (the same person - use it on one device or the other, not both at once): $base/viewer/?world=1&mic=1&invite=$hostToken" -ForegroundColor Yellow
+Write-Host "  For you, on another device: the same address, entering with your Account's password." -ForegroundColor Yellow
 Write-Host ''
-Write-Host '  The first time, each chooses a Persona. Click the point to walk to - the MPAI doors, across the atrium to the south wing: the MMM meeting room is the first on the right. The wheel turns you, Ctrl + wheel zooms. Q stands up, E sits.'
-# THE EMAILS: one for each guest of the group, with the personal link, through Outlook (the account of this PC): shown first, sent only if you confirm - or saved as drafts.
+Write-Host '  The first time, each registers (an Account with a password) and chooses a Persona; afterwards each enters with the password. Click the point to walk to - the MPAI doors, across the atrium to the south wing: the MMM meeting room is the first on the right. The wheel turns you, Ctrl + wheel zooms. Q stands up, E sits.'
+# THE EMAILS: one for each guest of the group, with the world's address, through Outlook (the account of this PC): shown first, sent only if you confirm - or saved as drafts.
 if ($Group -and $Mail -ne 'none') {
     $mails = @(Get-Mails $base $joinUrl)
     Write-Host ''

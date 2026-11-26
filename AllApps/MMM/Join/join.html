@@ -27,12 +27,12 @@
 (async () => {
   const say = t => document.getElementById('say').textContent = t, more = t => document.getElementById('more').textContent = t;
   const invite = new URLSearchParams(location.search).get('invite') ?? '';
-  if (!/^[0-9a-f]{8,64}$/.test(invite)) { say('This link is not complete.'); more('Open the link exactly as it is in your invitation email.'); return; }
+  if (invite && !/^[0-9a-f]{8,64}$/.test(invite)) { say('This link is not complete.'); more('Open the link exactly as it is in your invitation email.'); return; }      // with Accounts (2026-11-26) there is no personal part: the world's address, for everybody
   let meeting = null;
   try { const rs = await fetch('meeting.json', { cache: 'no-store' }); if (rs.ok) meeting = await rs.json(); } catch { }
   const address = meeting?.Address ?? '';
   if (/^https:\/\/[a-z0-9.-]+$/i.test(address)) {
-    location.replace(`${address}/viewer/?world=1&mic=1&invite=${encodeURIComponent(invite)}`);
+    location.replace(`${address}/viewer/?world=1&mic=1${invite ? '&invite=' + encodeURIComponent(invite) : ''}`);
     return;
   }
   say(meeting?.When ? `The meeting is not open yet. It is on ${meeting.When}.` : 'The meeting is not open yet.');

@@ -42,6 +42,23 @@ The meeting ends by itself at its time as well.
 **On this PC only**, no Tailscale: `dotnet run --project AllApps/MMM/Server -- http://127.0.0.1:7099 --world --invite Leonardo,Anna,Bruno,Carla --hours 3`, and open
 `http://127.0.0.1:7099/viewer/?world=1&mic=1&user=Leonardo`. (`AllApps\MMM\Run-Conference.bat` is the older way for guests outside the network: a meeting code and a Cloudflare tunnel.)
 
+## Accounts: register once, then enter with the password
+
+Nobody enters the world by being named (2026-11-26). Everybody comes to the same address; the first time, a person registers - preferably as a **Participant**, whose Persona stays from one visit
+to the next: it chooses an Account Level and gives its data and a password - a **Visitor** its first name, last name and password; a **Participant** or an **Officer** an email and an organisation too
+(Officer is taken only by the person on the host PC and the people the chair designates, by email; an Officer whose organisation is MPAI is called an **MPAI Officer**). The person is its Account:
+afterwards it enters with its first name, last name and password ("I have an Account"; the browser remembers the names, never the password). The Account carries the email.
+
+**An invitation is a Rights Change.** The chair invites the emails of the Accounts (`Run-Meeting.ps1 -Guests` takes emails, or the names of a group, turned into their emails; the server's
+`--invite-emails`, the chair's first). When the User of an Account with an invited email asks to join, the AVS Service gives it the meeting's Rights - the doors of the wing and of the room, a seat,
+for the convener the screen - by Rights Change, for the meeting; the first invited email convenes. The invitation email gives the world's address and the email to register with. The M-Instance keeps only a salted hash of the password, never the password, and the Accounts outlive a restart.
+A Persona is chosen from the catalogue when registering - or, for a Visitor, again at each visit: **at the end of a Visitor's visit** (no request from its page for a minute) its Persona is taken
+away and offered to whoever registers; its Account stays. An Account opened before passwords existed takes the first password it is given.
+
+**Thalia as the person's User.** In Thalia, Settings, *Your MMM User*: the address of the M-Instance (the personal link the chair sent, or the world's address), the Account Level, the data and the
+password (kept encrypted for the Windows user). *Enter the MMM* registers the person the first time, enters afterwards, and opens the world already entered (the page is given the User's token after
+`#mmm-token=`, which is never sent to a server, and removes it); the first time, the person chooses its Persona there. `--no-accounts` runs the server as before (a name is enough).
+
 ## The world goes on from its last run
 
 The M-Instance of the world starts once; when it closes and starts again, it goes on from where it was (2026-11-26). The server keeps its state in `%LOCALAPPDATA%\MPAI\MMM\MI1-world\state.json`

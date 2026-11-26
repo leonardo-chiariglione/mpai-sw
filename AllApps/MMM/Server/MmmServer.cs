@@ -19,6 +19,9 @@ namespace Mpai.Mmm.Server;
 // by MMM-TEC.
 public static class MmmServer
 {
+    // How long a Visitor may be silent (its page closed) before its visit ends and its Persona is offered again (2026-11-26).
+    public static TimeSpan VisitEnds { get; set; } = TimeSpan.FromSeconds(60);
+
     // viewer: the folder of the viewer (AllApps/MMM/Viewer), served at /viewer/ with the
     // M-Instance as it can be seen at /viewer/state; null, no viewer.
     // onNext, onBack: what the viewer's "next step" (Space, up arrow, a click) and "previous
@@ -74,7 +77,7 @@ public static class MmmServer
                     return;
                 }
                 var who = identity.Of(ctx);
-                if (who is null && identity.Visitors && !ctx.Request.Headers.ContainsKey("Tailscale-User-Login"))          // a visitor, the first time: named at random, kept in a cookie
+                if (who is null && (identity.Visitors || identity.Accounts) && !ctx.Request.Headers.ContainsKey("Tailscale-User-Login"))          // a visitor, the first time: named at random, kept in a cookie
                 {
                     var v = Identity.NewToken();
                     ctx.Response.Cookies.Append(Identity.VisitorCookie, v, new CookieOptions { HttpOnly = true, SameSite = SameSiteMode.Lax, Secure = secure, MaxAge = TimeSpan.FromHours(12) });
@@ -119,15 +122,34 @@ public static class MmmServer
             });
         app.UseWebSockets();
         // Who may be offered, and may take, the MPAI Officer Account Level: with no identity (a private visit) anybody; with identity, the chair and the people the chair designates.
-        bool MayBeOfficer(HttpContext ctx) => identity is null || (ctx.Items["who"] is Identity.Who w && (w.Kind == "host" || (officers?.Contains(w.Name) ?? false)));
+        // With Accounts the person designated is named by the email of its Account (2026-11-26): the chair designates emails (or names).
+        bool MayBeOfficer(HttpContext ctx, string? email = null) => identity is null || (ctx.Items["who"] is Identity.Who w && (w.Kind == "host" || (officers?.Contains(w.Name) ?? false)
+            || (email is { Length: > 0 } && (officers?.Any(o => string.Equals(o, email.Trim(), StringComparison.OrdinalIgnoreCase)) ?? false))));
         var streams = new SpeechStreams();
         var screens = new ScreenStreams();
         var animations = new AnimationStreams();
         var replies = new ConcurrentDictionary<string, (int Http, string Body, string? Tokens)>();
 
-        string? Caller(HttpContext ctx) =>
-            ctx.Request.Headers.Authorization.ToString() is { } a && a.StartsWith("Bearer ", StringComparison.Ordinal)
-                ? m.ProcessOf(a["Bearer ".Length..].Trim()) : null;
+        // WHEN A VISIT ENDS (2026-11-26): every request a User makes with its token is noted; a Visitor heard from no more (its page closed) for VisitEnds has ended its visit, and its
+        // Persona is offered again to whoever registers (MInstance.EndVisit).
+        var lastSeen = new ConcurrentDictionary<string, DateTimeOffset>(StringComparer.Ordinal);
+        string? Caller(HttpContext ctx)
+        {
+            var who = ctx.Request.Headers.Authorization.ToString() is { } a && a.StartsWith("Bearer ", StringComparison.Ordinal) ? m.ProcessOf(a["Bearer ".Length..].Trim()) : null;
+            if (who is not null) lastSeen[who] = DateTimeOffset.UtcNow;
+            return who;
+        }
+        if (m.RequireCredentials)
+            app.Lifetime.ApplicationStarted.Register(() => _ = Task.Run(async () =>
+            {
+                while (!app.Lifetime.ApplicationStopping.IsCancellationRequested)
+                {
+                    try { await Task.Delay(TimeSpan.FromSeconds(10), app.Lifetime.ApplicationStopping); } catch (OperationCanceledException) { break; }
+                    foreach (var (user, at) in lastSeen.ToArray())
+                        if (DateTimeOffset.UtcNow - at > VisitEnds && lastSeen.TryRemove(user, out _) && m.EndVisit(user))
+                            Console.WriteLine($"The visit of {user} ended: its Persona is offered again.");
+                }
+            }));
 
         foreach (var (path, action) in Api.Paths)
         {
@@ -145,17 +167,23 @@ public static class MmmServer
                 if (rq is null) return Results.BadRequest("no Request");
                 if (rq.Action.Length == 0) rq.Action = action;
                 if (rq.Action != action) return Results.BadRequest($"{path} performs {action}, the Request asks {rq.Action}");
-                // A person registers as who Tailscale says it is, and only as that: its human, its User.
+                // A person registers as who Tailscale (or the invitation) says it is, and only as that: its human, its User. A visitor, whom nobody named, registers - and enters - under the
+                // name it gives, if it is not one of the people the chair invited (2026-11-26: with Accounts, the name is the Account's).
                 if (identity is not null && action == "Register" && ctx.Items["who"] is Identity.Who me)
                 {
                     var users = (rq.Complements?.With ?? []).SelectMany(w => w?["PersonalProfile"]?["Processes"]?.AsArray() ?? []).SelectMany(p => p?["ProcessIDOrProcess"]?.AsArray() ?? [])
-                                .Select(p => p?["ProcessID"]?.GetValue<string>());
-                    if (rq.SourceProcessID != me.Name + "-human" || users.Any(u => u != me.Name))
+                                .Select(p => p?["ProcessID"]?.GetValue<string>()).ToList();
+                    var byAccount = m.RequireCredentials && (identity.Accounts || me.Kind == "visitor");
+                    var name = byAccount ? users.FirstOrDefault() ?? "" : me.Name;
+                    if (byAccount && (name.Length == 0 || (!identity.Accounts && identity.IsReserved(name))))
+                        return Results.Json(new { paStatus = new { code = "InsRights", detail = $"{name} is the name of someone invited: choose another" } }, statusCode: 403);
+                    if (rq.SourceProcessID != name + "-human" || users.Any(u => u != name))
                         return Results.Json(new { paStatus = new { code = "InsRights", detail = $"{me.Login}{(me.Login.Length > 0 ? " is" : "")} {me.Name}: it registers only as that" } }, statusCode: 403);
                 }
 
-                if (action == "Register" && (rq.Complements?.With ?? []).Any(w => (string?)w?["PersonalProfile"]?["AccountLevel"] == "Officer") && !MayBeOfficer(ctx))
-                    return Results.Json(new { paStatus = new { code = "InsRights", detail = "The MPAI Officer Account Level is not offered to you" } }, statusCode: 403);
+                if (action == "Register" && (rq.Complements?.With ?? []).FirstOrDefault(w => (string?)w?["PersonalProfile"]?["AccountLevel"] == "Officer") is { } asksOfficer
+                    && !MayBeOfficer(ctx, (string?)asksOfficer["PersonalProfile"]?["Data"]?[0]?["Email"]))
+                    return Results.Json(new { paStatus = new { code = "InsRights", detail = "The Officer Account Level is not offered to you" } }, statusCode: 403);
                 var outcome = m.Perform(caller, rq);
                 var reply = (outcome.Http, JsonSerializer.Serialize(outcome.Response, Wire.Json),
                              outcome.Tokens.Count == 0 ? null : string.Join(",", outcome.Tokens.Select(t => $"{Uri.EscapeDataString(t.Key)}={t.Value}")));   // a header is ASCII: a name with an accent (Gérard) goes percent-encoded
@@ -166,7 +194,7 @@ public static class MmmServer
 
         // What a human that has not registered yet is shown: the Personae the M-Instance offers (Register takes the choice). No token: there is no User yet.
         // Registration options: the Account Levels, then (for the one chosen) the Personae the M-Instance makes available. No token: there is no User yet.
-        app.MapGet("/api/v2.2/register/options", (HttpContext ctx) => Results.Json(m.AccountLevels.Where(l => l.Id != "Officer" || MayBeOfficer(ctx)).Select(l => new { id = l.Id, name = l.Name, description = l.Description, price = 0 })));
+        app.MapGet("/api/v2.2/register/options", (HttpContext ctx) => Results.Json(m.AccountLevels.Where(l => l.Id != "Officer" || MayBeOfficer(ctx) || m.RequireCredentials).Select(l => new { id = l.Id, name = l.Name, description = l.Description, price = 0 })));
         app.MapGet("/api/v2.2/register/personae", () => Results.Json(m.AvailableCatalogueEntries()));      // the Personae nobody has chosen
         app.MapGet("/api/v2.2/items", (HttpContext ctx, string? dataType) => Caller(ctx) is { } p
             ? Results.Json(m.List(dataType).Where(i => m.MayRead(p, i.ID)).Select(i => new { itemID = i.ID, dataType = i.DataType }))
@@ -271,9 +299,17 @@ public static class MmmServer
             {
                 var (name, kind) = ctx.Items["who"] is Identity.Who w ? (w.Name, w.Kind)
                     : ctx.Connection.RemoteIpAddress is { } ip && System.Net.IPAddress.IsLoopback(ip) && ctx.Request.Query["user"].ToString() is { Length: > 0 } u ? (u, "local") : (null, "");
-                return name is null ? Results.NotFound()
-                    : Results.Json(new { name, kind, resume = m.Resume(name) is { } r ? new { token = r.Token, persona = r.Info } : null });
+                if (name is null) return Results.NotFound();
+                // WITH ACCOUNTS (2026-11-26) nobody is let in by being named: the person enters with the credentials of its Account (Register), or registers first.
+                if (m.RequireCredentials)
+                {
+                    var byAccount = identity is null || identity.Accounts || kind == "visitor";      // the person is the Account it registers or enters with, not a name it was given
+                    return Results.Json(new { name, kind, accounts = true, byAccount, registered = !byAccount && m.IsRegistered(name + "-human"), minimumPassword = MInstance.MinimumPassword });
+                }
+                return Results.Json(new { name, kind, resume = m.Resume(name) is { } r ? new { token = r.Token, persona = r.Info } : null });
             });
+            // What a User's own client is told when it comes with its token (from Thalia, or after entering): its Persona and where it stands.
+            app.MapGet("/viewer/me", (HttpContext ctx) => Caller(ctx) is { } user && m.InfoOf(user) is { } info ? Results.Json(info) : Results.Unauthorized());
             // THE UNITS OF A BROWSER (AIF\UserAgent\PhysicalLayer\Browser\mpai-units.js): one file for every page, served from where it is, never copied.
             app.MapGet("/viewer/mpai-units.js", (HttpContext ctx) =>
             {

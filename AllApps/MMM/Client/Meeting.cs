@@ -208,6 +208,21 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
         foreach (var u in users) { convener ??= u; invited.Add(u); }
     }
 
+    // INVITED BY EMAIL (2026-11-26): with Accounts, the chair invites the email of each person's Account (--invite-emails, the chair's first). The invitation is the Rights the AVS
+    // Service gives (Rights Change: the doors, the seat, the screen for the convener) to the User whose Account has that email, when it asks to join; the first email is the convener's.
+    private readonly HashSet<string> invitedEmails = new(StringComparer.OrdinalIgnoreCase);
+    private string? convenerEmail;
+    public void PreinviteEmails(IEnumerable<string> emails)
+    {
+        foreach (var e in emails.Select(e => e.Trim()).Where(e => e.Length > 0)) { convenerEmail ??= e; invitedEmails.Add(e); }
+    }
+    private void InvitedByEmail(string user)
+    {
+        if (invitedEmails.Count == 0 || invited.Contains(user) || m.EmailOf(user) is not { } email || !invitedEmails.Contains(email.Trim())) return;
+        invited.Add(user);
+        if (convener is null && string.Equals(email.Trim(), convenerEmail, StringComparison.OrdinalIgnoreCase)) convener = user;
+    }
+
     // For each Speech Object that reached the minutes: who, how long it lasts, and how long from the Secretary getting it to its words being in the minutes.
     public IReadOnlyList<(string Speaker, long SpeechMs, long TotalMs)> Latencies { get { lock (latencies) return latencies.ToList(); } }
 
@@ -285,6 +300,7 @@ public sealed class MeetingServices(HttpClient http, MInstance m, Recognizer? re
                     var officer = level == "Officer";
                     if (officer) await Officer(from);                  // an MPAI Officer's Account holds the Rights to every place, whatever the meeting
                     if (ended) { await Say(avs, $"Seat-{id}", from, officer ? "officer" : "the meeting is over"); continue; }
+                    InvitedByEmail(from);
                     if (!invited.Contains(from)) { await Say(avs, $"Seat-{id}", from, officer ? "officer" : "not invited"); continue; }   // the answer is to this request: a User asks again after it is invited
                     if (level == "Visitor") { await Say(avs, $"Seat-{id}", from, "visitor account"); continue; }                         // the meeting rooms are for a Participant (or an Officer) Account
                     var persona = Meeting.ParseSeat(text.Replace("join;", "")).GetValueOrDefault("persona") ?? $"{from}-Persona";

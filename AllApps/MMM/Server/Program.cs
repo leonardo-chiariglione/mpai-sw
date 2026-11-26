@@ -65,6 +65,9 @@ if (worldMode)
 }
 // THE WORLD GOES ON FROM ITS LAST RUN (2026-11-26, KeptState.cs): the Users that registered, their Personae where they were, the Items, the Rights, the Messages. --state <folder>: where
 // the state is kept (default %LOCALAPPDATA%\MPAI\MMM\<M-Instance>-world); --fresh: start as the first time. The demonstrations (Use Case 2, the door) start as the first time, always.
+// ACCOUNTS (2026-11-26): in the world, nobody enters without registering and opening an Account with its credentials, then entering with them; --no-accounts: as before (a name is enough).
+if (worldMode && !args.Contains("--no-accounts")) m.RequireCredentials = true;
+if (identity is not null) identity.Accounts = m.RequireCredentials;
 KeptState? kept = null;
 if (worldMode)
 {
@@ -179,8 +182,14 @@ if (!args.Contains("--no-summary")) { meeting.Summarise = summary.SummariseAsync
 using var secretaryUnderstands = new SecretaryInterpreter(repo, llm);
 if (!args.Contains("--no-summary")) meeting.Interpret = secretaryUnderstands.InterpretAsync;
 await meeting.StartAsync();
-meeting.Preinvite(invite);
-if (invite.Length > 0) Console.WriteLine($"Invited from the start: {string.Join(", ", invite)} (the first convenes the meeting).");
+if (m.RequireCredentials && Arg("--invite-emails") is { Length: > 0 } emails)
+{
+    // WITH ACCOUNTS the invited are the emails of their Accounts, the chair's first; the names of --invite are not used to name anybody.
+    meeting.PreinviteEmails(emails.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+    Console.WriteLine($"Invited (the emails of their Accounts): {emails} (the first convenes the meeting).");
+}
+else meeting.Preinvite(invite);
+if (invite.Length > 0 && !(m.RequireCredentials && Arg("--invite-emails") is { Length: > 0 })) Console.WriteLine($"Invited from the start: {string.Join(", ", invite)} (the first convenes the meeting).");
 // --until 19:00 (today, or tomorrow if it has passed) or --hours 2: when the meeting ends; its rights end with it. Without either, the convener ends it.
 if (Arg("--until") is { } until && TimeSpan.TryParse(until, out var clock)) { var at = DateTime.Today + clock; if (at < DateTime.Now) at = at.AddDays(1); meeting.EndsAt = new DateTimeOffset(at); }
 else if (Arg("--hours") is { } hours && double.TryParse(hours, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var h)) meeting.EndsAt = DateTimeOffset.UtcNow.AddHours(h);

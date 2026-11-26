@@ -20,8 +20,16 @@ public sealed class Identity(string chair, IReadOnlyDictionary<string, string> l
     public string Chair { get; } = chair;                 // the one who convenes the meeting: it can end it and share a screen
     public string Host { get; } = host ?? chair;          // whoever browses on this machine: the owner of it (the President); the chair, if the chair is the owner
     public bool Visitors { get; } = visitors;
+    // WITH ACCOUNTS (2026-11-26): a person is the Account it registers or enters with, not its invitation - anybody may come to the world's address and register; an invitation is
+    // the Rights the AVS Service gives the invited Account (by its email). The person on this machine is still the host (it may take the Officer level).
+    public bool Accounts { get; set; }
     private readonly Dictionary<string, string> loginGuests = new(loginGuests, StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> invites = new(invites ?? new Dictionary<string, string>(), StringComparer.Ordinal);       // token -> name
+
+    // The names of the people the chair invited (and the chair's and the host's): a visitor that registers may not take one of them (2026-11-26).
+    public bool IsReserved(string name) =>
+        string.Equals(name, Chair, StringComparison.OrdinalIgnoreCase) || string.Equals(name, Host, StringComparison.OrdinalIgnoreCase)
+        || invites.Values.Any(v => string.Equals(v, name, StringComparison.OrdinalIgnoreCase)) || loginGuests.Values.Any(v => string.Equals(v, name, StringComparison.OrdinalIgnoreCase));
 
     public string? NameOfInvitation(string? token) => token is { Length: > 0 } && invites.TryGetValue(token, out var n) ? n : null;
     public static string NewToken() => Convert.ToHexString(RandomNumberGenerator.GetBytes(9)).ToLowerInvariant();
@@ -43,9 +51,10 @@ public sealed class Identity(string chair, IReadOnlyDictionary<string, string> l
             var local = Regex.Replace(login.Split('@')[0], "[^A-Za-z0-9]", "");
             return new Who("Visitor-" + (local.Length > 0 ? local : "x"), "visitor", login);
         }
+        // An invitation names its guest wherever the request comes from: on this machine too (Thalia, the guest's own User, may run on the PC of the M-Instance), 2026-11-26.
+        if (!Accounts && NameOfInvitation(ctx.Request.Cookies[Cookie]) is { } invited) return new Who(invited, invited == Chair ? "chair" : "guest", "");
         if (Direct(ctx)) return new Who(Host, "host", "");
-        if (NameOfInvitation(ctx.Request.Cookies[Cookie]) is { } invited) return new Who(invited, invited == Chair ? "chair" : "guest", "");
-        if (Visitors && ctx.Request.Cookies[VisitorCookie] is { Length: >= 6 } v && Regex.IsMatch(v, "^[0-9a-f]+$")) return new Who("Visitor-" + v[..6], "visitor", "");
+        if ((Visitors || Accounts) && ctx.Request.Cookies[VisitorCookie] is { Length: >= 6 } v && Regex.IsMatch(v, "^[0-9a-f]+$")) return new Who("Visitor-" + v[..6], "visitor", "");
         return null;
     }
 }

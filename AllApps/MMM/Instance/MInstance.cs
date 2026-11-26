@@ -176,7 +176,7 @@ public sealed class MInstance
     [
         ("Visitor", "Visitor", "The public places of the MPAI building: the atrium, where anybody may come in, look, talk and ask. Free."),
         ("Participant", "Participant", "Meetings you have been invited to: the Rights to the meeting rooms, for the meeting, if you are on the chair's list. Free."),
-        ("Officer", "MPAI Officer", "All of MPAI: the Rights to every place of the building - the members' rooms, the offices of MPAI, all the meeting rooms. Offered only to the people the chair designates. Free.")
+        ("Officer", "Officer", "All of MPAI: the Rights to every place of the building - the members' rooms, the offices of MPAI, all the meeting rooms. Offered only to the people the chair designates. Free.")
     ];
     public string? AccountLevelOf(string user) { lock (gate) return accountLevels.GetValueOrDefault(user); }
     private readonly Dictionary<string, string> accountLevels = new(StringComparer.Ordinal);
@@ -527,7 +527,7 @@ public sealed class MInstance
 
         return rq.Action switch
         {
-            "Register" => Register(service, with),
+            "Register" => Register(service, with, caller),
             "Transact" => Transact(service, rq.SourceProcessID, with),
             "MM-Add" => MMAdd(service, rq.SourceProcessID, c, with),
             "UM-Capture" => UMCapture(service, rq.SourceProcessID, c, refs, with),
@@ -546,12 +546,28 @@ public sealed class MInstance
     // ---------------------------------------------------------------- the Services
     // RGSrvc. The Personal Profile lists the User Processes the human asks for and
     // their Personae: an Account is opened, the Users created, the Personae theirs.
-    private Outcome Register(string service, List<JsonObject> with)
+    private Outcome Register(string service, List<JsonObject> with, string? caller = null)
     {
         var profile = with.FirstOrDefault(i => Header(i) == "MMM-PPR-V2.2");
         var human = profile?["humanID"]?.GetValue<string>();
         if (profile is null || human is null) return Fail(422, service, "FaultyPA", "Register takes a Personal Profile with its humanID");
-        if (processes.ContainsKey(human)) return Fail(409, service, "Clash", $"{human} is registered already");
+        var secret = profile["PersonalProfile"]?["Credential"]?.GetValue<string>();
+        // A human that has an Account ENTERS with its credentials (or as one of its Users, holding its token): its Users are given new tokens.
+        if (processes.ContainsKey(human))
+        {
+            if (secret is null && (caller is null || processes.GetValueOrDefault(caller)?.HumanID != human)) return Fail(409, service, "Clash", $"{human} is registered already");
+            return Enter(service, human, secret, profile);
+        }
+        if (RequireCredentials && secret is not null && profile["PersonalProfile"]?["Data"] is null) return Fail(404, service, "IncID", $"there is no Account of {human}");   // entering an Account that is not there
+        if (RequireCredentials)
+        {
+            var d = profile["PersonalProfile"]?["Data"]?[0];
+            string? Of(string key) => d?[key]?.GetValue<string>() is { } v && v.Trim().Length > 0 ? v.Trim() : null;
+            var lvl = profile["PersonalProfile"]?["AccountLevel"]?.GetValue<string>() ?? "Visitor";
+            if (Of("FirstName") is null || Of("LastName") is null) return Fail(422, service, "FaultyPA", "the first name and the last name are needed");
+            if (secret is null || secret.Length < MinimumPassword) return Fail(422, service, "FaultyPA", $"a password of at least {MinimumPassword} characters is needed");
+            if (lvl != "Visitor" && (Of("Email") is null || Of("Organisation") is null)) return Fail(422, service, "FaultyPA", $"the {lvl} Account Level needs an email and an organisation too");
+        }
 
         var level = profile["PersonalProfile"]?["AccountLevel"]?.GetValue<string>();
         if (level is not null && !AccountLevels.Any(l => l.Id == level)) return Fail(422, service, "FaultyPA", $"{level} is not an Account Level of this M-Instance");
@@ -584,19 +600,27 @@ public sealed class MInstance
                 var proc = new Process { ID = u, Kind = "User", HumanID = human, Token = NewToken() };
                 processes[u] = proc; tokens[u] = proc.Token!; users.Add(u);
                 if (level is not null) accountLevels[u] = level;
-                createdItems.AddRange(personae);
                 foreach (var pid in personae)
+                {
+                    if (RequireCredentials && !chosen.ContainsKey(pid)) continue;      // with Accounts, a Persona is one the human chose (else it chooses when it enters)
+                    createdItems.Add(pid);
                     items[pid] = new Item { ID = pid, DataType = "OSD-3DO-V1.5", Owner = u, Model = chosen.GetValueOrDefault(pid) ?? models.GetValueOrDefault(pid) ?? (DefaultModels.Count > 0 ? DefaultModels[registered++ % DefaultModels.Count] : null) };
+                }
             }
         }
+        // The credentials are kept as a salted hash, never as given; the Personal Profile kept as an Item does not carry them.
+        if (secret is not null) credentials[human] = HashOf(secret);
+        var keptProfile = (JsonObject)profile.DeepClone();
+        (keptProfile["PersonalProfile"] as JsonObject)?.Remove("Credential");
         items[profile["PersonalProfileID"]?.GetValue<string>() ?? $"Profile-{human}"] =
-            new Item { ID = profile["PersonalProfileID"]?.GetValue<string>() ?? $"Profile-{human}", DataType = "MMM-PPR-V2.2", Body = profile, Owner = human };
+            new Item { ID = profile["PersonalProfileID"]?.GetValue<string>() ?? $"Profile-{human}", DataType = "MMM-PPR-V2.2", Body = keptProfile, Owner = human };
         items[account] = new Item
         {
             ID = account, DataType = "MMM-ACC-V2.2", Owner = human,
             Body = new JsonObject
             {
                 ["Header"] = "MMM-ACC-V2.2", ["MInstanceID"] = ID, ["MEnvironmentID"] = EnvironmentID, ["HumanID"] = human, ["AccountID"] = account, ["AccountLevel"] = level,
+                ["Email"] = profile["PersonalProfile"]?["Data"]?[0]?["Email"]?.GetValue<string>()?.Trim(),        // the Account's email (Participant, Officer): how the chair invites (2026-11-26)
                 ["Processes"] = new JsonArray(users.Select(u => (JsonNode)new JsonObject { ["ProcessID"] = u }).ToArray()),
                 ["Items"] = new JsonArray(createdItems.Select(i => (JsonNode)new JsonObject { ["ItemID"] = i }).ToArray())
             }
@@ -1133,6 +1157,116 @@ public sealed class MInstance
     private static Outcome Fail(int http, string service, string code, string detail) =>
         new(http, new ProcessActionResponse { DestinationProcessID = service, PaStatus = new PAStatus { Code = code, Detail = detail } });
 
+    // ---------------------------------------------------------------- ACCOUNTS WITH CREDENTIALS (2026-11-26)
+    // To enter the M-Instance a human registers and opens an Account (Register), with its credentials: a Visitor gives its first name, last name and a password; the higher levels
+    // (Participant, Officer) an email and an organisation too. Afterwards the human enters with them (Register again, with its credentials): its Users are given new tokens. The
+    // credentials are kept as a salted hash (PBKDF2, SHA-256), never as given. A Persona is chosen from the catalogue when the human registers or, if it has none (a Visitor whose
+    // visit ended), when it enters. AT THE END OF A VISIT a Visitor's Persona is taken away and offered again to whoever registers; the Account stays.
+    public bool RequireCredentials { get; set; }
+    public const int MinimumPassword = 6;
+    private readonly Dictionary<string, string> credentials = new(StringComparer.Ordinal);   // human -> "salt:hash" (base64)
+
+    private static string HashOf(string secret, byte[]? salt = null)
+    {
+        salt ??= RandomNumberGenerator.GetBytes(16);
+        var hash = Rfc2898DeriveBytes.Pbkdf2(System.Text.Encoding.UTF8.GetBytes(secret), salt, 100_000, HashAlgorithmName.SHA256, 32);
+        return Convert.ToBase64String(salt) + ":" + Convert.ToBase64String(hash);
+    }
+
+    private bool Verifies(string human, string secret)
+    {
+        if (!credentials.TryGetValue(human, out var kept)) return false;
+        var parts = kept.Split(':');
+        var again = HashOf(secret, Convert.FromBase64String(parts[0])).Split(':')[1];
+        return CryptographicOperations.FixedTimeEquals(Convert.FromBase64String(again), Convert.FromBase64String(parts[1]));
+    }
+
+    public bool IsRegistered(string human) { lock (gate) return processes.TryGetValue(human, out var p) && p.Kind == "Human"; }
+    public bool HasCredentials(string human) { lock (gate) return credentials.ContainsKey(human); }
+
+    // A human with an Account enters: its credentials verified (an Account of a run before Accounts had credentials takes the first it is given), its Users given new tokens, and the
+    // Persona it chooses now made, if it has none.
+    private Outcome Enter(string service, string human, string? secret, JsonObject profile)
+    {
+        if (secret is not null)
+        {
+            if (!credentials.ContainsKey(human)) credentials[human] = HashOf(secret);
+            else if (!Verifies(human, secret)) return Fail(403, service, "InsRights", "these are not the credentials of the Account");
+        }
+        var users = processes.Values.Where(p => p.Kind == "User" && p.HumanID == human).ToList();
+        foreach (var p in profile["PersonalProfile"]?["Processes"]?.AsArray() ?? [])
+            foreach (var e in p?["PersonaIDOrPersona"]?.AsArray() ?? [])
+                if (e?["PersonaChoice"]?.GetValue<string>() is { } pick && e["PersonaID"]?.GetValue<string>() is { } pid && !items.ContainsKey(pid))
+                {
+                    var owner = Ids(p?["ProcessIDOrProcess"], "ProcessID").FirstOrDefault(u => users.Any(x => x.ID == u));
+                    if (owner is null) return Fail(403, service, "InsRights", $"{pid} would not be a Persona of {human}'s Users");
+                    if (!Catalogue.Contains(pick)) return Fail(422, service, "FaultyPA", $"{pick} is not in the catalogue of Personae");
+                    if (PersonaTaken(pick)) return Fail(409, service, "Clash", $"{pick} was chosen by another human");
+                    items[pid] = new Item { ID = pid, DataType = "OSD-3DO-V1.5", Owner = owner, Model = CatalogueModel(pick) };
+                }
+        var tokens = new Dictionary<string, string>();
+        foreach (var u in users) { u.Token = NewToken(); tokens[u.ID] = u.Token; }
+        return Ok(200, service, new Complements { With = [JsonValue.Create($"Account-{human}")] }) with { Tokens = tokens };
+    }
+
+    // THE END OF A VISIT: a Visitor's Persona leaves the M-Instance and is offered again; its token is no longer valid. Returns whether it was a Visitor with a Persona.
+    public bool EndVisit(string user)
+    {
+        lock (gate)
+        {
+            if (accountLevels.GetValueOrDefault(user) != "Visitor" || !processes.TryGetValue(user, out var p)) return false;
+            var personae = items.Values.Where(i => i.Owner == user && i.DataType == "OSD-3DO-V1.5").Select(i => i.ID).ToList();
+            foreach (var id in personae) items.Remove(id);
+            p.Token = null;
+            return personae.Count > 0;
+        }
+    }
+
+    // THE EMAIL OF A USER'S ACCOUNT: an invitation names it (2026-11-26).
+    public string? EmailOf(string user)
+    {
+        lock (gate)
+        {
+            if (!processes.TryGetValue(user, out var p) || p.HumanID is null) return null;
+            return items.GetValueOrDefault($"Account-{p.HumanID}")?.Body?["Email"]?.GetValue<string>()
+                ?? items.Values.FirstOrDefault(i => i.DataType == "MMM-PPR-V2.2" && i.Owner == p.HumanID)?.Body?["PersonalProfile"]?["Data"]?[0]?["Email"]?.GetValue<string>();
+        }
+    }
+
+    // How a User's Account Level is called: an Officer whose organisation is MPAI is an MPAI Officer.
+    public string? LevelNameOf(string user)
+    {
+        lock (gate)
+        {
+            var level = accountLevels.GetValueOrDefault(user);
+            if (level != "Officer" || !processes.TryGetValue(user, out var p)) return level;
+            var org = items.Values.FirstOrDefault(i => i.DataType == "MMM-PPR-V2.2" && i.Owner == p.HumanID)?.Body?["PersonalProfile"]?["Data"]?[0]?["Organisation"]?.GetValue<string>();
+            return string.Equals(org?.Trim(), "MPAI", StringComparison.OrdinalIgnoreCase) ? "MPAI Officer" : "Officer";
+        }
+    }
+
+    // What a User's own client is told when it comes with its token: its Persona and where it stands (as Resume, without a new token).
+    public JsonObject? InfoOf(string user)
+    {
+        lock (gate)
+        {
+            if (!processes.TryGetValue(user, out var p) || p.Kind != "User") return null;
+            var persona = items.Values.FirstOrDefault(i => i.Owner == user && i.DataType == "OSD-3DO-V1.5");
+            var info = new JsonObject { ["User"] = user, ["AccountLevel"] = accountLevels.GetValueOrDefault(user) };
+            var levelName = accountLevels.GetValueOrDefault(user);
+            if (levelName == "Officer" && items.Values.FirstOrDefault(i => i.DataType == "MMM-PPR-V2.2" && i.Owner == p.HumanID)?.Body?["PersonalProfile"]?["Data"]?[0]?["Organisation"]?.GetValue<string>() is { } org
+                && string.Equals(org.Trim(), "MPAI", StringComparison.OrdinalIgnoreCase)) levelName = "MPAI Officer";
+            info["AccountLevelName"] = levelName;
+            if (persona is not null)
+            {
+                info["Persona"] = persona.ID; info["Model"] = persona.Model; info["Location"] = persona.Location;
+                if (persona.SpatialAttitude?["Position"]?["CartPosition"] is JsonArray a && a.Count >= 2) { info["X"] = a[0]?.GetValue<double>(); info["Y"] = a[1]?.GetValue<double>(); }
+                info["Yaw"] = YawOf(persona);
+            }
+            return info;
+        }
+    }
+
     // ---------------------------------------------------------------- WHAT IT KEEPS FROM ONE RUN TO THE NEXT (2026-11-26)
     // An M-Instance starts once; when it closes and starts again it goes on from where it was: the Users that registered (their Accounts, Account Levels and Personae), where
     // each Persona is, the Items the Processes placed and their Item Properties, the Rights, the Messages to the Users, the Process Actions the Rights name, the log of the activity.
@@ -1161,6 +1295,7 @@ public sealed class MInstance
                 ["Models"] = System.Text.Json.JsonSerializer.SerializeToNode(models),
                 ["AccountLevels"] = System.Text.Json.JsonSerializer.SerializeToNode(accountLevels),
                 ["Registered"] = registered,
+                ["Credentials"] = System.Text.Json.JsonSerializer.SerializeToNode(credentials),
                 ["Activity"] = System.Text.Json.JsonSerializer.SerializeToNode(activity.Skip(Math.Max(0, activity.Count - KeptActivity)).ToList())
             };
         }
@@ -1189,6 +1324,7 @@ public sealed class MInstance
             foreach (var (k, v) in state["Models"]?.Deserialize<Dictionary<string, string>>() ?? []) models[k] = v;
             foreach (var (k, v) in state["AccountLevels"]?.Deserialize<Dictionary<string, string>>() ?? []) accountLevels[k] = v;
             registered = Math.Max(registered, (int?)state["Registered"] ?? 0);
+            foreach (var (k, v) in state["Credentials"]?.Deserialize<Dictionary<string, string>>() ?? []) credentials[k] = v;
             activity.InsertRange(0, state["Activity"]?.Deserialize<List<Activity>>() ?? []);
             return $"{users} Users, {restored} Items and {holdings.Count} holdings of Rights of the run that closed at {(string?)state["Saved"]}";
         }
