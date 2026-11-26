@@ -45,7 +45,13 @@ public class JsiAsmVoiceTests
             promptChars = system.Length + list.Sum(t => t.Content.Length) + schema.ToJsonString().Length;
             if (Environment.GetEnvironmentVariable("JSI_DUMP") is { Length: > 0 } dump)
                 File.WriteAllText(dump, new JsonObject { ["system"] = system, ["turns"] = new JsonArray(list.Select(t => (JsonNode)new JsonObject { ["role"] = t.Role, ["content"] = t.Content }).ToArray()), ["schema"] = schema.DeepClone() }.ToJsonString());
-            try { var raw = await llm.ChatSchemaAsync(system, list, schema); raws.Add(raw); return raw; }
+            try
+            {
+                // ONE CALL OF THE MODEL HAS A MINUTE (N-50 n): a call that does not end (the model writing on and on) is a request not understood, not a test host that hangs.
+                var call = llm.ChatSchemaAsync(system, list, schema);
+                if (await Task.WhenAny(call, Task.Delay(TimeSpan.FromSeconds(ModelCallSeconds))) != call) throw new TaskCanceledException($"the language model did not answer within {ModelCallSeconds} s");
+                var raw = await call; raws.Add(raw); return raw;
+            }
             finally { seconds.Add(watch.Elapsed.TotalSeconds); }
         };
         // The model is loaded before the clock runs.
@@ -53,6 +59,11 @@ public class JsiAsmVoiceTests
         seconds.Clear();
 
         var rows = new List<JsonObject>();
+        // THE TEST HAS A TIME BUDGET (N-50 n, 2026-11-25): it took more than the 15 minutes the night runs give a test before they take its host down (--blame-hang-timeout 15m), and the run
+        // then said "Test host process crashed". It now starts no request after JSI_BUDGET_MINUTES (12 by default), writes its report and FAILS, saying how far it got.
+        var budget = TimeSpan.FromMinutes(double.TryParse(Environment.GetEnvironmentVariable("JSI_BUDGET_MINUTES"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var minutes) && minutes > 0 ? minutes : 12);
+        var clock = Stopwatch.StartNew(); var outOfTime = false;
+        bool Late() => outOfTime = outOfTime || clock.Elapsed > budget;
         async Task<(bool Ok, string Kind)> Run(JsonNode c, bool numberless, string group = "tuned")
         {
             var processor = JsiRig.Processor(model);
@@ -87,6 +98,7 @@ public class JsiAsmVoiceTests
         foreach (var c in set["cases"]!.AsArray())
         {
             if (!Selected(++index)) continue;
+            if (Late()) break;
             var (ok, kind) = await Run(c!, false);
             if (ok) right++; else misses[kind] = misses.GetValueOrDefault(kind) + 1;
             times.Add((double)rows[^1]["seconds"]!);
@@ -94,13 +106,14 @@ public class JsiAsmVoiceTests
         var of = string.IsNullOrEmpty(only) ? set["cases"]!.AsArray().Count : rows.Count;
         int numberlessRight = 0;
         if (string.IsNullOrEmpty(only))
-            foreach (var c in set["withoutNumbers"]!.AsArray()) if ((await Run(c!, true, "withoutNumbers")).Ok) numberlessRight++;
+            foreach (var c in set["withoutNumbers"]!.AsArray()) { if (Late()) break; if ((await Run(c!, true, "withoutNumbers")).Ok) numberlessRight++; }
 
         // Requests written after the package was tuned and not looked at while it was: the measure of how much of the result is the tuning's.
         int heldRight = 0; var heldCases = set["heldOut"] as JsonArray ?? [];
         if (string.IsNullOrEmpty(only))
-            foreach (var c in heldCases) if ((await Run(c!, true, "heldOut")).Ok) heldRight++;
+            foreach (var c in heldCases) { if (Late()) break; if ((await Run(c!, true, "heldOut")).Ok) heldRight++; }
         times.Sort();
+        if (times.Count == 0) times.Add(0);
         var summary = new JsonObject
         {
             ["model"] = Model, ["right"] = right, ["of"] = of, ["share"] = Math.Round((double)right / of, 3),
@@ -117,12 +130,16 @@ public class JsiAsmVoiceTests
         File.WriteAllText(Path.Combine(Repository.Root, "Test", "Reports", "jsi-asm-voice.json"),
             new JsonObject { ["summary"] = summary, ["rows"] = new JsonArray(rows.Select(r => (JsonNode)r).ToArray()) }.ToJsonString(new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
 
+        Assert.False(outOfTime, $"the test ran out of its {budget.TotalMinutes:0} minutes (JSI_BUDGET_MINUTES) after {rows.Count} requests ({right} of the {of} tuned ones understood): the language model is too slow on this machine now; {summary.ToJsonString()}");
         Assert.True(!string.IsNullOrEmpty(only) || (double)right / of >= FloorOfTheShare, $"{right} of {of} understood: {summary.ToJsonString()}");
         if (string.IsNullOrEmpty(only)) Assert.Equal(set["withoutNumbers"]!.AsArray().Count, numberlessRight);
     }
 
     // What is asked of the language model, and of the package that guides it: the share that has to be understood.
     private const double FloorOfTheShare = 0.75;
+
+    // How long one call of the language model may take (N-50 n).
+    private const int ModelCallSeconds = 60;
 
     // ---- the judgement -------------------------------------------------------------------------------------------------------------------------
 

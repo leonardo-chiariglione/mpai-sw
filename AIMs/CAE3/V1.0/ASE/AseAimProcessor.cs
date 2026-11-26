@@ -240,6 +240,12 @@ public sealed class AseAimProcessor : IAimProcessor
             else if (_ase.RenameScene(_open, given) is { } problem) report.Failed("NamedScene", given, problem);
             else { _open = given; report.Done("NamedScene", given, N(_open)); }
         }
+        // AN OBJECT THAT IS DELETED goes out of every Scene that holds it (N-50 b): Audio Object Editing deletes it, this AIM takes it out and says from which Scene (RemovedObjects,
+        // the Scene as ResultID), so the answer warns that the sound went from the Scene too.
+        foreach (var entry in data.DeletedObjects?.Objects ?? [])
+            if (NameBook.Clean(entry.ObjectID?.ObjectID ?? entry.ObjectID?.BasicAudioObject?.BasicAudioObjectID) is { } member && _ase.KeptScene(member) is null)
+                foreach (var scene in _ase.ScenesHolding(member))
+                    if (_ase.RemoveFromBasicScene(scene, member) is not null) report.Done("RemovedObjects", member, scene);
         { var gone = Deletions.Apply(data, _ase.Delete, "Audio Scene", report); if (_open is not null && gone.Contains(_open)) _open = null; }
         foreach (var entry in data.DeletedObjects?.Objects ?? [])
             if (entry.ObjectID is null && NameBook.Clean(entry.AcousticProfileID) is { } kept)
@@ -285,10 +291,12 @@ public sealed class AseAimProcessor : IAimProcessor
                     // Basic Audio Scene holds Basic Audio Objects (the simplest reading of how a Full Object is placed: each part, not the Object as one).
                     var placedLeaves = _ase.Leaves(key!, Placement(entry.SpatialAttitude));
                     if (placedLeaves.Count == 0) throw new InvalidOperationException("The Audio Object holds no Basic Audio Object to place.");
+                    // A SOUND THAT IS ALREADY A MEMBER of the open Scene is placed where the add says, not added a second time (N-50, 2026-11-25: the members of a Scene are told by
+                    // their names, and two members named "cello" make "move the cello" ambiguous; the ASM window, when the scene was slow to come back, put a sound in three times).
                     foreach (var (leaf, at) in placedLeaves)
                         _open = _open is null
                             ? _ase.CreateBasicScene(leaf, listener ?? Origin(), at, added.ObjectID).AssetId
-                            : _ase.AddObjectToBasicScene(_open, leaf, at).AssetId;
+                            : (_ase.ReplaceInBasicScene(_open, leaf, at) ?? _ase.AddObjectToBasicScene(_open, leaf, at)).AssetId;
                     report.Done("AddedObjects", id, N(_open));
                 }
                 catch (Exception failure) { report.Failed("AddedObjects", id, failure.Message); }

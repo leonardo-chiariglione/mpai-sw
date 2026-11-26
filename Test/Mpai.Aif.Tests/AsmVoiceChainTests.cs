@@ -69,7 +69,7 @@ public class AsmVoiceChainTests
 
         // 3. The Voice Command Interface, given the scene, makes the command from the words.
         using var llm = new OllamaClient(Model, context: 4096);
-        using var vci = new VciRig((s, t, schema) => llm.ChatSchemaAsync(s, t, schema), null);
+        using var vci = new VciRig((s, t, schema) => llm.ChatSchemaAsync(s, t, schema), null, "stage");      // the scene built above
         Assert.Equal(AIF.Controller.AifError.OK, vci.Start());
         Assert.Equal(AIF.Controller.AifError.OK, vci.Write(VciRig.Ucm, 1, scene));
         vci.Say(heard);

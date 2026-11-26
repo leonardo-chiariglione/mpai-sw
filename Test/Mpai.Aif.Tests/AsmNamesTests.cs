@@ -133,6 +133,23 @@ public class AsmNamesTests
     private static UserCommandRS Report(Message m, string port) => MpaiJson.FromJson<UserCommand>(m.Ports[port]).UserCommandRS!;
     private static string Name(Message m, string port) => JsonNode.Parse(m.Ports[port])!["AudioObjectID"]?.GetValue<string>() ?? "";
 
+    // N-50 (a), the author 2026-11-24: a sound the User LOADS (a User Command that acquires a Basic Audio Object with its data) under a name already kept is "violin 2",
+    // as the CAE-ASM User Manual says, even when it is the same sound; the first is not replaced, and the report names the new one.
+    [Fact]
+    public async Task ASoundLoadedAgainUnderItsNameIsRenamedNotReplaced()
+    {
+        using var module = new Module();
+        string Opened(Message m) => JsonNode.Parse(Forms.Bao(m.Ports[module.AoeOut]))!["BasicAudioObjectID"]!.GetValue<string>();
+        var first = await module.Give(module.Aoe, (module.AoeIn, Forms.Acquire(MpaiJson.ToJson(Sound("violin", 1)))));
+        Assert.Equal("violin", Opened(first));
+        var again = await module.Give(module.Aoe, (module.AoeIn, Forms.Acquire(MpaiJson.ToJson(Sound("violin", 1)))));
+        Assert.Equal("violin 2", Opened(again));
+        Assert.Equal("violin 2", Report(again, module.AoeReport).Actions[0].ObjectID);
+        var other = await module.Give(module.Aoe, (module.AoeIn, Forms.Acquire(MpaiJson.ToJson(Sound("violin", 2)))));
+        Assert.Equal("violin 3", Opened(other));
+        Assert.Equal(3, module.Kept("OSD-BAO-V1.5#1/"));
+    }
+
     // ---- a name that is taken is numbered ---------------------------------------------------------------------------------
 
     [Fact]

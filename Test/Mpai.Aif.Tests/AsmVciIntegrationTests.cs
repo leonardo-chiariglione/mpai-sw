@@ -98,25 +98,26 @@ public class AsmVciIntegrationTests
         AsmRig.Command(new UserCommandRQ { DeletedObjects = new ObjectPlacements { Objects = names.Select(n => new ObjectPlacement { ObjectID = AsmRig.Ref(n) }).ToList() } });
 
     [Fact]
-    public async Task ASceneAndAnObjectAreDeletedByTheirNamesAnObjectInASceneNotUntilTheSceneIs()
+    public async Task ASceneAndAnObjectAreDeletedByTheirNamesAnObjectInASceneGoesFromTheSceneToo()
     {
         using var rig = new AsmRig();
         async Task<UserCommand> Run(UserCommand command) => (await rig.Ask(command)).Merged(command.UserCommandID);
         await rig.OpenAudio(AsmRig.Sound("violin")); await rig.OpenAudio(AsmRig.Sound("drums", 1, 2));
         Assert.Equal("Done", (await Run(AsmRig.Command(new UserCommandRQ { AddedObjects = new ObjectPlacements { ObjectID = "stage", Objects = [AsmRig.Put("violin", 1)] } }))).UserCommandRS!.Outcome);
 
-        // The violin is a member of the scene: it is not deleted, and the response says by what.
-        var refused = await Run(Delete("violin"));
-        Assert.Equal("Failed", refused.UserCommandRS!.Outcome);
-        Assert.Contains(refused.UserCommandRS.Actions!, a => a.Action == "DeletedObjects" && (a.Reason ?? "").Contains("stage"));
+        // The violin is a member of the scene: it is deleted, and taken out of the scene, and the response says from which (N-50 b, the author 2026-11-24; until then it was refused).
+        var deleted = await Run(Delete("violin"));
+        Assert.Equal("Done", deleted.UserCommandRS!.Outcome);
+        Assert.Contains(deleted.UserCommandRS.Actions!, a => a.Action == "DeletedObjects" && a.ObjectID == "violin" && a.Outcome == "Done");
+        Assert.Contains(deleted.UserCommandRS.Actions!, a => a.Action == "RemovedObjects" && a.ObjectID == "violin" && a.ResultID == "stage" && a.Outcome == "Done");
 
         // The drums are in no scene: deleted. A name the Module keeps nothing under is reported failed by every editor.
         Assert.Equal("Done", (await Run(Delete("drums"))).UserCommandRS!.Outcome);
         Assert.Equal("Failed", (await Run(Delete("harp"))).UserCommandRS!.Outcome);
 
-        // The scene, then the object it held.
+        // The scene (empty now); the violin is no longer kept.
         Assert.Equal("Done", (await Run(Delete("stage"))).UserCommandRS!.Outcome);
-        Assert.Equal("Done", (await Run(Delete("violin"))).UserCommandRS!.Outcome);
+        Assert.Equal("Failed", (await Run(Delete("violin"))).UserCommandRS!.Outcome);
 
         var all = await Run(AsmRig.Command(new UserCommandRQ { ListedObjects = new ObjectListing { Kind = "All" } }));
         Assert.True(all.UserCommandRS!.ListedObjects is null or { Count: 0 }, AsmRig.Json(all));

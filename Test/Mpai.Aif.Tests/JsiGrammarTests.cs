@@ -43,6 +43,38 @@ public class JsiGrammarTests
         Assert.Equal([x, y, z], Numbers(moved["NewSpatialAttitude"]!["Position"]!["CartPosition"]));
     }
 
+    // N-50 (j2): in a session with sounds, "face 180" and "rotate myself to 90 degrees" turn the listener (CAE-ASM User Manual: "Turns you"); they had been answered "Which object do
+    // you mean?" because the trial match of the Interface ran without the numbers the grammar remembers. "remove the flute" (kept, not in the scene) is a command, which the Module
+    // answers "not in the scene"; it had been no command.
+    [Theory]
+    [InlineData("face 180", 180)]
+    [InlineData("rotate myself to 90 degrees", 90)]
+    public async Task TheListenerTurnsWithSoundsInTheScene(string words, double yaw)
+    {
+        var rq = await Command(words);
+        Assert.Equal(yaw, Numbers(rq!["UserPoV"]!["Orientation"])[2]);
+    }
+
+    [Fact]
+    public async Task RemovingAKeptSoundNotInTheSceneIsACommand()
+    {
+        var removed = (await Command("remove the flute"))!["RemovedObjects"]!["Objects"]![0]!;
+        Assert.Equal("flute", (string?)removed["ObjectID"]);
+    }
+
+    // N-50 (o): the first add when the application has no scene yet gives the scene's name as NewScene, not as the name of what AddedObjects makes (which Audio Object Editing
+    // also took as an Audio Object to compose: "stage" was then both a Scene and an Audio Object).
+    [Fact]
+    public async Task TheFirstAddIntoNoSceneNamesTheSceneAsNewScene()
+    {
+        var jsi = JsiRig.Processor((_, _, _) => Task.FromResult("{\"Problem\":\"the model was asked\"}"), JsiRig.Jsi, false, true);
+        var noScene = JsonNode.Parse("{\"Header\":\"CAE-UCM-V1.0\",\"UserCommandID\":\"context\",\"UserCommandRS\":{\"Outcome\":\"Done\",\"ListedObjects\":[{\"ObjectID\":\"flute\",\"Kind\":\"Basic Audio Object\"}]}}");
+        var rq = JsiRig.CommandOf(await jsi.ProcessAsync(JsiRig.Say(Ports, "put the flute at x 1, y 2, z 0", noScene)), Ports)!["UserCommandRQ"]!;
+        Assert.Equal((string)JsiRig.Scene()["name"]!, (string?)rq["NewScene"]);
+        Assert.Null(rq["AddedObjects"]!["ObjectID"]);
+        Assert.Equal("flute", (string?)rq["AddedObjects"]!["Objects"]![0]!["ObjectID"]);
+    }
+
     [Fact]
     public async Task AKeptSoundNotInTheSceneIsAdded()
     {
@@ -87,6 +119,28 @@ public class JsiGrammarTests
         var first = JsiRig.CommandOf(await jsi.ProcessAsync(JsiRig.Say(Ports, "move the violin 2 metres to the right", JsiRig.Context(JsiRig.Scene()))), Ports)!;
         var undo = JsiRig.CommandOf(await jsi.ProcessAsync(JsiRig.Say(Ports, "undo that")), Ports)!;
         Assert.Equal((string)first["UserCommandID"]!, (string)undo["UserCommandRQ"]!["RevokedUserCommandID"]!);
+    }
+
+    // N-50 (j2): "undo" a second time undoes the command before the one undone - not the first undo (which no AIM executed: "this AIM executed no such User Command").
+    [Fact]
+    public async Task ASecondUndoUndoesTheCommandBefore()
+    {
+        var jsi = JsiRig.Processor((_, _, _) => Task.FromResult("{\"Problem\":\"the model was asked\"}"), JsiRig.Jsi, false, true);
+        var first = JsiRig.CommandOf(await jsi.ProcessAsync(JsiRig.Say(Ports, "move the violin 2 metres to the right", JsiRig.Context(JsiRig.Scene()))), Ports)!;
+        var second = JsiRig.CommandOf(await jsi.ProcessAsync(JsiRig.Say(Ports, "move the piano 1 metre forward", JsiRig.Context(JsiRig.Scene()))), Ports)!;
+        var undo1 = JsiRig.CommandOf(await jsi.ProcessAsync(JsiRig.Say(Ports, "undo")), Ports)!;
+        Assert.Equal((string)second["UserCommandID"]!, (string)undo1["UserCommandRQ"]!["RevokedUserCommandID"]!);
+        var undo2 = JsiRig.CommandOf(await jsi.ProcessAsync(JsiRig.Say(Ports, "undo")), Ports)!;
+        Assert.Equal((string)first["UserCommandID"]!, (string)undo2["UserCommandRQ"]!["RevokedUserCommandID"]!);
+    }
+
+    // Nothing left to undo is said in plain words, not the AIM's ("this AIM executed no such User Command, or has already undone it").
+    [Fact]
+    public void NothingMoreToUndoIsSaidPlainly()
+    {
+        var guide = Mpai.Mmc.Jsi.ApplicationContext.Parse(File.ReadAllText(JsiRig.ContextFile));
+        var response = JsonNode.Parse("{\"UserCommandRS\":{\"Outcome\":\"Failed\",\"Actions\":[{\"Action\":\"RevokedUserCommandID\",\"ObjectID\":\"x\",\"Outcome\":\"Failed\",\"Reason\":\"this AIM executed no such User Command, or has already undone it\"}]}}")!;
+        Assert.Equal("There is nothing more to undo.", Mpai.Mmc.Jsi.ResponseFacts.Plain(response, guide));
     }
 
     [Theory]

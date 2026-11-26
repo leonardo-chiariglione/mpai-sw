@@ -104,6 +104,7 @@ public sealed class JsiAimProcessor : IAimProcessor
     private string? _held;                   // the request kept until the state is fresh
     private bool Refreshing => _configuration.RefreshesState && HasApplication && _guide!.StateRequests.Count > 0;
     private readonly List<(string Id, string Request)> _sent = [];
+    private readonly HashSet<string> _revoking = new(StringComparer.Ordinal);      // commands that name an earlier one (an undo), and the earlier ones they name: not "the last command" (N-50 j2)
 
     // THE ANSWERS TO ONE COMMAND, when more than one AIM answers it (Responders): kept by the UserCommandID until all have answered - or, if one does not, until GatherFor has passed.
     private readonly Dictionary<string, (DateTime Since, List<UserCommand> Answers)> _gathering = new(StringComparer.Ordinal);
@@ -386,7 +387,9 @@ public sealed class JsiAimProcessor : IAimProcessor
         if (_configuration.UsesGrammar && PatternQuestion(text.ToLowerInvariant(), guide) is { } half) return (null, Said(half));      // two coordinates and not the third: the third is asked for
 
         var names = Sets();
-        var forTheLatest = _configuration.UsesGrammar && RuleGrammar.Match(text, guide.Rules, names, _state, strings: _vars) is not null;      // "two metres to the right", "put it at x 1, y 3": a rule has the sound ("it", the newest) - nothing is asked
+        // The numbers the grammar remembers (where the listener is, the room) are given to this trial match too, as a copy: without them a rule that uses them ("rotate myself to 90
+        // degrees") does not match here, and the request was taken for one that names no object (N-50 j2).
+        var forTheLatest = _configuration.UsesGrammar && RuleGrammar.Match(text, guide.Rules, names, _state, memory: new Dictionary<string, double>(_memory, StringComparer.Ordinal), strings: _vars) is not null;      // "two metres to the right", "put it at x 1, y 3": a rule has the sound ("it", the newest) - nothing is asked
         if (!forTheLatest && RequestGuards.NamesNothing(text, guide, RequestGuards.Asked(text, guide, names), (names.GetValueOrDefault("Members") ?? []).Concat(names.GetValueOrDefault("Present") ?? []).Concat(names.GetValueOrDefault("Stored") ?? []).Distinct(StringComparer.Ordinal).ToList()) is { } unnamed)
             return (null, Said(unnamed));
 
@@ -421,7 +424,8 @@ public sealed class JsiAimProcessor : IAimProcessor
 
         // THE GRAMMAR OF THE APPLICATION FIRST (no language model): a request one of its rules matches is a command at once, checked against the schema as any is.
         var watch = System.Diagnostics.Stopwatch.StartNew();
-        var last = _sent.LastOrDefault(x => x.Id.Length > 0).Id;
+        // "undo" a second time undoes the command before: the last command is the last that is not an undo and that no undo named (until 2026-11-24 the second undo named the first undo).
+        var last = _sent.LastOrDefault(x => x.Id.Length > 0 && !_revoking.Contains(x.Id)).Id;
         _matchSets.Clear();
         JsonObject? MatchOne(string words) => RuleGrammar.Match(words, guide.Rules, Sets(), _state, string.IsNullOrEmpty(last) ? null : last, _memory, n => { _focus = n; _focusAt = SoundsSeen(_state.NameSets).Count; }, _vars, (k, v) => _matchSets[k] = v);
         if (_configuration.UsesGrammar && guide.Rules.Count > 0 && (MatchOne(text) ?? Compound(text, MatchOne)) is { } ruled)
@@ -527,8 +531,23 @@ public sealed class JsiAimProcessor : IAimProcessor
     private void Remember(JsonNode command, string request)
     {
         var id = IdOf(command) ?? "";
+        // A command that names an earlier one by its identifier (the undo of it): both are set aside as candidates for "the last command".
+        var earlier = _sent.Select(s => s.Id).Where(s => s.Length > 0 && s != id).ToHashSet(StringComparer.Ordinal);
+        var named = Strings(command).Where(earlier.Contains).ToList();
+        if (named.Count > 0) { _revoking.Add(id); foreach (var n in named) _revoking.Add(n); }
         _sent.Add((id, request));                                   // every command of the session stays until the session ends
         if (id.Length > 0) _requestOf[id] = request;
+    }
+
+    // Every string value in a command (to find the identifiers of earlier commands it names).
+    private static IEnumerable<string> Strings(JsonNode? node)
+    {
+        switch (node)
+        {
+            case JsonValue v when v.TryGetValue<string>(out var s): yield return s; break;
+            case JsonArray a: foreach (var x in a) foreach (var s in Strings(x)) yield return s; break;
+            case JsonObject o: foreach (var (_, x) in o) foreach (var s in Strings(x)) yield return s; break;
+        }
     }
 
     // Words that ask for a change by an amount, and no number with them.
@@ -698,8 +717,11 @@ public sealed class JsiAimProcessor : IAimProcessor
     // AddedObjects.ObjectID is the name of the Scene that is made when none is open. Into a Scene that exists the Objects are put with no name: a name there also asks Audio Object Editing to make an Audio Object of that name ("stage", "stage 2").
     private void SceneNameOnlyForANewScene(JsonNode command)
     {
-        if (command["UserCommandRQ"]?["AddedObjects"] is JsonObject add && add["Objects"] is JsonArray { Count: > 0 } && (string?)add["ObjectID"] is { Length: > 0 } name && _state.Scenes.Any(sc => string.Equals(sc.Name, name, StringComparison.Ordinal)))
-            add.Remove("ObjectID");
+        if (command["UserCommandRQ"] is not JsonObject rq || rq["AddedObjects"] is not JsonObject add || add["Objects"] is not JsonArray { Count: > 0 } || (string?)add["ObjectID"] is not { Length: > 0 } name) return;
+        if (_state.Scenes.Any(sc => string.Equals(sc.Name, name, StringComparison.Ordinal))) { add.Remove("ObjectID"); return; }
+        // THE FIRST ADD INTO A SCENE THAT DOES NOT EXIST YET (N-50 o): the name travels as NewScene - the Scene's, made by Audio Scene Editing, which then puts the Objects in it - and not
+        // as the name of what AddedObjects makes, which Audio Object Editing also read as an Audio Object to compose ("stage" was then both a Scene and an Audio Object).
+        if (rq["NewScene"] is null && rq["ClosedSpace"] is null) { rq["NewScene"] = name; add.Remove("ObjectID"); }
     }
 
     // The answer to a request for the room, the listener or the Acoustic Profiles the application keeps: what was listed, said as it is.

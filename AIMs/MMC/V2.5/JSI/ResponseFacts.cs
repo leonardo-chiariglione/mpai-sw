@@ -31,8 +31,20 @@ public static class ResponseFacts
         if (response["UserCommandRS"] is not JsonObject rs || (string?)rs["Outcome"] != "Done" || rs["ListedObjects"] is JsonArray { Count: > 0 }) return null;
         if (rs["Actions"] is not JsonArray { Count: > 0 } actions || guide.Root["Said"] is not JsonObject said) return null;
         var parts = new List<string>();
+        // A SOUND DELETED THAT WAS IN A SCENE (N-50 b): one warning, in the guide's words (Said "DeletedFromScene": {0} the sound, {1} the Scene), instead of "deleted" and "took out".
+        var deletedFromScene = new HashSet<string>(StringComparer.Ordinal);
+        if ((string?)said["DeletedFromScene"] is { } warning)
+            foreach (var deleted in actions.OfType<JsonObject>().Where(a => (string?)a["Action"] == "DeletedObjects" && (string?)a["Outcome"] == "Done").Select(a => (string?)a["ObjectID"]).OfType<string>().Distinct())
+            {
+                var scenes = actions.OfType<JsonObject>().Where(a => (string?)a["Action"] == "RemovedObjects" && (string?)a["Outcome"] == "Done" && (string?)a["ObjectID"] == deleted)
+                                    .Select(a => (string?)a["ResultID"]).OfType<string>().Distinct().ToList();
+                if (scenes.Count == 0) continue;
+                deletedFromScene.Add(deleted);
+                parts.Add(warning.Replace("{0}", deleted).Replace("{1}", string.Join(", ", scenes)));
+            }
         foreach (var a in actions.OfType<JsonObject>())
         {
+            if (deletedFromScene.Contains((string?)a["ObjectID"] ?? "") && (string?)a["Action"] is "DeletedObjects" or "RemovedObjects") continue;
             if ((string?)a["Outcome"] != "Done" || (string?)a["Action"] is not { } action || (string?)said[action] is not { } phrase) return null;
             if (action == "ListedObjects") return null;
             var name = (string?)a["ObjectID"];

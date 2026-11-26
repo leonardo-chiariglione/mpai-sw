@@ -418,6 +418,17 @@ public sealed class AseAim
     }
 
     // DELETION of a Scene by its name, with all its versions. Nothing holds a Scene.
+    // The Scenes the Module keeps that hold an Object of this name as a member (their version in force), read from the Scenes, not from a table.
+    public IReadOnlyList<string> ScenesHolding(string member)
+    {
+        var holders = new List<string>();
+        foreach (var (scene, _) in store.All(Kinds.AudioScene))
+            if (store.Get(Kinds.AudioScene, scene) is { } bytes
+                && Deserialize<BasicAudioSceneDescriptors>(bytes).BasicAudioSceneDescriptorsEntries?.Any(e => e.AudioObjectIDOrAudioObject?.BasicAudioObjectID == member) == true)
+                holders.Add(scene);
+        return holders;
+    }
+
     public (DeletionOutcome Outcome, string? Reason) Delete(string? name)
     {
         if (KeptScene(name) is not { } id) return (DeletionOutcome.NotKept, null);

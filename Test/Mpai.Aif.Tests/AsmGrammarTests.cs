@@ -41,7 +41,7 @@ public class AsmGrammarTests
         // which way
         "turn the violin to 90 degrees", "rotate the cello by 45 degrees", "make the drums face me", "have the violin look at me", "turn it to minus 90 degrees", "make it face me",
         // how loud, take out, delete
-        "set the cello to minus 18 lufs", "make the violin -12 db", "set the level of the drums to -20 lufs", "remove the violin", "take out the cello from the scene", "get rid of the drums", "delete pluto", "translate speech1 into french", "translate speech1 to german", "translate the speech2 in spanish", "delete the scene party", "remove the Guitar-Piano scene", "remove scene party", "delete the party scene", "erase scene stage", "erase the flute from the library",
+        "set the cello to minus 18 lufs", "make the violin -12 db", "set the level of the drums to -20 lufs", "remove the violin", "remove the flute", "take out the cello from the scene", "get rid of the drums", "delete pluto", "translate speech1 into french", "translate speech1 to german", "translate the speech2 in spanish", "delete the scene party", "remove the Guitar-Piano scene", "remove scene party", "delete the party scene", "erase scene stage", "erase the flute from the library",
         // when
         "set violin's duration 0s to 5s", "set the duration of the cello from 1 to 3", "the drums start at 2 and end at 5", "set the start of the violin to 2 seconds and the end to 5", "set the end time of the cello to 6 seconds 2", "cello from 0 to 10 seconds",
         "make the drums play between 2 and 8", "set the timing of the violin 1.5 to 4",

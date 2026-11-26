@@ -92,6 +92,7 @@ public sealed class AoeAimProcessor : IAimProcessor
         string? made = null;
         string? unnamed = null;     // why an arriving Object was not taken, to be reported
         string? acquired = null;    // the name of the Object the User Command gave (AcquiredObject), taken
+        var loadedByUser = false;   // a sound the User loads by a User Command (AcquiredObject with its data): always a new Object, under its name or the next free one (N-50 a)
         var arrivedCommand = message.Ports.TryGetValue(_commandPort, out var givenCommand) && !string.IsNullOrWhiteSpace(givenCommand) ? CommandReader.Read(givenCommand, out _) : null;
         string? objectJson = _objectPort.Length > 0 && message.Ports.TryGetValue(_objectPort, out var onPort) && !string.IsNullOrWhiteSpace(onPort) ? onPort : null;
 
@@ -108,6 +109,7 @@ public sealed class AoeAimProcessor : IAimProcessor
                     BasicAudioObjectCount = 1, BasicAudioObjects = [new BasicAudioObjectEntry { BAObjectIDOrBAObject = basicObject }]
                 });
                 acquired = basicObject.BasicAudioObjectID;
+                loadedByUser = basicObject.BasicAudioObjectData.Count > 0;
             }
             else if (acquiring.SpeechObject is null && acquiring.VisualObject is null && acquiring.ObjectID is { Length: > 0 } wanted)
             {
@@ -123,9 +125,10 @@ public sealed class AoeAimProcessor : IAimProcessor
                 if (auo.BasicAudioObjects is { Count: 1 } && auo.SubAudioObjects is not { Count: > 0 } && auo.BasicAudioObjects[0].BAObjectIDOrBAObject is { } basic)
                 {
                     // One Basic Audio Object: the Object the Module keeps under its name is opened when it is the same sound; any other is a new one, under that name or the next
-                    // free one. An Object with no name is not created.
+                    // free one. An Object with no name is not created. A sound the User loads (a User Command that acquires a Basic Audio Object with its data) is a new one even when
+                    // it is the same sound: loaded again under a name that is taken, it is "violin 2" (CAE-ASM User Manual; the author, 2026-11-24).
                     if (NameBook.Clean(basic.BasicAudioObjectID) is not { } name) throw new NameNeededException("the Basic Audio Object");
-                    var held = _aoe.IsBasic(name) ? name : null;
+                    var held = !loadedByUser && _aoe.IsBasic(name) ? name : null;
                     _open = held is not null && _aoe.IsTheSound(held, basic) ? held : _aoe.CreateObject(basic, name).AssetId;
                     Console.WriteLine($"[CAE-AOE-V1.0] open {N(_open)}");
                 }
@@ -195,12 +198,13 @@ public sealed class AoeAimProcessor : IAimProcessor
     }
 
     // The Objects, each with its place and its time, as ONE new Audio Object under the name the command gives it.
-    private void Compose(ObjectPlacements composed, PointOfView? pov, CommandReport report)
+    private void Compose(ObjectPlacements composed, PointOfView? pov, CommandReport report, bool intoANewScene = false)
     {
         // No name, and the Module keeps a Scene: the Objects are put in it (Audio Scene Editing's), no Audio Object is asked for. A name that is a Scene's is that Scene's, not an Audio Object's.
+        // No name and a NewScene in the same command: the Objects go into the Scene being made (Audio Scene Editing's, N-50 o).
         if (NameBook.Clean(composed.ObjectID) is not { } madeName)
         {
-            if (!_aoe.KeepsAScene()) report.Failed("AddedObjects", null, "a name is needed for the Audio Object that is made: the command gives it in ObjectID");
+            if (!intoANewScene && !_aoe.KeepsAScene()) report.Failed("AddedObjects", null, "a name is needed for the Audio Object that is made: the command gives it in ObjectID");
             return;
         }
         if (_aoe.HoldsScene(madeName)) return;
@@ -269,7 +273,7 @@ public sealed class AoeAimProcessor : IAimProcessor
         if (data.TranslatedObjects is { Objects.Count: > 0 })
             report.NotSupported("TranslatedObjects", N(_open), "speech is translated by Speech Object Editing");
 
-        if (data.AddedObjects is { Objects.Count: > 0 } composed) Compose(composed, data.UserPoV, report);
+        if (data.AddedObjects is { Objects.Count: > 0 } composed) Compose(composed, data.UserPoV, report, NameBook.Clean(data.NewScene) is not null);
 
         // The Object the command modifies, where it gives one - itself, or its name - is the one open from here on.
         if (data.ModifiedObjects is { Objects.Count: > 0 } first && first.Objects[0].ObjectID is { } target)

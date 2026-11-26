@@ -30,7 +30,7 @@ internal sealed class VciRig : IDisposable
     public readonly Mpai.Aif.Api.ControllerApi Api;
     private readonly StructuredModel _model;
 
-    public VciRig(StructuredModel model, Func<string, string>? dialogue)
+    public VciRig(StructuredModel model, Func<string, string>? dialogue, string? scene = null)
     {
         _model = (system, turns, schema) =>
         {
@@ -64,7 +64,9 @@ internal sealed class VciRig : IDisposable
         File.WriteAllText(settings, new JsonObject
         {
             ["1MMC-EDP-V2.5-I03"] = Ollama is null ? new JsonObject() : new JsonObject { ["OllamaUrl"] = Ollama.Url },
-            ["1MMC-JSI-V2.5-I02"] = new JsonObject { ["SchemasRoot"] = Repository.Schemas, ["Responders"] = "1" }
+            // The scene the application is in is the scene of the test (Test/AsmVoice/cases.json, "concert"): without it the Interface takes the default scene of the guide and counts
+            // none of the sounds of "concert" as in the scene ("Which object do you mean?"; VciTests.WhatIsSaidBecomesACommandAndTheResponseIsSaid failed so from 2026-11-17, N-50 m).
+            ["1MMC-JSI-V2.5-I02"] = new JsonObject { ["SchemasRoot"] = Repository.Schemas, ["Responders"] = "1", ["Scene"] = scene ?? (string)JsiRig.Scene()["name"]! }
         }.ToJsonString());
         Api = new Mpai.Aif.Api.ControllerApi(amds, settings, store => new Provider(store, this));
     }

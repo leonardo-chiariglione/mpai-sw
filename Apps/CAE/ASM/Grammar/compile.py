@@ -124,6 +124,8 @@ def listener():
     emit({'Pattern': 'let me (?:listen|hear)(?: from)?(?: the)? (?:centre|center|middle)', 'Let': {'lx': '0', 'ly': '0'}, 'Keep': ['lx', 'ly'], 'Command': listener_command()})
     emit({'Pattern': '(?:turn|rotate|spin) ' + LISTENER + '(?: round| around)? by <NUM:g>(?: degrees?)?', 'Let': {'lg': 'lg+g'}, 'Keep': ['lg'], 'Command': listener_command()})
     emit({'Pattern': '(?:' + V['TurnListener'] + ') ' + LISTENER + '(?: round| around)?(?: to| towards)? ?<NUM:g>(?: degrees?)?', 'Let': {'lg': 'g'}, 'Keep': ['lg'], 'Command': listener_command()})
+    # "face 180" (the CAE-ASM User Manual, "turns you"): a facing with no object named is the listener's (N-50 j2)
+    emit({'Pattern': '(?:face|look)(?: to| towards)? <NUM:g>(?: degrees?)?', 'Let': {'lg': 'g'}, 'Keep': ['lg'], 'Command': listener_command()})
 
 # --- the room: its size and its height (the sizes the person gave are remembered: a, b, h)
 def closed_space(x0, x1, y0, y1, h):
@@ -318,6 +320,9 @@ def level():
 def remove_delete():
     emit(rule(MEMBER, '(?:' + V['Remove'] + ') (?:the )?(?<name>.+?)(?: from the scene| out of the scene)?', None,
               {'UserCommandRQ': {'RemovedObjects': {'Objects': [{'ObjectID': '{name}'}]}}}))
+    # a sound that is kept and not in the scene: the command goes as said, and the Module's answer is that it is not in the scene (N-50 j2; it had been no command, then a listing)
+    emit({'Pattern': '(?:' + V['Remove'] + ') (?:the )?(?<name>.+?)(?: from the scene| out of the scene)?', 'Names': {'name': 'Stored'},
+          'Command': {'UserCommandRQ': {'RemovedObjects': {'Objects': [{'ObjectID': '{name}'}]}}}})
     emit({'Pattern': '(?:' + V['Delete'] + ') (?:the )?(?<name>.+?)(?: from the (?:store|storage|library))?', 'Names': {'name': 'Kept'},
           'Command': {'UserCommandRQ': {'DeletedObjects': {'Objects': [{'ObjectID': '{name}'}]}}}})
 

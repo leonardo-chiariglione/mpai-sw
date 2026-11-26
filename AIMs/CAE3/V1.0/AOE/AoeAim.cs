@@ -576,20 +576,12 @@ public sealed class AoeAim
 
     // ---- Deletion ----
 
-    // DELETION: an Object by its name, with all its versions. Not deleted if a Scene holds it - an Object that is a member of a Scene (the Scene's version in force names it):
-    // the Scene is deleted first. Found by reading the Scenes that are kept, not from a table.
+    // DELETION: an Object by its name, with all its versions. An Object that is a member of a Scene is deleted too (the author, 2026-11-24, N-50 b): Audio Scene Editing, which gets
+    // the same User Command, takes it out of every Scene that holds it and reports that (RemovedObjects, with the Scene), so the answer warns that it went from the Scene too.
+    // (Until 2026-11-24 it was refused - "it is a member of ...: delete that first" - and a sound in a Scene could never be deleted.)
     public (DeletionOutcome Outcome, string? Reason) Delete(string? name)
     {
         if (Kept(name) is not { } id) return (DeletionOutcome.NotKept, null);
-        var holders = new List<string>();
-        foreach (var (scene, _) in store.All(Kinds.AudioScene))
-        {
-            var bytes = store.Get(Kinds.AudioScene, scene);
-            if (bytes is null) continue;
-            var entries = Deserialize<BasicAudioSceneDescriptors>(bytes).BasicAudioSceneDescriptorsEntries;
-            if (entries?.Any(e => e.AudioObjectIDOrAudioObject?.BasicAudioObjectID == id) == true) holders.Add(scene);
-        }
-        if (holders.Count > 0) return (DeletionOutcome.Held, $"it is a member of {string.Join(", ", holders)}: delete that first");
         store.Delete(IsBasic(id) ? Kinds.BasicAudioObject : Kinds.AudioObject, id);
         return (DeletionOutcome.Deleted, null);
     }

@@ -43,6 +43,7 @@ public sealed class NluAimProcessor : IAimProcessor
     private readonly string _textDescriptorsPort; // MMC-TDO
     private readonly string _refinedTextPort;     // OSD-BTO
     private readonly string _textPsPort;          // MMC-TPS
+    private readonly string _iidIn, _iidOut;      // OSD-IID: the Instance Identifier of the object the text is about, in and out unchanged (MMC-MQA: VII -> NLU -> AQM); "" where the L3 has no such Port
 
     public NluAimProcessor(string instanceId, AimPortReader ports)
     {
@@ -52,6 +53,8 @@ public sealed class NluAimProcessor : IAimProcessor
         _textDescriptorsPort = ports.Output("MMC-TDO-V2.5");
         _refinedTextPort     = ports.Output("OSD-BTO-V1.5");
         _textPsPort          = ports.Output("MMC-TPS-V2.5");
+        _iidIn               = ports.InputOrDefault("OSD-IID-V1.5", "");
+        _iidOut              = ports.OutputOrDefault("OSD-IID-V1.5", "");
     }
 
     public string InstanceId => _instanceId;
@@ -71,16 +74,19 @@ public sealed class NluAimProcessor : IAimProcessor
         var refinedObject = BasicTextObject.FromText(refined);
         var textPersonalStatus = EstimatePersonalStatus(refined);
 
+        var outputs = new Dictionary<string, string>
+        {
+            [_textDescriptorsPort] = MpaiJson.ToJson(textDescriptors),
+            [_refinedTextPort]     = MpaiJson.ToJson(refinedObject),
+            [_textPsPort]          = MpaiJson.ToJson(textPersonalStatus)
+        };
+        // The Instance Identifier of the object the question is about goes on with the text (Output Instance Identifier, 2026-11-25 N-50 e: the L3 had the Port, the code did not give it).
+        if (_iidIn.Length > 0 && _iidOut.Length > 0 && message.Ports.TryGetValue(_iidIn, out var iid) && !string.IsNullOrWhiteSpace(iid)) outputs[_iidOut] = iid;
         return System.Threading.Tasks.Task.FromResult(new Message
         {
             MessageId = message.MessageId,
             MessageType = message.MessageType,
-            Ports = new Dictionary<string, string>
-            {
-                [_textDescriptorsPort] = MpaiJson.ToJson(textDescriptors),
-                [_refinedTextPort]     = MpaiJson.ToJson(refinedObject),
-                [_textPsPort]          = MpaiJson.ToJson(textPersonalStatus)
-            }
+            Ports = outputs
         });
     }
 
