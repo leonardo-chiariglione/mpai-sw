@@ -18,12 +18,52 @@ namespace Mpai.Mas.Service;
 // PortNumber, Json); the MAS server speaks the boundary key "DataType#Number".
 // Neither had to change: the translation is here, in one class, and it is the
 // only code in the server half that knows an application exists.
-internal sealed class ControllerApiRunner : IModuleRunner, IContinuousModuleRunner, IPausableModuleRunner
+internal sealed class ControllerApiRunner : IModuleRunner, IContinuousModuleRunner, IPausableModuleRunner, IInstanceModuleRunner
 {
+    // ONE MODULE FOR EACH OF ITS USERS (2026-11-26). A Module Instance a client starts (MODULE/Start) runs in a Controller of its own, made by makeController as the Service's
+    // own is made: its own AIMs, its own sessions and its own storage, so two people using one App do not read each other's outputs. Every call of this runner names either a
+    // Module (the Service's own Modules, started at load and warmed up) or a Module Instance (the key the server gave it); Of() says which Controller and which Module it is.
+    private readonly Func<ControllerApi>? makeController;
+    private readonly ConcurrentDictionary<string, (ControllerApi Api, int Id, string Name)> instances = new(StringComparer.Ordinal);
+
+    // What a new Controller of a Module Instance must hold before it is used (the Shared Storage of its Module, where the Service keeps it).
+    public Action<ControllerApi, int, string>? Prepare { get; set; }
+
+    private (ControllerApi Api, int Id, string Name) Of(string key) =>
+        instances.TryGetValue(key, out var own) ? own : (north, IdOf(key), key);
+
+    public string? StartInstance(string moduleName, string instance)
+    {
+        if (makeController is null) return Start(moduleName);
+        ControllerApi? api = null;
+        try
+        {
+            api = makeController();
+            var error = api.StartFlow(moduleName, out var moduleId);
+            if (error != AifError.OK)
+            {
+                var said = api.Controller.LastRefusal is { Length: > 0 } why ? $"{error}: {why}" : error.ToString();
+                Console.WriteLine($"[Controller] {moduleName} not started for {instance}: {said}");
+                api.Dispose();
+                return said;
+            }
+            Prepare?.Invoke(api, moduleId, moduleName);
+            instances[instance] = (api, moduleId, moduleName);
+            Started?.Invoke(moduleName);
+            return null;
+        }
+        catch (Exception failure)
+        {
+            Console.WriteLine($"[Controller] {moduleName} not started for {instance}: {failure}");
+            api?.Dispose();
+            return failure.Message;
+        }
+    }
+
     // A Module whose L3 says Execution Continuous is written to and read from as the Controller API has it, not run an exchange at a time.
     private readonly ConcurrentDictionary<string, bool> continuous = new(StringComparer.Ordinal);
 
-    public bool IsContinuous(string moduleName) => continuous.GetOrAdd(moduleName, name =>
+    public bool IsContinuous(string moduleName) => continuous.GetOrAdd(Of(moduleName).Name, name =>
     {
         var identifier = store.FindByAimName(name);
         if (identifier is null) return false;
@@ -40,14 +80,16 @@ internal sealed class ControllerApiRunner : IModuleRunner, IContinuousModuleRunn
     public string? Write(string moduleName, string key, string json)
     {
         var (type, number) = Split(key);
-        var error = north.InputWrite(IdOf(moduleName), type, number, json, 30_000);
+        var (api, id, _) = Of(moduleName);
+        var error = api.InputWrite(id, type, number, json, 30_000);
         return error == AifError.OK ? null : error.ToString();
     }
 
     public (string? Json, string Outcome) Read(string moduleName, string key, int timeoutMs)
     {
         var (type, number) = Split(key);
-        var read = north.OutputRead(IdOf(moduleName), type, number, timeoutMs);
+        var (api, id, _) = Of(moduleName);
+        var read = api.OutputRead(id, type, number, timeoutMs);
         return read.Error == AifError.OK ? (read.Json, "OK") : (null, read.Error.ToString());
     }
 
@@ -69,17 +111,17 @@ internal sealed class ControllerApiRunner : IModuleRunner, IContinuousModuleRunn
     private readonly ConcurrentDictionary<string, int> ids = new(StringComparer.Ordinal);
     public string? Pause(string moduleName)
     {
-        var id = IdOf(moduleName);
+        var (api, id, _) = Of(moduleName);
         if (id < 0) return $"{moduleName} is not running.";
-        var error = north.Pause(id);
+        var error = api.Pause(id);
         return error == AifError.OK ? null : error.ToString();
     }
 
     public string? Resume(string moduleName)
     {
-        var id = IdOf(moduleName);
+        var (api, id, _) = Of(moduleName);
         if (id < 0) return $"{moduleName} is not running.";
-        var error = north.Resume(id);
+        var error = api.Resume(id);
         return error == AifError.OK ? null : error.ToString();
     }
 
@@ -93,10 +135,12 @@ internal sealed class ControllerApiRunner : IModuleRunner, IContinuousModuleRunn
 
     public ControllerApiRunner(
         ControllerApi north,
-        AmdStore store)
+        AmdStore store,
+        Func<ControllerApi>? makeController = null)
     {
         this.north = north;
         this.store = store;
+        this.makeController = makeController;
     }
 
     public IReadOnlyList<BoundaryPort> PortsOf(
@@ -153,6 +197,16 @@ internal sealed class ControllerApiRunner : IModuleRunner, IContinuousModuleRunn
     public void Stop(
         string moduleName)
     {
+        // A Module Instance with a Controller of its own: its Module stopped and its Controller ended.
+        if (instances.TryRemove(moduleName, out var own))
+        {
+            var ownTurn = turns.GetOrAdd(moduleName, _ => new SemaphoreSlim(1, 1));
+            ownTurn.Wait();
+            try { own.Api.StopFlow(own.Id); own.Api.Dispose(); }
+            catch (Exception e) { Console.WriteLine($"[Controller] stopping {own.Name} ({moduleName}): {e.Message}"); }
+            finally { ownTurn.Release(); turns.TryRemove(moduleName, out _); }
+            return;
+        }
         lock (holders)
         {
             if (!holders.TryGetValue(moduleName, out var count)) return;
@@ -192,7 +246,8 @@ internal sealed class ControllerApiRunner : IModuleRunner, IContinuousModuleRunn
         var clock = System.Diagnostics.Stopwatch.StartNew();
         turn.Wait();
         var waited = clock.ElapsedMilliseconds;
-        try { result = session is null ? north.Advance(IdOf(moduleName), data) : north.Advance(IdOf(moduleName), data, session); }
+        var (api, id, _) = Of(moduleName);
+        try { result = session is null ? api.Advance(id, data) : api.Advance(id, data, session); }
         finally
         {
             turn.Release();

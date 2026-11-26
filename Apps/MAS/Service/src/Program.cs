@@ -279,7 +279,13 @@ internal static class Program
             return 0;
         }
 
-        using var north = new ControllerApi(amdDir, settingsPath, s =>
+        // ONE MODULE FOR EACH OF ITS USERS (2026-11-26): every Module Instance a client starts runs in a Controller of its own (ControllerApiRunner.StartInstance), so that two
+        // people using one App never read each other's outputs or share its AIMs. The providers are built ONCE and given to every Controller: the engines they build (the
+        // models) are loaded once and serve every Module; each Module gets AIMs of its own.
+        IAimProvider? providersOnce = null;
+        var providersLock = new object();
+        IAimProvider Providers(AmdStore s) { lock (providersLock) return providersOnce ??= BuildProviders(s); }
+        IAimProvider BuildProviders(AmdStore s)
         {
             var providers = new List<IAimProvider>();
             if (fromPackages) providers.Add(new PackageAimProvider(s, packageCache, Console.WriteLine, packageApprovals));
@@ -302,7 +308,8 @@ internal static class Program
             providers.Add(new PgmAuaProvider(s, Mpai.Core.MpaiPaths.Root));        // PGM-AUA (2026-11-26): the A-User Module of the door App
             providers.Add(new Mpai.Xrv.XrvProvider());                              // XRV-LTP (2026-11-26): the Module of the Live Theatrical Performance App
             return new CompositeProvider(providers.ToArray());
-        });
+        }
+        using var north = new ControllerApi(amdDir, settingsPath, Providers);
 
         // SUB-AIMs ON ANOTHER MACHINE (M3217 3.4): each runs on the AIM host named
         // for it, under this Service's Controller.
@@ -340,7 +347,22 @@ internal static class Program
         }
         else Console.WriteLine("  Trust:         no Trust Anchor configured (the Trust Protocol is off)");
 
-        var runner = new ControllerApiRunner(north, store);
+        // A Controller of a Module Instance: as this one, the same AIM hosts and the same Trust.
+        ControllerApi MakeController()
+        {
+            var c = new ControllerApi(amdDir, settingsPath, Providers);
+            foreach (var (aim, where) in north.Controller.AimHosts) c.Controller.AimHosts[aim] = where;
+            c.Controller.AimHostKey = north.Controller.AimHostKey;
+            if (north.Controller.Trust is { } domain)
+            {
+                c.Controller.Trust = domain;
+                foreach (var a in north.Controller.HostAnchors) c.Controller.HostAnchors.Add(a);
+                c.Controller.Manufacturer = north.Controller.Manufacturer;
+                foreach (var (file, sha) in north.Controller.HostCode) c.Controller.HostCode[file] = sha;
+            }
+            return c;
+        }
+        var runner = new ControllerApiRunner(north, store, MakeController);
 
         Console.WriteLine();
         Console.WriteLine("Loading models. This is the slow part.");
@@ -366,6 +388,17 @@ internal static class Program
         if (config.ForgetOnClose)
             north.SharedStorageKeep(gallery, AIF.SharedStorage.RuledStore.Default, new AIF.SharedStorage.StorageTime(AIF.SharedStorage.StorageLifetime.Session));
         Console.WriteLine($"  Gallery:       {gallery}{(config.ForgetOnClose ? ", what a session registers deleted when it closes" : "")}");
+        // A Module Instance's Controller holds the same storage as this one: the gallery of ACR and MAC, the scenes of ASM.
+        runner.Prepare = (api, id, module) =>
+        {
+            if (module is AcrModule or MacModule)
+            {
+                api.SharedStorageInit(id, gallery);
+                if (config.ForgetOnClose) api.SharedStorageKeep(gallery, AIF.SharedStorage.RuledStore.Default, new AIF.SharedStorage.StorageTime(AIF.SharedStorage.StorageLifetime.Session));
+            }
+            if (module == AsmModule) api.SharedStorageInit(id, Path.Combine(gallery, "CAE-ASM"));
+        };
+        Console.WriteLine("  Modules:       each Module Instance a client starts has a Controller of its own (its own AIMs, sessions and storage); the engines are shared");
 
         // THE SCENES OF AUDIO SCENE MANAGEMENT (2026-11-25): its Objects and Scenes, with their versions, are kept in an area of this server's Shared Storage, as the ASM Controller of a
         // machine keeps them in its folder: they outlive the session, the App and a restart of the server.

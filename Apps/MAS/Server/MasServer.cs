@@ -136,6 +136,8 @@ public sealed class MasServer
     {
         public string Id { get; init; } = string.Empty;
         public string Name { get; init; } = string.Empty;
+        // What the runner is told to address the Module by: the Module Instance itself when it has a Module of its own (IInstanceModuleRunner), else the Module.
+        public string Key { get; init; } = string.Empty;
         public string State { get; set; } = "ACTIVE";
         public DateTimeOffset Changed { get; set; } = DateTimeOffset.UtcNow;
 
@@ -310,7 +312,7 @@ public sealed class MasServer
                 switch (segs[3])
                 {
                     case "Pause":
-                        if (ExclusiveControl && runner is IPausableModuleRunner pausable && pausable.Pause(module.Name) is { } notPaused)
+                        if (ExclusiveControl && runner is IPausableModuleRunner pausable && pausable.Pause(module.Key) is { } notPaused)
                         { await Write(ctx, 500, "text/plain", notPaused); return; }
                         module.State   = "PAUSED";
                         module.Changed = DateTimeOffset.UtcNow;
@@ -318,7 +320,7 @@ public sealed class MasServer
                         return;
 
                     case "Resume":
-                        if (ExclusiveControl && runner is IPausableModuleRunner resumable && resumable.Resume(module.Name) is { } notResumed)
+                        if (ExclusiveControl && runner is IPausableModuleRunner resumable && resumable.Resume(module.Key) is { } notResumed)
                         { await Write(ctx, 500, "text/plain", notResumed); return; }
                         module.State   = "ACTIVE";
                         module.Changed = DateTimeOffset.UtcNow;
@@ -326,7 +328,7 @@ public sealed class MasServer
                         return;
 
                     case "Stop":
-                        runner.Stop(module.Name);
+                        runner.Stop(module.Key);
                         sci.Modules.TryRemove(module.Id, out _);
                         await Write(ctx, 200, "text/plain", "OK");
                         return;
@@ -512,7 +514,7 @@ public sealed class MasServer
         if (instances.TryRemove(cid, out var sci))
         {
             foreach (var module in sci.Modules.Values)
-                runner.Stop(module.Name);
+                runner.Stop(module.Key);
             // The Instance Credential of the RCA is revoked, and the Bouts it gives are closed (MPAI-MAS V1.1, API 4.2).
             sci.Credentials?.RevokeAll();
         }
@@ -538,14 +540,17 @@ public sealed class MasServer
             return;
         }
 
-        var failure = runner.Start(name!);
+        // A Module of its own for this Module Instance, where the runner can give one (2026-11-26); else the Module the Service runs for every client.
+        var id = Guid.NewGuid().ToString();
+        var own = runner is IInstanceModuleRunner instanceRunner;
+        var failure = own ? ((IInstanceModuleRunner)runner).StartInstance(name!, id) : runner.Start(name!);
         if (failure is not null)
         {
             await Write(ctx, 500, "text/plain", failure);
             return;
         }
 
-        var module = new ModuleInstance { Id = Guid.NewGuid().ToString(), Name = name! };
+        var module = new ModuleInstance { Id = id, Name = name!, Key = own ? id : name! };
         sci.Modules[module.Id] = module;
 
         Console.WriteLine($"[MAS] Module {name} started as {module.Id}");
@@ -626,9 +631,9 @@ public sealed class MasServer
     {
 
         // A continuous Module is written to at once, as the Controller API has it.
-        if (runner is IContinuousModuleRunner continuous && continuous.IsContinuous(module.Name))
+        if (runner is IContinuousModuleRunner continuous && continuous.IsContinuous(module.Key))
         {
-            return await Task.Run(() => continuous.Write(module.Name, port.Key, value));
+            return await Task.Run(() => continuous.Write(module.Key, port.Key, value));
         }
 
         // Under the Module's gate: a run in progress reads these inputs, and must
@@ -685,10 +690,10 @@ public sealed class MasServer
         }
 
         // A continuous Module is read from, as the Controller API has it: what the Port gives within the time the reader states (?timeout=, in milliseconds).
-        if (runner is IContinuousModuleRunner continuous && continuous.IsContinuous(module.Name))
+        if (runner is IContinuousModuleRunner continuous && continuous.IsContinuous(module.Key))
         {
             var limit = int.TryParse(ctx.Request.Query["timeout"], out var ms) && ms > 0 ? ms : 60_000;
-            var (json, outcome) = await Task.Run(() => continuous.Read(module.Name, port.Key, limit));
+            var (json, outcome) = await Task.Run(() => continuous.Read(module.Key, port.Key, limit));
             if (json is null)
             {
                 await Write(ctx, outcome == "NotProduced" ? 404 : 500, "text/plain", $"No output for Port {port.Key} ({outcome}).");
@@ -708,7 +713,7 @@ public sealed class MasServer
         {
             if (module.Outputs is null)
             {
-                var result = runner.Run(module.Name, module.Inputs, sci.Id);
+                var result = runner.Run(module.Key, module.Inputs, sci.Id);
 
                 if (result.Error is not null)
                 {

@@ -76,6 +76,14 @@ public interface IModuleRunner
     void Stop(string moduleName);
 }
 
+// ONE MODULE FOR EACH MODULE INSTANCE (2026-11-26): a runner that can give each Module Instance a client starts a Module of its own (its own AIMs, sessions and storage),
+// so that two clients of one App never share it. The server then names the Module Instance (its key) in every call of the runner instead of the Module.
+public interface IInstanceModuleRunner
+{
+    // Start a Module of its own for the Module Instance. Returns null on success, or a reason to report.
+    string? StartInstance(string moduleName, string instance);
+}
+
 // A MODULE THAT RUNS CONTINUOUSLY (Execution Continuous in its L3) is not run an exchange at a time: what is written to its Port is written at once
 // (MPAI_AIFU_Module_InputWrite), and what it gives at a Port is read from it (MPAI_AIFU_Module_OutputRead), waiting for it up to the time the reader allows.
 // A runner that can say which of its Modules are continuous implements this too; the server then relays the Input and Output routes of those Modules as the
