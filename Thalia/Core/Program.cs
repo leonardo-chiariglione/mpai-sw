@@ -274,7 +274,8 @@ if (!remote)
 
 // SETTINGS (APP-1): where Thalia looks. The MPAI as a Service instance and the Store the User uses: the address of each, tested before it is kept. A Remote Thalia has the Service of its package.
 // THE PERSON'S MMM USER (MmmAccount.cs, 2026-11-26): Thalia keeps the person's Account of the MMM world and registers or enters for it.
-MmmAccount.Map(app, thaliaData, mmmJoin, autoEnter: remote);      // also in a Remote Thalia (the participants' Thalia, 2026-11-26)
+UserProfile.Map(app, thaliaData);                                   // the person registers once, with Thalia; the Apps obtain it from Thalia
+MmmAccount.Map(app, thaliaData, mmmJoin, autoEnter: true);        // every Thalia enters the MMM by itself at start (2026-11-26: no MMM tile)
 
 app.MapGet("/api/settings", () => Results.Json(new JsonObject
 {

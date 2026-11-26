@@ -22,11 +22,11 @@ static class MmmAccount
 
         app.MapGet("/api/mmm/account", () =>
         {
-            var a = Read();
+            var a = Read(); var p = UserProfile.Read(thaliaData);
             return Results.Json(new JsonObject
             {
-                ["address"] = (string?)a["address"] ?? defaultAddress, ["first"] = (string?)a["first"], ["last"] = (string?)a["last"], ["organisation"] = (string?)a["organisation"],
-                ["email"] = (string?)a["email"], ["level"] = (string?)a["level"] ?? "Visitor", ["hasPassword"] = a["password"] is not null, ["user"] = (string?)a["user"],
+                ["address"] = (string?)a["address"] ?? defaultAddress, ["first"] = (string?)p["first"], ["last"] = (string?)p["last"], ["organisation"] = (string?)p["organisation"],
+                ["email"] = (string?)p["email"], ["level"] = LevelOf(a, p), ["hasPassword"] = a["password"] is not null, ["user"] = (string?)a["user"],
                 ["linked"] = a["device"] is not null, ["linkPending"] = a["linkRequest"] is not null, ["linkResult"] = (string?)a["linkResult"]
             });
         });
@@ -45,13 +45,13 @@ static class MmmAccount
         // REGISTER, for the person: the Account is opened (201), or the person has one already (200); nothing is opened. ENTER: the same, then the address that opens the world, entered.
         app.MapPost("/api/mmm/register", () => RegisterOrEnter(false));
         app.MapPost("/api/mmm/enter", (string? launch) => RegisterOrEnter(true, launch == "1"));      // not (HttpContext ctx) =>: that is taken for a raw handler, and the answer is lost
-        // ENTERING BY ITSELF (the participants' Thalia, 2026-11-26): once the person has registered, Thalia enters the MMM when it starts and opens the world - nothing to press.
+        // ENTERING BY ITSELF (2026-11-26; every Thalia since the MMM tile was removed): once the person has entered the MMM once, Thalia enters it when it starts and opens the world.
         if (autoEnter)
             app.Lifetime.ApplicationStarted.Register(() => _ = Task.Run(async () =>
             {
                 await Task.Delay(TimeSpan.FromSeconds(3));
                 var a = Read();
-                if (a["user"] is not null && (a["password"] is not null || a["device"] is not null) && (bool?)a["autoEnter"] != false)
+                if (a["user"] is not null && (UserProfile.Password(UserProfile.Read(thaliaData)) is not null || a["password"] is not null || a["device"] is not null) && (bool?)a["autoEnter"] != false)
                     try { await RegisterOrEnter(true, true); } catch (Exception e) { Console.WriteLine("entering the MMM: " + e.Message); }
             }));
         async Task<(Uri? Link, string? Problem)> WorldOf(JsonObject a)
@@ -135,8 +135,11 @@ static class MmmAccount
             if (link is null) return Results.Json(new { ok = false, text = problem });
             // LINKED: this Thalia enters with its own key, as the person it is linked to.
             var deviceKey = a["device"] is not null && (string?)a["user"] is { Length: > 0 } ? Encoding.UTF8.GetString(Unprotect(Convert.FromBase64String((string)a["device"]!))) : null;
-            if (deviceKey is null && a["password"] is null) return Results.Json(new { ok = false, text = "The password is not set (or link this Thalia to your Account)." });
-            var password = deviceKey is null ? Encoding.UTF8.GetString(Unprotect(Convert.FromBase64String((string)a["password"]!))) : "";
+            var me0 = UserProfile.Read(thaliaData);
+            if (deviceKey is null && !UserProfile.Registered(me0)) return Results.Json(new { ok = false, text = "Register with Thalia first (your name)." });
+            // THE PERSON'S PASSWORD (2026-11-26): the one given to Thalia at registration - Thalia represents the person, with the person's credential; else the one kept for the MMM before.
+            var password = deviceKey is not null ? "" : UserProfile.Password(me0) ?? (a["password"] is not null ? Encoding.UTF8.GetString(Unprotect(Convert.FromBase64String((string)a["password"]!))) : null);
+            if (password is null) return Results.Json(new { ok = false, text = "Your password is not set: Settings, You." });
             var invite = System.Web.HttpUtility.ParseQueryString(link.Query)["invite"];
             var origin = link.GetLeftPart(UriPartial.Authority);
             using var http = new HttpClient { BaseAddress = new Uri(origin), Timeout = TimeSpan.FromSeconds(30) };
@@ -146,11 +149,11 @@ static class MmmAccount
             catch (Exception e) { return Results.Json(new { ok = false, text = "The M-Instance does not answer: " + e.Message }); }
             if (me is null || me["accounts"] is null) return Results.Json(new { ok = false, text = "This M-Instance has no Accounts: open it in the browser." });
             var visitor = (bool?)me["byAccount"] == true || (string?)me["kind"] == "visitor";      // the person is the Account it registers with
-            var user = deviceKey is not null ? (string)a["user"]! : visitor ? AccountId((string?)a["first"] ?? "", (string?)a["last"] ?? "") : (string?)me["name"] ?? "";
+            var user = deviceKey is not null ? (string)a["user"]! : visitor ? AccountId((string?)me0["first"] ?? "", (string?)me0["last"] ?? "") : (string?)me["name"] ?? "";
             if (user.Length == 0) return Results.Json(new { ok = false, text = "Your first and last name are not set." });
-            var data = new JsonObject { ["FirstName"] = (string?)a["first"], ["LastName"] = (string?)a["last"] };
-            if ((string?)a["organisation"] is { Length: > 0 } org) data["Organisation"] = org;
-            if ((string?)a["email"] is { Length: > 0 } mail) data["Email"] = mail;
+            var data = new JsonObject { ["FirstName"] = (string?)me0["first"], ["LastName"] = (string?)me0["last"] };
+            if ((string?)me0["organisation"] is { Length: > 0 } org) data["Organisation"] = org;
+            if ((string?)me0["email"] is { Length: > 0 } mail) data["Email"] = mail;
             var profile = new JsonObject
             {
                 ["Header"] = "MMM-PPR-V2.2", ["MInstanceID"] = "MI1", ["humanID"] = user + "-human", ["PersonalProfileID"] = $"Profile-{user}-human",
@@ -162,7 +165,7 @@ static class MmmAccount
                     }
                     : new JsonObject
                     {
-                        ["AccountLevel"] = (string?)a["level"] ?? "Visitor", ["Credential"] = password, ["Data"] = new JsonArray(data),
+                        ["AccountLevel"] = LevelOf(a, me0), ["Credential"] = password, ["Data"] = new JsonArray(data),
                         ["Processes"] = new JsonArray(new JsonObject { ["ProcessIDOrProcess"] = new JsonArray(new JsonObject { ["ProcessID"] = user }), ["PersonaIDOrPersona"] = new JsonArray(new JsonObject { ["PersonaID"] = user + "-Persona" }) })
                     }
             };
@@ -193,6 +196,9 @@ static class MmmAccount
         catch (Exception e) { Console.WriteLine("opening the world: " + e.Message); }
     }
 
+    // THE ACCOUNT LEVEL: the one chosen (Settings), else Participant when the profile has an email (the Persona is kept from one visit to the next), Visitor without.
+    static string LevelOf(JsonObject a, JsonObject profile) => (string?)a["level"] is { Length: > 0 } l ? l : (string?)profile["email"] is { Length: > 0 } ? "Participant" : "Visitor";
+
     // A visitor's User: the letters of its first and last name (as the page makes it).
     public static string AccountId(string first, string last)
     {
@@ -208,8 +214,8 @@ static class MmmAccount
     private static extern bool CryptUnprotectData(ref Blob input, IntPtr description, IntPtr entropy, IntPtr reserved, IntPtr prompt, int flags, out Blob output);
     [DllImport("kernel32.dll")] private static extern IntPtr LocalFree(IntPtr mem);
 
-    private static byte[] Protect(byte[] data) => Crypt(data, true);
-    private static byte[] Unprotect(byte[] data) => Crypt(data, false);
+    internal static byte[] Protect(byte[] data) => Crypt(data, true);
+    internal static byte[] Unprotect(byte[] data) => Crypt(data, false);
     private static byte[] Crypt(byte[] data, bool protect)
     {
         var handle = GCHandle.Alloc(data, GCHandleType.Pinned);

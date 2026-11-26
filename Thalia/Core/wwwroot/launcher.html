@@ -96,8 +96,8 @@
   .fn.available .chip { color:var(--ok); border-color:var(--ok); } .fn.coming { opacity:.8; }
   .ret { font:inherit; font-size:13px; padding:6px 14px; border-radius:8px; border:1px solid var(--line); background:var(--panel2); color:var(--ink); cursor:pointer; }
   .ret:hover { border-color:var(--accent); }
-  .grid.tiles { grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); }
-  .dt { all:unset; cursor:pointer; font-size:12px; color:var(--muted); text-decoration:underline; margin-left:auto; } .dt:hover { color:var(--ink); }
+  .grid.tiles .fn { padding:10px 14px; }
+  .dt { all:unset; cursor:pointer; font-size:12px; color:var(--muted); text-decoration:underline; margin-left:auto; } .dt:hover { color:var(--ink); } .dt[hidden] { display:none; }
   .dock { margin-top:auto; display:flex; flex-direction:column; align-items:center; gap:8px; padding:12px 4px 4px; border-top:1px solid var(--line); }
   /* THE LADY'S PLACE (2026-11-25, the author): immediately below the menu - her face, Voice and Text below it, what was heard and what she answered below them; the MPAI card at the
      bottom of the pane. An App that has her (ASM) puts its own lady, with its Voice, Text and words, in this place. */
@@ -406,9 +406,12 @@ function welcome() {
   const q = $('#q').value.trim();
   $('#notice').hidden = !(isRemote() && catalogue.masProblem);
   $('#q').placeholder = 'Search for an App';
-  const v = $('#view'); v.innerHTML = '';
+  const v = $('#view');
+  const typing = columnCard?.contains(document.activeElement) ? document.activeElement : null;
+  v.innerHTML = '';
+  if (columnCard) { v.appendChild(columnCard); (typing || columnCard.querySelector('input'))?.focus(); }   // a one-time form: at the top of the column, the tiles under it
   let welcomeHidden = false;
-  welcomeHidden = P.welcomeHidden === true;
+  welcomeHidden = P.welcomeHidden === true || !!columnCard;
   if (!welcomeHidden) {
     const intro = document.createElement('section'); intro.className = 'card';
     intro.innerHTML = `<div class="fh" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px"><div><h3 style="margin:0;font-size:20px">Welcome to Thalia <span class="desc" style="font-size:14px;font-weight:400">- the MPAI AI Framework user environment</span></h3></div><button class="act secondary" id="hideWelcome" title="Do not show this again">Hide</button></div>`;
@@ -432,11 +435,9 @@ function welcome() {
     if (go && state === 'available') { c.style.cursor = 'pointer'; c.title = 'Open it'; c.onclick = () => { view = go; if (!scope) scope = 'local'; storeDrawn = false; devicesDrawn = false; settingsDrawn = false; save(); }; }
   }
   v.appendChild(list);
-  // THE MMM WORLD on Home (2026-11-26): your MMM User - register once, then enter without barriers.
-  {      // in a Remote Thalia too (the participants' Thalia, 2026-11-26)
-    const holder = document.createElement('section'); holder.className = 'card fn available'; list.appendChild(holder);
-    mmmUserCard(true).then(d => { d.style.borderTop = '0'; d.style.paddingTop = '0'; holder.appendChild(d); });
-  }
+  // REGISTER WITH THALIA, at the first start: the form at the top of this column. No MMM tile (2026-11-26, the user): Thalia enters the MMM by itself - right after
+  // registering, and each time it starts.
+  getProfile().then(p => { if (!p.registered && !registerAsked) { registerAsked = true; openRegister(p, enterNow); } });
 }
 
 // ---- the Store: Apps to obtain, with what each needs shown before the User accepts (APP-2, APP-3, APP-4, APP-5) -------------------------------------
@@ -897,54 +898,96 @@ function aboutView() {
   v.appendChild(card);
 }
 
-// YOUR MMM USER (2026-11-26): Thalia is your own User in the MMM world. It keeps your Account - the address of the M-Instance (the personal link you were sent, or the world's address),
-// your data, your Account Level and your password (encrypted for your Windows user) - and registers or enters for you, then opens the world already entered.
-async function mmmUserCard(compact = false) {          // compact: the tile on Home (the form under Details); open in Settings
+// REGISTER WITH THALIA (2026-11-26): the person registers once, with Thalia (name, organisation, email, password: Thalia represents the person, with its credential). The Apps that need the person's registration - the MMM first - obtain it
+// from Thalia: the person does not register again with each App.
+const fieldHtml = (id, label, type = 'text', hint = '') => `<label style="display:block;margin:4px 0"><span class="desc" style="display:block">${label}</span><input id="${id}" type="${type}" placeholder="${hint}" style="width:100%;box-sizing:border-box;font:inherit;padding:6px 8px;border-radius:7px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--ink)"></label>`;
+async function getProfile() { try { return await (await fetch('/api/profile', { cache: 'no-store' })).json(); } catch { return {}; } }
+function profileCard(p, onDone, title = 'Register with Thalia', lead = 'Once: the Apps that need to know who you are, such as the MMM, obtain it from Thalia.') {
+  const c = document.createElement('section'); c.className = 'card';
+  c.innerHTML = `<div><b style="font-size:17px"></b> <span class="desc lead"></span></div>
+    <div class="pfGrid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 10px">${fieldHtml('pfFirst', 'First name')}${fieldHtml('pfLast', 'Last name')}${fieldHtml('pfOrg', 'Organisation')}${fieldHtml('pfMail', 'Email', 'email').replace('<label style="', '<label style="grid-column:span 2;')}${fieldHtml('pfPass', 'Password', 'password', p.hasPassword ? 'kept; type to change' : 'at least 6 characters')}</div>
+    <div style="display:flex;gap:8px;align-items:center"><button class="act go"></button><span class="out desc"></span></div>`;
+  const $c = q => c.querySelector(q);
+  $c('b').textContent = title; $c('.lead').textContent = lead; $c('.go').textContent = p.registered ? 'Save' : 'Register';
+  $c('#pfFirst').value = p.first || ''; $c('#pfLast').value = p.last || ''; $c('#pfOrg').value = p.organisation || ''; $c('#pfMail').value = p.email || '';
+  $c('.go').onclick = async () => {
+    const body = { first: $c('#pfFirst').value, last: $c('#pfLast').value, organisation: $c('#pfOrg').value, email: $c('#pfMail').value, password: $c('#pfPass').value };
+    const r = await (await fetch('/api/profile', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })).json().catch(() => ({ ok: false, text: 'Thalia does not answer.' }));
+    const out = $c('.out'); out.style.color = r.ok ? 'var(--ok)' : 'var(--bad)'; out.textContent = r.ok ? 'Saved.' : r.text;
+    if (r.ok) onDone?.();
+  };
+  return c;
+}
+
+// ENTERING THE MMM, for the person, right after registering: the first time Thalia opens the person's MMM Account with the details and the password of its profile (the same
+// password works in a browser) and the world opens in its own window, where the Persona is chosen. Where the address of the MMM world is not known (it is in the participants'
+// Thalia package), it is asked once, at the top of this column.
+async function enterNow() {
+  const r = await (await fetch('/api/mmm/enter?launch=1', { method: 'POST' })).json().catch(() => ({ ok: false, text: 'Thalia does not answer.' }));
+  if (!r.ok && /address/i.test(r.text || '') && !isRemote()) askMmmAddress(enterNow);
+}
+async function saveMmmAddress(value) { await fetch('/api/mmm/account', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ address: value }) }); }
+
+// ONE-TIME FORMS (2026-11-26, the user: what is used once does not occupy the screen; it is where the tiles are): the form takes the column of the tiles on Home until it is
+// done or put off with Later; then the tiles are back.
+let registerAsked = false, columnCard = null;
+function openDialog(card, laterText = 'Later') {
+  const later = document.createElement('button'); later.className = 'act secondary'; later.textContent = laterText;
+  const close = () => { if (columnCard === card) { columnCard = null; render(); } };
+  later.onclick = close;
+  (card.querySelector('.go')?.parentElement || card).appendChild(later);
+  columnCard = card; view = 'home'; syncControls(); render();
+  return close;
+}
+function openRegister(p, then) {
+  let close;
+  const card = profileCard(p, () => { close(); render(); then?.(); }, 'Welcome to Thalia - register once', 'Your details stay in Thalia; the Apps that need to know who you are, such as the MMM, obtain them from Thalia. You can change them in Settings.');
+  close = openDialog(card);
+}
+function askMmmAddress(then) {                                              // the participants' Thalia has it in its package: asked only elsewhere, once
+  const c = document.createElement('section'); c.className = 'card';
+  c.innerHTML = `<b style="font-size:17px">The address of the MMM world</b><span class="desc">Asked once; it stays in Settings.</span>${fieldHtml('askAddr', 'Address', 'text', 'https://...')}<div style="display:flex;gap:8px;align-items:center"><button class="act go">Save</button><span class="out desc"></span></div>`;
+  const close = openDialog(c, 'Cancel');
+  c.querySelector('.go').onclick = async () => {
+    const v = c.querySelector('#askAddr').value.trim();
+    if (!v) { c.querySelector('.out').textContent = 'The address is needed.'; return; }
+    await saveMmmAddress(v); close(); then();
+  };
+}
+
+// IN SETTINGS: the address of the MMM world, the Account Level, and - for an Account made in a browser - joining this Thalia to it (approved once in the world).
+async function mmmSettingsCard() {
   let a = {}; try { a = await (await fetch('/api/mmm/account', { cache: 'no-store' })).json(); } catch { }
   const d = document.createElement('div'); d.className = 'detail';
-  const input = (id, label, value, type = 'text', hint = '') => `<label style="display:block;margin:4px 0"><span class="desc" style="display:block">${label}</span><input id="${id}" type="${type}" placeholder="${hint}" style="width:100%;box-sizing:border-box;font:inherit;padding:6px 8px;border-radius:7px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--ink)"></label>`;
-  const known = a.linked || (a.user && a.hasPassword);                     // Thalia can enter by itself: the one button that matters is Enter
-  d.innerHTML = `${compact ? '<div class="fh"><b>The MMM world</b><span class="chip"></span></div>' : '<h4>Your MMM User</h4>'}<div class="mmAbout desc"${compact ? ' hidden' : ''}>Thalia is your User in the MMM world. Register once (Participant keeps your Persona from one visit to the next; to be invited to a meeting, give the email you were invited with); then Enter the MMM, with no password to type. If you have an Account already, Link to my Account: you approve it once in the world.</div>
-    <div class="mmForm"${compact ? ' hidden' : ''}>
-    ${input('mmAddr', 'The address of the M-Instance (your personal link, or the world\'s address)', '', 'text', 'https://...')}
+  d.innerHTML = `<h4>The MMM world</h4>
+    ${isRemote() ? '' : fieldHtml('mmAddr', 'The address of the MMM world (your personal link, or the world\'s address)', 'text', 'https://...')}
     <label style="display:block;margin:4px 0"><span class="desc" style="display:block">Account Level</span><select id="mmLevel" style="font:inherit;padding:6px 8px;border-radius:7px;background:rgba(0,0,0,.25);color:var(--ink);border:1px solid var(--line)"><option>Visitor</option><option>Participant</option><option>Officer</option></select></label>
-    ${input('mmFirst', 'First name', '')}${input('mmLast', 'Last name', '')}${input('mmOrg', 'Organisation (not needed for a Visitor)', '')}${input('mmMail', 'Email (not needed for a Visitor)', '', 'email')}
-    ${input('mmPass', a.hasPassword ? 'Password (kept; type a new one to change it)' : 'Password (at least 6 characters)', '', 'password')}
-    <div style="margin-top:6px"><button class="act secondary s">Keep</button></div></div>
-    <div class="buttons" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;align-items:center"><button class="act e">Enter the MMM</button><button class="act secondary l" title="You have an Account already: link this Thalia to it, approving it once in the world, so that Thalia enters as you without your password">Link to my Account</button><button class="act secondary r">Register</button>${compact ? '<button class="dt">Details</button>' : ''}</div><div class="lk desc"></div><div class="out desc"></div>`;
-  const $d = s => d.querySelector(s), out = $d('.out');
-  if (compact) {
-    $d('.chip').textContent = a.linked ? 'linked' : known ? 'registered' : 'not yet';
-    if (known) { $d('.l').hidden = true; $d('.r').hidden = true; }         // registered or linked: Enter only (the others come back with Details)
-    const unfold = open => { $d('.mmForm').hidden = !open; $d('.mmAbout').hidden = !open; $d('.dt').textContent = open ? 'Less' : 'Details'; if (open) { $d('.l').hidden = false; $d('.r').hidden = false; } };
-    $d('.dt').onclick = () => unfold($d('.mmForm').hidden);
-    d.unfold = unfold;
-  }
-  $d('#mmAddr').value = a.address || ''; $d('#mmLevel').value = a.level || 'Visitor'; $d('#mmFirst').value = a.first || ''; $d('#mmLast').value = a.last || ''; $d('#mmOrg').value = a.organisation || ''; $d('#mmMail').value = a.email || '';
-  const keep = async () => {
-    const body = { address: $d('#mmAddr').value, level: $d('#mmLevel').value, first: $d('#mmFirst').value, last: $d('#mmLast').value, organisation: $d('#mmOrg').value, email: $d('#mmMail').value, password: $d('#mmPass').value };
-    if ($d('#mmPass').value && $d('#mmPass').value.length < 6) { out.style.color = 'var(--bad)'; out.textContent = 'The password needs at least 6 characters.'; return false; }
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px"><button class="act s">Save</button><button class="act secondary l">I made an MMM Account in a browser: join Thalia to it</button></div><div class="lk desc"></div><div class="out desc"></div>`;
+  const $d = q => d.querySelector(q), out = $d('.out'), lk = $d('.lk');
+  if ($d('#mmAddr')) $d('#mmAddr').value = a.address || '';
+  $d('#mmLevel').value = a.level || 'Participant';
+  $d('.s').onclick = async () => {
+    const body = { level: $d('#mmLevel').value }; if ($d('#mmAddr')) body.address = $d('#mmAddr').value.trim();
     const r = await fetch('/api/mmm/account', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
-    $d('#mmPass').value = ''; return r.ok;
+    out.style.color = r.ok ? 'var(--ok)' : 'var(--bad)'; out.textContent = r.ok ? 'Saved.' : 'It could not be saved.';
   };
-  // LINKED (2026-11-26): this Thalia has a key of its own for your Account; the password is not needed here.
-  const lk = $d('.lk');
+  // JOINED (2026-11-26): this Thalia has a key of its own for an Account made in a browser; no password is kept here.
   const showLink = st => {
-    if (st.linked) { lk.style.color = 'var(--ok)'; lk.innerHTML = `Linked to your Account${st.user ? ' (' + esc(st.user) + ')' : ''}: Thalia enters as you without your password. <a href="#" class="ul">Forget the link</a>`; lk.querySelector('.ul').onclick = async e => { e.preventDefault(); const r = await (await fetch('/api/mmm/unlink', { method: 'POST' })).json(); lk.style.color = ''; lk.textContent = r.text; }; }
+    if (st.linked) { lk.style.color = 'var(--ok)'; lk.innerHTML = `Joined to your Account${st.user ? ' (' + esc(st.user) + ')' : ''}. <a href="#" class="ul">Forget it</a>`; lk.querySelector('.ul').onclick = async e => { e.preventDefault(); const r = await (await fetch('/api/mmm/unlink', { method: 'POST' })).json(); lk.style.color = ''; lk.textContent = r.text; }; }
     else if (st.linkPending) { lk.style.color = ''; lk.textContent = 'Waiting for your approval in the world window...'; }
-    else if (st.linkResult && st.linkResult !== 'linked') { lk.style.color = 'var(--bad)'; lk.textContent = `The link was not made (${st.linkResult}): press Link to my Account again.`; }
+    else if (st.linkResult && st.linkResult !== 'linked') { lk.style.color = 'var(--bad)'; lk.textContent = `Not joined (${st.linkResult}): press the button again.`; }
     else lk.textContent = '';
   };
   showLink(a);
   $d('.l').onclick = async () => {
-    await keep();
+    if ($d('#mmAddr')?.value.trim()) await saveMmmAddress($d('#mmAddr').value.trim());
     const tab = isRemote() ? null : window.open('about:blank', '_blank');
-    out.style.color = ''; out.textContent = 'Asking the M-Instance for a link...';
+    out.style.color = ''; out.textContent = 'Asking the MMM world...';
     const r = await (await fetch('/api/mmm/link' + (isRemote() ? '?launch=1' : ''), { method: 'POST' })).json().catch(() => ({ ok: false, text: 'Thalia does not answer.' }));
     out.style.color = r.ok ? '' : 'var(--bad)';
-    out.innerHTML = r.ok ? `The world opens: enter with your password there and approve. Check that it shows this code: <b style="font-size:20px;letter-spacing:3px">${esc(r.code)}</b>` : esc(r.text);
+    out.innerHTML = r.ok ? `The world opens: enter there with your password and approve. Check that it shows this code: <b style="font-size:20px;letter-spacing:3px">${esc(r.code)}</b>` : esc(r.text);
     if (r.ok && tab) tab.location = r.url; else tab?.close();
-    if (!r.ok) { d.unfold?.(true); return; }
+    if (!r.ok) return;
     for (let i = 0; i < 330; i++) {                                         // until approved, refused or expired (a request lasts 10 minutes)
       await new Promise(res => setTimeout(res, 2000));
       const st = await (await fetch('/api/mmm/account', { cache: 'no-store' })).json().catch(() => null);
@@ -952,35 +995,6 @@ async function mmmUserCard(compact = false) {          // compact: the tile on H
       showLink(st);
       if (!st.linkPending) { out.textContent = st.linked ? 'Done.' : ''; break; }
     }
-  };
-  $d('.s').onclick = async () => { if (await keep()) { out.style.color = 'var(--ok)'; out.textContent = 'Kept.'; } };
-  $d('.r').onclick = async () => {
-    if (d.unfold && $d('.mmForm').hidden) { d.unfold(true); out.style.color = ''; out.textContent = 'Fill in your details, then press Register again.'; return; }
-    if (!(await keep())) return;
-    out.style.color = ''; out.textContent = 'Registering...';
-    const r = await (await fetch('/api/mmm/register', { method: 'POST' })).json().catch(() => ({ ok: false, text: 'Thalia does not answer.' }));
-    out.style.color = r.ok ? 'var(--ok)' : 'var(--bad)'; out.textContent = r.text;
-    // The participants' Thalia: registered, the world opens at once, for the choice of the Persona (the first time only).
-    if (r.ok && isRemote()) {
-      const e = await (await fetch('/api/mmm/enter?launch=1', { method: 'POST' })).json().catch(() => ({ ok: false, text: 'Thalia does not answer.' }));
-      out.style.color = e.ok ? 'var(--ok)' : 'var(--bad)'; out.textContent = e.ok ? 'Registered. The world opens in its own window: choose your Persona there (this time only). Next time Thalia enters by itself.' : e.text;
-    }
-  };
-  $d('.e').onclick = async () => {
-    if (isRemote()) {                                                       // Thalia opens the world itself, in its own Edge window
-      if (!(await keep())) return;
-      out.style.color = ''; out.textContent = 'Entering...';
-      const r = await (await fetch('/api/mmm/enter?launch=1', { method: 'POST' })).json().catch(() => ({ ok: false, text: 'Thalia does not answer.' }));
-      out.style.color = r.ok ? 'var(--ok)' : 'var(--bad)'; out.textContent = r.ok ? r.text.replace('the world opens.', 'the world opens in its own window.') : r.text;
-      if (!r.ok) d.unfold?.(true);
-      return;
-    }
-    const tab = window.open('about:blank', '_blank');                     // opened by the click itself: a tab opened later is blocked as a pop-up
-    if (!(await keep())) { tab?.close(); return; }
-    out.style.color = ''; out.textContent = 'Entering...';
-    const r = await (await fetch('/api/mmm/enter', { method: 'POST' })).json().catch(() => ({ ok: false, text: 'Thalia does not answer.' }));
-    out.style.color = r.ok ? 'var(--ok)' : 'var(--bad)'; out.textContent = r.text;
-    if (r.ok && tab) tab.location = r.url; else { tab?.close(); d.unfold?.(true); }
   };
   return d;
 }
@@ -1006,7 +1020,8 @@ async function settingsView() {
   card.appendChild(field('The MPAI as a Service instance you use', 'mas', st.mas, 'https://...', st.fixed));
   if (!st.fixed) card.appendChild(field('The MPAI Store you use', 'store', st.store, 'http://...', false));
   if (st.fixed) { const n = document.createElement('p'); n.className = 'desc'; n.textContent = 'This is a Remote Thalia: it uses the Service of its package.'; card.appendChild(n); }
-  card.appendChild(await mmmUserCard());
+  { const p = await getProfile(); const pc = profileCard(p, null, 'You', 'What the Apps obtain from Thalia when they need to know who you are.'); pc.className = 'detail'; card.appendChild(pc); }
+  card.appendChild(await mmmSettingsCard());
   if (st.data) {
     const d = document.createElement('div'); d.className = 'detail';
     d.innerHTML = '<h4>Where your things are kept</h4><div class="desc"></div>'; d.querySelector('.desc').textContent = `Your Apps: ${st.apps}. Your choices, the Store and what you obtained: ${st.data}.`; card.appendChild(d);
