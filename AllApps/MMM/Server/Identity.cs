@@ -46,8 +46,9 @@ public sealed class Identity(string chair, IReadOnlyDictionary<string, string> l
         if (login.Length > 0)                                                  // through `tailscale serve`: the headers are Tailscale's only when it sent them, from this machine
         {
             if (ctx.Connection.RemoteIpAddress is not { } ip || !IPAddress.IsLoopback(ip)) return null;
-            if (loginGuests.TryGetValue(login, out var guest)) return new Who(guest, guest == Chair ? "chair" : "guest", login);
-            if (!Visitors) return null;                                       // somebody on the tailnet the chair did not list: only a visitor, if visitors are allowed
+            if (!Accounts && loginGuests.TryGetValue(login, out var guest)) return new Who(guest, guest == Chair ? "chair" : "guest", login);
+            if (!Visitors && !Accounts) return null;                          // somebody on the tailnet the chair did not list: only a visitor, if visitors are allowed
+            // WITH ACCOUNTS (2026-11-26) the person on the Tailscale network - the Manager's devices, the people the Manager shared this machine with - is the Account it registers or enters with
             var local = Regex.Replace(login.Split('@')[0], "[^A-Za-z0-9]", "");
             return new Who("Visitor-" + (local.Length > 0 ? local : "x"), "visitor", login);
         }

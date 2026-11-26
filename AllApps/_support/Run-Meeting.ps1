@@ -17,8 +17,8 @@
 # -Join funnel (the default): the emails link to the join page AllApps\MMM\Join\join.html, published at this PC's stable Tailscale address (Funnel, only that folder), which sends each guest on to
 # the meeting's own address; mail filters distrust trycloudflare.com links (2026-11-18). The meeting itself does not go through Funnel (too slow for the avatars). -Join none: the emails carry the meeting's address.
 # -Officers A,B: the people, besides the chair, who may register with the MPAI Officer Account Level (the Rights to every place of the building).
-param([string]$Chair = '', [string]$Guests = '', [string]$Until = '', [double]$Hours = 3, [int]$Port = 7099, [ValidateSet('funnel', 'cloudflare')][string]$Via = 'cloudflare', [switch]$Visitors,
-      [string]$Group = '', [string]$When = '', [string]$Officers = '', [string]$HostName = '', [ValidateSet('ask', 'draft', 'send', 'none')][string]$Mail = 'ask', [switch]$Preview, [switch]$Stay, [switch]$Written, [ValidateSet('funnel', 'none')][string]$Join = 'funnel', [string]$Llm = 'llama3.2:3b', [switch]$Spoken, [switch]$Fresh, [string]$Manager = '')
+param([string]$Chair = '', [string]$Guests = '', [string]$Until = '', [double]$Hours = 3, [int]$Port = 7099, [ValidateSet('tailscale', 'funnel', 'cloudflare')][string]$Via = 'tailscale', [switch]$Visitors,
+      [string]$Group = '', [string]$When = '', [string]$Officers = '', [string]$HostName = '', [ValidateSet('ask', 'draft', 'send', 'none')][string]$Mail = 'ask', [switch]$Preview, [switch]$Stay, [switch]$Written, [ValidateSet('funnel', 'none')][string]$Join = 'none', [string]$Llm = 'llama3.2:3b', [switch]$Spoken, [switch]$Fresh, [string]$Manager = '')
 
 $here = (Resolve-Path (Join-Path $PSScriptRoot "..\MMM")).Path
 
@@ -33,7 +33,7 @@ if (-not $Fresh -and (Test-Path $settingsFile)) {
     try { $last = Get-Content $settingsFile -Raw -Encoding UTF8 | ConvertFrom-Json } catch { Write-Host "The settings of the last meeting could not be read ($settingsFile): starting without them." }
 }
 if ($last) {
-    foreach ($k in 'Chair', 'HostName', 'Guests', 'Group', 'Until', 'Hours', 'Officers', 'Via', 'Join', 'Llm', 'Manager') {
+    foreach ($k in 'Chair', 'HostName', 'Guests', 'Group', 'Until', 'Hours', 'Officers', 'Llm', 'Manager') {      # not Via and Join: the way is Tailscale from 2026-11-26 unless given
         if ($k -eq 'Until' -and $PSBoundParameters.ContainsKey('Hours')) { continue }      # -Hours given: the end is in that many hours, not at last time's hour
         if (-not $PSBoundParameters.ContainsKey($k) -and $null -ne $last.$k -and "$($last.$k)" -ne '') { Set-Variable -Name $k -Value $last.$k; $fromLast += "$k $($last.$k)" }
     }
@@ -101,7 +101,7 @@ $(if ($n -eq $Chair) { 'You chair the meeting: you can share your screen, and en
 
 $link
 
-What you need: a PC with Chrome or Edge, and a headset (no loudspeakers: the room has its own echo). Open the link. The first time you register: choose the Account Level *Participant*, give your first name, last name, organisation and THIS email address ($($p.Email)) - the invitation is for the Account with this email - choose a password (you will enter with it next time), and choose your avatar. If you use Thalia, register there instead (Settings, Your MMM User, with this address) and press Enter the MMM. Allow the microphone when the browser asks.
+$(if ($Via -eq 'tailscale') { "The MMM world is reached through Tailscale, a private network: install Tailscale (https://tailscale.com/download), sign in, and accept the invitation to MPAI's machine that Tailscale sent you. The address above works only then." + [Environment]::NewLine + [Environment]::NewLine })What you need: a PC with Chrome or Edge, and a headset (no loudspeakers: the room has its own echo). Open the link. The first time you register: choose the Account Level *Participant*, give your first name, last name, organisation and THIS email address ($($p.Email)) - the invitation is for the Account with this email - choose a password (you will enter with it next time), and choose your avatar. If you use Thalia, register there instead (Settings, Your MMM User, with this address) and press Enter the MMM. Allow the microphone when the browser asks.
 You move by clicking the point you want to reach: your avatar walks there, through the doors of the MPAI building to the meeting rooms, and into the MMM meeting room, where you sit down by yourself.
 The mouse wheel turns you: wheel forward turns you counterclockwise, wheel backward clockwise. Ctrl + wheel forward zooms in, Ctrl + wheel backward zooms out.
 Q stands up, E sits again.
@@ -161,7 +161,22 @@ if (-not $helperUp) {
 }
 
 $base = $null
-if ($Via -eq 'funnel') {
+# TAILSCALE ONLY (-Via tailscale, the default from 2026-11-26): "tailscale serve" offers the meeting at https://<this PC's Tailscale name>/ to the Tailscale network only - the Manager's
+# devices and the people the Manager shared this PC with (the access rule of the tailnet lets them reach port 443, the MMM, and 8443, the participants' Service, and nothing else).
+# The address never changes: it is the one in the participants' Thalia. Nothing is on the public internet.
+if ($Via -eq 'tailscale') {
+    $ts = (Get-Command tailscale -ErrorAction SilentlyContinue).Source
+    if (-not $ts) { $ts = @('C:\Program Files\Tailscale\tailscale.exe') | Where-Object { Test-Path $_ } | Select-Object -First 1 }
+    if (-not $ts) { Write-Host 'Tailscale is not installed.'; exit 1 }
+    & $ts funnel --https=443 off 2>&1 | Out-Null
+    $out = & $ts serve --bg --https=443 "http://127.0.0.1:$Port" 2>&1 | Out-String
+    $dns = $null
+    try { $dns = ((& $ts status --json | ConvertFrom-Json).Self.DNSName).TrimEnd('.') } catch { }
+    if (-not $dns -or $out -match 'error') { Write-Host "Tailscale could not offer the meeting:`n$out"; exit 1 }
+    $base = "https://$dns"
+    $Join = 'none'
+}
+elseif ($Via -eq 'funnel') {
     $ts = (Get-Command tailscale -ErrorAction SilentlyContinue).Source
     if (-not $ts) { $ts = @('C:\Program Files\Tailscale\tailscale.exe') | Where-Object { Test-Path $_ } | Select-Object -First 1 }
     if (-not $ts) { Write-Host 'Tailscale is not installed. Use -Via cloudflare.'; exit 1 }
@@ -264,5 +279,5 @@ Start-Process "$local/viewer/?world=1&mic=1&user=$HostName"
 Start-Sleep 4                                                                                 # the browser takes the front when it opens; the links come back over it
 Show-OnTop
 Read-Host 'Enter to take the meeting off the internet (the server has its own window)' | Out-Null
-if ($Via -eq 'funnel') { & $ts funnel reset | Out-Null } else { Get-Process cloudflared -ErrorAction SilentlyContinue | Stop-Process -Force }
+if ($Via -eq 'tailscale') { & $ts serve --https=443 off 2>&1 | Out-Null } elseif ($Via -eq 'funnel') { & $ts funnel reset | Out-Null } else { Get-Process cloudflared -ErrorAction SilentlyContinue | Stop-Process -Force }
 if ($joinUrl) { Set-JoinMeeting ''; & $tsj funnel --bg --set-path /mmm off 2>&1 | Out-Null }      # the join page goes off the internet with the meeting

@@ -918,8 +918,20 @@ async function mmmUserCard() {
     out.style.color = ''; out.textContent = 'Registering...';
     const r = await (await fetch('/api/mmm/register', { method: 'POST' })).json().catch(() => ({ ok: false, text: 'Thalia does not answer.' }));
     out.style.color = r.ok ? 'var(--ok)' : 'var(--bad)'; out.textContent = r.text;
+    // The participants' Thalia: registered, the world opens at once, for the choice of the Persona (the first time only).
+    if (r.ok && isRemote()) {
+      const e = await (await fetch('/api/mmm/enter?launch=1', { method: 'POST' })).json().catch(() => ({ ok: false, text: 'Thalia does not answer.' }));
+      out.style.color = e.ok ? 'var(--ok)' : 'var(--bad)'; out.textContent = e.ok ? 'Registered. The world opens in its own window: choose your Persona there (this time only). Next time Thalia enters by itself.' : e.text;
+    }
   };
   $d('.e').onclick = async () => {
+    if (isRemote()) {                                                       // Thalia opens the world itself, in its own Edge window
+      if (!(await keep())) return;
+      out.style.color = ''; out.textContent = 'Entering...';
+      const r = await (await fetch('/api/mmm/enter?launch=1', { method: 'POST' })).json().catch(() => ({ ok: false, text: 'Thalia does not answer.' }));
+      out.style.color = r.ok ? 'var(--ok)' : 'var(--bad)'; out.textContent = r.ok ? r.text.replace('the world opens.', 'the world opens in its own window.') : r.text;
+      return;
+    }
     const tab = window.open('about:blank', '_blank');                     // opened by the click itself: a tab opened later is blocked as a pop-up
     if (!(await keep())) { tab?.close(); return; }
     out.style.color = ''; out.textContent = 'Entering...';

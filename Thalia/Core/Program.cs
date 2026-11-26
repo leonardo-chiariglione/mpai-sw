@@ -35,7 +35,7 @@ if (remote)
     var j = JsonNode.Parse(File.ReadAllText(rj))!.AsObject();
     remoteService = (string?)j["Service"] ?? throw new InvalidOperationException("remote.json has no Service");
     masToken = (string?)j["Token"];
-    mmmJoin = (string?)j["MmmJoin"];
+    mmmJoin = (string?)j["Mmm"] ?? (string?)j["MmmJoin"];         // the MMM world on the Tailscale network (Mmm), or a join page (MmmJoin)
 }
 // The Launcher's page is in Thalia\Core\wwwroot (Full) or beside the program (Remote), wherever the program is started from.
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions { Args = args, ContentRootPath = remote ? AppContext.BaseDirectory : Path.Combine(root, "Thalia", "Core") });
@@ -274,7 +274,7 @@ if (!remote)
 
 // SETTINGS (APP-1): where Thalia looks. The MPAI as a Service instance and the Store the User uses: the address of each, tested before it is kept. A Remote Thalia has the Service of its package.
 // THE PERSON'S MMM USER (MmmAccount.cs, 2026-11-26): Thalia keeps the person's Account of the MMM world and registers or enters for it.
-MmmAccount.Map(app, thaliaData, mmmJoin);      // also in a Remote Thalia (the participants' Thalia, 2026-11-26)
+MmmAccount.Map(app, thaliaData, mmmJoin, autoEnter: remote);      // also in a Remote Thalia (the participants' Thalia, 2026-11-26)
 
 app.MapGet("/api/settings", () => Results.Json(new JsonObject
 {

@@ -331,6 +331,15 @@ public static class MmmServer
                     ".html" => "text/html; charset=utf-8", ".js" => "text/javascript", ".glb" => "model/gltf-binary",
                     ".json" => "application/json", ".md" => "text/plain; charset=utf-8", _ => "application/octet-stream"
                 };
+                // THE MODELS ARE KEPT BY THE BROWSER (2026-11-26): a Persona or a building (6-13 MB a Persona) is downloaded once; afterwards the browser only asks whether it changed
+                // (its date and tag: 304, nothing sent), so entering again does not download the Personae again. The pages and the scripts are still never kept (no-store).
+                if (type == "model/gltf-binary")
+                {
+                    var info = new FileInfo(file);
+                    ctx.Response.Headers.CacheControl = "no-cache";
+                    return Results.File(file, type, lastModified: info.LastWriteTimeUtc,
+                        entityTag: new Microsoft.Net.Http.Headers.EntityTagHeaderValue($"\"{info.Length:x}-{info.LastWriteTimeUtc.Ticks:x}\""));
+                }
                 return Results.File(file, type);
             });
         }

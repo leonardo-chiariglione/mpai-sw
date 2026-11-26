@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Http;
 // the page takes it and removes it. The password is kept encrypted for this Windows user (DPAPI), never in clear, and goes only to the M-Instance named.
 static class MmmAccount
 {
-    public static void Map(WebApplication app, string thaliaData, string? defaultAddress = null)
+    public static void Map(WebApplication app, string thaliaData, string? defaultAddress = null, bool autoEnter = false)
     {
         var file = Path.Combine(thaliaData, "mmm-account.json");
         JsonObject Read() { try { return File.Exists(file) ? JsonNode.Parse(File.ReadAllText(file))!.AsObject() : new JsonObject(); } catch { return new JsonObject(); } }
@@ -43,8 +43,17 @@ static class MmmAccount
 
         // REGISTER, for the person: the Account is opened (201), or the person has one already (200); nothing is opened. ENTER: the same, then the address that opens the world, entered.
         app.MapPost("/api/mmm/register", () => RegisterOrEnter(false));
-        app.MapPost("/api/mmm/enter", () => RegisterOrEnter(true));
-        async Task<IResult> RegisterOrEnter(bool open)
+        app.MapPost("/api/mmm/enter", (string? launch) => RegisterOrEnter(true, launch == "1"));      // not (HttpContext ctx) =>: that is taken for a raw handler, and the answer is lost
+        // ENTERING BY ITSELF (the participants' Thalia, 2026-11-26): once the person has registered, Thalia enters the MMM when it starts and opens the world - nothing to press.
+        if (autoEnter)
+            app.Lifetime.ApplicationStarted.Register(() => _ = Task.Run(async () =>
+            {
+                await Task.Delay(TimeSpan.FromSeconds(3));
+                var a = Read();
+                if (a["user"] is not null && a["password"] is not null && (bool?)a["autoEnter"] != false)
+                    try { await RegisterOrEnter(true, true); } catch (Exception e) { Console.WriteLine("entering the MMM: " + e.Message); }
+            }));
+        async Task<IResult> RegisterOrEnter(bool open, bool launch = false)
         {
             var a = Read();
             if (((string?)a["address"] is { Length: > 0 } given ? given : defaultAddress) is not { Length: > 0 } address || !Uri.TryCreate(address, UriKind.Absolute, out var link)) return Results.Json(new { ok = false, text = "The address of the M-Instance is not set." });
@@ -99,8 +108,18 @@ static class MmmAccount
             a["user"] = user; await File.WriteAllTextAsync(file, a.ToJsonString());
             if (!open) return Results.Json(new { ok = true, text = (int)rs.StatusCode == 201 ? $"Registered: your Account is open, {user}. Enter the MMM whenever you like; the first time you choose your Persona there." : $"You have an Account already, {user}: Enter the MMM." });
             var url = $"{origin}/viewer/?world=1&mic=1{(invite is { Length: > 0 } ? "&invite=" + Uri.EscapeDataString(invite) : "")}#mmm-token={token}&mmm-user={Uri.EscapeDataString(user)}";
-            return Results.Json(new { ok = true, url, text = (int)rs.StatusCode == 201 ? $"Your Account is open, {user}: the world opens; choose your Persona there." : $"Entered as {user}: the world opens." });
+            if (launch) OpenWorld(url);
+            return Results.Json(new { ok = true, url, opened = launch, text = (int)rs.StatusCode == 201 ? $"Your Account is open, {user}: the world opens; choose your Persona there." : $"Entered as {user}: the world opens." });
         }
+    }
+
+    // THE WORLD IN ITS OWN EDGE WINDOW, opened by Thalia (not by the page: no pop-up to allow), in the Edge profile of Thalia, which keeps the Personae it downloaded - the second time
+    // nothing is downloaded again - and the permission for the microphone.
+    private static void OpenWorld(string url)
+    {
+        var profile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Thalia", "edge");
+        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("msedge", $"--user-data-dir=\"{profile}\" --no-first-run --no-default-browser-check --start-maximized --app=\"{url}\"") { UseShellExecute = true }); }
+        catch (Exception e) { Console.WriteLine("opening the world: " + e.Message); }
     }
 
     // A visitor's User: the letters of its first and last name (as the page makes it).
