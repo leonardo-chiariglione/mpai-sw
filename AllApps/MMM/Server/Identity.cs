@@ -21,7 +21,7 @@ public sealed class Identity(string chair, IReadOnlyDictionary<string, string> l
     public string Host { get; } = host ?? chair;          // whoever browses on this machine: the owner of it (the President); the chair, if the chair is the owner
     public bool Visitors { get; } = visitors;
     // WITH ACCOUNTS (2026-11-26): a person is the Account it registers or enters with, not its invitation - anybody may come to the world's address and register; an invitation is
-    // the Rights the AVS Service gives the invited Account (by its email). The person on this machine is still the host (it may take the Officer level).
+    // the Rights the MPAI Building Service gives the invited Account (by its email). The person on this machine is still the host (it may take the Officer level).
     public bool Accounts { get; set; }
     private readonly Dictionary<string, string> loginGuests = new(loginGuests, StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> invites = new(invites ?? new Dictionary<string, string>(), StringComparer.Ordinal);       // token -> name

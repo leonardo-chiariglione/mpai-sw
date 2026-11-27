@@ -27,7 +27,7 @@ public sealed class MInstance
         public required string ID { get; init; }
         public required string DataType { get; set; }
         public JsonObject? Body { get; set; }
-        public string? Owner { get; set; }
+        public string? Holder { get; set; }   // the Process holding the Rights to the Item (the MMM has no owners, only Rights holders)
         public string? Location { get; set; }        // the M- or U-Location the Item is at
         public bool Public { get; set; }             // a Location any Process may enter
         public bool Perceptible { get; set; } = true;
@@ -71,6 +71,16 @@ public sealed class MInstance
     // The A-User of a human, if it has deployed one.
     public string? AUserOf(string human) { lock (gate) return processes.Values.FirstOrDefault(p => p.Kind == "User" && p.HumanID == human && p.Autonomous)?.ID; }
     public bool IsAUser(string user) { lock (gate) return processes.GetValueOrDefault(user) is { Kind: "User", Autonomous: true }; }
+    public string? HumanOf(string user) { lock (gate) return processes.GetValueOrDefault(user)?.HumanID; }
+    // The Users whose Account has a Level (the Rights of the Level are theirs: MeetingServices.LevelRightsAsync).
+    public IReadOnlyList<string> UsersWithLevel() { lock (gate) return processes.Values.Where(p => p.Kind == "User" && accountLevels.ContainsKey(p.ID)).Select(p => p.ID).ToList(); }
+    // The A-Users of the M-Instance that have a Persona, each with its Persona (their agents run them: AUserAgents).
+    public IReadOnlyList<(string User, string Persona)> AUsers()
+    {
+        lock (gate) return processes.Values.Where(p => p is { Kind: "User", Autonomous: true })
+            .Select(p => (User: p.ID, Persona: items.Values.FirstOrDefault(i => i.Holder == p.ID && i.DataType == "OSD-3DO-V1.5")?.ID))
+            .Where(x => x.Persona is not null).Select(x => (x.User, x.Persona!)).ToList();
+    }
 
     // The Users a Personal Profile asks for, each with the Persona chosen for it (null: none chosen): whether the human may have them - one H-User and one A-User at most, each
     // with a Persona of its kind. null when it may, else why not.
@@ -138,24 +148,24 @@ public sealed class MInstance
     // ---------------------------------------------------------------- the state an M-Instance starts with
     // An M-Location (in the M-Environment, drawn by the viewer) or, universe: true, a
     // U-Location (in the Universe, where Data are captured and R-Items rendered).
-    public void AddLocation(string id, string? owner = null, bool isPublic = false, double x = 0, double y = 0, double size = 4,
+    public void AddLocation(string id, string? holder = null, bool isPublic = false, double x = 0, double y = 0, double size = 4,
                             bool perceptible = true, bool universe = false, string? at = null)   // at: the M-Location it is placed in (a Room on its Parcel, a Seat in its Room); x, y then are metres within it
     {
         lock (gate) items[id] = new Item
         {
-            ID = id, DataType = universe ? "MMM-ULC" : "MMM-LOC", Owner = owner, Public = isPublic, Place = [x, y], Size = size,
+            ID = id, DataType = universe ? "MMM-ULC" : "MMM-LOC", Holder = holder, Public = isPublic, Place = [x, y], Size = size,
             Perceptible = perceptible, Location = at
         };
     }
 
     // An Item placed at an M-Location when the M-Instance starts (a door of a room), its Process's own, with its Item Properties (MMM-IPR-V3.0).
-    public void AddItem(string id, string dataType, string owner, string at, double x, double y, double yaw = 0, string? kind = null, params (string Name, JsonNode Value)[] properties)
+    public void AddItem(string id, string dataType, string holder, string at, double x, double y, double yaw = 0, string? kind = null, params (string Name, JsonNode Value)[] properties)
     {
         lock (gate)
         {
             var it = new Item
             {
-                ID = id, DataType = dataType, Owner = owner, Location = at, Kind = kind,
+                ID = id, DataType = dataType, Holder = holder, Location = at, Kind = kind,
                 SpatialAttitude = new JsonObject { ["Position"] = new JsonObject { ["CartPosition"] = new JsonArray(x, y, 0.0) }, ["Orientation"] = new JsonObject { ["Orientation"] = new JsonArray(yaw, 0.0, 0.0) } }
             };
             foreach (var (n, v) in properties) it.Properties[n] = v;
@@ -172,7 +182,7 @@ public sealed class MInstance
             var proc = new Process { ID = id, Kind = "Service", Token = NewToken() };
             processes[id] = proc;
             if (personaId is not null)
-                items[personaId] = new Item { ID = personaId, DataType = "OSD-3DO-V1.5", Owner = id, Model = model };
+                items[personaId] = new Item { ID = personaId, DataType = "OSD-3DO-V1.5", Holder = id, Model = model };
             return proc.Token!;
         }
     }
@@ -180,7 +190,7 @@ public sealed class MInstance
     // The Messages in the inbox of a Process, with who sent each (the Process that owns the Message Item).
     public IReadOnlyList<(string ID, string From)> InboxWithSenders(string process)
     {
-        lock (gate) return (inboxes.GetValueOrDefault(process) ?? []).Select(i => (i, items.TryGetValue(i, out var it) ? it.Owner ?? "" : "")).ToList();
+        lock (gate) return (inboxes.GetValueOrDefault(process) ?? []).Select(i => (i, items.TryGetValue(i, out var it) ? it.Holder ?? "" : "")).ToList();
     }
 
     // The 3D Model that renders an Item - a Persona's, once it exists.
@@ -208,7 +218,7 @@ public sealed class MInstance
             .Select(e => { var c = e!.DeepClone().AsObject(); c["AUser"] = ForAUsers((string)e["Name"]!); c["Visitor"] = ForVisitors((string)e["Name"]!); return (JsonNode)c; }).ToArray());
     }
     // THE ACCOUNT LEVELS the Register Service offers (MMM-TEC Register, step 2): what a human is shown when it selects Registration. Both are free: there is no Service Pricing Model to pay.
-    // Visitor: the public places of the MPAI building. Participant: the meetings the chair invited it to (the AVS Service gives the Rights to those on the chair's list that hold a Participant Account).
+    // Visitor: the public places of the MPAI building. Participant: the meetings the chair invited it to (the MPAI Building Service gives the Rights to those on the chair's list that hold a Participant Account).
     public IReadOnlyList<(string Id, string Name, string Description)> AccountLevels { get; set; } =
     [
         ("Visitor", "Visitor", "The public places of the MPAI building: the atrium, where anybody may come in, look, talk and ask. A visit: you are forgotten when you leave, and register again next time. Free."),
@@ -242,7 +252,7 @@ public sealed class MInstance
         lock (gate)
         {
             processes[id] = new Process { ID = id, Kind = "User", HumanID = humanId, Token = NewToken() };
-            foreach (var i in owns ?? []) if (items.TryGetValue(i, out var it)) it.Owner = id;
+            foreach (var i in owns ?? []) if (items.TryGetValue(i, out var it)) it.Holder = id;
         }
     }
 
@@ -254,7 +264,7 @@ public sealed class MInstance
         {
             if (!processes.TryGetValue(user, out var p) || p.Kind != "User") return null;
             p.Token = NewToken();
-            var persona = items.Values.FirstOrDefault(i => i.Owner == user && i.DataType == "OSD-3DO-V1.5");
+            var persona = items.Values.FirstOrDefault(i => i.Holder == user && i.DataType == "OSD-3DO-V1.5");
             var info = new JsonObject { ["User"] = user };
             if (persona is not null)
             {
@@ -305,14 +315,14 @@ public sealed class MInstance
                                        .Select(i => (i.ID, i.DataType)).OrderBy(i => i.ID, StringComparer.Ordinal).ToList();
     }
 
-    // May this Process read this Item: its owner, a Public Location, a Process holding a
+    // May this Process read this Item: the Process holding the Rights to it, a Public Location, a Process holding a
     // Right on it, the recipient of a Message.
     public bool MayRead(string process, string itemId)
     {
         lock (gate)
         {
             if (!items.TryGetValue(itemId, out var it)) return false;
-            return it.Owner == process || it.Public || HeardBy(process, it) || SeenBy(process, it) || (inboxes.GetValueOrDefault(process)?.Contains(itemId) ?? false)
+            return it.Holder == process || it.Public || HeardBy(process, it) || SeenBy(process, it) || (inboxes.GetValueOrDefault(process)?.Contains(itemId) ?? false)
                    || (holdings.GetValueOrDefault(process) ?? []).Any(r => r == itemId)
                    // ...a Right that allows something on it: not one that withdraws a Right (May Not), and not one whose period is over
                    || Live(process).Any(b => Entries(b).Where(e => e.Verb != "May Not").SelectMany(e => e.PAs).Select(Template).OfType<PA>()
@@ -324,7 +334,7 @@ public sealed class MInstance
     // The Speech Object a Process may feed: its own, still a stream. A streamed Speech Object has no duration: its Time is not in it until the stream is over.
     public bool StreamToFeed(string process, string id)
     {
-        lock (gate) return items.TryGetValue(id, out var it) && it.DataType == "OSD-BSO-V1.5" && it.Owner == process && it.Streaming;
+        lock (gate) return items.TryGetValue(id, out var it) && it.DataType == "OSD-BSO-V1.5" && it.Holder == process && it.Streaming;
     }
 
     // The stream is over: what arrived is the Speech Object's data, and it is no longer a stream.
@@ -359,7 +369,7 @@ public sealed class MInstance
     // The Animation Stream a Process may feed: its own, still a stream (its Animation Qualifier names a stream format).
     public bool AnimationToFeed(string process, string id)
     {
-        lock (gate) return items.TryGetValue(id, out var it) && it.DataType == "PAF-AMO-V1.6" && it.Owner == process && it.Streaming;
+        lock (gate) return items.TryGetValue(id, out var it) && it.DataType == "PAF-AMO-V1.6" && it.Holder == process && it.Streaming;
     }
 
     // An Animation Stream is seen by whoever has an Item in the Room around the seat of the Persona it animates, unless a Right bars it from the places in it (May Not).
@@ -370,11 +380,11 @@ public sealed class MInstance
             if (!items.TryGetValue(id, out var stream) || !stream.Streaming) return false;
             var persona = items.Values.FirstOrDefault(i => i.Animation == id);
             if (persona is null) return false;
-            if (persona.Owner == process) return true;
+            if (persona.Holder == process) return true;
             if (persona.Location is null || !items.TryGetValue(persona.Location, out var seat) || seat.Location is null) return false;
             var room = seat.Location;
             bool InRoom(string? l) { for (var d = 0; l is not null && d < 8; d++, l = items.GetValueOrDefault(l)?.Location) if (l == room) return true; return false; }
-            if (!items.Values.Any(i => i.Owner == process && InRoom(i.Location))) return false;
+            if (!items.Values.Any(i => i.Holder == process && InRoom(i.Location))) return false;
             return !Live(process).SelectMany(Entries).Where(e => e.Verb == "May Not")
                              .SelectMany(e => e.PAs).Select(Template).OfType<PA>().Any(t => t.Target is not null && InRoom(t.Target));
         }
@@ -396,7 +406,7 @@ public sealed class MInstance
     public const string ScreenHeader = "OSD-BVO-V1.5";
     public long? ScreenToFeed(string process, string id)
     {
-        lock (gate) return items.TryGetValue(id, out var it) && it.DataType == ScreenHeader && it.Owner == process && it.Streaming ? 1 : null;
+        lock (gate) return items.TryGetValue(id, out var it) && it.DataType == ScreenHeader && it.Holder == process && it.Streaming ? 1 : null;
     }
     public void ScreenEnded(string id) { lock (gate) items.Remove(id); }
     public void StopScreens() { lock (gate) foreach (var id in items.Values.Where(i => i.DataType == ScreenHeader && i.Streaming).Select(i => i.ID).ToList()) items.Remove(id); }
@@ -408,7 +418,7 @@ public sealed class MInstance
         if (screen.DataType != ScreenHeader || screen.Location is null) return false;
         var room = screen.Location;
         bool InRoom(string? l) { for (var d = 0; l is not null && d < 8; d++, l = items.GetValueOrDefault(l)?.Location) if (l == room) return true; return false; }
-        if (!items.Values.Any(i => i.Owner == process && i.DataType != ScreenHeader && InRoom(i.Location))) return false;
+        if (!items.Values.Any(i => i.Holder == process && i.DataType != ScreenHeader && InRoom(i.Location))) return false;
         return !Live(process).SelectMany(Entries).Where(e => e.Verb == "May Not")
                          .SelectMany(e => e.PAs).Select(Template).OfType<PA>().Any(t => t.Target is not null && InRoom(t.Target));
     }
@@ -420,7 +430,7 @@ public sealed class MInstance
         if (speech.DataType != "OSD-BSO-V1.5" || speech.Location is null || !items.TryGetValue(speech.Location, out var seat) || seat.Location is null) return false;
         var room = seat.Location;
         bool InRoom(string? l) { for (var d = 0; l is not null && d < 8; d++, l = items.GetValueOrDefault(l)?.Location) if (l == room) return true; return false; }
-        if (!items.Values.Any(i => i.Owner == process && InRoom(i.Location))) return false;
+        if (!items.Values.Any(i => i.Holder == process && InRoom(i.Location))) return false;
         return !Live(process).SelectMany(Entries).Where(e => e.Verb == "May Not")
                          .SelectMany(e => e.PAs).Select(Template).OfType<PA>().Any(t => t.Target is not null && InRoom(t.Target));
     }
@@ -430,7 +440,7 @@ public sealed class MInstance
         ["ItemName"] = it.ID,
         ["ItemValueOrRef"] = new JsonArray(it.Body?.DeepClone() ?? new JsonObject
         {
-            ["ItemID"] = it.ID, ["DataType"] = it.DataType, ["Owner"] = it.Owner, ["Location"] = it.Location,
+            ["ItemID"] = it.ID, ["DataType"] = it.DataType, ["Holder"] = it.Holder, ["Location"] = it.Location,
             ["Perceptible"] = it.Perceptible, ["Animation"] = it.Animation
         }),
         ["MInstanceID"] = ID, ["MEnvironmentID"] = EnvironmentID
@@ -494,7 +504,7 @@ public sealed class MInstance
                         ["ID"] = i.ID, ["Kind"] = i.Kind ?? (i.DataType == "MMM-LOC" ? "Location" : i.DataType == "OSD-3DO-V1.5" ? "Persona" : i.DataType == "OSD-BSO-V1.5" ? "Speech" : i.DataType == ScreenHeader ? "Screen" : i.DataType == "OSD-AUO-V1.5" ? "Audio" : "Item"),
                         ["At"] = i.Location, ["X"] = w[0] + (Spot(i) is null ? side.GetValueOrDefault(i.ID) : 0), ["Y"] = w[1], ["Z"] = 0.0,    // east, north, up: metres
                         ["Yaw"] = walkingYaw ?? YawOf(i), ["Depth"] = DepthOf(i),
-                        ["Perceptible"] = i.Perceptible, ["Owner"] = i.Owner, ["Public"] = i.Public
+                        ["Perceptible"] = i.Perceptible, ["Holder"] = i.Holder, ["Public"] = i.Public
                     };
                     if (i.DataType == "MMM-LOC") o["Size"] = i.Size;
                     if (i.Model is not null) o["Model"] = i.Model;
@@ -663,7 +673,7 @@ public sealed class MInstance
                 {
                     if (RequireCredentials && !chosen.ContainsKey(pid)) continue;      // with Accounts, a Persona is one the human chose (else it chooses when it enters)
                     createdItems.Add(pid);
-                    items[pid] = new Item { ID = pid, DataType = "OSD-3DO-V1.5", Owner = u, Model = chosen.GetValueOrDefault(pid) ?? models.GetValueOrDefault(pid) ?? (DefaultModels.Count > 0 ? DefaultModels[registered++ % DefaultModels.Count] : null) };
+                    items[pid] = new Item { ID = pid, DataType = "OSD-3DO-V1.5", Holder = u, Model = chosen.GetValueOrDefault(pid) ?? models.GetValueOrDefault(pid) ?? (DefaultModels.Count > 0 ? DefaultModels[registered++ % DefaultModels.Count] : null) };
                 }
             }
         }
@@ -679,10 +689,10 @@ public sealed class MInstance
         var keptProfile = (JsonObject)profile.DeepClone();
         (keptProfile["PersonalProfile"] as JsonObject)?.Remove("Credential");
         items[profile["PersonalProfileID"]?.GetValue<string>() ?? $"Profile-{human}"] =
-            new Item { ID = profile["PersonalProfileID"]?.GetValue<string>() ?? $"Profile-{human}", DataType = "MMM-PPR-V2.2", Body = keptProfile, Owner = human };
+            new Item { ID = profile["PersonalProfileID"]?.GetValue<string>() ?? $"Profile-{human}", DataType = "MMM-PPR-V2.2", Body = keptProfile, Holder = human };
         items[account] = new Item
         {
-            ID = account, DataType = "MMM-ACC-V2.2", Owner = human,
+            ID = account, DataType = "MMM-ACC-V2.2", Holder = human,
             Body = new JsonObject
             {
                 ["Header"] = "MMM-ACC-V2.2", ["MInstanceID"] = ID, ["MEnvironmentID"] = EnvironmentID, ["HumanID"] = human, ["AccountID"] = account, ["AccountLevel"] = level,
@@ -709,11 +719,11 @@ public sealed class MInstance
         foreach (var a in assets)
         {
             if (!items.TryGetValue(a, out var it)) return Fail(404, service, "IncID", $"no Asset {a}");
-            if (it.Owner != receiver) return Fail(409, service, "Clash", $"{a} is not {receiver}'s to sell");
+            if (it.Holder != receiver) return Fail(409, service, "Clash", $"{a} is not {receiver}'s to sell");
         }
-        foreach (var a in assets) items[a].Owner = source;
+        foreach (var a in assets) items[a].Holder = source;
         tr["TransactionStatus"] = "Final";
-        items[trId] = new Item { ID = trId, DataType = "MMM-TRA-V2.2", Body = tr, Owner = source };
+        items[trId] = new Item { ID = trId, DataType = "MMM-TRA-V2.2", Body = tr, Holder = source };
         var rs = new List<JsonNode?> { Wire.Ref(trId, "Final") };
         rs.AddRange(GrantAll(with, source));
         return Ok(200, service, new Complements { With = rs });
@@ -730,35 +740,35 @@ public sealed class MInstance
         {
             // A Speech Object declared with a DataURI and no data is a stream: its data arrives, as it is captured, until its time is over or its User ends it.
             var first = speech["BasicSpeechObjectData"]?[0];
-            items[c.Nil!] = new Item { ID = c.Nil!, DataType = "OSD-BSO-V1.5", Body = speech, Owner = source, Streaming = first?["DataURI"] is not null && first["Data"] is null };
+            items[c.Nil!] = new Item { ID = c.Nil!, DataType = "OSD-BSO-V1.5", Body = speech, Holder = source, Streaming = first?["DataURI"] is not null && first["Data"] is null };
             created = true;
         }
         // A shared screen: a Visual Object declared with an address its frames come from and no data, a stream. One at a time in a place: a second is refused (409), unless it is the same User's.
         if (!items.ContainsKey(c.Nil!) && with.FirstOrDefault(i => Header(i) == ScreenHeader && (string?)i["BasicVisualObjectID"] == c.Nil) is { } screen
             && screen["BasicVisualObjectData"]?[0] is JsonObject frames && frames["DataURI"] is not null && frames["Data"] is null)
         {
-            if (c.At is not null && items.Values.FirstOrDefault(i => i.DataType == ScreenHeader && i.Streaming && i.Location == c.At && i.Owner != source) is { } other)
-                return Fail(409, service, "Busy", $"{other.Owner} is sharing a screen here");
-            foreach (var old in items.Values.Where(i => i.DataType == ScreenHeader && i.Owner == source && i.Streaming).Select(i => i.ID).ToList()) items.Remove(old);   // its own, earlier
-            items[c.Nil!] = new Item { ID = c.Nil!, DataType = ScreenHeader, Body = screen, Owner = source, Streaming = true };
+            if (c.At is not null && items.Values.FirstOrDefault(i => i.DataType == ScreenHeader && i.Streaming && i.Location == c.At && i.Holder != source) is { } other)
+                return Fail(409, service, "Busy", $"{other.Holder} is sharing a screen here");
+            foreach (var old in items.Values.Where(i => i.DataType == ScreenHeader && i.Holder == source && i.Streaming).Select(i => i.ID).ToList()) items.Remove(old);   // its own, earlier
+            items[c.Nil!] = new Item { ID = c.Nil!, DataType = ScreenHeader, Body = screen, Holder = source, Streaming = true };
             created = true;
         }
         // A 3D Model Object the Request carries is made where it is added, its Process's own: an object of a virtual stage, placed by the show.
         if (!items.ContainsKey(c.Nil!) && with.FirstOrDefault(i => Header(i) == "OSD-3DO-V1.5" && (string?)i["3DModelObjectID"] == c.Nil) is { } model)
         {
-            items[c.Nil!] = new Item { ID = c.Nil!, DataType = "OSD-3DO-V1.5", Body = model, Owner = source };
+            items[c.Nil!] = new Item { ID = c.Nil!, DataType = "OSD-3DO-V1.5", Body = model, Holder = source };
             created = true;
         }
         // An Audio Object the Request carries (OSD-AUO-V1.5) is made where it is added, its Process's own: a sound of the place (the applause of a theatre, N-26). It is heard by whoever
         // may read the M-Location it is in: public where the M-Location is public.
         if (!items.ContainsKey(c.Nil!) && with.FirstOrDefault(i => Header(i) == "OSD-AUO-V1.5" && (string?)i["AudioObjectID"] == c.Nil) is { } sound)
         {
-            items[c.Nil!] = new Item { ID = c.Nil!, DataType = "OSD-AUO-V1.5", Body = sound, Owner = source, Public = items.TryGetValue(c.At!, out var place) && place.Public, Started = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
+            items[c.Nil!] = new Item { ID = c.Nil!, DataType = "OSD-AUO-V1.5", Body = sound, Holder = source, Public = items.TryGetValue(c.At!, out var place) && place.Public, Started = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
             created = true;
         }
         if (!items.TryGetValue(c.Nil!, out var it)) return Fail(404, service, "IncID", $"no Item {c.Nil}");
         if (!items.ContainsKey(c.At!)) return Fail(404, service, "IncID", $"no M-Location {c.At}");
-        if (it.Owner != source && !Allowed(source, "MM-Add", c.Nil, c.At)) return Fail(403, service, "InsRights", $"{c.Nil} is not {source}'s");
+        if (it.Holder != source && !Allowed(source, "MM-Add", c.Nil, c.At)) return Fail(403, service, "InsRights", $"{c.Nil} is not {source}'s");
         if (!MayEnter(source, "MM-Add", c.Nil!, c.At!)) { if (created) items.Remove(c.Nil!); return Fail(403, service, "InsRights", $"{source} may not place Items at {c.At}"); }
         it.Location = c.At; it.SpatialAttitude = SpatialAttitude(with);
         return Ok(200, service, new Complements { With = GrantAll(with, source) });
@@ -771,7 +781,7 @@ public sealed class MInstance
         if (Need(service, c.To, "To") is { } f2) return f2;
         if (!items.TryGetValue(c.Nil!, out var it)) return Fail(404, service, "IncID", $"no Item {c.Nil}");
         if (!items.ContainsKey(c.To!)) return Fail(404, service, "IncID", $"no M-Location {c.To}");
-        if (it.Owner != source) return Fail(403, service, "InsRights", $"{c.Nil} is not {source}'s");
+        if (it.Holder != source) return Fail(403, service, "InsRights", $"{c.Nil} is not {source}'s");
         if (c.From is not null && it.Location != c.From) return Fail(409, service, "Clash", $"{c.Nil} is at {it.Location}, not {c.From}");
         if (!MayEnter(source, "MM-Move", c.Nil!, c.To!)) return Fail(403, service, "InsRights", $"{source} may not move {c.Nil} to {c.To}");
         it.Location = c.To; it.SpatialAttitude = SpatialAttitude(with) ?? it.SpatialAttitude;
@@ -798,7 +808,7 @@ public sealed class MInstance
         // ...unless a Right bars it from the places in it (May Not: the convener took it out of the meeting).
         bool Barred() => Live(source).SelectMany(Entries).Where(e => e.Verb == "May Not")
                              .SelectMany(e => e.PAs).Select(Template).OfType<PA>().Any(t => t.Target is not null && IsIn(t.Target));
-        if (!MayRead(source, c.At!) && !MayEnter(source, "MM-Capture", source, c.At!) && !(items.Values.Any(i => i.Owner == source && IsIn(i.Location)) && !Barred()))
+        if (!MayRead(source, c.At!) && !MayEnter(source, "MM-Capture", source, c.At!) && !(items.Values.Any(i => i.Holder == source && IsIn(i.Location)) && !Barred()))
             return Fail(403, service, "InsRights", $"{source} may not capture {c.At}");
         var things = Snapshot()["Things"]!.AsArray().OfType<JsonObject>().ToList();
         bool Inside(JsonObject t)
@@ -832,12 +842,12 @@ public sealed class MInstance
         if (avatar is not null)
         {
             var id = (string)avatar["PortableAvatarID"]!;
-            if (items.TryGetValue(id, out var old) && old.Owner != source) return Fail(409, service, "Clash", $"{id} is another Process's");
-            items[id] = new Item { ID = id, DataType = "PAF-PAV-V1.6", Body = avatar, Owner = source };
+            if (items.TryGetValue(id, out var old) && old.Holder != source) return Fail(409, service, "Clash", $"{id} is another Process's");
+            items[id] = new Item { ID = id, DataType = "PAF-PAV-V1.6", Body = avatar, Holder = source };
         }
         var stream = avatar is not null ? (string)avatar["PortableAvatarID"]! : refs.FirstOrDefault(r => items.TryGetValue(r, out var s) && s.DataType is "PAF-AMO-V1.6" or "PAF-PAV-V1.6");
         if (stream is null) return Fail(422, service, "FaultyPA", "MM-Animate takes an Animation Stream or a Portable Avatar");
-        if (it.Owner != source || items[stream].Owner != source) return Fail(403, service, "InsRights", $"{c.Nil} or {stream} is not {source}'s");
+        if (it.Holder != source || items[stream].Holder != source) return Fail(403, service, "InsRights", $"{c.Nil} or {stream} is not {source}'s");
         var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         it.Animation = stream;
         it.AnimatedUntil = now;
@@ -964,7 +974,7 @@ public sealed class MInstance
     {
         if (Need(service, c.Nil, "Nil") is { } f1) return f1;
         if (!items.TryGetValue(c.Nil!, out var it)) return Fail(404, service, "IncID", $"no Item {c.Nil}");
-        if (it.Owner != source) return Fail(403, service, "InsRights", $"{c.Nil} is not {source}'s");
+        if (it.Holder != source) return Fail(403, service, "InsRights", $"{c.Nil} is not {source}'s");
         var light = with.FirstOrDefault(i => Header(i) == "CVE-LTS-V1.0");
         if (light is not null && (string?)light["LightSourceID"] != c.Nil) return Fail(422, service, "FaultyPA", $"the Light Source is {(string?)light["LightSourceID"]}'s, not {c.Nil}'s");
         if (light is not null) it.LightSource = light;
@@ -987,7 +997,7 @@ public sealed class MInstance
         if (Need(service, c.At, "At") is { } f2) return f2;
         if (items.ContainsKey(c.Nil!)) return Fail(409, service, "Clash", $"{c.Nil} exists already");
         var qualifier = with.FirstOrDefault(i => Header(i)?.StartsWith("TFA-", StringComparison.Ordinal) == true);
-        items[c.Nil!] = new Item { ID = c.Nil!, DataType = "MMM-DAT", Owner = source, Location = c.At, Qualifier = qualifier, Started = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
+        items[c.Nil!] = new Item { ID = c.Nil!, DataType = "MMM-DAT", Holder = source, Location = c.At, Qualifier = qualifier, Started = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
         return Ok(201, service, new Complements { Nil = c.Nil, With = refs.Select(r => (JsonNode?)JsonValue.Create(r)).ToList() });
     }
 
@@ -998,7 +1008,7 @@ public sealed class MInstance
     {
         if (Need(service, c.Nil, "Nil") is { } f1) return f1;
         if (!items.TryGetValue(c.Nil!, out var data)) return Fail(404, service, "IncID", $"no Data {c.Nil}");
-        if (data.Owner != source) return Fail(403, service, "InsRights", $"{c.Nil} is not {source}'s");
+        if (data.Holder != source) return Fail(403, service, "InsRights", $"{c.Nil} is not {source}'s");
         var qualifier = with.FirstOrDefault(i => Header(i) == "TFA-SPQ-V1.5") ?? (data.Qualifier is { } q && Header(q) == "TFA-SPQ-V1.5" ? q : null);
         if (data.DataType == "MMM-DAT" && qualifier is not null)
         {
@@ -1017,7 +1027,7 @@ public sealed class MInstance
         // Any other Data is the Animation Stream of the human captured; if its Animation Qualifier (TFA-AMQ) names a stream format, it arrives as it is captured.
         var animation = with.FirstOrDefault(i => Header(i) == "TFA-AMQ-V1.5") ?? (data.Qualifier is { } aq && Header(aq) == "TFA-AMQ-V1.5" ? aq : null);
         var streamId = $"{c.Nil}-Stream";
-        items[streamId] = new Item { ID = streamId, DataType = "PAF-AMO-V1.6", Owner = source, Qualifier = animation, Streaming = animation?["Formats"]?["TransportFormat"] is not null };
+        items[streamId] = new Item { ID = streamId, DataType = "PAF-AMO-V1.6", Holder = source, Qualifier = animation, Streaming = animation?["Formats"]?["TransportFormat"] is not null };
         return Ok(201, service, new Complements { Nil = streamId });
     }
 
@@ -1031,13 +1041,13 @@ public sealed class MInstance
         // What is sent: a Message, or a Speech Object - a User's own capture of what it said, with the time it lasts (a Basic Speech Object, OSD-BSO).
         var message = with.FirstOrDefault(i => Header(i) is "MMM-MSG-V2.2" or "OSD-BSO-V1.5");
         // A Speech Object the sender already has - its own capture, still a stream - is sent as it is: the recipient is given that Item (it may read it, and listen to it), not a copy.
-        if (message is not null && Header(message) == "OSD-BSO-V1.5" && message["BasicSpeechObjectID"]?.GetValue<string>() is { } own && items.TryGetValue(own, out var sent) && sent.Owner == source)
+        if (message is not null && Header(message) == "OSD-BSO-V1.5" && message["BasicSpeechObjectID"]?.GetValue<string>() is { } own && items.TryGetValue(own, out var sent) && sent.Holder == source)
         {
             var inbox = inboxes.TryGetValue(c.To!, out var ib) ? ib : inboxes[c.To!] = [];
             if (!inbox.Contains(own)) inbox.Add(own);
             return Ok(200, service, new Complements { With = GrantAll(with, c.To!) });
         }
-        items[c.Nil!] = new Item { ID = c.Nil!, DataType = message is null ? "MMM-MSG-V2.2" : Header(message)!, Body = message, Owner = source };
+        items[c.Nil!] = new Item { ID = c.Nil!, DataType = message is null ? "MMM-MSG-V2.2" : Header(message)!, Body = message, Holder = source };
         var box = inboxes.TryGetValue(c.To!, out var b) ? b : inboxes[c.To!] = [];
         if (!box.Contains(c.Nil!)) box.Add(c.Nil!);          // a Message sent again under the same identifier replaces the first
         return Ok(200, service, new Complements { With = GrantAll(with, c.To!) });
@@ -1054,15 +1064,15 @@ public sealed class MInstance
         {
             // A Speech Object declared with a DataURI and no data is a stream: its data arrives, as it is captured, until its time is over or its User ends it.
             var first = speech["BasicSpeechObjectData"]?[0];
-            items[c.Nil!] = new Item { ID = c.Nil!, DataType = "OSD-BSO-V1.5", Body = speech, Owner = source, Streaming = first?["DataURI"] is not null && first["Data"] is null };
+            items[c.Nil!] = new Item { ID = c.Nil!, DataType = "OSD-BSO-V1.5", Body = speech, Holder = source, Streaming = first?["DataURI"] is not null && first["Data"] is null };
             created = true;
         }
         if (!items.TryGetValue(c.Nil!, out var it)) return Fail(404, service, "IncID", $"no Item {c.Nil}");
-        if (it.Owner != source) return Fail(403, service, "InsRights", $"{c.Nil} is not {source}'s");
+        if (it.Holder != source) return Fail(403, service, "InsRights", $"{c.Nil} is not {source}'s");
         var ritem = $"RItem-{c.Nil}";
         items[ritem] = new Item
         {
-            ID = ritem, DataType = "MMM-RIT-V2.2", Owner = source, Location = c.At,
+            ID = ritem, DataType = "MMM-RIT-V2.2", Holder = source, Location = c.At,
             Body = new JsonObject { ["Header"] = "MMM-RIT-V2.2", ["MInstanceID"] = ID, ["RItemID"] = ritem, ["RItemType"] = refs.FirstOrDefault() }
         };
         var rs = new List<JsonNode?>(GrantAll(with, source));
@@ -1078,11 +1088,11 @@ public sealed class MInstance
         var rights = with.Where(i => Header(i) == "MMM-RGT-V2.2").ToList();
         if (rights.Count == 0) return Fail(422, service, "FaultyPA", "Rights Change takes Rights");
         Store(with);
-        // Rights on a place are its owner's to give: the targets (To, At) of the Process
+        // Rights on a place are given by the Process holding the Rights to it: the targets (To, At) of the Process
         // Actions the Rights name - the Room - not what they act on (the Persona moving in).
         foreach (var r in rights)
             foreach (var t in Entries(r).SelectMany(e => e.PAs).Select(Template).OfType<PA>().Select(t => t.Target).OfType<string>())
-                if (items.TryGetValue(t, out var it) && it.Owner != source && !it.Public)
+                if (items.TryGetValue(t, out var it) && it.Holder != source && !it.Public)
                     return Fail(403, service, "InsRights", $"{t} is not {source}'s to give Rights on");
 
         var rs = new List<JsonNode?>();
@@ -1152,7 +1162,7 @@ public sealed class MInstance
                      .Any(t => Matches(t, action, item, location));
         if (denied) return false;
         for (var l = location; l is not null && items.TryGetValue(l, out var it); l = it.Location)
-            if (it.Owner == process || it.Public) return true;
+            if (it.Holder == process || it.Public) return true;
         return false;
     }
 
@@ -1194,7 +1204,7 @@ public sealed class MInstance
     private JsonNode Grant(JsonObject rights, string holder)
     {
         var id = rights["RightsID"]!.GetValue<string>();
-        items[id] = new Item { ID = id, DataType = "MMM-RGT-V2.2", Body = rights, Owner = holder, Status = "Final" };
+        items[id] = new Item { ID = id, DataType = "MMM-RGT-V2.2", Body = rights, Holder = holder, Status = "Final" };
         var held = holdings.TryGetValue(holder, out var h) ? h : holdings[holder] = [];
         if (!held.Contains(id)) held.Add(id);
         return Wire.Ref(id, "Final");
@@ -1318,7 +1328,7 @@ public sealed class MInstance
         if (profile["PersonalProfile"]?["AccountLevel"]?.GetValue<string>() is { } chosenLevel && users.All(x => accountLevels.GetValueOrDefault(x.ID) is null))
         {
             if (chosenLevel == Manager || !AccountLevels.Any(l => l.Id == chosenLevel)) return Fail(422, service, "FaultyPA", $"{chosenLevel} is not an Account Level offered");
-            var data = items.Values.FirstOrDefault(i => i.DataType == "MMM-PPR-V2.2" && i.Owner == human)?.Body?["PersonalProfile"]?["Data"]?[0];
+            var data = items.Values.FirstOrDefault(i => i.DataType == "MMM-PPR-V2.2" && i.Holder == human)?.Body?["PersonalProfile"]?["Data"]?[0];
             if (chosenLevel != "Visitor" && (data?["Email"]?.GetValue<string>() is not { Length: > 0 } || data?["Organisation"]?.GetValue<string>() is not { Length: > 0 }))
                 return Fail(422, service, "FaultyPA", $"the {chosenLevel} Account Level needs an email and an organisation");
             foreach (var u in users) accountLevels[u.ID] = chosenLevel;
@@ -1337,22 +1347,23 @@ public sealed class MInstance
                 if (e?["PersonaChoice"]?.GetValue<string>() is { } pick && e["PersonaID"]?.GetValue<string>() is { } pid && !items.ContainsKey(pid))
                 {
                     if (PersonaTaken(pick)) return Fail(409, service, "Clash", $"{pick} was chosen by another human");
-                    var owner = Ids(p?["ProcessIDOrProcess"], "ProcessID").FirstOrDefault(u => users.Any(x => x.ID == u));
-                    if (owner is null && Ids(p?["ProcessIDOrProcess"], "ProcessID").FirstOrDefault() is { } added && !processes.ContainsKey(added))
+                    var holder = Ids(p?["ProcessIDOrProcess"], "ProcessID").FirstOrDefault(u => users.Any(x => x.ID == u));
+                    if (holder is null && Ids(p?["ProcessIDOrProcess"], "ProcessID").FirstOrDefault() is { } added && !processes.ContainsKey(added))
                     {
                         var level = users.Select(x => accountLevels.GetValueOrDefault(x.ID)).FirstOrDefault(l => l is not null);
                         var proc = new Process { ID = added, Kind = "User", HumanID = human, Autonomous = ForAUsers(pick) };
                         processes[added] = proc; users.Add(proc);
                         if (level is not null) accountLevels[added] = level;
                         if (items.GetValueOrDefault($"Account-{human}") is { Body: { } acc }) (acc["Processes"] as JsonArray)?.Add(new JsonObject { ["ProcessID"] = added });
-                        owner = added;
+                        holder = added;
                     }
-                    if (owner is null) return Fail(403, service, "InsRights", $"{pid} would not be a Persona of {human}'s Users");
-                    items[pid] = new Item { ID = pid, DataType = "OSD-3DO-V1.5", Owner = owner, Model = CatalogueModel(pick) };
+                    if (holder is null) return Fail(403, service, "InsRights", $"{pid} would not be a Persona of {human}'s Users");
+                    items[pid] = new Item { ID = pid, DataType = "OSD-3DO-V1.5", Holder = holder, Model = CatalogueModel(pick) };
                     if (items.GetValueOrDefault($"Account-{human}") is { Body: { } account2 }) (account2["Items"] as JsonArray)?.Add(new JsonObject { ["ItemID"] = pid });
                 }
         var tokens = new Dictionary<string, string>();
-        foreach (var u in users) { u.Token = NewToken(); tokens[u.ID] = u.Token; }
+        // an A-User that has a token keeps it: its agent acts with it, whenever its human enters (2026-11-27)
+        foreach (var u in users) { if (!(u.Autonomous && u.Token is not null)) u.Token = NewToken(); tokens[u.ID] = u.Token!; }
         return Ok(200, service, new Complements { With = [JsonValue.Create($"Account-{human}")] }) with { Tokens = tokens };
     }
 
@@ -1366,7 +1377,7 @@ public sealed class MInstance
             if (accountLevels.GetValueOrDefault(user) != "Visitor" || !processes.TryGetValue(user, out var p) || p.HumanID is not { } human) return false;
             var users = processes.Values.Where(q => q.Kind == "User" && q.HumanID == human).Select(q => q.ID).ToList();
             var owners = new HashSet<string>(users, StringComparer.Ordinal) { human };
-            foreach (var id in items.Values.Where(i => i.Owner is { } o && owners.Contains(o)).Select(i => i.ID).ToList()) items.Remove(id);
+            foreach (var id in items.Values.Where(i => i.Holder is { } o && owners.Contains(o)).Select(i => i.ID).ToList()) items.Remove(id);
             foreach (var o in owners) { processes.Remove(o); accountLevels.Remove(o); holdings.Remove(o); inboxes.Remove(o); }
             credentials.Remove(human); devices.Remove(human); officerRequests.Remove(human); aUserNever.Remove(human);
             return true;
@@ -1395,7 +1406,7 @@ public sealed class MInstance
     {
         lock (gate)
         {
-            var d = items.Values.FirstOrDefault(i => i.DataType == "MMM-PPR-V2.2" && i.Owner == human)?.Body?["PersonalProfile"]?["Data"]?[0];
+            var d = items.Values.FirstOrDefault(i => i.DataType == "MMM-PPR-V2.2" && i.Holder == human)?.Body?["PersonalProfile"]?["Data"]?[0];
             officerRequests[human] = new OfficerRequest
             {
                 Human = human, First = d?["FirstName"]?.GetValue<string>(), Last = d?["LastName"]?.GetValue<string>(), Organisation = d?["Organisation"]?.GetValue<string>(),
@@ -1423,13 +1434,15 @@ public sealed class MInstance
     public void OfficerAnswerSeen(string user) { lock (gate) if (processes.GetValueOrDefault(user)?.HumanID is { } h && officerRequests.TryGetValue(h, out var r) && r.Status != "Pending") r.Told = true; }
     public void NeverAUser(string user) { lock (gate) if (processes.GetValueOrDefault(user)?.HumanID is { } h) aUserNever.Add(h); }
     public bool IsManager(string user) { lock (gate) return accountLevels.GetValueOrDefault(user) == Manager; }
+    // WHO ACTS ON THE MPAI BUILDING SERVICE (2026-11-27): the Manager's H-User - the User the Manager drives - not its A-User (the Manager Console).
+    public bool ActsForTheService(string user) { lock (gate) return accountLevels.GetValueOrDefault(user) == Manager && processes.GetValueOrDefault(user) is { Autonomous: false }; }
 
     // The email of a human's Account (its Personal Profile), if it has one.
     public string? EmailOfHuman(string? human)
     {
         if (human is null) return null;
         lock (gate) return items.GetValueOrDefault($"Account-{human}")?.Body?["Email"]?.GetValue<string>()
-            ?? items.Values.FirstOrDefault(i => i.DataType == "MMM-PPR-V2.2" && i.Owner == human)?.Body?["PersonalProfile"]?["Data"]?[0]?["Email"]?.GetValue<string>();
+            ?? items.Values.FirstOrDefault(i => i.DataType == "MMM-PPR-V2.2" && i.Holder == human)?.Body?["PersonalProfile"]?["Data"]?[0]?["Email"]?.GetValue<string>();
     }
 
     // THE EMAIL OF A USER'S ACCOUNT: an invitation names it (2026-11-26).
@@ -1439,7 +1452,7 @@ public sealed class MInstance
         {
             if (!processes.TryGetValue(user, out var p) || p.HumanID is null) return null;
             return items.GetValueOrDefault($"Account-{p.HumanID}")?.Body?["Email"]?.GetValue<string>()
-                ?? items.Values.FirstOrDefault(i => i.DataType == "MMM-PPR-V2.2" && i.Owner == p.HumanID)?.Body?["PersonalProfile"]?["Data"]?[0]?["Email"]?.GetValue<string>();
+                ?? items.Values.FirstOrDefault(i => i.DataType == "MMM-PPR-V2.2" && i.Holder == p.HumanID)?.Body?["PersonalProfile"]?["Data"]?[0]?["Email"]?.GetValue<string>();
         }
     }
 
@@ -1451,7 +1464,7 @@ public sealed class MInstance
             var level = accountLevels.GetValueOrDefault(user);
             if (level == Manager) return "MMM Manager";
             if (level != "Officer" || !processes.TryGetValue(user, out var p)) return level;
-            var org = items.Values.FirstOrDefault(i => i.DataType == "MMM-PPR-V2.2" && i.Owner == p.HumanID)?.Body?["PersonalProfile"]?["Data"]?[0]?["Organisation"]?.GetValue<string>();
+            var org = items.Values.FirstOrDefault(i => i.DataType == "MMM-PPR-V2.2" && i.Holder == p.HumanID)?.Body?["PersonalProfile"]?["Data"]?[0]?["Organisation"]?.GetValue<string>();
             return string.Equals(org?.Trim(), "MPAI", StringComparison.OrdinalIgnoreCase) ? "MPAI Officer" : "Officer";
         }
     }
@@ -1462,10 +1475,10 @@ public sealed class MInstance
         lock (gate)
         {
             if (!processes.TryGetValue(user, out var p) || p.Kind != "User") return null;
-            var persona = items.Values.FirstOrDefault(i => i.Owner == user && i.DataType == "OSD-3DO-V1.5");
+            var persona = items.Values.FirstOrDefault(i => i.Holder == user && i.DataType == "OSD-3DO-V1.5");
             var info = new JsonObject { ["User"] = user, ["AccountLevel"] = accountLevels.GetValueOrDefault(user) };
             var levelName = accountLevels.GetValueOrDefault(user);
-            if (levelName == "Officer" && items.Values.FirstOrDefault(i => i.DataType == "MMM-PPR-V2.2" && i.Owner == p.HumanID)?.Body?["PersonalProfile"]?["Data"]?[0]?["Organisation"]?.GetValue<string>() is { } org
+            if (levelName == "Officer" && items.Values.FirstOrDefault(i => i.DataType == "MMM-PPR-V2.2" && i.Holder == p.HumanID)?.Body?["PersonalProfile"]?["Data"]?[0]?["Organisation"]?.GetValue<string>() is { } org
                 && string.Equals(org.Trim(), "MPAI", StringComparison.OrdinalIgnoreCase)) levelName = "MPAI Officer";
             if (levelName == Manager) levelName = "MMM Manager";
             info["AccountLevelName"] = levelName;
@@ -1482,7 +1495,7 @@ public sealed class MInstance
                 info["OfficerRequest"] = new JsonObject { ["Status"] = orq.Status, ["Reason"] = orq.Reason, ["Asked"] = orq.Asked };
             if (processes.Values.FirstOrDefault(q => q.Kind == "User" && q.HumanID == p.HumanID && q.ID != user && q.Autonomous != p.Autonomous) is { } other)
             {
-                var op = items.Values.FirstOrDefault(i => i.Owner == other.ID && i.DataType == "OSD-3DO-V1.5");
+                var op = items.Values.FirstOrDefault(i => i.Holder == other.ID && i.DataType == "OSD-3DO-V1.5");
                 var o = new JsonObject { ["User"] = other.ID, ["Persona"] = op?.ID, ["Model"] = op?.Model, ["Location"] = op?.Location };
                 if (op?.SpatialAttitude?["Position"]?["CartPosition"] is JsonArray oa && oa.Count >= 2) { o["X"] = oa[0]?.GetValue<double>(); o["Y"] = oa[1]?.GetValue<double>(); }
                 info[other.Autonomous ? "AUser" : "HUser"] = o;
@@ -1534,6 +1547,9 @@ public sealed class MInstance
         lock (gate)
         {
             var restored = 0;
+            // a state kept before 2026-11-27 names the Process holding the Rights to an Item its "Owner": the MMM has no owners, only Rights holders
+            foreach (var o in (state["Items"] as JsonArray ?? []).OfType<JsonObject>())
+                if (o["Holder"] is null && o["Owner"] is { } old) { o.Remove("Owner"); o["Holder"] = old.DeepClone(); }
             foreach (var it in state["Items"]?.Deserialize<List<Item>>(StateJson) ?? [])
             {
                 if (Momentary.Contains(it.DataType) || it.Streaming || it.Qualifier is not null) continue;

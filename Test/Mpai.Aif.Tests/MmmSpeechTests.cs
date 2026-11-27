@@ -62,7 +62,7 @@ public class MmmSpeechTests
         await services.PumpAsync();            // the Secretary puts the words in the minutes
         Assert.Equal([2.5 * Speech.Rate * 2], heard.Select(h => (double)h));   // the recognition got the whole utterance, once
         Assert.Equal(["Anna: good morning everybody"], services.TheMinutes);
-        Assert.Equal("Anna: good morning everybody", Meeting.TextOf(new MmmClient(http, Meeting.Avs, m.TokenOf(Meeting.Avs)).ReadAsync(Meeting.Minutes).Result.Item));
+        Assert.Equal("Anna: good morning everybody", Meeting.TextOf(new MmmClient(http, Meeting.BuildingService, m.TokenOf(Meeting.BuildingService)).ReadAsync(Meeting.Minutes).Result.Item));
         var latency = Assert.Single(services.Latencies);
         Assert.Equal(2500, latency.SpeechMs);
         await app.StopAsync();

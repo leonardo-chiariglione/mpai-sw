@@ -3045,6 +3045,7 @@
   {
    "id": "Library",
    "name": "Library",
+   "public": true,
    "model": "world/library.glb",
    "x": 0.0,
    "y": 30.0,
@@ -3142,6 +3143,7 @@
   {
    "id": "Cafe",
    "name": "Cafe",
+   "public": true,
    "model": "world/cafe.glb",
    "x": -30.0,
    "y": 0.0,

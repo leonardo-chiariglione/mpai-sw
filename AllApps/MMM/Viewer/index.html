@@ -707,7 +707,9 @@ async function enterWithAccount() {
   await resumeWith(client.token, info);
   if (info.AccountLevelName) client.status += ` (${info.AccountLevelName})`;
   // THE A-USER IS OFFERED at every entry until the person says Yes or Never (Later: next time); never to a Visitor, which has an H-User only.
-  if (!info.AUser && !info.Autonomous && !info.AUserNever && info.AccountLevel !== 'Visitor') await deployAUser();
+  let hasAUser = !!info.AUser;
+  if (!info.AUser && !info.Autonomous && !info.AUserNever && info.AccountLevel !== 'Visitor') hasAUser = await deployAUser();
+  if (hasAUser) aUserPanel();
   officerOutcome(info); setInterval(async () => officerOutcome(await fetch('me', { headers: { Authorization: 'Bearer ' + client.token }, cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)), 30000);
   if (info.AccountLevelName === 'MMM Manager') managerButton();
   const q = new URLSearchParams(location.search);
@@ -765,19 +767,59 @@ async function deployAUser() {
   const aUser = client.name + '-A', aPersona = aUser + '-Persona';
   for (;;) {
     const choice = await choosePersona('A');
-    if (!choice) return;                                                      // Later: asked again at the next entry
-    if (choice === '!never') { await fetch('auser/never', { method: 'POST', headers: { Authorization: 'Bearer ' + client.token } }); return; }
+    if (!choice) return false;                                                // Later: asked again at the next entry
+    if (choice === '!never') { await fetch('auser/never', { method: 'POST', headers: { Authorization: 'Bearer ' + client.token } }); return false; }
     const reg = await act('identity/register', client.human, { With: [{ Header: 'MMM-PPR-V2.2', MInstanceID: 'MI1', humanID: client.human, PersonalProfileID: 'Profile-' + client.human,
       PersonalProfile: { Processes: [{ ProcessIDOrProcess: [{ ProcessID: aUser }], PersonaIDOrPersona: [{ PersonaID: aPersona, PersonaChoice: choice }] }] } }] });
     if (reg.http === 409 && /was chosen by/.test(reg.body?.paStatus?.detail ?? '')) continue;
-    if (reg.http !== 200) { client.notice = `Your A-User was not deployed: ${reg.body?.paStatus?.detail ?? reg.http}`; return; }
+    if (reg.http !== 200) { client.notice = `Your A-User was not deployed: ${reg.body?.paStatus?.detail ?? reg.http}`; return false; }
     client.token = tokenOf(reg, client.name) ?? client.token;
     const aToken = tokenOf(reg, aUser);
     const r = client.yaw * Math.PI / 180, side = [1.2 * Math.cos(r), 1.2 * Math.sin(r)];   // 1.2 m to the H-User's right (yaw 0 looks north, positive turns west), not in its view
     const add = await act('locate/mm-add', aUser, { Nil: aPersona, At: client.at, With: [spatial('SA-' + aUser, client.x - (client.ox ?? 0) + side[0], client.y - (client.oy ?? 0) + side[1], client.yaw)] }, aToken);
     client.notice = add.http === 200 ? `Your A-User ${choice.replaceAll('_', ' ')} is beside you.` : `Your A-User is deployed, but its Persona could not be placed: ${add.body?.paStatus?.detail ?? add.http}`;
-    return;
+    return true;
   }
+}
+// COMMANDING THE A-USER (2026-11-27): a small panel of the H-User's page - what the A-User says (its words, and its voice), a box for a written command, and Hold to speak for
+// a spoken one (the Microphone Unit; the words are recognised by the M-Instance's server). The A-User's agent runs its A-User Module (PGM-AUA) and acts in the world.
+function aUserPanel() {
+  const auth = { Authorization: 'Bearer ' + client.token }, esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const p = document.createElement('div'); p.id = 'aUserPanel';
+  Object.assign(p.style, { position: 'fixed', left: '10px', bottom: '54px', zIndex: 25, width: 'min(360px, calc(100vw - 20px))', background: 'rgba(20,24,30,.9)', border: '1px solid #556', borderRadius: '10px', padding: '8px 10px', fontSize: '14px', boxSizing: 'border-box' });
+  p.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b>Your A-User</b><span id="auState" style="font-size:12px;color:var(--muted)">getting ready...</span><button id="auHide" style="cursor:pointer;padding:0 8px;border-radius:6px" title="Hide or show">-</button></div>
+    <div id="auBody"><div id="auLog" style="max-height:150px;overflow:auto;margin:6px 0;display:flex;flex-direction:column;gap:3px"></div>
+    <div style="display:flex;gap:6px"><input id="auText" placeholder="Tell it what to do, e.g. go to the Library" style="flex:1;min-width:0;padding:5px 8px;border-radius:6px;border:1px solid #556;background:#1d2128;color:inherit">
+    <button id="auSend" style="cursor:pointer;padding:0 10px;border-radius:6px">Send</button><button id="auTalk" style="cursor:pointer;padding:0 10px;border-radius:6px;touch-action:none;user-select:none" hidden>Hold to speak</button></div></div>`;
+  document.body.appendChild(p);
+  const $p = q => p.querySelector(q), logEl = $p('#auLog');
+  for (const ev of ['keydown', 'keyup', 'keypress']) p.addEventListener(ev, e => e.stopPropagation());     // the keys typed here do not walk the H-User's Persona
+  $p('#auHide').onclick = () => { const b = $p('#auBody'); b.hidden = !b.hidden; $p('#auHide').textContent = b.hidden ? '+' : '-'; };
+  const send = async () => { const t = $p('#auText').value.trim(); if (!t) return; $p('#auText').value = ''; await fetch('auser/command', { method: 'POST', headers: auth, body: t }); poll(); };
+  $p('#auSend').onclick = send; $p('#auText').onkeydown = e => { if (e.key === 'Enter') send(); };
+  // HOLD TO SPEAK: the Microphone Unit records while the button is held; the words are recognised by the server and become the command.
+  let rec = null;
+  $p('#auTalk').onpointerdown = async e => { e.preventDefault(); $p('#auTalk').setPointerCapture(e.pointerId); $p('#auTalk').textContent = 'Listening...'; try { rec = await MpaiUnits.microphone.record(); } catch { rec = null; $p('#auTalk').textContent = 'No microphone'; } };
+  const release = async () => {
+    if (!rec) return; const pcm = rec.stop(); rec = null; $p('#auTalk').textContent = 'Hold to speak';
+    if (pcm.length < 3200) return;                                            // shorter than 0.2 s: nothing said
+    await fetch('auser/speak', { method: 'POST', headers: auth, body: new Blob([pcm.buffer]) }); poll();
+  };
+  for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) $p('#auTalk').addEventListener(ev, release);
+  let since = 0;
+  const poll = async () => {
+    const r = await fetch('auser/log?since=' + since, { headers: auth, cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
+    if (!r) return;
+    $p('#auState').textContent = r.ready ? 'ready' : 'getting ready...';
+    $p('#auTalk').hidden = !r.speech || !MpaiUnits.microphone.available();
+    for (const e of r.entries) {
+      since = Math.max(since, e.n);
+      const d = document.createElement('div'); d.innerHTML = `<span style="color:var(--muted);font-size:12px">${esc(e.time)}</span> <b>${esc(e.who)}:</b> ${esc(e.text)}`;
+      logEl.appendChild(d); logEl.scrollTop = logEl.scrollHeight;
+      if (e.speech) fetch('auser/speech/' + encodeURIComponent(e.speech), { headers: auth }).then(r => r.ok ? r.blob() : null).then(b => { if (b) new Audio(URL.createObjectURL(b)).play().catch(() => { }); });
+    }
+  };
+  poll(); setInterval(poll, 1500);
 }
 // LINKING A DEVICE TO THE ACCOUNT (2026-11-26). Thalia - or another program acting for the person - asked to be linked and shows a code; opened with ?link=<request>, after the person
 // entered with its password, this panel shows the device and the code: approved, the device is given a key of its own and enters as the person without the password. The panel
@@ -831,14 +873,14 @@ async function join() {
   if (add.http === 200 && W) prepareSeat(); else if (add.http === 200 && new URLSearchParams(location.search).has('meet')) await sit();
   if (add.http === 200) { capture(); setInterval(capture, 200); setInterval(sendPose, 150); }
 }
-// The meeting (&meet): the User asks the AVS Service for a seat (MM-Send), reads which it was given, and moves its Persona there (MM-Move) with the right
-// the AVS Service gave it. The AVS Service and the Secretary are Processes of the M-Instance; the client is only this User.
+// The meeting (&meet): the User asks the MPAI Building Service for a seat (MM-Send), reads which it was given, and moves its Persona there (MM-Move) with the right
+// the MPAI Building Service gave it. The MPAI Building Service and the Secretary are Processes of the M-Instance; the client is only this User.
 const simpleTime = id => ({ Header: 'OSD-STM-V1.5', SimpleTimeID: id, SimpleTimeData: [{ FlagsByte: 3, StartTime: 1767254400000, EndTime: 1767254400000, AccuracyMode: 'single', AccuracyPlusMinus: 1 }] });
 const message = (id, text) => ({ Header: 'MMM-MSG-V2.2', MInstanceID: 'MI1', MessageID: id, MessageData: [{ MessageData: text }] });
 async function askSeat() {
   // Who is in the meeting is the convener's decision (&convene; &invite=Name,Name): the room is open only to the invited. Not invited, the User waits for the
-  // invitation - a Message of the AVS Service - and asks again.
-  const q = new URLSearchParams(location.search), tell = (id, text) => act('communicate/mm-send', client.name, { Nil: id, To: 'AVS', With: [message(id, text)] });
+  // invitation - a Message of the MPAI Building Service - and asks again.
+  const q = new URLSearchParams(location.search), tell = (id, text) => act('communicate/mm-send', client.name, { Nil: id, To: 'MPAIBuildingService', With: [message(id, text)] });
   const read = async id => { const rs = await fetch(`/api/v2.2/items/${id}`, { headers: { Authorization: 'Bearer ' + client.token } }); return rs.ok ? (await rs.json()).ItemValueOrRef?.[0]?.MessageData?.[0]?.MessageData : null; };
   const pause = ms => new Promise(r => setTimeout(r, ms));
   if (q.has('convene')) { await tell(`Convene-${client.name}-${Date.now()}`, 'convene'); for (const u of (q.get('invite') ?? '').split(',').filter(Boolean)) await tell(`Invite-${u}-${Date.now()}`, 'invite;user=' + u); }
@@ -847,7 +889,7 @@ async function askSeat() {
     const join = `Join-${client.name}-${Date.now()}`;   // each request has its own identifier, and so its own answer
     await tell(join, 'join;persona=' + client.persona);   // the Persona it brings to this meeting: one of its own
     told = null;
-    for (let i = 0; i < 50 && !told; i++) { await pause(200); told = await read(`Seat-${join}`); }   // the AVS Service answers within a moment
+    for (let i = 0; i < 50 && !told; i++) { await pause(200); told = await read(`Seat-${join}`); }   // the MPAI Building Service answers within a moment
     if (told === 'the meeting is over') break;
     if (told === 'officer') { client.status = `${client.name}: MPAI Officer`; client.notice = 'MPAI Officer: the Rights to every place of the building are yours.'; return null; }
     if (told === 'visitor account') { client.status = `${client.name}: a Visitor Account`; client.notice = 'Your Account is a Visitor Account: you can visit the atrium. For the meeting, register again as a Participant.'; return null; }
@@ -858,7 +900,7 @@ async function askSeat() {
   return seat;
 }
 async function sit() { const seat = await askSeat(); if (seat) await takeSeat(seat); }
-async function takeSeat(seat) {   // MM-Move of the Persona to its seat, from where it is (the Square, or the meeting room) with the right the AVS Service gave
+async function takeSeat(seat) {   // MM-Move of the Persona to its seat, from where it is (the Square, or the meeting room) with the right the MPAI Building Service gave
   if (client.taking) return; client.taking = true;
   const pa = `PA-Sit-${client.persona}`;
   const sitPA = { Header: 'MMM-2MP-V2.2', MInstanceID: 'MI1', MMMovePAID: pa, Time: simpleTime(pa + '-T'),
@@ -873,8 +915,8 @@ async function takeSeat(seat) {   // MM-Move of the Persona to its seat, from wh
   if (new URLSearchParams(location.search).get('mic') !== 'off' && !client.micOn) { client.micOn = true; microphone(); }
 }
 
-// THE WORLD, THE CLIENT'S PART. The User asks the AVS Service for its seat as soon as it is in the world: invited, it is given the right to the seat and to the doors of the Town
-// Hall (the AVS Service's Rights Change); not invited, it waits, and the doors stay shut to it (403). Walking to a door asks the M-Instance to move the Persona through it (MM-Move);
+// THE WORLD, THE CLIENT'S PART. The User asks the MPAI Building Service for its seat as soon as it is in the world: invited, it is given the right to the seat and to the doors of the Town
+// Hall (the MPAI Building Service's Rights Change); not invited, it waits, and the doors stay shut to it (403). Walking to a door asks the M-Instance to move the Persona through it (MM-Move);
 // in the meeting room the Persona takes its seat. Q stands up, E sits again.
 function prepareSeat() {
   askSeat().then(seat => {
@@ -885,7 +927,7 @@ function prepareSeat() {
     if (client.loc === seat.room) takeSeat(seat);
   });
 }
-// THE END OF THE MEETING. The rights of a meeting - the doors, the seat, the speech - are valid for the meeting, and the AVS Service withdraws them when it ends: at its time, or when its
+// THE END OF THE MEETING. The rights of a meeting - the doors, the seat, the speech - are valid for the meeting, and the MPAI Building Service withdraws them when it ends: at its time, or when its
 // convener ends it (the button). A User whose rights are gone is refused by the M-Instance (403): its client sees that, and the Persona leaves to the Square.
 function endButton() {
   const b = document.createElement('button'); b.textContent = 'Close meeting'; b.classList.add('roomOnly');
@@ -894,17 +936,17 @@ function endButton() {
   b.onclick = async () => {
     if (!armed) { armed = true; b.textContent = 'Click again to close it for all'; setTimeout(() => { armed = false; b.textContent = 'Close meeting'; }, 4000); return; }
     const id = `End-${client.name}-${Date.now()}`;
-    await act('communicate/mm-send', client.name, { Nil: id, To: 'AVS', With: [message(id, 'end')] });
+    await act('communicate/mm-send', client.name, { Nil: id, To: 'MPAIBuildingService', With: [message(id, 'end')] });
     b.remove(); client.notice = 'The meeting is ending.';
   };
   document.getElementById('bar').appendChild(b);
 }
-// THE SHARED SCREEN. The convener has the Right to share one in the room (the AVS Service gave it with the seat); the others only see it. The sharer's browser captures its screen
+// THE SHARED SCREEN. The convener has the Right to share one in the room (the MPAI Building Service gave it with the seat); the others only see it. The sharer's browser captures its screen
 // (the Screen Unit, mpai-units.js), declares a Visual Object that is a stream at the room (MM-Add) and sends it, compressed as video (and its sound, as Opus, if shared), over a WebSocket; a slide
 // costs almost nothing while it stays (a frame a second). Whoever is in the room finds the Visual Object in what MM-Capture returns and opens the same kind of WebSocket to watch: the screen fills the window and the
 // room is reduced to a stamp at the bottom right; a click on the stamp changes them over.
 let sharing = null, watching = null;
-// THE CONVENER LETS A PARTICIPANT SHOW A SCREEN, one at a time (a box in the list at the top left, 'may share'): the AVS Service tells that participant, who then has the buttons; taken back, they go.
+// THE CONVENER LETS A PARTICIPANT SHOW A SCREEN, one at a time (a box in the list at the top left, 'may share'): the MPAI Building Service tells that participant, who then has the buttons; taken back, they go.
 function watchSharing() {
   let on = false;
   setInterval(async () => {
@@ -1245,7 +1287,7 @@ async function capture() {   // MM-Capture: the Things of the M-Location that th
   const pov = { Header: 'OSD-OPV-V1.5', PointOfViewID: 'POV-' + client.name, CartPosition: [client.x, client.y, client.eye ?? 1.6], Orientation: [yaw180(client.yaw), 0, 0] };
   const r = await act('locate/mm-capture', client.name, { At: client.at, With: [pov] });
   const scene = r.body?.complements?.With?.[0]?.ItemValueOrRef?.[0];
-  if (r.http === 200 && scene) { client.things = scene.Things; for (const t of scene.Things) if (t.Kind === 'Speech') hear(t); { const sc = scene.Things.find(t => t.Kind === 'Screen' && (t.Owner !== client.name || sharing?.own) && t.Streaming); watchScreen(sc?.ID ?? null, sc?.Owner === client.name); } }
+  if (r.http === 200 && scene) { client.things = scene.Things; for (const t of scene.Things) if (t.Kind === 'Speech') hear(t); { const sc = scene.Things.find(t => t.Kind === 'Screen' && (t.Holder !== client.name || sharing?.own) && t.Streaming); watchScreen(sc?.ID ?? null, sc?.Holder === client.name); } }
   else if (W && r.http === 403 && client.loc !== 'MVS') meetingOver();   // the rights of the meeting are gone
 }
 
@@ -1264,13 +1306,13 @@ function handAndSummary() {
   if (handAndSummaryStarted || client.name === 'Secretary') return;
   handAndSummaryStarted = true; startHand(); startSummary(); startSecretary();
 }
-// THE HAND (MC-3): the button asks the AVS Service to raise or lower it; the AVS Service tells everyone who has one up (a Message of its own to each, replaced at each change). The name over the Persona
+// THE HAND (MC-3): the button asks the MPAI Building Service to raise or lower it; the MPAI Building Service tells everyone who has one up (a Message of its own to each, replaced at each change). The name over the Persona
 // is marked, and the list at the top right shows who asks for the floor; the convener lowers a hand by clicking its name. A hand comes down by itself after 5 s of its owner's speech.
 function startHand() {
   client.hands = new Set();
   const b = barAdd(document.createElement('button'), 5), list = document.getElementById('handsList');
   b.classList.add('roomOnly'); b.textContent = 'Raise hand'; b.title = 'Ask for the floor. The hand comes down by itself once you have spoken for 5 seconds.';
-  b.onclick = () => sendTo('AVS', `Hand-${client.name}-${Date.now()}`, client.hands.has(client.name) ? 'hand;down' : 'hand;up');
+  b.onclick = () => sendTo('MPAIBuildingService', `Hand-${client.name}-${Date.now()}`, client.hands.has(client.name) ? 'hand;down' : 'hand;up');
   setInterval(async () => {
     const told = await readMessage(`Hands-for-${client.name}`);
     if (!told?.startsWith('hands:')) return;
@@ -1279,7 +1321,7 @@ function startHand() {
     client.hands = new Set(names);
     const mine = client.hands.has(client.name);
     b.textContent = mine ? 'Lower hand' : 'Raise hand'; b.style.borderColor = mine ? '#f2c94c' : '#5a8';
-    list.replaceChildren(...names.map(n => { const s = document.createElement('span'); s.textContent = '\u270B ' + n; if (client.seatInfo?.convener === '1') { s.style.cursor = 'pointer'; s.title = 'Lower this hand'; s.onclick = () => sendTo('AVS', `Hand-${n}-${Date.now()}`, 'hand;down;user=' + n); } return s; }));
+    list.replaceChildren(...names.map(n => { const s = document.createElement('span'); s.textContent = '\u270B ' + n; if (client.seatInfo?.convener === '1') { s.style.cursor = 'pointer'; s.title = 'Lower this hand'; s.onclick = () => sendTo('MPAIBuildingService', `Hand-${n}-${Date.now()}`, 'hand;down;user=' + n); } return s; }));
   }, 700);
 }
 // THE SUMMARY (MC-4, MC-5): nothing exists until somebody asks. The button asks the Secretary, for this User only, in a form (written or spoken) and a language; the answer is a Message of its own for
@@ -1524,17 +1566,17 @@ const wantsFrom = who => wants.has(who) ? wants.get(who) : (hearParam === null |
 function ears() { return MpaiUnits.loudspeaker.context(); }   // the sound is the Loudspeaker Unit's
 for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, () => { if (client) ears(); });   // a browser lets a page play sound only after a press or a click
 function renderEars() {
-  const owners = [...new Set(client.things.filter(t => t.Kind === 'Persona' && t.Owner && t.Owner !== client.name).map(t => t.Owner))].sort();
+  const owners = [...new Set(client.things.filter(t => t.Kind === 'Persona' && t.Holder && t.Holder !== client.name).map(t => t.Holder))].sort();
   const key = (client.seatInfo?.convener === '1' ? 'C' : '') + owners.map(o => o + wantsFrom(o)).join();
   if (key === renderEars.key) return; renderEars.key = key;
   let box = document.getElementById('ears');
   if (!box) { box = document.createElement('div'); box.id = 'ears'; box.style.marginTop = '6px'; document.getElementById('panel').appendChild(box); }
   box.replaceChildren(...owners.map(o => { const l = document.createElement('label'), c = document.createElement('input'); l.style.display = 'block'; c.type = 'checkbox'; c.checked = wantsFrom(o); c.onchange = () => wants.set(o, c.checked); l.append(c, ' hear ' + o);
-    if (client.seatInfo?.convener === '1' && !['Secretary', 'Reception'].includes(o)) { const g = document.createElement('input'); g.type = 'checkbox'; g.checked = sharers.has(o); g.onchange = () => { g.checked ? sharers.add(o) : sharers.delete(o); sendTo('AVS', `Share-${o}-${Date.now()}`, `share;${g.checked ? 'grant' : 'revoke'};user=${o}`); }; l.append('  ', g, ' may share'); }
+    if (client.seatInfo?.convener === '1' && !['Secretary', 'Reception'].includes(o)) { const g = document.createElement('input'); g.type = 'checkbox'; g.checked = sharers.has(o); g.onchange = () => { g.checked ? sharers.add(o) : sharers.delete(o); sendTo('MPAIBuildingService', `Share-${o}-${Date.now()}`, `share;${g.checked ? 'grant' : 'revoke'};user=${o}`); }; l.append('  ', g, ' may share'); }
     return l; }));
 }
 function hear(t) {
-  if (heard.has(t.ID) || t.Owner === client.name || !wantsFrom(t.Owner)) return;
+  if (heard.has(t.ID) || t.Holder === client.name || !wantsFrom(t.Holder)) return;
   if (!t.Streaming && Date.now() - t.End > 3000) return;   // what was said some time ago is not replayed to a newcomer
   heard.add(t.ID);
   const ctx = ears(), pan = ctx.createPanner(), ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/v2.2/speech/${t.ID}/listen?token=${encodeURIComponent(client.token)}`);
@@ -1549,7 +1591,7 @@ function hear(t) {
     for (let i = 0; i < n; i++) ch[i] = dv.getInt16(2 * i, true) / 32768;
     const s = ctx.createBufferSource(); s.buffer = buf; s.connect(pan);
     const at = Math.max(next, ctx.currentTime + 0.12); s.start(at); next = at + n / 16000;
-    if (first) { first = false; client.heard.push(`${t.Owner} (first sound ${Date.now() - t.Start} ms after it began)`); }
+    if (first) { first = false; client.heard.push(`${t.Holder} (first sound ${Date.now() - t.Start} ms after it began)`); }
   };
 }
 async function sendPose() {   // MM-Move: the Persona stands where its User put it, looking where it looks
@@ -1767,16 +1809,16 @@ async function refresh() {
       const sits = W && /-S\d+$/.test(t.At);                       // at a seat of a meeting room
       d.target.y = W ? (sits ? 0.05 - SIT_DROP : 0.05) : (t.Depth ?? (at?.At ? 2 : 1)) >= 2 ? 0.14 : 0.06;   // standing on a room's floor, or on a pad; sitting, lowered onto the chair
       sitPose(d.object, sits);
-      handUp(d.object, !!client?.hands?.has(t.Owner));          // the hand raised: the Persona's arm goes up
+      handUp(d.object, !!client?.hands?.has(t.Holder));          // the hand raised: the Persona's arm goes up
       if (W && client && t.Animation) watchMouth(d, t);          // the mouth: the Animation Stream that animates it
-      if (W && client && sits) boardFor(t.ID, t.Owner ?? t.ID);   // the command board on the table before it
+      if (W && client && sits) boardFor(t.ID, t.Holder ?? t.ID);   // the command board on the table before it
     }
     // Shown: what is perceptible and placed - a Persona once added, a Location that is
     // a place of its own or has been placed (a Room on its Parcel).
     d.object.visible = t.Perceptible !== false && (t.Kind !== 'Persona' || !!t.At) && !hidden.has(t.ID) && !(client && t.ID === client.persona && !client.ghost);   // you do not see your own Persona from inside it - out of its body, you do
     const l = d.object.userData.label;
     if (l) l.visible = d.object.visible && (!W || !client || t.Kind !== 'Persona' || !t.At || t.At.replace(/-S\d+$/, '') === client.at);   // in the world, the name of a Persona is shown only in the place you are in, not through the walls
-    if (l) l.element.textContent = t.Kind === 'Persona' ? `${client?.hands?.has(t.Owner) ? '\u270B ' : ''}${W ? (t.Owner ?? t.ID) : t.ID}${t.Animation ? ' (animated)' : ''}` : `${t.ID}${t.Owner ? ' - ' + t.Owner : ''}${t.Public ? ' (open)' : ''}`;
+    if (l) l.element.textContent = t.Kind === 'Persona' ? `${client?.hands?.has(t.Holder) ? '\u270B ' : ''}${W ? (t.Holder ?? t.ID) : t.ID}${t.Animation ? ' (animated)' : ''}` : `${t.ID}${t.Holder ? ' - ' + t.Holder : ''}${t.Public ? ' (open)' : ''}`;
   }
   for (const [id, d] of drawn) if (!seen.has(id)) { d.object.visible = false; if (d.object.userData.label) d.object.userData.label.visible = false; }
 }

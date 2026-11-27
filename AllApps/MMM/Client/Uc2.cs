@@ -199,7 +199,7 @@ public static class Uc2
         result["Friend2 enters the room after the revoke"] = Said(await friend2.PerformAsync("MM-Move", moveIn()));
 
         result["where Persona1ID is"] = m.Get("Persona1ID")?.Location ?? "";
-        result["who owns the Room"] = m.Get("RoomID")?.Owner ?? "";
+        result["who owns the Room"] = m.Get("RoomID")?.Holder ?? "";
         result["Activity Data, Process Actions recorded"] = m.ActivityData.Count.ToString();
         return result;
     }

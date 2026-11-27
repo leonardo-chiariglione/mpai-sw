@@ -71,9 +71,9 @@ public sealed class DoorUseCase
     {
         MI = m.ID;
         m.AddLocation(Street, isPublic: true, x: StreetCentre[0], y: StreetCentre[1], size: 9);
-        m.AddLocation(Room, owner: Host, isPublic: true, x: 0, y: 0, size: RoomSize);
-        m.AddLocation(Doorway, owner: Host, isPublic: true, x: DoorwayAt[0], y: DoorwayAt[1], size: 1, at: Room);   // the place inside the door, an M-Location in the Room
-        m.AddLocation(Hall, owner: Host, isPublic: true, x: VisitorIn[0], y: VisitorIn[1], size: 1, at: Room);       // where a visitor stands, inside
+        m.AddLocation(Room, holder: Host, isPublic: true, x: 0, y: 0, size: RoomSize);
+        m.AddLocation(Doorway, holder: Host, isPublic: true, x: DoorwayAt[0], y: DoorwayAt[1], size: 1, at: Room);   // the place inside the door, an M-Location in the Room
+        m.AddLocation(Hall, holder: Host, isPublic: true, x: VisitorIn[0], y: VisitorIn[1], size: 1, at: Room);       // where a visitor stands, inside
         m.AddLocation(Porch, isPublic: true, x: OutsideDoor[0] - StreetCentre[0], y: OutsideDoor[1] - StreetCentre[1], size: 1, at: Street);   // outside the door
         m.AddLocation(Human, universe: true);
         PlaceItems(m);

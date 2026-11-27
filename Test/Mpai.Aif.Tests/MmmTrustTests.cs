@@ -5,7 +5,7 @@ using Mpai.Mmm.Server;
 
 namespace Mpai.Aif.Tests;
 
-// RIGHTS AND TRUST IN THE MEETING (MMM Phase 5). Who is in the meeting is the convener's decision - a human's - and the AVS Service carries it out with Rights:
+// RIGHTS AND TRUST IN THE MEETING (MMM Phase 5). Who is in the meeting is the convener's decision - a human's - and the MPAI Building Service carries it out with Rights:
 // the room is not open (no meeting code): a User is seated only if it has been invited; the minutes are read by the participants only; a User the convener
 // takes out of the meeting can no longer enter, see the room, or be given the minutes.
 [Trait("Group", "Fast")]
@@ -36,7 +36,7 @@ public class MmmTrustTests
     }
 
     private static Task<MmmClient.Result> Tell(MmmClient from, string id, string text) =>
-        from.PerformAsync("MM-Send", Uc2.C(id, to: Meeting.Avs, with: Uc2.Message(id, text)));
+        from.PerformAsync("MM-Send", Uc2.C(id, to: Meeting.BuildingService, with: Uc2.Message(id, text)));
 
     private static int asked;
 
@@ -91,7 +91,7 @@ public class MmmTrustTests
         Assert.Equal(403, in1.Http);
         Assert.Equal(403, (await bruno.PerformAsync("MM-Capture", Uc2.C(at: Meeting.Room, with: PointOfView()))).Http);
 
-        // Anna invites Bruno: the invitation is a Message of the AVS Service; now he is seated.
+        // Anna invites Bruno: the invitation is a Message of the MPAI Building Service; now he is seated.
         await Tell(anna, "Invite-Bruno", "invite;user=Bruno"); await services.PumpAsync();
         Assert.StartsWith("invitation;room=MeetingRoom", Meeting.TextOf((await bruno.ReadAsync("Invitation-Bruno")).Item));
         Assert.Equal("seated", await Join(services, anna));

@@ -5,7 +5,7 @@ using Mpai.Mmm.Server;
 namespace Mpai.Aif.Tests;
 
 // A MEETING IN THE MMM, END TO END (MMM Phase 6; AllApps/MMM/Client/MeetingUc.cs). Three bots and the Secretary meet in a room of an M-Instance, through its MMM-API only:
-// convening, invitations (no meeting code), seats assigned by the AVS Service, Speech Objects through the Secretary and the ASR Service into the minutes,
+// convening, invitations (no meeting code), seats assigned by the MPAI Building Service, Speech Objects through the Secretary and the ASR Service into the minutes,
 // the minutes for the participants only, a participant taken out. Each step is recorded with what it gave; the record is the expected file.
 [Trait("Group", "Fast")]
 [Collection("MmmMeeting")]                       // they share the static state of the Meeting: one at a time

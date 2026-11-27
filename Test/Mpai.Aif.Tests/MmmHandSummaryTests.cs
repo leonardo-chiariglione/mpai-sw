@@ -49,7 +49,7 @@ public class MmmHandSummaryTests
             r.Anna = await Register("Anna"); r.Bruno = await Register("Bruno"); r.Carla = await Register("Carla");
             await r.Services.StartAsync();
             foreach (var u in new[] { r.Anna, r.Bruno })
-                await u.PerformAsync("MM-Send", Uc2.C($"Join-{u.ProcessID}", to: Meeting.Avs, with: Uc2.Message($"Join-{u.ProcessID}", Meeting.JoinText($"{u.ProcessID}-Persona"))));
+                await u.PerformAsync("MM-Send", Uc2.C($"Join-{u.ProcessID}", to: Meeting.BuildingService, with: Uc2.Message($"Join-{u.ProcessID}", Meeting.JoinText($"{u.ProcessID}-Persona"))));
             for (var i = 0; i < 4; i++) await r.Services.PumpAsync();
             return r;
         }
@@ -88,28 +88,28 @@ public class MmmHandSummaryTests
     {
         await using var room = await Room.Open();
         Assert.Null(await room.HandsSeenBy(room.Bruno));          // nobody has a hand up: nothing was sent
-        await room.Send(room.Bruno, Meeting.Avs, "hand;up");
+        await room.Send(room.Bruno, Meeting.BuildingService, "hand;up");
         Assert.Equal("hands:Bruno", await room.HandsSeenBy(room.Anna));
         Assert.Equal("hands:Bruno", await room.HandsSeenBy(room.Bruno));
-        Assert.Contains("AVS: Bruno raised a hand", room.Services.TheMinutes);
-        await room.Send(room.Bruno, Meeting.Avs, "hand;down");
+        Assert.Contains("MPAI Building Service: Bruno raised a hand", room.Services.TheMinutes);
+        await room.Send(room.Bruno, Meeting.BuildingService, "hand;down");
         Assert.Equal("hands:", await room.HandsSeenBy(room.Anna));
-        Assert.Contains("AVS: Bruno lowered the hand", room.Services.TheMinutes);
+        Assert.Contains("MPAI Building Service: Bruno lowered the hand", room.Services.TheMinutes);
     }
 
     [Fact]
     public async Task OnlyTheConvenerLowersAnotherHand()
     {
         await using var room = await Room.Open();
-        await room.Send(room.Bruno, Meeting.Avs, "hand;up");
-        await room.Send(room.Anna, Meeting.Avs, "hand;up");
+        await room.Send(room.Bruno, Meeting.BuildingService, "hand;up");
+        await room.Send(room.Anna, Meeting.BuildingService, "hand;up");
         Assert.Equal(["Bruno", "Anna"], room.Services.HandsUp);
-        await room.Send(room.Bruno, Meeting.Avs, "hand;down;user=Anna");              // Bruno is not the convener: this lowers his own hand, not Anna's
+        await room.Send(room.Bruno, Meeting.BuildingService, "hand;down;user=Anna");              // Bruno is not the convener: this lowers his own hand, not Anna's
         Assert.Equal(["Anna"], room.Services.HandsUp);
-        await room.Send(room.Anna, Meeting.Avs, "hand;down;user=Anna");
+        await room.Send(room.Anna, Meeting.BuildingService, "hand;down;user=Anna");
         Assert.Empty(room.Services.HandsUp);
-        await room.Send(room.Bruno, Meeting.Avs, "hand;up");
-        await room.Send(room.Anna, Meeting.Avs, "hand;down;user=Bruno");              // the convener lowers it
+        await room.Send(room.Bruno, Meeting.BuildingService, "hand;up");
+        await room.Send(room.Anna, Meeting.BuildingService, "hand;down;user=Bruno");              // the convener lowers it
         Assert.Empty(room.Services.HandsUp);
     }
 
@@ -119,11 +119,11 @@ public class MmmHandSummaryTests
         await using var room = await Room.Open();
         string? Sharing(MmmClient u) => Meeting.TextOf(u.ReadAsync($"Sharing-for-{u.ProcessID}").Result.Item);
         Assert.Null(Sharing(room.Bruno));                                                   // nobody was given anything
-        await room.Send(room.Bruno, Meeting.Avs, "share;grant;user=Bruno");                // Bruno is not the convener: refused
+        await room.Send(room.Bruno, Meeting.BuildingService, "share;grant;user=Bruno");                // Bruno is not the convener: refused
         Assert.Null(Sharing(room.Bruno));
-        await room.Send(room.Anna, Meeting.Avs, "share;grant;user=Bruno");                 // the convener lets him
+        await room.Send(room.Anna, Meeting.BuildingService, "share;grant;user=Bruno");                 // the convener lets him
         Assert.Equal("granted", Sharing(room.Bruno));
-        await room.Send(room.Anna, Meeting.Avs, "share;revoke;user=Bruno");                // and takes it back
+        await room.Send(room.Anna, Meeting.BuildingService, "share;revoke;user=Bruno");                // and takes it back
         Assert.Equal("revoked", Sharing(room.Bruno));
     }
 
@@ -131,7 +131,7 @@ public class MmmHandSummaryTests
     public async Task AHandComesDownByItselfAfterFiveSecondsOfSpeechAndNotBefore()
     {
         await using var room = await Room.Open();
-        await room.Send(room.Bruno, Meeting.Avs, "hand;up");
+        await room.Send(room.Bruno, Meeting.BuildingService, "hand;up");
         await room.Speak(room.Anna, 8);                                               // somebody else speaking does nothing to it
         Assert.Equal(["Bruno"], room.Services.HandsUp);
         await room.Speak(room.Bruno, 2);                                              // a short remark does not lower it
@@ -140,7 +140,7 @@ public class MmmHandSummaryTests
         await room.Speak(room.Bruno, 1.5);                                            // 5.5 s in all
         Assert.Empty(room.Services.HandsUp);
         Assert.Equal("hands:", await room.HandsSeenBy(room.Anna));
-        Assert.Contains("AVS: Bruno lowered the hand (after speaking)", room.Services.TheMinutes);
+        Assert.Contains("MPAI Building Service: Bruno lowered the hand (after speaking)", room.Services.TheMinutes);
     }
 
     [Fact]
@@ -148,7 +148,7 @@ public class MmmHandSummaryTests
     {
         // the length of the VOICE counts, not what the speech recognition finds (the author, 2026-11-19): no Whisper for the hands
         await using var room = await Room.Open();
-        await room.Send(room.Bruno, Meeting.Avs, "hand;up");
+        await room.Send(room.Bruno, Meeting.BuildingService, "hand;up");
         await room.Speak(room.Bruno, 6, "some words", loud: false);                  // a speech that is silence
         Assert.Equal(["Bruno"], room.Services.HandsUp);
         await room.Speak(room.Bruno, 6, "");                                          // a voice in which no words are found
@@ -175,7 +175,7 @@ public class MmmHandSummaryTests
         Assert.Null(reply["TranslatedSummary"]); Assert.Null(reply["Speech"]);
         Assert.Contains("Anna: we agreed to meet on Friday", condensed.Single());
         Assert.Contains("Bruno: I will bring the slides", condensed.Single());
-        Assert.DoesNotContain("AVS:", condensed.Single());
+        Assert.DoesNotContain("MPAI Building Service:", condensed.Single());
         Assert.DoesNotContain("before anybody asked", condensed.Single());
         // Anna did not ask, and cannot read Bruno's own answer - but the summary is for the participants: she is sent it too, written, in English as she chose no other language.
         Assert.DoesNotContain(await room.Anna.InboxAsync(), i => i.ID.StartsWith("Summary-for-", StringComparison.Ordinal));

@@ -40,7 +40,7 @@ public class MmmSecretaryDialogueTests
     {
         var persona = $"{user.ProcessID}-Persona";
         var ask = $"Join-{user.ProcessID}";
-        await user.PerformAsync("MM-Send", Uc2.C(ask, to: Meeting.Avs, with: Uc2.Message(ask, Meeting.JoinText(persona))));
+        await user.PerformAsync("MM-Send", Uc2.C(ask, to: Meeting.BuildingService, with: Uc2.Message(ask, Meeting.JoinText(persona))));
         await services.PumpAsync();
         var seat = Meeting.ParseSeat(Meeting.TextOf((await user.ReadAsync($"Seat-{ask}")).Item)!);
         var move = await user.PerformAsync("MM-Move", Uc2.C(persona, from: "MVS", to: seat["seat"],
@@ -88,7 +88,7 @@ public class MmmSecretaryDialogueTests
         var bruno = await Register(http, "Bruno");
         await services.StartAsync(); await services.PumpAsync(); await services.PumpAsync();
         foreach (var (id, text) in new[] { ("Convene-Anna", "convene"), ("Invite-Bruno", "invite;user=Bruno") })
-            await anna.PerformAsync("MM-Send", Uc2.C(id, to: Meeting.Avs, with: Uc2.Message(id, text)));
+            await anna.PerformAsync("MM-Send", Uc2.C(id, to: Meeting.BuildingService, with: Uc2.Message(id, text)));
         await services.PumpAsync();
         await Sit(services, anna);
         await Sit(services, bruno);

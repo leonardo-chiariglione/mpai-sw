@@ -93,7 +93,7 @@ public sealed class MmmVirtualVenue(MmmClient venue, string stage, JsonObject ve
             if (rs.Http == 200 && rs.Response.Complements?.With?.FirstOrDefault() is JsonObject scene)
             {
                 var things = scene["ItemValueOrRef"]?[0]?["Things"]?.AsArray().OfType<JsonObject>()
-                             .Where(t => (string?)t["ID"] != stage && (string?)t["Owner"] != venue.ProcessID && (string?)t["Kind"] != "Location")
+                             .Where(t => (string?)t["ID"] != stage && (string?)t["Holder"] != venue.ProcessID && (string?)t["Kind"] != "Location")
                              .Select(t => t["ID"]!.GetValue<string>()).ToHashSet(StringComparer.Ordinal) ?? [];
                 var arrived = things.Where(t => !present.Contains(t)).OrderBy(t => t, StringComparer.Ordinal).ToList();
                 present.IntersectWith(things);

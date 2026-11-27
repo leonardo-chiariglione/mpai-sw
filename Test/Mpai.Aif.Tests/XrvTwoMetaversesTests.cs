@@ -180,7 +180,7 @@ public class XrvTwoMetaversesTests
         var plan = Doc("ProcessActions-Theatre.json");
         var m = new MInstance(Repository.Schemas, "Theatre", "ME-Theatre");
         foreach (var l in plan["Locations"]!.AsArray().OfType<JsonObject>())
-            m.AddLocation(l["ID"]!.GetValue<string>(), owner: "TheatreVenue", isPublic: true, x: l["X"]!.GetValue<double>(), y: l["Y"]!.GetValue<double>(), size: l["Size"]!.GetValue<double>(), at: l["At"]?.GetValue<string>());
+            m.AddLocation(l["ID"]!.GetValue<string>(), holder: "TheatreVenue", isPublic: true, x: l["X"]!.GetValue<double>(), y: l["Y"]!.GetValue<double>(), size: l["Size"]!.GetValue<double>(), at: l["At"]?.GetValue<string>());
         var tokens = new Dictionary<string, string> { ["TheatreVenue"] = m.AddService("TheatreVenue"), ["AnnaUser"] = m.AddService("AnnaUser", "Anna"), ["Audience"] = m.AddService("Audience"), ["Operator"] = m.AddService("Operator") };
         await using var app = MmmServer.Build(m, "http://127.0.0.1:0");
         await app.StartAsync();

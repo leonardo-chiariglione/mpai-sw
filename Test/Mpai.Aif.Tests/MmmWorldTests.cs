@@ -8,7 +8,7 @@ using Mpai.Mmm.Server;
 namespace Mpai.Aif.Tests;
 
 // THE WORLD OF THE MMM (AllApps/MMM/World/world.json, the glTF buildings): the Metaverse Square, the MPAI building (a public atrium, and wings of rooms: the members', the offices of MPAI, the meeting rooms of the groups), a library and a cafe. A building is a Location,
-// its rooms are Locations in it, a door is a Right: the AVS Service gives it to the Users it invites, for the meeting - the rights carry the period of the meeting and are
+// its rooms are Locations in it, a door is a Right: the MPAI Building Service gives it to the Users it invites, for the meeting - the rights carry the period of the meeting and are
 // withdrawn when it ends - and the others are refused (403). All through the MMM-API, as the browser client does it.
 [Trait("Group", "Fast")]
 [Trait("Blocks", "Yes")]
@@ -38,7 +38,7 @@ public class MmmWorldTests
         return user;
     }
 
-    private const string Building = "Atrium", Wing = "MeetingsWing";     // the atrium is public; the wing and the room are the AVS Service's
+    private const string Building = "Atrium", Wing = "MeetingsWing";     // the atrium is public; the wing and the room are the MPAI Building Service's
 
     private static Task<MmmClient.Result> Go(MmmClient u, string from, string to, double x = 0, double y = 0) =>
         u.PerformAsync("MM-Move", Uc2.C($"{u.ProcessID}-Persona", from: from, to: to, with: Uc2.SpatialAttitude($"SA-{u.ProcessID}-{to}", x, y)));
@@ -46,7 +46,7 @@ public class MmmWorldTests
     private static async Task<Dictionary<string, string>> AskSeat(MmmClient u, MeetingServices services)
     {
         var id = $"Join-{u.ProcessID}-{Guid.NewGuid():N}";
-        await u.PerformAsync("MM-Send", Uc2.C(id, to: Meeting.Avs, with: Uc2.Message(id, Meeting.JoinText($"{u.ProcessID}-Persona"))));
+        await u.PerformAsync("MM-Send", Uc2.C(id, to: Meeting.BuildingService, with: Uc2.Message(id, Meeting.JoinText($"{u.ProcessID}-Persona"))));
         await services.PumpAsync();
         return Meeting.ParseSeat(Meeting.TextOf((await u.ReadAsync($"Seat-{id}")).Item)!.Replace("not invited", "seat=none").Replace("the meeting is over", "over=1"));
     }
@@ -136,7 +136,7 @@ public class MmmWorldTests
         await w.StartAsync(DateTimeOffset.UtcNow.AddHours(2));
         var anna = await Arrive(w.Http, "Anna"); var bruno = await Arrive(w.Http, "Bruno"); var zed = await Arrive(w.Http, "Zed");
 
-        // The atrium is public: anybody goes in. The wing of the meeting rooms is the AVS Service's: before anybody has been given anything, its door is shut to all.
+        // The atrium is public: anybody goes in. The wing of the meeting rooms is the MPAI Building Service's: before anybody has been given anything, its door is shut to all.
         Assert.Equal(200, (await Go(zed, "MVS", Building, 0, 0)).Http);
         Assert.Equal(200, (await Go(anna, "MVS", Building, 0, 0)).Http);
         Assert.Equal(200, (await Go(bruno, "MVS", Building, 0, 0)).Http);
@@ -168,7 +168,7 @@ public class MmmWorldTests
         Assert.Equal(200, (await Capture(anna, Meeting.Room)).Http);
 
         // The convener ends the meeting: every right of every participant is withdrawn.
-        await anna.PerformAsync("MM-Send", Uc2.C("End-1", to: Meeting.Avs, with: Uc2.Message("End-1", "end")));
+        await anna.PerformAsync("MM-Send", Uc2.C("End-1", to: Meeting.BuildingService, with: Uc2.Message("End-1", "end")));
         await w.Services.PumpAsync();
         Assert.True(w.Services.Ended);
         Assert.Equal(403, (await Capture(anna, Meeting.Room)).Http);                        // the room is not hers to see any more
@@ -190,17 +190,17 @@ public class MmmWorldTests
         var anna = await Arrive(w.Http, "Anna"); var bruno = await Arrive(w.Http, "Bruno");
         await AskSeat(anna, w.Services); await AskSeat(bruno, w.Services);
 
-        await bruno.PerformAsync("MM-Send", Uc2.C("End-B", to: Meeting.Avs, with: Uc2.Message("End-B", "end")));
+        await bruno.PerformAsync("MM-Send", Uc2.C("End-B", to: Meeting.BuildingService, with: Uc2.Message("End-B", "end")));
         await w.Services.PumpAsync();
         Assert.False(w.Services.Ended);                                     // Bruno is not the convener
         Assert.Equal(200, (await Go(bruno, "MVS", Building)).Http);
         Assert.Equal(200, (await Go(bruno, Building, Wing)).Http);
         Assert.Equal(200, (await Go(bruno, Wing, "MVS", 13.5, 0)).Http);
 
-        now = now.AddMinutes(61);                                           // the period is over: the M-Instance no longer holds the rights, even before the AVS Service withdraws them
+        now = now.AddMinutes(61);                                           // the period is over: the M-Instance no longer holds the rights, even before the MPAI Building Service withdraws them
         Assert.Equal(200, (await Go(anna, "MVS", Building)).Http);
         Assert.Equal(403, (await Go(anna, Building, Wing)).Http);
-        await w.Services.PumpAsync();                                       // and the AVS Service ends the meeting at its time
+        await w.Services.PumpAsync();                                       // and the MPAI Building Service ends the meeting at its time
         Assert.True(w.Services.Ended);
     }
 
@@ -250,10 +250,10 @@ public class MmmWorldTests
 
         // In what MM-Capture returns, the screen is a Thing of Kind Screen, owned by Anna, streaming.
         var scene = (await Capture(bruno, Meeting.Room)).Response.Complements?.With?[0]?["ItemValueOrRef"]?[0]?["Things"]?.AsArray() ?? [];
-        Assert.Contains(scene.OfType<JsonObject>(), t => (string?)t["Kind"] == "Screen" && (string?)t["Owner"] == "Anna" && (bool?)t["Streaming"] == true);
+        Assert.Contains(scene.OfType<JsonObject>(), t => (string?)t["Kind"] == "Screen" && (string?)t["Holder"] == "Anna" && (bool?)t["Streaming"] == true);
 
         // The convener ends the meeting: the screen is over.
-        await anna.PerformAsync("MM-Send", Uc2.C("End-S", to: Meeting.Avs, with: Uc2.Message("End-S", "end")));
+        await anna.PerformAsync("MM-Send", Uc2.C("End-S", to: Meeting.BuildingService, with: Uc2.Message("End-S", "end")));
         await w.Services.PumpAsync();
         Assert.False(w.M.ScreenLive("Screen-Anna"));
     }
@@ -421,6 +421,18 @@ public class MmmWorldTests
         Assert.Equal(200, (await Go(anna, Building, Wing)).Http);                                         // the meeting's: yes
         Assert.Equal(200, (await Go(anna, Wing, Building)).Http);
         Assert.Equal(403, (await Go(anna, Building, "OfficesWing")).Http);                                // the offices: no, for a Participant
-        Assert.Equal(403, (await Go(anna, Building, "MembersWing")).Http);
+        // THE RIGHTS OF AN ACCOUNT LEVEL (2026-11-27): a Participant holds those of the Member Companies area
+        Assert.Equal(200, (await Go(anna, Building, "MembersWing")).Http);
+        Assert.Equal(200, (await Go(anna, "MembersWing", "MemberRoom2")).Http);
+        // and may walk there (MM-Animate At the place: how an A-User goes), not to the Offices
+        var walk = new System.Text.Json.Nodes.JsonObject { ["Header"] = "PAF-PAV-V1.6", ["MInstanceID"] = "MI1", ["PortableAvatarID"] = "pav-anna-walk" };
+        Assert.Equal(200, (await anna.PerformAsync("MM-Animate", Uc2.C("Anna-Persona", at: "MemberRoom3", with: [walk]))).Http);
+        Assert.Equal(403, (await anna.PerformAsync("MM-Animate", Uc2.C("Anna-Persona", at: "Office-President", with: [walk.DeepClone()]))).Http);
+        // a Visitor: the public places only (the square, the Atrium, the Library, the Cafe)
+        var vito = await Arrive("Vito", "Visitor");
+        await w.Services.PumpAsync();
+        Assert.Equal(403, (await Go(vito, Building, "MembersWing")).Http);
+        Assert.Equal(200, (await Go(vito, Building, "MVS")).Http);
+        Assert.Equal(200, (await Go(vito, "MVS", "Library")).Http);
     }
 }

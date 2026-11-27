@@ -213,9 +213,9 @@ public static class MmmServer
         app.MapPost("/viewer/auser/never", (HttpContext ctx) => { if (Caller(ctx) is not { } u) return Results.Unauthorized(); m.NeverAUser(u); return Results.Ok(); });
         app.MapPost("/viewer/officer/seen", (HttpContext ctx) => { if (Caller(ctx) is not { } u) return Results.Unauthorized(); m.OfficerAnswerSeen(u); return Results.Ok(); });
         // THE MANAGER CONSOLE (2026-11-27): the Officer requests, for the MMM Manager only; Approve, or Refuse with a reason.
-        app.MapGet("/viewer/manager/requests", (HttpContext ctx) => Caller(ctx) is { } u && m.IsManager(u) ? Results.Json(m.OfficerRequests()) : Results.StatusCode(403));
+        app.MapGet("/viewer/manager/requests", (HttpContext ctx) => Caller(ctx) is { } u && m.ActsForTheService(u) ? Results.Json(m.OfficerRequests()) : Results.StatusCode(403));
         app.MapPost("/viewer/manager/answer", (HttpContext ctx, string human, bool approve, string? reason) =>
-            Caller(ctx) is not { } u || !m.IsManager(u) ? Results.StatusCode(403)
+            Caller(ctx) is not { } u || !m.ActsForTheService(u) ? Results.StatusCode(403)
             : m.AnswerOfficer(human, approve, reason) ? Results.Ok() : Results.NotFound());
         app.MapGet("/api/v2.2/items", (HttpContext ctx, string? dataType) => Caller(ctx) is { } p
             ? Results.Json(m.List(dataType).Where(i => m.MayRead(p, i.ID)).Select(i => new { itemID = i.ID, dataType = i.DataType }))

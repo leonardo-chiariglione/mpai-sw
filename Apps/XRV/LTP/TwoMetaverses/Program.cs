@@ -130,7 +130,7 @@ static class Show
     {
         var m = new MInstance(Path.Combine(root, "schemas"), plan["MInstance"]!.GetValue<string>(), "ME-" + name);
         foreach (var l in plan["Locations"]!.AsArray().OfType<JsonObject>())
-            m.AddLocation(l["ID"]!.GetValue<string>(), owner: plan["Venue"]!.GetValue<string>(), isPublic: l["Public"]?.GetValue<bool>() ?? true,
+            m.AddLocation(l["ID"]!.GetValue<string>(), holder: plan["Venue"]!.GetValue<string>(), isPublic: l["Public"]?.GetValue<bool>() ?? true,
                           x: l["X"]?.GetValue<double>() ?? 0, y: l["Y"]?.GetValue<double>() ?? 0, size: l["Size"]?.GetValue<double>() ?? 4, at: l["At"]?.GetValue<string>());
         var tokens = new Dictionary<string, string>(StringComparer.Ordinal) { [plan["Venue"]!.GetValue<string>()] = m.AddService(plan["Venue"]!.GetValue<string>()) };
         foreach (var p in plan["Processes"]!.AsArray().OfType<JsonObject>())

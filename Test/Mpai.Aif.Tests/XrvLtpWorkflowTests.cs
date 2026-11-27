@@ -142,7 +142,7 @@ public class XrvLtpWorkflowTests
                 (Types.VEVenueSpecification, "VEVenueSpecification.json"), (Types.ActionTable, "ActionTable.json"), (Types.ParticipantData, "ParticipantData.json"), (Types.Script, "Script.json"));
             // THE M-INSTANCE: the stage, public. The show is a collection of Processes: here the Process that animates the virtual venue (VE-Venue), the guest's User and the Bot, with its Persona.
             var m = new MInstance(Repository.Schemas);
-            m.AddLocation("Stage", owner: "VE-Venue", isPublic: true, size: 10);
+            m.AddLocation("Stage", holder: "VE-Venue", isPublic: true, size: 10);
             var venueToken = m.AddService("VE-Venue");
             var botToken = m.AddService("BotSvc", personaId: "Bot");
             await using var mmm = MmmServer.Build(m, "http://127.0.0.1:0");
@@ -213,7 +213,7 @@ public class XrvLtpWorkflowTests
 
             // THE M-INSTANCE: the virtual stage, public. The Processes of the show in it: VE-Venue (animates the Items of the virtual venue), Guest1's User, the Bot.
             var m = new MInstance(Repository.Schemas);
-            m.AddLocation("Stage", owner: "VE-Venue", isPublic: true, size: 10);
+            m.AddLocation("Stage", holder: "VE-Venue", isPublic: true, size: 10);
             var venueToken = m.AddService("VE-Venue");
             var botToken = m.AddService("BotSvc", personaId: "Bot");
             await using var mmm = MmmServer.Build(m, "http://127.0.0.1:0");

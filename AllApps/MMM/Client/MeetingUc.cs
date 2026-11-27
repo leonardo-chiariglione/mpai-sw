@@ -63,7 +63,7 @@ public static class MeetingUseCase
             if (after is not null) await after($"{step:00} {what}", note);
         }
         async Task Settle() { await services.PumpAsync(); await services.PumpAsrAsync(); await services.PumpAsync(); }
-        Task<MmmClient.Result> Tell(MmmClient who, string id, string text) => who.PerformAsync("MM-Send", Uc2.C(id, to: Meeting.Avs, with: Uc2.Message(id, text)));
+        Task<MmmClient.Result> Tell(MmmClient who, string id, string text) => who.PerformAsync("MM-Send", Uc2.C(id, to: Meeting.BuildingService, with: Uc2.Message(id, text)));
         string Text(MmmClient who, string id) => Meeting.TextOf(who.ReadAsync(id).Result.Item) ?? "-";
         var asked = 0;
         var seatOfUser = new Dictionary<string, string>();
@@ -108,7 +108,7 @@ public static class MeetingUseCase
 
         await services.StartAsync(); await Settle(); await Settle();
         await Done("The Secretary takes a seat", $"Secretary-Persona at {m.Get(Meeting.SecretaryPersona)?.Location}",
-            "The Secretary is a machine Process with a Persona of its own. It is always invited, asks the AVS Service for a seat like anyone, and sits.");
+            "The Secretary is a machine Process with a Persona of its own. It is always invited, asks the MPAI Building Service for a seat like anyone, and sits.");
 
         await Tell(anna, "Convene-Anna", "convene"); await Settle();
         await Done("Anna convenes the meeting", Text(anna, "Convened-Anna"),
@@ -121,12 +121,12 @@ public static class MeetingUseCase
 
         await Tell(anna, "Invite-Bruno", "invite;user=Bruno"); await Settle();
         await Done("Anna invites Bruno", Text(bruno, "Invitation-Bruno").Split(';')[0],
-            "The invitation is a Message of the AVS Service, sent to Bruno because the convener said so.");
+            "The invitation is a Message of the MPAI Building Service, sent to Bruno because the convener said so.");
 
         var a = await Sit(anna, "Anna-Formal");
         var b = await Sit(bruno, "Bruno-Persona");
         await Done("Anna and Bruno take their seats", $"Anna {a}; Bruno {b}",
-            "The AVS Service gives each the right to move the Persona it brings to a free seat. The places of the meeting are the seats the AVS Service assigns.");
+            "The MPAI Building Service gives each the right to move the Persona it brings to a free seat. The places of the meeting are the seats the MPAI Building Service assigns.");
 
         await Done("Anna speaks", await Speak(anna),
             "What Anna says is cut by her client and placed once, at her seat, as a Speech Object with its own duration. The Secretary hears the room as any participant does, has the ASR Service recognise the speech, and writes the words in the minutes.");
@@ -152,7 +152,7 @@ public static class MeetingUseCase
         await Tell(anna, "Revoke-Bruno", "revoke;user=Bruno"); await Settle();
         var inRoom = await bruno.PerformAsync("MM-Capture", Uc2.C(at: Meeting.Room, with: PointOfView()));
         await Done("Anna takes Bruno out of the meeting", $"Bruno captures the room: {inRoom.Http}",
-            "Anna says Bruno is out. The AVS Service withdraws his right to a seat. He can no longer see the room.");
+            "Anna says Bruno is out. The MPAI Building Service withdraws his right to a seat. He can no longer see the room.");
         await Done("Anna speaks again", await Speak(anna), "Anna speaks again. Bruno is given no more of the minutes.");
         await Done("Bruno no longer hears", $"he reads it {(await bruno.ReadAsync(lastSpeech)).Http}", "He is out of the meeting: what is said in the room is not his to hear.");
         var final = Text(anna, $"{Meeting.Minutes}-for-Anna");

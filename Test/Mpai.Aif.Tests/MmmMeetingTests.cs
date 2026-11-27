@@ -7,7 +7,7 @@ using Mpai.Mmm.Server;
 namespace Mpai.Aif.Tests;
 
 // THE MEETING AS SERVICES OF THE M-INSTANCE (MMM Phase 3). Two participants and the Secretary meet in a room - a Location with seat Locations - with no
-// ABV server. The AVS Service, a Process, assigns the seats and gives each User the right to move its Persona to its own; the Secretary, a machine
+// ABV server. The MPAI Building Service, a Process, assigns the seats and gives each User the right to move its Persona to its own; the Secretary, a machine
 // Process with a Persona, takes a seat like the others and takes the minutes of what it is told. All through the MMM-API.
 [Trait("Group", "Fast")]
 [Collection("MmmMeeting")]                       // they share the static state of the Meeting: one at a time
@@ -38,10 +38,10 @@ public class MmmMeetingTests
         return user;
     }
 
-    // Asks the AVS Service for a seat, and goes there.
+    // Asks the MPAI Building Service for a seat, and goes there.
     private static async Task<(string Seat, double X, double Y, double Yaw)> SitDown(HttpClient http, MeetingServices services, MmmClient user, string persona)
     {
-        Assert.Equal(200, (await user.PerformAsync("MM-Send", Uc2.C($"Join-{user.ProcessID}", to: Meeting.Avs, with: Uc2.Message($"Join-{user.ProcessID}", Meeting.JoinText(persona))))).Http);
+        Assert.Equal(200, (await user.PerformAsync("MM-Send", Uc2.C($"Join-{user.ProcessID}", to: Meeting.BuildingService, with: Uc2.Message($"Join-{user.ProcessID}", Meeting.JoinText(persona))))).Http);
         await services.PumpAsync();
         var told = Meeting.ParseSeat(Meeting.TextOf((await user.ReadAsync($"Seat-Join-{user.ProcessID}")).Item)!);
         var yaw = double.Parse(told["yaw"], CultureInfo.InvariantCulture);
@@ -74,11 +74,11 @@ public class MmmMeetingTests
         Assert.Equal(403, intruder.Http);
 
         await services.StartAsync();                                  // the Secretary asks to join
-        await services.PumpAsync();                                   // the AVS Service gives it a seat
+        await services.PumpAsync();                                   // the MPAI Building Service gives it a seat
         await services.PumpAsync();                                   // the Secretary goes to it
         // Anna convenes the meeting and invites Bruno (the Secretary is always invited): the room is not open.
         foreach (var (id, text) in new[] { ("Convene-Anna", "convene"), ("Invite-Bruno", "invite;user=Bruno") })
-            await anna.PerformAsync("MM-Send", Uc2.C(id, to: Meeting.Avs, with: Uc2.Message(id, text)));
+            await anna.PerformAsync("MM-Send", Uc2.C(id, to: Meeting.BuildingService, with: Uc2.Message(id, text)));
         await services.PumpAsync();
         var a = await SitDown(http, services, anna, "Anna-Formal");
         var b = await SitDown(http, services, bruno, "Bruno-Persona");
@@ -113,17 +113,17 @@ public class MmmMeetingTests
                          .Where(t => (string?)t["Kind"] == "Persona").Select(t => (string)t["ID"]!).Order().ToList();
         Assert.Equal(["Anna-Formal", "Bruno-Persona", Meeting.SecretaryPersona], inRoom);
 
-        // A User cannot bring a Persona that is not its own: the right the AVS Service gives names it, but MM-Move is the owner's alone.
+        // A User cannot bring a Persona that is not its own: the right the MPAI Building Service gives names it, but MM-Move is the owner's alone.
         var theft = await bruno.PerformAsync("MM-Move", Uc2.C("Anna-Formal", from: a.Seat, to: b.Seat, with: Uc2.SpatialAttitude("SA-Z")));
         Assert.Equal(403, theft.Http);
 
-        // What is said goes to the Secretary; the minutes are the room's, kept by the AVS Service.
+        // What is said goes to the Secretary; the minutes are the room's, kept by the MPAI Building Service.
         await anna.PerformAsync("MM-Send", Uc2.C("Said-Anna-1", to: Meeting.Secretary, with: Uc2.Message("Said-Anna-1", "say: Welcome, Bruno.")));
         await bruno.PerformAsync("MM-Send", Uc2.C("Said-Bruno-1", to: Meeting.Secretary, with: Uc2.Message("Said-Bruno-1", "say: Thank you, Anna.")));
         await services.PumpAsync();
         await services.PumpAsync();
         Assert.Equal(["Anna: Welcome, Bruno.", "Bruno: Thank you, Anna."], services.TheMinutes);
-        Assert.Equal("Anna: Welcome, Bruno.\nBruno: Thank you, Anna.", Meeting.TextOf(new MmmClient(http, Meeting.Avs, m.TokenOf(Meeting.Avs)).ReadAsync(Meeting.Minutes).Result.Item));
+        Assert.Equal("Anna: Welcome, Bruno.\nBruno: Thank you, Anna.", Meeting.TextOf(new MmmClient(http, Meeting.BuildingService, m.TokenOf(Meeting.BuildingService)).ReadAsync(Meeting.Minutes).Result.Item));
         await app.StopAsync();
     }
 }

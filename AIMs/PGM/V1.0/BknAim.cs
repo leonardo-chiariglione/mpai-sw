@@ -161,8 +161,10 @@ public sealed class BknAim : PgmAim
             var system =
                 "You are the A-User, an autonomous assistant of a responsible human in a metaverse building. " +
                 "'reply' is what you say aloud to the human: one or two short natural sentences, never a command name. " +
-                "If the human asks you to change an item of the building (for instance to open the doors, to let somebody in - which is opening the door -, or to switch on the lamp), add one entry to worldActions: verb 'Property Change', target the item, " +
-                "and change: what you do to it, one of: " + string.Join(", ", ItemProperties.Changes.Keys) + ". " +
+                (items.Length == 0 && places.Length > 0
+                    ? "You cannot change items of the building: worldActions stays empty. "
+                    : "If the human asks you to change an item of the building (for instance to open the doors, to let somebody in - which is opening the door -, or to switch on the lamp), add one entry to worldActions: verb 'Property Change', target the item, " +
+                      "and change: what you do to it, one of: " + string.Join(", ", ItemProperties.Changes.Keys) + ". ") +
                 "If you need to go somewhere in the building yourself, put the place in personaMoves (for instance 'doors'). Otherwise leave the lists empty. " +
                 (places.Length > 0 ? "The places you can go to are: " + string.Join(", ", places) + "; to act on an item, first go to the place next to it. " : "") +
                 (conditionEvent is not null
@@ -195,7 +197,8 @@ public sealed class BknAim : PgmAim
             var json = JsonNode.Parse(raw) as JsonObject ?? throw new InvalidOperationException("the model did not give a JSON object");
             reply = (string?)json["reply"] ?? "";
             foreach (var a in json["worldActions"] as JsonArray ?? [])
-                if (a is JsonObject o && (string?)o["verb"] is { } v && allowed.Contains(v) && Known((string?)o["target"], items) is { Length: > 0 } t)
+                // NO ITEMS, NO CHANGE (2026-11-27): an A-User that knows places and no Items (the A-Users of the world) changes nothing; the model named the place it went to
+                if (a is JsonObject o && (string?)o["verb"] is { } v && allowed.Contains(v) && !(items.Length == 0 && places.Length > 0) && Known((string?)o["target"], items) is { Length: > 0 } t)
                 {
                     // the change the model chose ("open"), as the Item Property and its value (OpenState Open); a model that gives the property and the value is also understood
                     if ((string?)o["change"] is { } ch && ItemProperties.Changes.TryGetValue(ch.Trim().ToLowerInvariant(), out var pc)) worldActions.Add((v, t, pc.Name, pc.Value));
@@ -386,6 +389,7 @@ public sealed class BknAim : PgmAim
             ["worldActions"] = new JsonObject
             {
                 ["type"] = "array",
+                ["maxItems"] = items is { Length: 0 } && places is { Length: > 0 } ? 0 : 8,      // no Items given while places are: no change of an Item (2026-11-27)
                 ["items"] = new JsonObject
                 {
                     ["type"] = "object",

@@ -45,7 +45,7 @@ public class MmmAccountsTests
     private static Task<MmmClient.Result> Register(HttpClient http, string user, JsonObject extra, string? choice = null, string? token = null) =>
         new MmmClient(http, $"{user}-human", token).PerformAsync("Register", new Complements { With = [Profile(user, extra, choice)] });
 
-    // INVITED BY EMAIL: the chair invites the email of an Account; the AVS Service gives that User the meeting's Rights (Rights Change) when it asks to join. The Account carries the email;
+    // INVITED BY EMAIL: the chair invites the email of an Account; the MPAI Building Service gives that User the meeting's Rights (Rights Change) when it asks to join. The Account carries the email;
     // an Officer whose organisation is MPAI is called an MPAI Officer.
     [Fact]
     public async Task AnInvitationIsTheRightsGivenToTheAccountWithTheInvitedEmail()
@@ -67,7 +67,7 @@ public class MmmAccountsTests
             async Task<string> Join(MmmClient u)
             {
                 var id = $"Join-{u.ProcessID}-{Guid.NewGuid():N}";
-                await u.PerformAsync("MM-Send", Uc2.C(id, to: Meeting.Avs, with: Uc2.Message(id, Meeting.JoinText($"{u.ProcessID}-Persona"))));
+                await u.PerformAsync("MM-Send", Uc2.C(id, to: Meeting.BuildingService, with: Uc2.Message(id, Meeting.JoinText($"{u.ProcessID}-Persona"))));
                 await services.PumpAsync();
                 return Meeting.TextOf((await u.ReadAsync($"Seat-{id}")).Item) ?? "";
             }
@@ -77,7 +77,7 @@ public class MmmAccountsTests
             Assert.Equal("Anna@Example.com", (string?)m.Get("Account-AnnaBianchi-human")!.Body!["Email"]);
             Assert.StartsWith("seat=", await Join(anna));                            // invited: her email (any case)
             Assert.Contains("not invited", await Join(bruno));                       // an Account, but not the invited email
-            Assert.Equal(200, (await anna.PerformAsync("MM-Send", Uc2.C("Inv-B", to: Meeting.Avs, with: Uc2.Message("Inv-B", "invite;user=BrunoNeri")))).Http);
+            Assert.Equal(200, (await anna.PerformAsync("MM-Send", Uc2.C("Inv-B", to: Meeting.BuildingService, with: Uc2.Message("Inv-B", "invite;user=BrunoNeri")))).Http);
             await services.PumpAsync();
             Assert.StartsWith("seat=", await Join(bruno));                           // she convenes: she may invite him
             Assert.Equal("Participant", m.LevelNameOf("AnnaBianchi"));
@@ -110,7 +110,7 @@ public class MmmAccountsTests
             var boss = new MmmClient(http, "Boss", entered.Tokens["Boss"]);
             Assert.Equal(200, (await boss.PerformAsync("MM-Add", Uc2.C("Boss-Persona", at: "MVS", with: Uc2.SpatialAttitude("SA-Boss", 3, 0)))).Http);
             var id = $"Join-Boss-{Guid.NewGuid():N}";
-            await boss.PerformAsync("MM-Send", Uc2.C(id, to: Meeting.Avs, with: Uc2.Message(id, Meeting.JoinText("Boss-Persona"))));
+            await boss.PerformAsync("MM-Send", Uc2.C(id, to: Meeting.BuildingService, with: Uc2.Message(id, Meeting.JoinText("Boss-Persona"))));
             await services.PumpAsync();
             Assert.StartsWith("seat=", Meeting.TextOf((await boss.ReadAsync($"Seat-{id}")).Item));
             // a new Account with the Manager's email is the Manager's whatever it ticked

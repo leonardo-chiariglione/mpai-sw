@@ -41,7 +41,7 @@ public class MmmStreamTests
     {
         var persona = $"{user.ProcessID}-Persona";
         var ask = $"Join-{user.ProcessID}";
-        await user.PerformAsync("MM-Send", Uc2.C(ask, to: Meeting.Avs, with: Uc2.Message(ask, Meeting.JoinText(persona))));
+        await user.PerformAsync("MM-Send", Uc2.C(ask, to: Meeting.BuildingService, with: Uc2.Message(ask, Meeting.JoinText(persona))));
         await services.PumpAsync();
         var seat = Meeting.ParseSeat(Meeting.TextOf((await user.ReadAsync($"Seat-{ask}")).Item)!);
         var move = await user.PerformAsync("MM-Move", Uc2.C(persona, from: "MVS", to: seat["seat"],
@@ -89,7 +89,7 @@ public class MmmStreamTests
         var carla = await Register(http, "Carla");
         await services.StartAsync(); await services.PumpAsync(); await services.PumpAsync();
         foreach (var (id, text) in new[] { ("Convene-Anna", "convene"), ("Invite-Bruno", "invite;user=Bruno") })
-            await anna.PerformAsync("MM-Send", Uc2.C(id, to: Meeting.Avs, with: Uc2.Message(id, text)));
+            await anna.PerformAsync("MM-Send", Uc2.C(id, to: Meeting.BuildingService, with: Uc2.Message(id, text)));
         await services.PumpAsync();
         var annaSeat = await Sit(services, anna);
         await Sit(services, bruno);
@@ -172,11 +172,11 @@ public class MmmStreamTests
         var bruno = await Register(http, "Bruno");
         await services.StartAsync(); await services.PumpAsync(); await services.PumpAsync();
         foreach (var (cid, text) in new[] { ("Convene-Anna", "convene"), ("Invite-Bruno", "invite;user=Bruno") })
-            await anna.PerformAsync("MM-Send", Uc2.C(cid, to: Meeting.Avs, with: Uc2.Message(cid, text)));
+            await anna.PerformAsync("MM-Send", Uc2.C(cid, to: Meeting.BuildingService, with: Uc2.Message(cid, text)));
         await services.PumpAsync();
         await Sit(services, anna);
         var seat = await Sit(services, bruno);
-        await bruno.PerformAsync("MM-Send", Uc2.C("Hand-Bruno", to: Meeting.Avs, with: Uc2.Message("Hand-Bruno", "hand;up")));
+        await bruno.PerformAsync("MM-Send", Uc2.C("Hand-Bruno", to: Meeting.BuildingService, with: Uc2.Message("Hand-Bruno", "hand;up")));
         for (var i = 0; i < 3; i++) await services.PumpAsync();
         Assert.Equal(["Bruno"], services.HandsUp);
 
@@ -220,7 +220,7 @@ public class MmmStreamTests
         var bruno = await Register(http, "Bruno");
         await services.StartAsync(); await services.PumpAsync(); await services.PumpAsync();
         foreach (var (id, text) in new[] { ("Convene-Anna", "convene"), ("Invite-Bruno", "invite;user=Bruno") })
-            await anna.PerformAsync("MM-Send", Uc2.C(id, to: Meeting.Avs, with: Uc2.Message(id, text)));
+            await anna.PerformAsync("MM-Send", Uc2.C(id, to: Meeting.BuildingService, with: Uc2.Message(id, text)));
         await services.PumpAsync();
         var seat = await Sit(services, anna);
         await Sit(services, bruno);
@@ -277,7 +277,7 @@ public class MmmStreamTests
         var carla = await Register(http, "Carla");
         await services.StartAsync(); await services.PumpAsync(); await services.PumpAsync();
         foreach (var (id, text) in new[] { ("Convene-Anna", "convene"), ("Invite-Bruno", "invite;user=Bruno") })
-            await anna.PerformAsync("MM-Send", Uc2.C(id, to: Meeting.Avs, with: Uc2.Message(id, text)));
+            await anna.PerformAsync("MM-Send", Uc2.C(id, to: Meeting.BuildingService, with: Uc2.Message(id, text)));
         await services.PumpAsync();
         await Sit(services, anna);
         await Sit(services, bruno);

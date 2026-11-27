@@ -3,6 +3,9 @@ using Mpai.Mmm;
 using Mpai.Mmm.Client;
 using Mpai.Mmm.Server;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Mpai.Pgm;
 
 // THE MMM SERVER, ALONE. dotnet run --project AllApps/MMM/Server -- [url] [--demo [seconds|manual]]
 // The M-Instance of Use Case 2 behind the MMM-API, its viewer at <url>/viewer/.
@@ -80,7 +83,7 @@ else
 {
     Uc2.Setup(m);
     m.DefaultModels = ["Persona1.glb", "Persona2.glb"];   // the Personae of the Users that join from a client are drawn with these in turn
-    Meeting.Setup(m);                                      // the meeting room, its seats, the AVS Service and the Secretary
+    Meeting.Setup(m);                                      // the meeting room, its seats, the MPAI Building Service and the Secretary
 }
 
 // What a step means, said under its caption - for the steps whose point is not seen on the stage.
@@ -138,9 +141,34 @@ void Next()
     try { next.Release(); } catch (SemaphoreFullException) { }
 }
 
-var internalKey = Guid.NewGuid().ToString("N");        // how the services of the M-Instance (the AVS Service, the Secretary, the ASR Service) get past the meeting code: they are not guests
+var internalKey = Guid.NewGuid().ToString("N");        // how the services of the M-Instance (the MPAI Building Service, the Secretary, the ASR Service) get past the meeting code: they are not guests
 var avatarFolder = Path.Combine(repo, "Apps", "ABV", "AVS", "Server", "avatars");
 var app = MmmServer.Build(m, url, Path.Combine(repo, "AllApps", "MMM", "Viewer"), manual ? Next : null, manual ? Back : null, manual ? Shown : null, code, Directory.Exists(avatarFolder) ? avatarFolder : null, internalKey, identity, officerNames);
+// THE A-USERS (2026-11-27): the human commands its A-User from its page, as its H-User (its token): the words written or spoken, and what the A-User says back.
+AUserAgents? aUsers = null;
+WhisperAsr? aUserEars = null;
+AUserAgent? AUserOfCaller(HttpContext ctx) =>
+    ctx.Request.Headers.Authorization.ToString() is { } auth && auth.StartsWith("Bearer ", StringComparison.Ordinal) && m.ProcessOf(auth["Bearer ".Length..].Trim()) is { } caller
+    && m.HumanOf(caller) is { } human && m.AUserOf(human) is { } aUser ? aUsers?.Of(aUser) : null;
+app.MapPost("/viewer/auser/command", async (HttpContext ctx) =>
+{
+    if (AUserOfCaller(ctx) is not { } a) return Results.NotFound();
+    await a.CommandAsync(await new StreamReader(ctx.Request.Body).ReadToEndAsync());
+    return Results.Ok();
+});
+app.MapPost("/viewer/auser/speak", async (HttpContext ctx) =>           // 16 kHz, 16 bit, mono PCM: recognised here (Whisper), then the command
+{
+    if (AUserOfCaller(ctx) is not { } a) return Results.NotFound();
+    if (aUserEars is not { Available: true } ears) return Results.Text("");
+    using var ms = new MemoryStream(); await ctx.Request.Body.CopyToAsync(ms);
+    var text = (await ears.RecognizeAsync(ms.ToArray())).Trim();
+    if (text.Length > 0) await a.CommandAsync(text);
+    return Results.Text(text);
+});
+app.MapGet("/viewer/auser/log", (HttpContext ctx, int? since) => AUserOfCaller(ctx) is { } a
+    ? Results.Json(new { ready = a.Ready, entries = a.Since(since ?? 0), speech = aUserEars?.Available == true })
+    : Results.Json(new { ready = false, entries = Array.Empty<object>(), speech = false }));
+app.MapGet("/viewer/auser/speech/{id}", (HttpContext ctx, string id) => AUserOfCaller(ctx)?.SpeechOf(id) is { } wav ? Results.Bytes(wav, "audio/wav") : Results.NotFound());
 await app.StartAsync();
 Console.WriteLine($"M-Instance {m.ID} on {url}; its viewer at {url.TrimEnd('/')}/viewer/");
 if (kept is not null)
@@ -148,7 +176,7 @@ if (kept is not null)
     _ = Task.Run(() => kept.KeepAsync(app.Lifetime.ApplicationStopping));
     app.Lifetime.ApplicationStopping.Register(() => { try { kept.Save(); Console.WriteLine($"The state of the M-Instance is kept in {kept.Folder}."); } catch (Exception e) { Console.Error.WriteLine("keeping the state: " + e.Message); } });
 }
-// The meeting's Processes: the AVS Service and the Secretary, acting through the MMM-API like any Process.
+// The meeting's Processes: the MPAI Building Service and the Secretary, acting through the MMM-API like any Process.
 // The ASR Service recognises with Whisper (from Access: the L3 of ASR declares the program and the model), if they can be had.
 // --no-asr: no speech recognition (no Whisper): no minutes, and the participants write to the Secretary.
 var noAsr = args.Contains("--no-asr");
@@ -184,6 +212,14 @@ if (!args.Contains("--no-summary")) { meeting.Summarise = summary.SummariseAsync
 using var secretaryUnderstands = new SecretaryInterpreter(repo, llm);
 if (!args.Contains("--no-summary")) meeting.Interpret = secretaryUnderstands.InterpretAsync;
 await meeting.StartAsync();
+// The A-Users of the world (with Accounts): each with its agent and its A-User Module; the language model of the Secretary (Ollama keeps one copy), the voices of the summary.
+if (m.RequireCredentials)
+{
+    aUserEars = !noAsr && whisper.Available ? whisper : null;
+    aUsers = new AUserAgents(m, inside, AUserAgents.PlacesOf(repo), new OllamaModel(llm) { KeepAlive = "30m" }, new AUserAgents.Voice(summary), repo);
+    _ = Task.Run(() => aUsers.KeepAsync(app.Lifetime.ApplicationStopping));
+    Console.WriteLine("A-Users: each deployed A-User runs its A-User Module (PGM-AUA); its human commands it from its page.");
+}
 if (m.RequireCredentials && Arg("--invite-emails") is { Length: > 0 } emails)
 {
     // WITH ACCOUNTS the invited are the emails of their Accounts, the chair's first; the names of --invite are not used to name anybody.

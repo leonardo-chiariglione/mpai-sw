@@ -70,7 +70,7 @@ public class MmmSummaryRealModelTests
             var people = new Dictionary<string, MmmClient> { ["Anna"] = await Register("Anna"), ["Bruno"] = await Register("Bruno") };
             await services.StartAsync();
             foreach (var u in people.Values)
-                await u.PerformAsync("MM-Send", Uc2.C($"Join-{u.ProcessID}", to: Meeting.Avs, with: Uc2.Message($"Join-{u.ProcessID}", Meeting.JoinText($"{u.ProcessID}-Persona"))));
+                await u.PerformAsync("MM-Send", Uc2.C($"Join-{u.ProcessID}", to: Meeting.BuildingService, with: Uc2.Message($"Join-{u.ProcessID}", Meeting.JoinText($"{u.ProcessID}-Persona"))));
             async Task Settle() { for (var i = 0; i < 4; i++) await services.PumpAsync(); }
             await Settle();
             var n = 0;

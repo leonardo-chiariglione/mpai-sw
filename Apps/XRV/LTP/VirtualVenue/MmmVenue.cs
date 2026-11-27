@@ -191,7 +191,7 @@ public sealed class MmmVenue : IDevice
                 {
                     var id = t["ID"]!.GetValue<string>();
                     var kind = (string?)t["Kind"];
-                    if (kind == "Location" || (string?)t["Owner"] == venue.ProcessID) continue;
+                    if (kind == "Location" || (string?)t["Holder"] == venue.ProcessID) continue;
                     if (consoles.Contains(id))
                     {
                         var on = D(t["Intensity"]) > 0;
