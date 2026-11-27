@@ -61,21 +61,59 @@ public sealed class OnnxTttAim : ITttAim, IDisposable
     private readonly InferenceSession     _encoder;
     private readonly InferenceSession     _decoderFirst;
     private readonly InferenceSession     _decoderPast;
-    private readonly SemaphoreSlim        _oneAtATime = new(1, 1);
+    private readonly SemaphoreSlim        _oneAtATime;
+    private readonly string               _engineKey;
+    private int                           _disposed;
+
+    // ONE MODEL FOR EVERY AIM OF THIS KIND IN THE PROCESS (N-51, 2026-11-27). Since 2026-11-26 the MAS instance gives every Module Instance a Controller of its own, and so a
+    // TTT AIM of its own: each AIM opening its own three sessions loaded M2M-100 again for every client (about 4.6 GB each; the fifth client of TST on a 32 GB machine failed
+    // with "bad allocation"). The tokeniser, the sessions and the one-at-a-time gate are now one engine per model files, shared by the AIMs that use those files and
+    // closed when the last of them is disposed. Translations of different AIMs take turns on the engine, as those of one AIM did.
+    private sealed class Engine
+    {
+        public required M2M100Tokeniser  Tokeniser;
+        public required InferenceSession Encoder;
+        public required InferenceSession DecoderFirst;
+        public required InferenceSession DecoderPast;
+        public readonly SemaphoreSlim    Gate = new(1, 1);
+        public int                       Holders;
+    }
+
+    private static readonly Dictionary<string, Engine> Engines = new(StringComparer.OrdinalIgnoreCase);
 
     public OnnxTttAim(OnnxTttConfiguration configuration)
     {
         _configuration = configuration;
+        _engineKey = string.Join("|", configuration.EncoderModelPath, configuration.DecoderFirstModelPath, configuration.DecoderPastModelPath,
+                                      configuration.SpmModelPath, configuration.VocabPath, configuration.SpecialTokensPath ?? "");
 
-        _tokeniser = M2M100Tokeniser.Load(
-            configuration.SpmModelPath,
-            configuration.VocabPath,
-            configuration.SpecialTokensPath);
+        Engine engine;
+        lock (Engines)
+        {
+            if (!Engines.TryGetValue(_engineKey, out engine!))
+            {
+                engine = new Engine
+                {
+                    Tokeniser    = M2M100Tokeniser.Load(configuration.SpmModelPath, configuration.VocabPath, configuration.SpecialTokensPath),
+                    Encoder      = OnnxSessions.Create(configuration.EncoderModelPath),
+                    DecoderFirst = OnnxSessions.Create(configuration.DecoderFirstModelPath),
+                    DecoderPast  = OnnxSessions.Create(configuration.DecoderPastModelPath)
+                };
+                Engines[_engineKey] = engine;
+            }
+            engine.Holders++;
+        }
 
-        _encoder      = OnnxSessions.Create(configuration.EncoderModelPath);
-        _decoderFirst = OnnxSessions.Create(configuration.DecoderFirstModelPath);
-        _decoderPast  = OnnxSessions.Create(configuration.DecoderPastModelPath);
+        _tokeniser    = engine.Tokeniser;
+        _encoder      = engine.Encoder;
+        _decoderFirst = engine.DecoderFirst;
+        _decoderPast  = engine.DecoderPast;
+        _oneAtATime   = engine.Gate;
     }
+
+    // How many AIMs hold this AIM's engine, 0 once it is closed; and whether two AIMs use one engine (for the tests of N-51).
+    public int EngineHolders { get { lock (Engines) return Engines.TryGetValue(_engineKey, out var e) ? e.Holders : 0; } }
+    public bool SharesEngineWith(OnnxTttAim other) => ReferenceEquals(_encoder, other._encoder);
 
     public async Task<BasicTextObject> ProcessAsync(
         BasicTextObject     text,
@@ -309,12 +347,26 @@ public sealed class OnnxTttAim : ITttAim, IDisposable
         return head.Length <= 2 ? head : head.Substring(0, 2);
     }
 
+    // The engine is closed by the last AIM that holds it; an AIM disposed twice lets go once.
     public void Dispose()
     {
-        _encoder.Dispose();
-        _decoderFirst.Dispose();
-        _decoderPast.Dispose();
-        _oneAtATime.Dispose();
+        if (Interlocked.Exchange(ref _disposed, 1) != 0) return;
+        Engine? last = null;
+        lock (Engines)
+        {
+            if (Engines.TryGetValue(_engineKey, out var engine) && --engine.Holders == 0)
+            {
+                Engines.Remove(_engineKey);
+                last = engine;
+            }
+        }
+        if (last is null) return;
+        // a translation still running on it ends first
+        last.Gate.Wait();
+        last.Encoder.Dispose();
+        last.DecoderFirst.Dispose();
+        last.DecoderPast.Dispose();
+        last.Gate.Dispose();
     }
 }
 

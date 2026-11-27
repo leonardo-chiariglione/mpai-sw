@@ -37,11 +37,12 @@ public class TIQEngine : IDisposable
         string decoderModel,
         string vocabFile)
     {
-        visionSession = OnnxSessions.Create(visionModel);
+        // the sessions are shared with the other TIQ engines of this process (one BLIP for every Module Instance on the MAS instance, N-51); the image state stays this engine's
+        visionSession = OnnxSessions.Shared(visionModel);
 
-        encoderSession = OnnxSessions.Create(encoderModel);
+        encoderSession = OnnxSessions.Shared(encoderModel);
 
-        decoderSession = OnnxSessions.Create(decoderModel);
+        decoderSession = OnnxSessions.Shared(decoderModel);
 
         tokenizer = new BlipTokenizer(vocabFile);    }
 
@@ -222,11 +223,14 @@ var encoderInputs =
         return Ask(question);
     }
 
+    private int disposed;
+
     public void Dispose()
     {
-        visionSession.Dispose();
-        encoderSession.Dispose();
-        decoderSession.Dispose();
+        if (System.Threading.Interlocked.Exchange(ref disposed, 1) != 0) return;
+        OnnxSessions.Release(visionSession);
+        OnnxSessions.Release(encoderSession);
+        OnnxSessions.Release(decoderSession);
     }
 
     // Resize to 384x384 and normalise with BLIP's mean/std into [1,3,384,384].
