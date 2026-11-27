@@ -233,6 +233,12 @@ if (Arg("--until") is { } until && TimeSpan.TryParse(until, out var clock)) { va
 else if (Arg("--hours") is { } hours && double.TryParse(hours, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var h)) meeting.EndsAt = DateTimeOffset.UtcNow.AddHours(h);
 if (meeting.EndsAt is { } ends) Console.WriteLine($"The meeting ends at {ends.ToLocalTime():HH:mm}: its rights end with it.");                                      // the first of --invite is the convener, the others are invited
 _ = Task.Run(async () => { while (true) { try { await meeting.PumpAsync(); } catch (Exception e) { Console.Error.WriteLine("meeting: " + e.Message); } await Task.Delay(200); } });
+if (m.Get(ProvingGround.ID) is not null)        // the CAV Proving Ground: its Service gives the Rights to change its conditions and runs its traffic lights
+{
+    var provingGround = new ProvingGroundService(inside, m);
+    _ = Task.Run(async () => { while (true) { try { await provingGround.PumpAsync(); } catch (Exception e) { Console.Error.WriteLine("proving ground: " + e.Message); } await Task.Delay(500); } });
+    Console.WriteLine("CAV Proving Ground: through the Gate on the Square.");
+}
 var minutesShown = 0;
 _ = Task.Run(async () => { while (true) { try { await meeting.PumpSummaryAsync(); } catch (Exception e) { Console.Error.WriteLine("summary: " + e.Message); } await Task.Delay(300); } });
 _ = Task.Run(async () => { while (true) { try { await meeting.PumpRunningSummariesAsync(); } catch (Exception e) { Console.Error.WriteLine("running summary: " + e.Message); } await Task.Delay(2000); } });   // a summary asked by voice grows as the meeting goes on

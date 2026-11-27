@@ -456,4 +456,58 @@ public class MmmWorldTests
         Assert.Equal(200, (await zed.PerformAsync("Property Change", Uc2.C(Door, with: [State(Door, "Open")]))).Http);
         Assert.Equal(200, (await Go(zed, "OfficesWing", "Office-President")).Http);
     }
+
+    // THE CAV PROVING GROUND (2026-11-27): an M-Location reached through the Gate on the Square, public; its conditions (TimeOfDay, Weather, Friction: Item Properties of its
+    // M-Location) are changed by a User the Proving Ground Service gives the Right to - a Participant, not a Visitor; its traffic lights change in turn, by the Service.
+    [Fact]
+    public async Task TheProvingGroundIsReachedThroughItsGateAndItsConditionsChangeWithTheRight()
+    {
+        await using var w = new Running();
+        await w.StartAsync(DateTimeOffset.UtcNow.AddHours(2));
+        var world = World.Load(Repository.Root);
+        var env = ProvingGround.Environment(world)!;
+        Assert.NotNull(env);
+        Assert.True(File.Exists(Path.Combine(Repository.Root, "AllApps", "MMM", "Viewer", (string)env["model"]!)));
+        Assert.Equal("ProvingGround", w.M.Get("Gate-ProvingGround")!.Leads);
+        Assert.Equal(12, ProvingGround.Signals.Length);
+        Assert.Contains(env["roads"]!.AsArray(), r => (string?)r!["kind"] == "motorway");
+
+        async Task<MmmClient> Arrive(string name, string level)
+        {
+            var p = Profile(name); p["PersonalProfile"]!["AccountLevel"] = level;
+            var reg = await new MmmClient(w.Http, $"{name}-human").PerformAsync("Register", new Complements { With = [p] });
+            var u = new MmmClient(w.Http, name, reg.Tokens[name]);
+            Assert.Equal(200, (await u.PerformAsync("MM-Add", Uc2.C($"{name}-Persona", at: "MVS", with: Uc2.SpatialAttitude($"SA-{name}", 3, 0)))).Http);
+            return u;
+        }
+        var anna = await Arrive("Anna", "Participant"); var vito = await Arrive("Vito", "Visitor");
+        var service = new ProvingGroundService(w.Http, w.M) { Clock = () => DateTimeOffset.FromUnixTimeSeconds(1_000_000_000) };    // 1e9 % 50 = 0: north-south green
+        await service.PumpAsync();
+        Assert.Equal(200, (await Go(anna, "MVS", ProvingGround.ID, -290, 0)).Http);                       // through the Gate: anybody
+        Assert.Equal(200, (await Go(vito, "MVS", ProvingGround.ID, -290, 2)).Http);
+
+        static JsonObject Set(string name, JsonNode value) => new()
+        {
+            ["Header"] = "MMM-IPR-V3.0", ["ItemID"] = ProvingGround.ID, ["Properties"] = new JsonArray(new JsonObject { ["Name"] = name, ["Value"] = value })
+        };
+        Assert.Equal(200, (await anna.PerformAsync("Property Change", Uc2.C(ProvingGround.ID, with: [Set("Weather", "Fog")]))).Http);
+        Assert.Equal(200, (await anna.PerformAsync("Property Change", Uc2.C(ProvingGround.ID, with: [Set("TimeOfDay", 21.5)]))).Http);
+        Assert.Equal(200, (await anna.PerformAsync("Property Change", Uc2.C(ProvingGround.ID, with: [Set("Friction", 0.3)]))).Http);
+        Assert.Equal(403, (await vito.PerformAsync("Property Change", Uc2.C(ProvingGround.ID, with: [Set("Weather", "Clear")]))).Http);   // a Visitor looks
+        Assert.Equal(422, (await anna.PerformAsync("Property Change", Uc2.C(ProvingGround.ID, with: [Set("Weather", "Hail")]))).Http);   // not in the vocabulary
+        Assert.Equal("Fog", (string?)w.M.Get(ProvingGround.ID)!.Properties["Weather"]);
+        Assert.Equal(21.5, (double)w.M.Get(ProvingGround.ID)!.Properties["TimeOfDay"]!);
+
+        // what a User there sees: the M-Location with its conditions, the traffic lights with their Signal
+        var scene = (await Capture(vito, ProvingGround.ID)).Response.Complements.With![0]!["ItemValueOrRef"]![0]!["Things"]!.AsArray().OfType<JsonObject>().ToList();
+        Assert.Equal("Fog", (string?)scene.First(t => (string?)t["ID"] == ProvingGround.ID)["Properties"]!["Weather"]);
+        Assert.Equal("Green", (string?)scene.First(t => (string?)t["ID"] == "Signal-J1-NS")["Properties"]!["Signal"]);
+        Assert.Equal("Red", (string?)scene.First(t => (string?)t["ID"] == "Signal-J1-EW")["Properties"]!["Signal"]);
+        Assert.Equal(("Red", "Green"), ProvingGround.Phase(30));
+        Assert.Equal(403, (await anna.PerformAsync("Property Change", Uc2.C("Signal-J1-NS", with: [ProvingGround.Signal("Signal-J1-NS", "Red")]))).Http);   // the lights are the Service's
+        // nor may Anna give herself the Right to change them: the Right to change an Item is given by the Process holding the Rights to it
+        var self = Uc2.PA("MMM-PCP-V3.0", "PropertyChange", "PA-Anna-Signal", ("RQ1", "Nil", "ItemID", JsonValue.Create("Signal-J1-NS")!));
+        Assert.Equal(403, (await anna.PerformAsync("Rights Change", Uc2.C("Anna", with: [self, Uc2.Rights("Anna-Signal-Right", "May", "Granted", "PA-Anna-Signal")]))).Http);
+        Assert.Equal(200, (await Go(anna, ProvingGround.ID, "MVS", 0, -10)).Http);                       // and back through the Gate
+    }
 }

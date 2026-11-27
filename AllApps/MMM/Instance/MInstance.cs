@@ -1011,8 +1011,9 @@ public sealed class MInstance
     {
         if (Need(service, c.Nil, "Nil") is { } f1) return f1;
         if (!items.TryGetValue(c.Nil!, out var it)) return Fail(404, service, "IncID", $"no Item {c.Nil}");
-        // the Process holding the Rights to the Item changes it; an Item that gives access to an M-Location (a door), also whoever may enter that M-Location
-        if (it.Holder != source && !(it.Leads is { } beyond && MayEnter(source, "MM-Move", c.Nil!, beyond)))
+        // the Process holding the Rights to the Item changes it; an Item that gives access to an M-Location (a door), also whoever may enter that M-Location; any Item, also a Process
+        // that a Right lets change it (the conditions of the Proving Ground: its M-Location's Properties)
+        if (it.Holder != source && !(it.Leads is { } beyond && MayEnter(source, "MM-Move", c.Nil!, beyond)) && !Allowed(source, "Property Change", c.Nil, null))
             return Fail(403, service, "InsRights", it.Leads is null ? $"{c.Nil} is not {source}'s" : $"{source} may not enter {it.Leads}, beyond {c.Nil}");
         var light = with.FirstOrDefault(i => Header(i) == "CVE-LTS-V1.0");
         if (light is not null && (string?)light["LightSourceID"] != c.Nil) return Fail(422, service, "FaultyPA", $"the Light Source is {(string?)light["LightSourceID"]}'s, not {c.Nil}'s");
@@ -1128,9 +1129,10 @@ public sealed class MInstance
         if (rights.Count == 0) return Fail(422, service, "FaultyPA", "Rights Change takes Rights");
         Store(with);
         // Rights on a place are given by the Process holding the Rights to it: the targets (To, At) of the Process
-        // Actions the Rights name - the Room - not what they act on (the Persona moving in).
+        // Actions the Rights name - the Room - not what they act on (the Persona moving in). Rights to change an Item (Property Change, which has no target) are given by the
+        // Process holding the Rights to the Item.
         foreach (var r in rights)
-            foreach (var t in Entries(r).SelectMany(e => e.PAs).Select(Template).OfType<PA>().Select(t => t.Target).OfType<string>())
+            foreach (var t in Entries(r).SelectMany(e => e.PAs).Select(Template).OfType<PA>().Select(t => t.Target ?? (t.Action == "Property Change" ? t.Nil : null)).OfType<string>())
                 if (items.TryGetValue(t, out var it) && it.Holder != source && !it.Public)
                     return Fail(403, service, "InsRights", $"{t} is not {source}'s to give Rights on");
 

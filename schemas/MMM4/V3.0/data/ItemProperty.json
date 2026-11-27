@@ -17,8 +17,8 @@
 
   "$defs":                  {
 
-    "PropertyName":         { "type": "string", "enum": [ "OpenState", "LockState", "PowerState", "Level", "Colour", "Temperature", "Occupancy", "Playback" ],
-                              "description": "OpenState: whether a Door, Window, Gate, Drawer or Container is open. LockState: whether a Door, Gate or Container is locked. PowerState: whether a Lamp, Screen or Device is on. Level: the level of a Lamp (brightness), of a Speaker (volume) or of a Blind (position), from 0 to 1. Colour: the colour of a Lamp or of a surface, as sRGB. Temperature: the temperature of a Room or the set point of a Thermostat, in degrees Celsius. Occupancy: whether a Seat or a Room is occupied. Playback: the state of a Screen, a Speaker or an Audio or Visual Object that plays." },
+    "PropertyName":         { "type": "string", "enum": [ "OpenState", "LockState", "PowerState", "Level", "Colour", "Temperature", "Occupancy", "Playback", "Signal", "TimeOfDay", "Weather", "Friction" ],
+                              "description": "OpenState: whether a Door, Window, Gate, Drawer or Container is open. LockState: whether a Door, Gate or Container is locked. PowerState: whether a Lamp, Screen or Device is on. Level: the level of a Lamp (brightness), of a Speaker (volume) or of a Blind (position), from 0 to 1. Colour: the colour of a Lamp or of a surface, as sRGB. Temperature: the temperature of a Room or the set point of a Thermostat, in degrees Celsius. Occupancy: whether a Seat or a Room is occupied. Playback: the state of a Screen, a Speaker or an Audio or Visual Object that plays. Signal: the light a Traffic Light shows. TimeOfDay: the local time of day of an M-Location, in hours from 0 to 24 (where the sun is). Weather: the weather of an M-Location. Friction: the coefficient of friction between a road surface of an M-Location and a tyre, from 0 to 1." },
 
     "Property":             { "type": "object", "additionalProperties": false, "required": [ "Name", "Value" ], "properties": {
       "Name":               { "$ref": "#/$defs/PropertyName" },
@@ -32,4 +32,8 @@
         { "if": { "properties": { "Name": { "const": "Colour" } } },      "then": { "properties": { "Value": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" } } } },
         { "if": { "properties": { "Name": { "const": "Temperature" } } }, "then": { "properties": { "Value": { "type": "number" } } } },
         { "if": { "properties": { "Name": { "const": "Occupancy" } } },   "then": { "properties": { "Value": { "enum": [ "Free", "Occupied" ] } } } },
-        { "if": { "properties": { "Name": { "const": "Playback" } } },    "then": { "properties": { "Value": { "enum": [ "Playing", "Paused", "Stopped" ] } } } } ] } } }
+        { "if": { "properties": { "Name": { "const": "Playback" } } },    "then": { "properties": { "Value": { "enum": [ "Playing", "Paused", "Stopped" ] } } } },
+        { "if": { "properties": { "Name": { "const": "Signal" } } },      "then": { "properties": { "Value": { "enum": [ "Red", "Amber", "Green", "Off" ] } } } },
+        { "if": { "properties": { "Name": { "const": "TimeOfDay" } } },   "then": { "properties": { "Value": { "type": "number", "minimum": 0, "maximum": 24 } } } },
+        { "if": { "properties": { "Name": { "const": "Weather" } } },     "then": { "properties": { "Value": { "enum": [ "Clear", "Rain", "Fog", "Snow" ] } } } },
+        { "if": { "properties": { "Name": { "const": "Friction" } } },    "then": { "properties": { "Value": { "type": "number", "minimum": 0, "maximum": 1 } } } } ] } } }
