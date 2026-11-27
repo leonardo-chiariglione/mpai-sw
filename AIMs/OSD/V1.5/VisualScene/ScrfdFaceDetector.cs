@@ -52,7 +52,7 @@ public sealed class ScrfdFaceDetector : IDisposable
         float scoreThreshold = 0.5f,
         float nmsThreshold = 0.4f)
     {
-        _session = OnnxSessions.Create(modelPath);
+        _session = OnnxSessions.Shared(modelPath);
         _inputSize = inputSize;
         _scoreThreshold = scoreThreshold;
         _nmsThreshold = nmsThreshold;
@@ -199,7 +199,9 @@ public sealed class ScrfdFaceDetector : IDisposable
         return union <= 0 ? 0 : inter / union;
     }
 
-    public void Dispose() => _session.Dispose();
+    // the model is shared with the other AIMs of the process that load the same model (2026-11-27): given back once, closed by the last holder
+    private int _released;
+    public void Dispose() { if (System.Threading.Interlocked.Exchange(ref _released, 1) == 0) OnnxSessions.Release(_session); }
 }
 
 // A described face: where it is (box + landmarks) and how confident - NO identity.

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 using Microsoft.ML.OnnxRuntime;
 
@@ -63,11 +64,40 @@ public static class OnnxSessions
         public int Holders;
     }
 
-    private static readonly Dictionary<string, Held> shared = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly Dictionary<string, Held> shared = new(StringComparer.Ordinal);
+
+    // THE SAME MODEL IN ANOTHER FILE IS THE SAME MODEL (2026-11-27). Apps that use one model often have it in a folder of their own (the copies in AIF\Access\view): at the
+    // start of the MAS instance glintr100 was loaded three times, ECAPA four, w2v2-emotion twice. A model is therefore known by what it is - the SHA-256 of the model file
+    // and of its external data files beside it (name.data, name.onnx.data, name_data) - not by where it is. Each file is read for this once while it is unchanged.
+    private static readonly ConcurrentDictionary<string, string> fingerprints = new(StringComparer.OrdinalIgnoreCase);
+
+    private static string KeyOf(string modelPath)
+    {
+        var file = new FileInfo(Path.GetFullPath(modelPath));
+        var stamp = $"{file.FullName}|{file.Length}|{file.LastWriteTimeUtc.Ticks}";
+        return fingerprints.GetOrAdd(stamp, _ =>
+        {
+            using var sha = System.Security.Cryptography.SHA256.Create();
+            var parts = new List<string> { file.FullName };
+            var stem = Path.GetFileNameWithoutExtension(file.Name);
+            foreach (var data in new[] { file.Name + ".data", stem + ".data", file.Name + "_data", stem + "_data" })
+            {
+                var p = Path.Combine(file.DirectoryName!, data);
+                if (File.Exists(p) && !parts.Contains(p, StringComparer.OrdinalIgnoreCase)) parts.Add(p);
+            }
+            var all = new System.Text.StringBuilder();
+            foreach (var p in parts)
+            {
+                using var s = File.OpenRead(p);
+                all.Append(Path.GetFileName(p) == file.Name ? "model:" : "data:").Append(Convert.ToHexString(sha.ComputeHash(s))).Append(';');
+            }
+            return all.ToString();
+        });
+    }
 
     public static InferenceSession Shared(string modelPath)
     {
-        var key = Path.GetFullPath(modelPath);
+        var key = KeyOf(modelPath);
         lock (shared)
         {
             if (!shared.TryGetValue(key, out var held))
@@ -98,7 +128,8 @@ public static class OnnxSessions
     // How many AIMs hold the shared session of this model file (0: none is open); for the tests.
     public static int HoldersOf(string modelPath)
     {
-        lock (shared) return shared.TryGetValue(Path.GetFullPath(modelPath), out var held) ? held.Holders : 0;
+        var key = KeyOf(modelPath);
+        lock (shared) return shared.TryGetValue(key, out var held) ? held.Holders : 0;
     }
 
     private static void Say(string modelPath, string device)

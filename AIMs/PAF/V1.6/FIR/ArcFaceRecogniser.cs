@@ -41,7 +41,7 @@ public sealed class ArcFaceRecogniser : IDisposable
 
     public ArcFaceRecogniser(string modelPath)
     {
-        _session = OnnxSessions.Create(modelPath);
+        _session = OnnxSessions.Shared(modelPath);
     }
 
     // Embedding for an already-cropped, roughly face-only image.
@@ -101,5 +101,7 @@ public sealed class ArcFaceRecogniser : IDisposable
         return dot;
     }
 
-    public void Dispose() => _session.Dispose();
+    // the model is shared with the other AIMs of the process that load the same model (2026-11-27): given back once, closed by the last holder
+    private int _released;
+    public void Dispose() { if (System.Threading.Interlocked.Exchange(ref _released, 1) == 0) OnnxSessions.Release(_session); }
 }

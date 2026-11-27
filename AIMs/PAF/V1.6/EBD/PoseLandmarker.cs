@@ -32,7 +32,7 @@ public sealed class PoseLandmarker : IDisposable
     public const int Nose = 0, LeftShoulder = 11, RightShoulder = 12, LeftElbow = 13, RightElbow = 14, LeftWrist = 15, RightWrist = 16, LeftHip = 23, RightHip = 24;
 
     private readonly InferenceSession _session;
-    public PoseLandmarker(string modelPath) { _session = OnnxSessions.Create(modelPath); }
+    public PoseLandmarker(string modelPath) { _session = OnnxSessions.Shared(modelPath); }
 
     // The keypoints as 33 x (x, y, z, visibility): x and y are fractions of the square (0 to 1, from the top left; the same unit on both axes, so the shapes are not stretched), z in the same unit,
     // the visibility a probability. Null if the model does not find a body (probability below MinPresence).
@@ -70,5 +70,7 @@ public sealed class PoseLandmarker : IDisposable
         return points;
     }
 
-    public void Dispose() => _session.Dispose();
+    // the model is shared with the other AIMs of the process that load the same model (2026-11-27): given back once, closed by the last holder
+    private int _released;
+    public void Dispose() { if (System.Threading.Interlocked.Exchange(ref _released, 1) == 0) OnnxSessions.Release(_session); }
 }

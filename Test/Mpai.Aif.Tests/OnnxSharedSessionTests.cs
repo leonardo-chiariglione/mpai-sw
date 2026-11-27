@@ -33,4 +33,29 @@ public class OnnxSharedSessionTests
         }
         finally { try { Directory.Delete(folder, true); } catch { } }
     }
+
+    // The same model in two folders (as the Apps have it in AIF\Access\view) is one session; another model is a session of its own (2026-11-27).
+    [Fact]
+    public void TheSameModelInTwoFoldersIsOneSession()
+    {
+        var folder = Path.Combine(Path.GetTempPath(), "mpai-onnx-copies-" + Guid.NewGuid().ToString("N"));
+        string a = Path.Combine(folder, "a", "head.onnx"), b = Path.Combine(folder, "b", "head.onnx"), other = Path.Combine(folder, "c", "head.onnx");
+        foreach (var f in new[] { a, b, other }) Directory.CreateDirectory(Path.GetDirectoryName(f)!);
+        File.Copy(Path.Combine(Repository.Root, "Test", "Data", "Fl", "cxr-head.onnx"), a);
+        File.Copy(a, b);
+        File.Copy(Path.Combine(Repository.Root, "Test", "Data", "Music", "dataset", "TapeIrregularityClassifier.onnx"), other);    // another model under the same name
+        try
+        {
+            var first = OnnxSessions.Shared(a);
+            var copy = OnnxSessions.Shared(b);
+            var different = OnnxSessions.Shared(other);
+            Assert.Same(first, copy);
+            Assert.NotSame(first, different);
+            Assert.Equal(2, OnnxSessions.HoldersOf(b));
+            OnnxSessions.Release(first); OnnxSessions.Release(copy); OnnxSessions.Release(different);
+            Assert.Equal(0, OnnxSessions.HoldersOf(a));
+            Assert.Equal(0, OnnxSessions.HoldersOf(other));
+        }
+        finally { try { Directory.Delete(folder, true); } catch { } }
+    }
 }

@@ -29,7 +29,7 @@ public sealed class Wav2Vec2EmotionEstimator : IDisposable
 
     public Wav2Vec2EmotionEstimator(string modelPath)
     {
-        _session = OnnxSessions.Create(modelPath);
+        _session = OnnxSessions.Shared(modelPath);
     }
 
     // Predict dimensional affect from mono 16 kHz samples (roughly [-1,1] float).
@@ -55,7 +55,9 @@ public sealed class Wav2Vec2EmotionEstimator : IDisposable
         };
     }
 
-    public void Dispose() => _session.Dispose();
+    // the model is shared with the other AIMs of the process that load the same model (2026-11-27): given back once, closed by the last holder
+    private int _released;
+    public void Dispose() { if (System.Threading.Interlocked.Exchange(ref _released, 1) == 0) OnnxSessions.Release(_session); }
 }
 
 // Dimensional speech affect: arousal, dominance, valence in ~[0,1].

@@ -27,7 +27,7 @@ public sealed class GoEmotionsClassifier : IDisposable
 
     public GoEmotionsClassifier(string modelPath, string vocabPath, string mergesPath)
     {
-        _session = OnnxSessions.Create(modelPath);
+        _session = OnnxSessions.Shared(modelPath);
         _tokenizer = new RobertaBpeTokenizer(vocabPath, mergesPath);
     }
 
@@ -45,5 +45,7 @@ public sealed class GoEmotionsClassifier : IDisposable
         return logits.Select(l => (float)(1.0 / (1.0 + Math.Exp(-l)))).ToArray();
     }
 
-    public void Dispose() => _session.Dispose();
+    // the model is shared with the other AIMs of the process that load the same model (2026-11-27): given back once, closed by the last holder
+    private int _released;
+    public void Dispose() { if (System.Threading.Interlocked.Exchange(ref _released, 1) == 0) OnnxSessions.Release(_session); }
 }

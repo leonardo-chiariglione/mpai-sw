@@ -22,7 +22,7 @@ public sealed class SpeakerEmbedder : IDisposable
 
     public SpeakerEmbedder(string modelPath, int frames = 360)
     {
-        _session = OnnxSessions.Create(modelPath);
+        _session = OnnxSessions.Shared(modelPath);
         _inputName = _session.InputMetadata.Keys.First();
         _frames = frames;
     }
@@ -58,7 +58,9 @@ public sealed class SpeakerEmbedder : IDisposable
         return dot; // both already L2-normalised
     }
 
-    public void Dispose() => _session.Dispose();
+    // the model is shared with the other AIMs of the process that load the same model (2026-11-27): given back once, closed by the last holder
+    private int _released;
+    public void Dispose() { if (System.Threading.Interlocked.Exchange(ref _released, 1) == 0) OnnxSessions.Release(_session); }
 }
 
 internal static class TensorExt

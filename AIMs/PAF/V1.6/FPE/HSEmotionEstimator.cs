@@ -43,7 +43,7 @@ public sealed class HSEmotionEstimator : IDisposable
 
     public HSEmotionEstimator(string modelPath)
     {
-        _session = OnnxSessions.Create(modelPath);
+        _session = OnnxSessions.Shared(modelPath);
     }
 
     // Estimate facial affect from an image already cropped to one face.
@@ -105,7 +105,9 @@ public sealed class HSEmotionEstimator : IDisposable
         return exp.Select(v => v / sum).ToArray();
     }
 
-    public void Dispose() => _session.Dispose();
+    // the model is shared with the other AIMs of the process that load the same model (2026-11-27): given back once, closed by the last holder
+    private int _released;
+    public void Dispose() { if (System.Threading.Interlocked.Exchange(ref _released, 1) == 0) OnnxSessions.Release(_session); }
 }
 
 // The facial affect read from a face: the top emotion label + its confidence,
