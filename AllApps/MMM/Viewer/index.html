@@ -170,7 +170,7 @@ if (W) {
     for (const d of [...b.doors, ...b.rooms.map(r => r.door).filter(Boolean)]) {
       d.rect = d.axis === 'x' ? [d.x - 0.1, d.y - d.width / 2, d.x + 0.1, d.y + d.width / 2] : [d.x - d.width / 2, d.y - 0.1, d.x + d.width / 2, d.y + 0.1];
       const leaf = new THREE.Mesh(new THREE.BoxGeometry(d.axis === 'x' ? 0.08 : d.width, 2.2, d.axis === 'x' ? d.width : 0.08), new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.6 }));
-      leaf.position.set(d.x, 1.1, -d.y); scene.add(leaf); d.leaf = leaf; d.open = false; doors.push(d);
+      leaf.position.set(d.x, 1.1, -d.y); scene.add(leaf); d.leaf = leaf; d.open = true; leaf.visible = false; doors.push(d);   // a door is an Item of the M-Instance: drawn as it says (doorsAsSeen); open until seen closed
       if (d.id !== 'MPAI-main') { const dl = label(d.name.replace(/ door$/, '')); dl.element.style.font = 'bold 16px system-ui, Arial'; dl.position.set(d.x, 2.6, -d.y); scene.add(dl); d.label = dl; }   // the name of the room, over its door, larger than a name over a Persona
     }
   }
@@ -1146,11 +1146,29 @@ async function standUp() {
   const mv = await act('locate/mm-move', client.name, { Nil: client.persona, From: client.loc, To: at, With: [spatial('SA-' + client.name + '-Up', client.x - room[0], client.y - room[1], client.yaw)] });
   if (mv.http === 200) { Object.assign(client, { loc: at, ox: room[0], oy: room[1], seated: false, sent: '' }); client.notice = 'E sits again; walk to the door to leave.'; }
 }
+// THE DOORS ARE ITEMS (2026-11-27): their state (OpenState) is the M-Instance's, as MM-Capture gives it; a closed door stops a Persona. Walking at a closed door opens it -
+// a Property Change, which the M-Instance allows to whoever may enter the place beyond - and then goes through. C, near a door, closes it (or opens it).
+const ipr = (id, name, value) => ({ Header: 'MMM-IPR-V3.0', ItemID: id, Properties: [{ Name: name, Value: value }] });
+function doorsAsSeen(things) {
+  for (const d of doors) { const t = things.find(x => x.ID === d.id); if (t?.Properties?.OpenState) { d.open = t.Properties.OpenState !== 'Closed'; d.leaf.visible = !d.open; } }
+}
+async function setDoor(d, open) {
+  const r = await act('locate/property-change', client.name, { Nil: d.id, With: [ipr(d.id, 'OpenState', open ? 'Open' : 'Closed')] });
+  if (r.http === 200) { d.open = open; d.leaf.visible = !open; }
+  return r;
+}
 async function pass(d, target) {
   if (client.moving || (d.tried && Date.now() - d.tried < 2500)) return;
   d.tried = Date.now(); client.moving = true;
   const [tx, ty] = origin[target];
-  const mv = await act('locate/mm-move', client.name, { Nil: client.persona, From: client.loc, To: target, With: [spatial('SA-' + client.name + '-' + target, client.x - tx, client.y - ty, client.yaw)] });
+  const move = () => act('locate/mm-move', client.name, { Nil: client.persona, From: client.loc, To: target, With: [spatial('SA-' + client.name + '-' + target, client.x - tx, client.y - ty, client.yaw)] });
+  let mv = await move();
+  if (mv.http === 409 && /is closed/.test(mv.body?.paStatus?.detail ?? '')) {                       // a closed door on the way: open it, if this User may enter beyond it
+    const shut = doors.find(x => mv.body.paStatus.detail.startsWith(x.id + ' ')) ?? d;
+    const opened = await setDoor(shut, true);
+    if (opened.http === 200) mv = await move();
+    else { client.moving = false; client.notice = `${shut.name}: closed - you may not open it.`; return; }
+  }
   client.moving = false;
   if (mv.http === 200) {
     Object.assign(client, { loc: target, at: target, ox: tx, oy: ty, sent: '' }); d.open = true; d.leaf.visible = false;
@@ -1287,7 +1305,7 @@ async function capture() {   // MM-Capture: the Things of the M-Location that th
   const pov = { Header: 'OSD-OPV-V1.5', PointOfViewID: 'POV-' + client.name, CartPosition: [client.x, client.y, client.eye ?? 1.6], Orientation: [yaw180(client.yaw), 0, 0] };
   const r = await act('locate/mm-capture', client.name, { At: client.at, With: [pov] });
   const scene = r.body?.complements?.With?.[0]?.ItemValueOrRef?.[0];
-  if (r.http === 200 && scene) { client.things = scene.Things; for (const t of scene.Things) if (t.Kind === 'Speech') hear(t); { const sc = scene.Things.find(t => t.Kind === 'Screen' && (t.Holder !== client.name || sharing?.own) && t.Streaming); watchScreen(sc?.ID ?? null, sc?.Holder === client.name); } }
+  if (r.http === 200 && scene) { client.things = scene.Things; if (W) doorsAsSeen(scene.Things); for (const t of scene.Things) if (t.Kind === 'Speech') hear(t); { const sc = scene.Things.find(t => t.Kind === 'Screen' && (t.Holder !== client.name || sharing?.own) && t.Streaming); watchScreen(sc?.ID ?? null, sc?.Holder === client.name); } }
   else if (W && r.http === 403 && client.loc !== 'MVS') meetingOver();   // the rights of the meeting are gone
 }
 
@@ -1612,6 +1630,14 @@ if (client) {
   addEventListener('keydown', e => { if (e.key === '0' && !e.repeat && !/input|textarea/i.test(e.target.tagName)) { camera.fov = 70; camera.updateProjectionMatrix(); } });
   addEventListener('keydown', e => { client.keys.add(e.key.toLowerCase()); if (W && !e.repeat && !client.ghost) { const k = e.key.toLowerCase(); if (k === 'q' && client.seated) standUp(); else if (k === 'e' && !client.seated && client.loc === client.at && client.seatInfo && client.at === client.seatInfo.room) takeSeat(client.seatInfo); } });
   addEventListener('keyup', e => client.keys.delete(e.key.toLowerCase()));
+  // C: the nearest door within 2 m is closed (or opened, if it is closed) - a Property Change of the door, an Item of the M-Instance (2026-11-27).
+  addEventListener('keydown', async e => {
+    if (!W || e.repeat || e.key.toLowerCase() !== 'c' || /input|textarea/i.test(e.target.tagName) || !client || client.ghost) return;
+    const near = doors.map(d => ({ d, far: Math.hypot(client.x - d.x, client.y - d.y) })).filter(x => x.far < 2).sort((a, b) => a.far - b.far)[0]?.d;
+    if (!near) return;
+    const r = await setDoor(near, !near.open);
+    client.notice = r.http === 200 ? `${near.name}: ${near.open ? 'open' : 'closed'}.` : `${near.name}: ${r.http === 403 ? 'you may not ' + (near.open ? 'close' : 'open') + ' it' : r.body?.paStatus?.detail ?? r.http}.`;
+  });
   // OUT OF THE BODY (a participant's wish, 2026/10/29): the Persona stays where it is - seated, if it is - and the User's point of view leaves it: a camera that moves round the room, W/S forward and
   // back, A/D or the wheel turn, R/F up and down, Q/E look up and down, and sees the Persona from outside. G or the button brings it back. What the User hears and says stays with the body.
   const ghostBtn = document.getElementById('ghostBtn');

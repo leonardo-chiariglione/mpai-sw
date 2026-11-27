@@ -434,5 +434,26 @@ public class MmmWorldTests
         Assert.Equal(403, (await Go(vito, Building, "MembersWing")).Http);
         Assert.Equal(200, (await Go(vito, Building, "MVS")).Http);
         Assert.Equal(200, (await Go(vito, "MVS", "Library")).Http);
+
+        // THE DOORS ARE ITEMS (2026-11-27): the President's office door, open; Zed (an Officer, who may enter the office) closes it; closed, it stops him; he opens it; Anna (a
+        // Participant, who may not enter the office) may not open it, nor close it.
+        static System.Text.Json.Nodes.JsonObject State(string door, string value) => new()
+        {
+            ["Header"] = "MMM-IPR-V3.0", ["ItemID"] = door,
+            ["Properties"] = new System.Text.Json.Nodes.JsonArray(new System.Text.Json.Nodes.JsonObject { ["Name"] = "OpenState", ["Value"] = value })
+        };
+        const string Door = "Office-President-door";
+        Assert.Equal("Open", (string?)w.M.Get(Door)!.Properties["OpenState"]);
+        Assert.Equal("Office-President", w.M.Get(Door)!.Leads);
+        Assert.Equal(200, (await Go(zed, "MemberRoom1", "MembersWing")).Http);                           // Zed is in Members' room 1: back to the Atrium, then to the Offices
+        Assert.Equal(200, (await Go(zed, "MembersWing", Building)).Http);
+        Assert.Equal(200, (await Go(zed, Building, "OfficesWing")).Http);
+        Assert.Equal(200, (await zed.PerformAsync("Property Change", Uc2.C(Door, with: [State(Door, "Closed")]))).Http);
+        var stopped = await Go(zed, "OfficesWing", "Office-President");
+        Assert.Equal(409, stopped.Http);
+        Assert.Contains("is closed", stopped.Response.PaStatus.Detail);
+        Assert.Equal(403, (await anna.PerformAsync("Property Change", Uc2.C(Door, with: [State(Door, "Open")]))).Http);
+        Assert.Equal(200, (await zed.PerformAsync("Property Change", Uc2.C(Door, with: [State(Door, "Open")]))).Http);
+        Assert.Equal(200, (await Go(zed, "OfficesWing", "Office-President")).Http);
     }
 }

@@ -44,6 +44,7 @@ public sealed class MInstance
         public JsonObject? LightSource { get; set; } // the Light Source (CVE-LTS-V1.0) a Property Change gave it: its Type, Colour and Intensity
         public Dictionary<string, JsonNode?> Properties { get; } = new(StringComparer.Ordinal);   // its Item Properties (MMM-IPR-V3.0, RQ12 of Property Change V3.0): OpenState of a door...
         public string? Kind { get; set; }            // what the viewer draws it as, when its Data Type does not say (a Door is a 3D Model Object, as a Persona is)
+        public string? Leads { get; set; }           // the M-Location the Item gives access to (a door, 2026-11-27): who may enter it may open and close the Item; closed, it stops a Persona
         public double[]? WalkFrom, WalkTo;           // a walk its Animation Stream makes (MM-Animate At an M-Location): from and to, metres in the M-Environment
         public long WalkStart, WalkEnd, AnimatedUntil;   // when the walk starts and ends, and when the animation is over (Unix milliseconds)
         public double[][]? WalkPath;                 // the walk's way when it goes round an obstacle: from, the corners it turns at, to (metres in the M-Environment)
@@ -170,6 +171,40 @@ public sealed class MInstance
             };
             foreach (var (n, v) in properties) it.Properties[n] = v;
             items[id] = it;
+        }
+    }
+
+    // AN ITEM THAT GIVES ACCESS TO AN M-LOCATION (2026-11-27: "anything can be an Item"; a door is one). Who may enter the M-Location may open and close it; closed, it stops a
+    // Persona on the way there or out (MM-Move, MM-Animate).
+    public void SetLeads(string itemId, string location) { lock (gate) if (items.TryGetValue(itemId, out var it)) it.Leads = location; }
+
+    // The places a Persona at an M-Location is in, from there out: through the Item that gives access to each (its door), else the M-Location that contains it.
+    private List<string> WayOut(string? location)
+    {
+        var way = new List<string>();
+        for (var l = location; l is not null && way.Count < 16 && !way.Contains(l); )
+        {
+            way.Add(l);
+            l = items.Values.FirstOrDefault(i => i.Leads == l)?.Location ?? items.GetValueOrDefault(l)?.Location;
+        }
+        return way;
+    }
+
+    // A closed Item on the way between two M-Locations: the door of a place the Persona leaves or enters.
+    private Item? ClosedOnTheWay(string? from, string to)
+    {
+        var a = WayOut(from); var b = WayOut(to);
+        foreach (var l in a.Except(b).Concat(b.Except(a)))
+            if (items.Values.FirstOrDefault(i => i.Leads == l) is { } door && (string?)door.Properties.GetValueOrDefault("OpenState") == "Closed") return door;
+        return null;
+    }
+    public IReadOnlyList<string> ClosedBetween(string? from, string to)
+    {
+        lock (gate)
+        {
+            var a = WayOut(from); var b = WayOut(to);
+            return a.Except(b).Concat(b.Except(a)).Select(l => items.Values.FirstOrDefault(i => i.Leads == l)).OfType<Item>()
+                    .Where(d => (string?)d.Properties.GetValueOrDefault("OpenState") == "Closed").Select(d => d.ID).ToList();
         }
     }
 
@@ -784,6 +819,7 @@ public sealed class MInstance
         if (it.Holder != source) return Fail(403, service, "InsRights", $"{c.Nil} is not {source}'s");
         if (c.From is not null && it.Location != c.From) return Fail(409, service, "Clash", $"{c.Nil} is at {it.Location}, not {c.From}");
         if (!MayEnter(source, "MM-Move", c.Nil!, c.To!)) return Fail(403, service, "InsRights", $"{source} may not move {c.Nil} to {c.To}");
+        if (ClosedOnTheWay(it.Location, c.To!) is { } shut) return Fail(409, service, "Clash", $"{shut.ID} is closed");
         it.Location = c.To; it.SpatialAttitude = SpatialAttitude(with) ?? it.SpatialAttitude;
         return Ok(200, service, new Complements { With = GrantAll(with, source) });
     }
@@ -856,6 +892,7 @@ public sealed class MInstance
         {
             if (!items.TryGetValue(c.At, out var place) || place.DataType != "MMM-LOC") return Fail(404, service, "IncID", $"no M-Location {c.At}");
             if (!MayEnter(source, "MM-Animate", c.Nil!, c.At)) return Fail(403, service, "InsRights", $"{source} may not take {c.Nil} to {c.At}");
+            if (ClosedOnTheWay(it.Location, c.At) is { } shut) return Fail(409, service, "Clash", $"{shut.ID} is closed");
             var from = PlaceOf(it); var to = PlaceOf(place);
             // THE WAY: straight, or round the Items that have a footprint (furniture), turning at their corners; at the speed the Stream gives, if it gives one.
             var obstacles = items.Values.Where(o => o.Footprint is not null && o.ID != it.ID).Select(o => (At: PlaceOf(o), Size: o.Footprint!)).ToList();
@@ -974,7 +1011,9 @@ public sealed class MInstance
     {
         if (Need(service, c.Nil, "Nil") is { } f1) return f1;
         if (!items.TryGetValue(c.Nil!, out var it)) return Fail(404, service, "IncID", $"no Item {c.Nil}");
-        if (it.Holder != source) return Fail(403, service, "InsRights", $"{c.Nil} is not {source}'s");
+        // the Process holding the Rights to the Item changes it; an Item that gives access to an M-Location (a door), also whoever may enter that M-Location
+        if (it.Holder != source && !(it.Leads is { } beyond && MayEnter(source, "MM-Move", c.Nil!, beyond)))
+            return Fail(403, service, "InsRights", it.Leads is null ? $"{c.Nil} is not {source}'s" : $"{source} may not enter {it.Leads}, beyond {c.Nil}");
         var light = with.FirstOrDefault(i => Header(i) == "CVE-LTS-V1.0");
         if (light is not null && (string?)light["LightSourceID"] != c.Nil) return Fail(422, service, "FaultyPA", $"the Light Source is {(string?)light["LightSourceID"]}'s, not {c.Nil}'s");
         if (light is not null) it.LightSource = light;

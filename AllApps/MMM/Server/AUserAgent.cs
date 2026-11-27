@@ -29,6 +29,7 @@ public sealed class AUserAgent
     private readonly MInstance m;
     private readonly MmmClient me;
     private readonly IReadOnlyDictionary<string, string> places;      // the name of a place, as the human says it -> its M-Location
+    private readonly IReadOnlyDictionary<string, string> doors;       // the name of a door, as the human says it -> the Item (2026-11-27: the doors are Items)
     private readonly ILanguageModel model;
     private readonly ISpeechSynthesiser voice;
     private readonly string repo;
@@ -51,9 +52,9 @@ public sealed class AUserAgent
         Console.WriteLine($"A-User {User} - {who}: {text}");
     }
 
-    public AUserAgent(MInstance m, HttpClient inside, string user, string persona, IReadOnlyDictionary<string, string> places, ILanguageModel model, ISpeechSynthesiser voice, string repo)
+    public AUserAgent(MInstance m, HttpClient inside, string user, string persona, IReadOnlyDictionary<string, string> places, IReadOnlyDictionary<string, string> doors, ILanguageModel model, ISpeechSynthesiser voice, string repo)
     {
-        this.m = m; User = user; Persona = persona; this.places = places; this.model = model; this.voice = voice; this.repo = repo;
+        this.m = m; User = user; Persona = persona; this.places = places; this.doors = doors; this.model = model; this.voice = voice; this.repo = repo;
         me = new MmmClient(inside, user, m.Resume(user)?.Token);
     }
 
@@ -65,7 +66,7 @@ public sealed class AUserAgent
         foreach (var aim in ModuleAims) File.Copy(Path.Combine(repo, "AIMs", "AMDs", aim + ".json"), Path.Combine(folder, aim + ".json"), overwrite: true);
         var settings = new JsonObject
         {
-            ["1PGM-PRC-V1.0-I01"] = new JsonObject { [PrcAim.ItemsSetting] = " ", [PrcAim.MLocationsSetting] = string.Join(",", places.Keys) },
+            ["1PGM-PRC-V1.0-I01"] = new JsonObject { [PrcAim.ItemsSetting] = doors.Count > 0 ? string.Join(",", doors.Keys) : " ", [PrcAim.MLocationsSetting] = string.Join(",", places.Keys) },
             ["1PGM-BKN-V1.0-I01"] = new JsonObject { [BknAim.PersonaSetting] = Persona, [BknAim.LevelSetting] = "1" },
             ["1PGM-AUC-V1.0-I01"] = new JsonObject { [AucAim.LevelSetting] = "1", [BknAim.PersonaSetting] = Persona },
             ["1PGM-AUF-V1.0-I01"] = new JsonObject { ["Avatar.Id"] = Persona, [BknAim.PersonaSetting] = Persona }
@@ -201,13 +202,23 @@ public sealed class AUserAgent
                 if (avatar is null) return;
                 // the place as the Module names it (the name the human says) is the M-Location of that name
                 var at = Of("AtItem") is { } place ? places.GetValueOrDefault(place, place) : null;
+                // A CLOSED DOOR ON THE WAY is opened first, as the A-User may (2026-11-27: the doors are Items; closed, a door stops a Persona)
+                if (at is not null)
+                    foreach (var door in m.ClosedBetween(Where(), at))
+                    {
+                        var opened = await me.PerformAsync("Property Change", Uc2.C(door, with: [OpenState(door, "Open")]));
+                        Say("A-User", opened.Http is >= 200 and < 300 ? $"opening {NameOfDoor(door)}" : $"{NameOfDoor(door)} is closed and I may not open it");
+                    }
                 r = await me.PerformAsync("MM-Animate", Uc2.C(Of("NilItem") ?? Persona, at: at, with: [avatar.DeepClone()]));
                 if (r.Http is >= 200 and < 300) { if (at is not null) Say("A-User", $"walking to {Of("AtItem")}"); await AnimatedAsync(Of("NilItem") ?? Persona); }
                 else Say("A-User", $"I could not {(at is null ? "do it" : "go to " + Of("AtItem"))}: {r.Response.PaStatus.Detail ?? r.Response.PaStatus.Code}");
                 break;
             case "Property Change":
-                r = await me.PerformAsync("Property Change", Uc2.C(Of("NilItem"), with: with));
-                if (r.Http is < 200 or >= 300) Say("A-User", $"I could not change {Of("NilItem")}: {r.Response.PaStatus.Detail ?? r.Response.PaStatus.Code}");
+                // the Item as the Module names it (a door, by the name the human says) is the Item of that name
+                var item = Of("NilItem") is { } named ? doors.GetValueOrDefault(named, named) : null;
+                foreach (var w in with.OfType<JsonObject>().Where(w => (string?)w["Header"] == "MMM-IPR-V3.0")) w["ItemID"] = item;
+                r = await me.PerformAsync("Property Change", Uc2.C(item, with: with));
+                Say("A-User", r.Http is >= 200 and < 300 ? $"{Of("NilItem")}: done" : $"I could not change {Of("NilItem")}: {r.Response.PaStatus.Detail ?? r.Response.PaStatus.Code}");
                 break;
             default:
                 return;
@@ -220,6 +231,10 @@ public sealed class AUserAgent
             ["PAStatus"] = new JsonArray(ok ? new JsonObject { ["Ack"] = "Ack" } : new JsonObject { ["Error"] = r.Response.PaStatus.Code is "Clash" or "IncID" or "InsRights" or "LocOOR" ? r.Response.PaStatus.Code : "FaultyReq" })
         });
     }
+
+    private static JsonObject OpenState(string item, string value) =>
+        new() { ["Header"] = "MMM-IPR-V3.0", ["ItemID"] = item, ["Properties"] = new JsonArray(new JsonObject { ["Name"] = "OpenState", ["Value"] = value }) };
+    private string NameOfDoor(string id) => doors.FirstOrDefault(d => d.Value == id).Key ?? id;
 
     // Until the M-Instance says that the animation of the Item is over (its walk, its speech).
     private async Task AnimatedAsync(string item)
@@ -238,7 +253,7 @@ public sealed class AUserAgent
 
 // THE A-USERS OF THE WORLD: each A-User whose Persona is in the world has its agent, started when the Persona is placed (at its deployment, or when the world starts again) and
 // stopped when the A-User is no more (a Visitor's Account removed).
-public sealed class AUserAgents(MInstance m, HttpClient inside, IReadOnlyDictionary<string, string> places, ILanguageModel model, ISpeechSynthesiser voice, string repo)
+public sealed class AUserAgents(MInstance m, HttpClient inside, IReadOnlyDictionary<string, string> places, IReadOnlyDictionary<string, string> doors, ILanguageModel model, ISpeechSynthesiser voice, string repo)
 {
     private readonly ConcurrentDictionary<string, AUserAgent> agents = new(StringComparer.Ordinal);
     public AUserAgent? Of(string aUser) => agents.GetValueOrDefault(aUser);
@@ -253,7 +268,7 @@ public sealed class AUserAgents(MInstance m, HttpClient inside, IReadOnlyDiction
                 foreach (var (user, persona) in now)
                     if (!agents.ContainsKey(user) && m.InfoOf(user)?["Location"] is not null)
                     {
-                        var a = new AUserAgent(m, inside, user, persona, places, model, voice, repo);
+                        var a = new AUserAgent(m, inside, user, persona, places, doors, model, voice, repo);
                         agents[user] = a;
                         _ = Task.Run(a.Start);
                     }
@@ -263,6 +278,17 @@ public sealed class AUserAgents(MInstance m, HttpClient inside, IReadOnlyDiction
             catch (Exception e) { Console.Error.WriteLine("A-Users: " + e.Message); }
             await Task.Delay(3000, stopping).ContinueWith(_ => { });
         }
+    }
+
+    // The doors of the world, by the names a human says (world.json): Items of the M-Instance (2026-11-27).
+    public static Dictionary<string, string> DoorsOf(string repo)
+    {
+        var doors = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var w = JsonNode.Parse(File.ReadAllText(Path.Combine(repo, "AllApps", "MMM", "Viewer", "world", "world.json")))!;
+        foreach (var b in w["buildings"]?.AsArray() ?? [])
+            foreach (var d in (b?["doors"] as JsonArray ?? []).Concat((b?["rooms"]?.AsArray() ?? []).Select(r => r?["door"])).OfType<JsonObject>())
+                if ((string?)d["id"] is { } id) doors.TryAdd(((string?)d["name"] ?? id).Replace(",", ""), id);
+        return doors;
     }
 
     // The places of the world, by the names a human says: the square, the buildings and their rooms (world.json).

@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Nodes;
+using System.Text.Json.Nodes;
 using Mpai.Mmm;
 using Mpai.Mmm.Client;
 using Mpai.Mmm.Server;
@@ -216,7 +216,7 @@ await meeting.StartAsync();
 if (m.RequireCredentials)
 {
     aUserEars = !noAsr && whisper.Available ? whisper : null;
-    aUsers = new AUserAgents(m, inside, AUserAgents.PlacesOf(repo), new OllamaModel(llm) { KeepAlive = "30m" }, new AUserAgents.Voice(summary), repo);
+    aUsers = new AUserAgents(m, inside, AUserAgents.PlacesOf(repo), AUserAgents.DoorsOf(repo), new OllamaModel(llm) { KeepAlive = "30m" }, new AUserAgents.Voice(summary), repo);
     _ = Task.Run(() => aUsers.KeepAsync(app.Lifetime.ApplicationStopping));
     Console.WriteLine("A-Users: each deployed A-User runs its A-User Module (PGM-AUA); its human commands it from its page.");
 }

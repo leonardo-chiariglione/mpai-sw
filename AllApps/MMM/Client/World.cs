@@ -55,6 +55,24 @@ public static class World
                 foreach (var s in Meeting.Seats) m.AddLocation(s.ID, holder: Meeting.BuildingService, x: s.X, y: s.Y, size: 0.8, perceptible: false, at: Meeting.Room);
             }
         }
+        // THE DOORS ARE ITEMS (2026-11-27): each door of the world is an Item (a 3D Model Object, Kind Door) at the place it is entered from, that gives access to the place beyond
+        // (Leads); the MPAI Building Service holds the Rights to it, as to the places. Its Item Properties: OpenState (it starts open) and LockState. Who may enter the place
+        // beyond may open and close it; closed, it stops a Persona.
+        var at = new Dictionary<string, (double X, double Y)> { [(string)sq["id"]!] = ((double)sq["x"]!, (double)sq["y"]!) };
+        foreach (var b in world["buildings"]!.AsArray().OfType<JsonObject>())
+        {
+            at[(string)b["id"]!] = ((double)b["x"]!, (double)b["y"]!);
+            foreach (var r in b["rooms"]!.AsArray().OfType<JsonObject>()) at[(string)r["id"]!] = ((double)b["x"]! + (double)r["x"]!, (double)b["y"]! + (double)r["y"]!);
+        }
+        foreach (var b in world["buildings"]!.AsArray().OfType<JsonObject>())
+            foreach (var d in (b["doors"] as JsonArray ?? []).Concat(b["rooms"]!.AsArray().Select(r => r?["door"])).OfType<JsonObject>())
+            {
+                var (id, from, to) = ((string)d["id"]!, (string)d["from"]!, (string)d["to"]!);
+                var o = at.GetValueOrDefault(from);
+                m.AddItem(id, "OSD-3DO-V1.5", Meeting.BuildingService, from, (double)d["x"]! - o.X, (double)d["y"]! - o.Y, kind: "Door",
+                          properties: [("OpenState", JsonValue.Create("Open")), ("LockState", JsonValue.Create("Unlocked"))]);
+                m.SetLeads(id, to);
+            }
         Meeting.DoorsNeedRights = true;
         Meeting.Doors = DoorsTo(world, Meeting.Room);
         Meeting.Areas = Areas(world);
