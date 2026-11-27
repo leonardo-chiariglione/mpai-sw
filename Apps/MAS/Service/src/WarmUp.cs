@@ -56,9 +56,10 @@ internal static class WarmUp
         // MAS-App: the Welcome every client hears first, before choosing an App.
         Turn(runner, say, "MAS-App welcome", Program.MasModule, Text(1, "Welcome."), avt);
 
-        // AMQ: the picture model.
+        // AMQ: the picture model. Its inputs as its AMD declares them: the picture, the question (InputText, the first and only OSD-BTO-V1.5) and the MachineID (2026-11-27:
+        // the question was given as OSD-BTO-V1.5#2 with an avatar AMQ has no input for, and TIQ, finding no question, was DEGRADED at every start).
         if (picture is not null)
-            Turn(runner, say, "AMQ", Program.AmqModule, ("OSD-BVO-V1.5#1", picture), Text(2, "What color is the picture?"), avt);
+            Turn(runner, say, "AMQ", Program.AmqModule, ("OSD-BVO-V1.5#1", picture), Text(1, "What color is the picture?"), ("string#1", "\"MPAI as a Service\""));
 
         runner.SessionEnded(Session);
         say($"Warm-up done in {clock.Elapsed.TotalSeconds:F1} s.");
