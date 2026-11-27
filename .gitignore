@@ -106,20 +106,8 @@ AllApps/MMM/tools/Microsoft-Rocketbox/
 # machine-local data too large for the repository (voice engine, datasets, photographs): see MpaiPaths.Data
 /Data/
 
-# THE KNOWLEDGE GRAPH (MKG): its builders, their inputs, the templates and the user guide are published; what stays on this PC is the working
-# material - the notes on the changes, the builds for this PC (with its paths), the local drafts of web pages, one-off scripts, logs
-/MKG/pending-changes.md
-/MKG/mkg.ttl
-/MKG/mkg.jsonld
-/MKG/mkg-viewer.html
-/MKG/mkg-finder.html
-/MKG/web/
-/MKG/fix_nnt_pages.py
-/MKG/fix_prf_pages.py
-/MKG/make_nnt_v2.py
-/MKG/align_m3194.py
-/MKG/make_standards_info.py
-/MKG/first-slice-plan.md
+# THE KNOWLEDGE GRAPH (MKG) IS TRACKED (the author, 2026-11-27: "MKG should be tracked"): the notes on the changes, the builds, the drafts of web pages and the scripts are
+# in the repository. What stays on this PC: the logs, the markers of finished runs and the backup copies of the finder template.
 /MKG/*.log
 /MKG/*.done
 /MKG/finder-template.before-*.html
