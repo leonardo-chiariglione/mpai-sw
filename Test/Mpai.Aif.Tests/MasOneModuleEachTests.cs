@@ -15,10 +15,11 @@ public class MasOneModuleEachTests
 {
     private static string Url => Environment.GetEnvironmentVariable("MPAI_MAS_URL") is { Length: > 0 } u ? u : "https://localhost:5105/";
 
-    private static readonly string[] Names = { "Marco", "Giulia", "Paolo", "Anna" };
+    // five: before N-51 the fifth client of TST was refused ("bad allocation")
+    private static readonly string[] Names = { "Marco", "Giulia", "Paolo", "Anna", "Elena" };
 
     [SkippableFact]
-    public void FourClientsOfOneAppAtOnceEachGetTheirOwnAnswer()
+    public void FiveClientsOfOneAppAtOnceEachGetTheirOwnAnswer()
     {
         using (var http = new HttpClient { Timeout = TimeSpan.FromSeconds(3), BaseAddress = new Uri(Url) })
         {
@@ -35,7 +36,7 @@ public class MasOneModuleEachTests
                 Skip.If(started != AifError.OK, $"the Service does not offer 1MMC-TST-V2.5-I01 ({started})");
             }
 
-            // all four turns at the same time, each on its own Module Instance
+            // all five turns at the same time, each on its own Module Instance
             var results = new ControllerApi.Result[Names.Length];
             Parallel.For(0, Names.Length, new ParallelOptions { MaxDegreeOfParallelism = Names.Length }, i =>
             {
