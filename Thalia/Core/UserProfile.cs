@@ -40,7 +40,10 @@ static class UserProfile
             var p = Read(thaliaData);
             foreach (var k in Fields) if (given[k] is not null) p[k] = ((string?)given[k])?.Trim();
             p.Remove("registered"); p.Remove("hasPassword");
-            if (!Registered(p)) return Results.Json(new { ok = false, text = "Your first and last name are needed." });
+            // ALL FOUR ARE REQUIRED (the author, 2026-11-27): first name, last name, organisation and email - the MMM, for one, needs them for a Participant or an Officer.
+            if (!Registered(p) || (string?)p["organisation"] is not { Length: > 0 } || (string?)p["email"] is not { Length: > 0 })
+                return Results.Json(new { ok = false, text = "Your first name, last name, organisation and email are all needed." });
+            if (!System.Text.RegularExpressions.Regex.IsMatch((string)p["email"]!, @"^\S+@\S+\.\S+$")) return Results.Json(new { ok = false, text = "The email address is not complete." });
             if ((string?)given["password"] is { Length: > 0 } pw)
             {
                 if (pw.Length < 6) return Results.Json(new { ok = false, text = "The password needs at least 6 characters." });

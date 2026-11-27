@@ -955,19 +955,18 @@ function askMmmAddress(then) {                                              // t
   };
 }
 
-// IN SETTINGS: the address of the MMM world, the Account Level, and - for an Account made in a browser - joining this Thalia to it (approved once in the world).
+// IN SETTINGS: the address of the MMM world, and - for an Account made in a browser - joining this Thalia to it (approved once in the world). The role (Account Level) is chosen in
+// the MMM at the first entry (2026-11-27), not here.
 async function mmmSettingsCard() {
   let a = {}; try { a = await (await fetch('/api/mmm/account', { cache: 'no-store' })).json(); } catch { }
   const d = document.createElement('div'); d.className = 'detail';
   d.innerHTML = `<h4>The MMM world</h4>
     ${isRemote() ? '' : fieldHtml('mmAddr', 'The address of the MMM world (your personal link, or the world\'s address)', 'text', 'https://...')}
-    <label style="display:block;margin:4px 0"><span class="desc" style="display:block">Account Level</span><select id="mmLevel" style="font:inherit;padding:6px 8px;border-radius:7px;background:rgba(0,0,0,.25);color:var(--ink);border:1px solid var(--line)"><option>Visitor</option><option>Participant</option><option>Officer</option></select></label>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px"><button class="act s">Save</button><button class="act secondary l">I made an MMM Account in a browser: join Thalia to it</button></div><div class="lk desc"></div><div class="out desc"></div>`;
   const $d = q => d.querySelector(q), out = $d('.out'), lk = $d('.lk');
   if ($d('#mmAddr')) $d('#mmAddr').value = a.address || '';
-  $d('#mmLevel').value = a.level || 'Participant';
   $d('.s').onclick = async () => {
-    const body = { level: $d('#mmLevel').value }; if ($d('#mmAddr')) body.address = $d('#mmAddr').value.trim();
+    const body = {}; if ($d('#mmAddr')) body.address = $d('#mmAddr').value.trim();
     const r = await fetch('/api/mmm/account', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
     out.style.color = r.ok ? 'var(--ok)' : 'var(--bad)'; out.textContent = r.ok ? 'Saved.' : 'It could not be saved.';
   };

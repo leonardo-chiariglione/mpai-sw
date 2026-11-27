@@ -175,6 +175,9 @@ public static class MmmServer
                     var users = (rq.Complements?.With ?? []).SelectMany(w => w?["PersonalProfile"]?["Processes"]?.AsArray() ?? []).SelectMany(p => p?["ProcessIDOrProcess"]?.AsArray() ?? [])
                                 .Select(p => p?["ProcessID"]?.GetValue<string>()).ToList();
                     var byAccount = m.RequireCredentials && (identity.Accounts || me.Kind == "visitor");
+                    // its A-User (2026-11-27) is <name>-A: a User of the same person (the M-Instance allows one H-User and one A-User per human)
+                    static string PersonOf(string? u) => u is { Length: > 2 } && u.EndsWith("-A", StringComparison.Ordinal) ? u[..^2] : u ?? "";
+                    users = users.Select(u => PersonOf(u)).ToList();
                     var name = byAccount ? users.FirstOrDefault() ?? "" : me.Name;
                     if (byAccount && (name.Length == 0 || (!identity.Accounts && identity.IsReserved(name))))
                         return Results.Json(new { paStatus = new { code = "InsRights", detail = $"{name} is the name of someone invited: choose another" } }, statusCode: 403);
@@ -182,10 +185,19 @@ public static class MmmServer
                         return Results.Json(new { paStatus = new { code = "InsRights", detail = $"{me.Login}{(me.Login.Length > 0 ? " is" : "")} {me.Name}: it registers only as that" } }, statusCode: 403);
                 }
 
+                // OFFICER BY REQUEST (the author, 2026-11-27): a person who chooses Officer and is not one the chair designated is registered as a Participant, and its request goes to
+                // the MMM Manager (the Manager Console); it is told the outcome.
+                string? officerRequest = null;
                 if (action == "Register" && (rq.Complements?.With ?? []).FirstOrDefault(w => (string?)w?["PersonalProfile"]?["AccountLevel"] == "Officer") is { } asksOfficer
-                    && !MayBeOfficer(ctx, (string?)asksOfficer["PersonalProfile"]?["Data"]?[0]?["Email"]))
-                    return Results.Json(new { paStatus = new { code = "InsRights", detail = "The Officer Account Level is not offered to you" } }, statusCode: 403);
+                    && !MayBeOfficer(ctx, (string?)asksOfficer["PersonalProfile"]?["Data"]?[0]?["Email"] ?? m.EmailOfHuman((string?)asksOfficer["humanID"])))
+                {
+                    // a meeting without Accounts: the Officer level is offered only to the chair and the designated, as before
+                    if (!m.RequireCredentials) return Results.Json(new { paStatus = new { code = "InsRights", detail = "The Officer Account Level is not offered to you" } }, statusCode: 403);
+                    asksOfficer["PersonalProfile"]!["AccountLevel"] = "Participant";
+                    officerRequest = (string?)asksOfficer["humanID"];
+                }
                 var outcome = m.Perform(caller, rq);
+                if (officerRequest is not null && outcome.Http is 200 or 201) m.RequestOfficer(officerRequest);
                 var reply = (outcome.Http, JsonSerializer.Serialize(outcome.Response, Wire.Json),
                              outcome.Tokens.Count == 0 ? null : string.Join(",", outcome.Tokens.Select(t => $"{Uri.EscapeDataString(t.Key)}={t.Value}")));   // a header is ASCII: a name with an accent (Gérard) goes percent-encoded
                 replies.TryAdd(memo, reply);
@@ -197,6 +209,14 @@ public static class MmmServer
         // Registration options: the Account Levels, then (for the one chosen) the Personae the M-Instance makes available. No token: there is no User yet.
         app.MapGet("/api/v2.2/register/options", (HttpContext ctx) => Results.Json(m.AccountLevels.Where(l => l.Id != "Officer" || MayBeOfficer(ctx) || m.RequireCredentials).Select(l => new { id = l.Id, name = l.Name, description = l.Description, price = 0 })));
         app.MapGet("/api/v2.2/register/personae", () => Results.Json(m.AvailableCatalogueEntries()));      // the Personae nobody has chosen
+        // THE PERSON'S ANSWERS (2026-11-27): Never to an A-User; the outcome of its Officer request seen.
+        app.MapPost("/viewer/auser/never", (HttpContext ctx) => { if (Caller(ctx) is not { } u) return Results.Unauthorized(); m.NeverAUser(u); return Results.Ok(); });
+        app.MapPost("/viewer/officer/seen", (HttpContext ctx) => { if (Caller(ctx) is not { } u) return Results.Unauthorized(); m.OfficerAnswerSeen(u); return Results.Ok(); });
+        // THE MANAGER CONSOLE (2026-11-27): the Officer requests, for the MMM Manager only; Approve, or Refuse with a reason.
+        app.MapGet("/viewer/manager/requests", (HttpContext ctx) => Caller(ctx) is { } u && m.IsManager(u) ? Results.Json(m.OfficerRequests()) : Results.StatusCode(403));
+        app.MapPost("/viewer/manager/answer", (HttpContext ctx, string human, bool approve, string? reason) =>
+            Caller(ctx) is not { } u || !m.IsManager(u) ? Results.StatusCode(403)
+            : m.AnswerOfficer(human, approve, reason) ? Results.Ok() : Results.NotFound());
         app.MapGet("/api/v2.2/items", (HttpContext ctx, string? dataType) => Caller(ctx) is { } p
             ? Results.Json(m.List(dataType).Where(i => m.MayRead(p, i.ID)).Select(i => new { itemID = i.ID, dataType = i.DataType }))
             : Results.Unauthorized());

@@ -458,8 +458,8 @@ const yaw180 = a => { const n = ((a % 360) + 360) % 360; return n > 180 ? n - 36
 const spatial = (id, x, y, yaw) => ({ Header: 'OSD-OSA-V1.5', ObjectSpatialAttitudeID: id,
   Position: { Header: 'OSD-OPS-V1.5', PositionID: id + '-P', CartPosition: [x, y, 0] },
   Orientation: { Header: 'OSD-OOR-V1.5', OrientationID: id + '-O', Orientation: [yaw180(yaw), 0, 0] } });   // yaw, pitch, roll: degrees (provisional convention: zero looks north, positive turns to the west)
-async function act(path, source, complements) {
-  const rs = await fetch('/api/v2.2/' + path, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': crypto.randomUUID(), ...(client.token ? { Authorization: 'Bearer ' + client.token } : {}) },
+async function act(path, source, complements, token = client.token) {      // token: the User's own (the A-User's when the page acts for it)
+  const rs = await fetch('/api/v2.2/' + path, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': crypto.randomUUID(), ...(token ? { Authorization: 'Bearer ' + token } : {}) },
     body: JSON.stringify({ SourceProcessID: source, Action: '', Complements: complements }) });
   return { http: rs.status, tokens: rs.headers.get('MMM-Tokens'), body: await rs.json().catch(() => null) };
 }
@@ -495,15 +495,24 @@ async function registrationOptions() {
     };
   });
 }
-async function choosePersona() {
+// kind 'H': the Persona of the H-User, which the human drives (any Persona but the A-Users'); kind 'A': the Persona of the A-User, which the human commands with words and which
+// acts with autonomy - one of the military Personae, so that everybody sees it is an A-User (2026-11-27). The A-User may be deployed later: 'Not now' gives no choice.
+// kind 'V': the H-User of a Visitor, its only User, with one of the Visitors' (sports) Personae, so that everybody sees it is a Visitor (2026-11-27).
+async function choosePersona(kind = 'H') {
   if (new URLSearchParams(location.search).has('persona') || new URLSearchParams(location.search).has('nochoice')) return null;
-  const list = await fetch('/api/v2.2/register/personae', { cache: 'no-store' }).then(r => r.ok ? r.json() : []).catch(() => []);
+  const list = (await fetch('/api/v2.2/register/personae', { cache: 'no-store' }).then(r => r.ok ? r.json() : []).catch(() => []))
+    .filter(e => kind === 'A' ? e.AUser : kind === 'V' ? e.Visitor : !e.AUser && !e.Visitor);
   if (!list.length) return null;
   const box = document.createElement('div');
   Object.assign(box.style, { position: 'fixed', inset: '0', zIndex: 40, background: 'rgba(15,18,24,.94)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'safe center', gap: '10px', padding: '16px', overflow: 'auto', boxSizing: 'border-box' });
-  box.innerHTML = `<h2 style="margin:0">3. Choose your Persona</h2><div style="max-width:560px;text-align:center;color:var(--muted)">These are the Personae your Account makes available. Choose the one your User will bring into the world.</div><div style="display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;justify-content:center">
+  box.innerHTML = kind === 'A'
+    ? `<h2 style="margin:0">Would you like an A-User?</h2><div style="max-width:580px;text-align:center;color:var(--muted)">A second User of yours: you tell it in words what to do, and it does it by itself. Its Persona is one of these, so that everybody can see it is an A-User. Later: you are asked again next time. Never: you are not asked again.</div>`
+    : kind === 'V'
+    ? `<h2 style="margin:0">Your Persona</h2><div style="max-width:580px;text-align:center;color:var(--muted)">As a Visitor you have one User, which you drive yourself. Its Persona is one of these, the Visitors' Personae.</div>`
+    : `<h2 style="margin:0">Your H-User</h2><div style="max-width:580px;text-align:center;color:var(--muted)">The User you drive yourself. Choose the Persona it will bring into the world.</div>`;
+  box.innerHTML += `<div style="display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;justify-content:center">
     <div id="pcList" style="width:260px;height:min(420px,48vh);overflow:auto;background:#252b34;border-radius:8px;padding:4px"></div><div id="pcView" style="width:280px;height:min(420px,48vh);background:#2c333d;border-radius:8px;overflow:hidden"></div></div>
-    <div id="pcName" style="min-height:1.3em;color:var(--muted)"></div><button id="pcGo" style="font-size:20px;padding:8px 28px;border-radius:8px;cursor:pointer" disabled>Register</button>`;
+    <div id="pcName" style="min-height:1.3em;color:var(--muted)"></div><div style="display:flex;gap:10px"><button id="pcGo" style="font-size:20px;padding:8px 28px;border-radius:8px;cursor:pointer" disabled>${kind === 'A' ? 'Deploy my A-User' : 'Next'}</button>${kind === 'A' ? '<button id="pcLater" style="font-size:20px;padding:8px 28px;border-radius:8px;cursor:pointer">Later</button><button id="pcNever" style="font-size:20px;padding:8px 28px;border-radius:8px;cursor:pointer">Never</button>' : ''}</div>`;
   document.body.appendChild(box);
   const view = box.querySelector('#pcView'), listEl = box.querySelector('#pcList'), go = box.querySelector('#pcGo');
   const pr = new THREE.WebGLRenderer({ antialias: true, alpha: true }); pr.setSize(280, 420); view.appendChild(pr.domElement); pr.domElement.style.cssText = 'width:100%;height:100%;object-fit:contain';
@@ -512,7 +521,7 @@ async function choosePersona() {
   const pc = new THREE.PerspectiveCamera(30, 280 / 420, 0.1, 50); let current = null, shown = null, turn = 0;
   const gl = new GLTFLoader(), cache = new Map();
   const show = async name => {
-    current = name; go.disabled = false; box.querySelector('#pcName').textContent = 'Your Persona: ' + name.replaceAll('_', ' ');
+    current = name; go.disabled = false; box.querySelector('#pcName').textContent = (kind === 'A' ? 'Your A-User: ' : 'Your Persona: ') + name.replaceAll('_', ' ');
     for (const el of listEl.children) el.style.background = el.dataset.name === name ? '#3d6a99' : 'transparent';
     if (shown) { ps.remove(shown); shown = null; }
     if (!cache.has(name)) cache.set(name, gl.loadAsync('personae/catalogue/' + name + '.glb'));
@@ -545,7 +554,11 @@ async function choosePersona() {
     for (const el of [...listEl.children]) if (!free.has(el.dataset.name)) el.remove();
     if (current && !free.has(current)) { current = null; go.disabled = true; box.querySelector('#pcName').textContent = 'That Persona has just been chosen by someone else: choose another.'; }
   }, 2000);
-  return await new Promise(res => { go.onclick = () => { box.remove(); pr.dispose(); res(current); }; });
+  return await new Promise(res => {
+    go.onclick = () => { box.remove(); pr.dispose(); res(current); };
+    const later = box.querySelector('#pcLater'); if (later) later.onclick = () => { box.remove(); pr.dispose(); res(null); };          // asked again at the next entry
+    const never = box.querySelector('#pcNever'); if (never) never.onclick = () => { box.remove(); pr.dispose(); res('!never'); };      // never asked again
+  });
 }
 async function resume() { return resumeWith(me.resume.token, me.resume.persona); }
 async function resumeWith(token, p) {
@@ -645,7 +658,7 @@ const profileOf = (user, extra, choice) => ({ Header: 'MMM-PPR-V2.2', MInstanceI
   PersonalProfile: { ...extra, Processes: [{ ProcessIDOrProcess: [{ ProcessID: user }], PersonaIDOrPersona: [{ PersonaID: user + '-Persona', ...(choice ? { PersonaChoice: choice } : {}) }] }] } });
 const tokenOf = (reg, user) => (reg.tokens ?? '').split(',').map(p => p.split('=')).find(p => decodeURIComponent(p[0]) === user)?.[1];
 async function enterWithAccount() {
-  let info = null;
+  let info = null, firstEntry = false;                                        // firstEntry: the Account was opened now, or has no Persona yet - its Users are deployed
   if (fromThalia) {                                                           // Thalia entered for the person: its token
     nameTo(fromThalia.user); client.token = fromThalia.token;
     info = await fetch('me', { headers: { Authorization: 'Bearer ' + client.token }, cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
@@ -661,19 +674,31 @@ async function enterWithAccount() {
     } else {
       let reg;
       for (;;) {
-        const choice = await choosePersona();
+        const choice = await choosePersona(f.level === 'Visitor' ? 'V' : 'H');
         reg = await act('identity/register', client.human, { With: [profileOf(f.user, { AccountLevel: f.level, Credential: f.pass, Data: [{ FirstName: f.first, LastName: f.last, ...(f.org ? { Organisation: f.org } : {}), ...(f.email ? { Email: f.email } : {}) }] }, choice)] });
         if (reg.http === 409 && /was chosen by/.test(reg.body?.paStatus?.detail ?? '')) continue;
         break;
       }
       if (reg.http !== 201) { note = reg.http === 409 ? `There is an Account with that name already: enter with its password, or register with another name.` : `Not registered: ${reg.body?.paStatus?.detail ?? reg.http}`; continue; }
-      client.token = tokenOf(reg, f.user);
+      client.token = tokenOf(reg, f.user); firstEntry = true;
     }
     info = await fetch('me', { headers: { Authorization: 'Bearer ' + client.token }, cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null);
   }
   // No Persona (a Visitor whose last visit ended, or an Account Thalia opened): the person chooses one now, as one of its Users (its token).
+  // DEPLOYING THE USERS (2026-11-27): an Account that Thalia opened has no Persona yet; at the first entry the person deploys its H-User with a Persona, then its A-User.
+  if (!info.Persona) firstEntry = true;
+  // THE ROLE (2026-11-27): an Account that Thalia opened has no Account Level yet; at the first entry the person chooses it - Visitor, Participant or Officer (an Officer by
+  // request to the MMM Manager: meanwhile a Participant).
+  while (!info.AccountLevel) {
+    const role = await chooseRole();
+    const reg = await act('identity/register', client.human, { With: [profileOf(client.name, { AccountLevel: role })] });
+    if (reg.http === 200) client.token = tokenOf(reg, client.name) ?? client.token;
+    else { client.status = `cannot take the role: ${reg.body?.paStatus?.detail ?? reg.http}`; return; }
+    info = await fetch('me', { headers: { Authorization: 'Bearer ' + client.token }, cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null) ?? info;
+    if (role === 'Officer' && info.OfficerRequest?.Status === 'Pending') client.notice = 'Your request for Officer status has been sent to the MMM Manager. You will be told the outcome. Meanwhile you are a Participant.';
+  }
   while (!info.Persona) {
-    const choice = await choosePersona();
+    const choice = await choosePersona(info.AccountLevel === 'Visitor' ? 'V' : 'H');
     const reg = await act('identity/register', client.human, { With: [profileOf(client.name, {}, choice)] });
     if (reg.http === 200) client.token = tokenOf(reg, client.name) ?? client.token;
     else if (!(reg.http === 409 && /was chosen by/.test(reg.body?.paStatus?.detail ?? ''))) { client.status = `cannot take the Persona: ${reg.body?.paStatus?.detail ?? reg.http}`; return; }
@@ -681,8 +706,78 @@ async function enterWithAccount() {
   }
   await resumeWith(client.token, info);
   if (info.AccountLevelName) client.status += ` (${info.AccountLevelName})`;
+  // THE A-USER IS OFFERED at every entry until the person says Yes or Never (Later: next time); never to a Visitor, which has an H-User only.
+  if (!info.AUser && !info.Autonomous && !info.AUserNever && info.AccountLevel !== 'Visitor') await deployAUser();
+  officerOutcome(info); setInterval(async () => officerOutcome(await fetch('me', { headers: { Authorization: 'Bearer ' + client.token }, cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null)), 30000);
+  if (info.AccountLevelName === 'MMM Manager') managerButton();
   const q = new URLSearchParams(location.search);
   if (q.get('link') || q.has('devices')) linkPanel(q.get('link'));
+}
+// THE ROLE AT THE FIRST ENTRY (2026-11-27): the Account Levels from the bottom - Visitor, Participant, Officer (the Manager's is never offered).
+async function chooseRole() {
+  const levels = await fetch('/api/v2.2/register/options', { cache: 'no-store' }).then(r => r.ok ? r.json() : []).catch(() => []);
+  const box = document.createElement('div');
+  Object.assign(box.style, { position: 'fixed', inset: '0', zIndex: 40, background: 'rgba(15,18,24,.97)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'safe center', gap: '10px', padding: '16px', overflow: 'auto', boxSizing: 'border-box' });
+  box.innerHTML = `<h2 style="margin:0">Welcome to the MMM, ${client.name}</h2><div style="max-width:560px;text-align:center;color:var(--muted)">Choose your role.</div>
+    <div style="width:min(560px,100%)">${levels.map((l, i) => `<label style="display:block;text-align:left;background:#252b34;border-radius:8px;padding:8px 10px;margin:6px 0;cursor:pointer"><input type="radio" name="role" value="${l.id}" ${l.id === 'Participant' ? 'checked' : ''}> <b>${l.name}</b><div style="font-size:13px;color:var(--muted);margin-left:22px">${l.description}</div></label>`).join('')}</div>
+    <button id="roleGo" style="font-size:20px;padding:8px 28px;border-radius:8px;cursor:pointer">Next</button>`;
+  document.body.appendChild(box);
+  return await new Promise(res => { box.querySelector('#roleGo').onclick = () => { const v = box.querySelector('input[name=role]:checked')?.value ?? 'Participant'; box.remove(); res(v); }; });
+}
+// THE OUTCOME OF AN OFFICER REQUEST, told once (at the entry, or while the person is in the world).
+function officerOutcome(info) {
+  const r = info?.OfficerRequest;
+  if (!r || r.Status === 'Pending') return;
+  client.notice = r.Status === 'Approved' ? 'The MMM Manager has approved your request: you are now an Officer.' : `The MMM Manager has not approved your request for Officer status${r.Reason ? ': ' + r.Reason : '.'}`;
+  fetch('officer/seen', { method: 'POST', headers: { Authorization: 'Bearer ' + client.token } });
+}
+// THE MANAGER CONSOLE (2026-11-27): for the MMM Manager only - the Officer requests, each with Approve, or Refuse with a reason.
+function managerButton() {
+  const b = document.createElement('button'); b.textContent = 'Manager Console';
+  Object.assign(b.style, { position: 'fixed', top: '10px', right: '10px', zIndex: 30, fontSize: '15px', padding: '6px 14px', borderRadius: '8px', cursor: 'pointer' });
+  b.onclick = managerConsole; document.body.appendChild(b);
+}
+async function managerConsole() {
+  const auth = { Authorization: 'Bearer ' + client.token }, esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const box = document.createElement('div');
+  Object.assign(box.style, { position: 'fixed', inset: '0', zIndex: 45, background: 'rgba(15,18,24,.96)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '24px 16px', overflow: 'auto', boxSizing: 'border-box' });
+  document.body.appendChild(box);
+  const draw = async (note = '') => {
+    const list = await fetch('manager/requests', { headers: auth, cache: 'no-store' }).then(r => r.ok ? r.json() : []).catch(() => []);
+    const row = r => `<div style="background:#252b34;border-radius:8px;padding:10px 12px;margin:8px 0;text-align:left">
+      <div><b>${esc(r.first)} ${esc(r.last)}</b> - ${esc(r.organisation)} - ${esc(r.email)}</div><div style="font-size:13px;color:var(--muted)">asked ${esc(r.asked)}${r.status !== 'Pending' ? ' - ' + esc(r.status) + (r.reason ? ': ' + esc(r.reason) : '') : ''}</div>
+      ${r.status === 'Pending' ? `<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button data-h="${esc(r.human)}" data-a="1" style="cursor:pointer;padding:4px 14px;border-radius:6px">Approve</button><input data-r="${esc(r.human)}" placeholder="reason (optional)" style="flex:1;min-width:160px;padding:4px 8px;border-radius:6px;border:1px solid #556;background:#1d2128;color:inherit"><button data-h="${esc(r.human)}" data-a="0" style="cursor:pointer;padding:4px 14px;border-radius:6px">Refuse</button></div>` : ''}</div>`;
+    box.innerHTML = `<h2 style="margin:0">Manager Console</h2><div style="color:#9fd28c;min-height:1.2em">${esc(note)}</div>
+      <div style="width:min(640px,100%)"><div style="font-weight:600">Requests for Officer status</div>${list.length ? list.map(row).join('') : '<div style="color:var(--muted);margin:8px 0">None.</div>'}</div>
+      <button id="mcClose" style="font-size:18px;padding:8px 22px;border-radius:8px;cursor:pointer">Back to the world</button>`;
+    box.querySelectorAll('button[data-h]').forEach(b => b.onclick = async () => {
+      const reason = box.querySelector(`input[data-r="${CSS.escape(b.dataset.h)}"]`)?.value ?? '';
+      const r = await fetch(`manager/answer?human=${encodeURIComponent(b.dataset.h)}&approve=${b.dataset.a === '1'}&reason=${encodeURIComponent(reason)}`, { method: 'POST', headers: auth });
+      draw(r.ok ? (b.dataset.a === '1' ? 'Approved: the person is now an Officer and will be told.' : 'Refused: the person will be told.') : 'The answer was not taken.');
+    });
+    box.querySelector('#mcClose').onclick = () => box.remove();
+  };
+  draw();
+}
+// THE A-USER (2026-11-27): the second User of the person, made at its first entry with a Persona of the A-Users (Register, as one of its Users: its token); its Persona is
+// placed next to the H-User's, by the A-User itself (its own token). The person commands it with words; it acts with autonomy.
+async function deployAUser() {
+  const aUser = client.name + '-A', aPersona = aUser + '-Persona';
+  for (;;) {
+    const choice = await choosePersona('A');
+    if (!choice) return;                                                      // Later: asked again at the next entry
+    if (choice === '!never') { await fetch('auser/never', { method: 'POST', headers: { Authorization: 'Bearer ' + client.token } }); return; }
+    const reg = await act('identity/register', client.human, { With: [{ Header: 'MMM-PPR-V2.2', MInstanceID: 'MI1', humanID: client.human, PersonalProfileID: 'Profile-' + client.human,
+      PersonalProfile: { Processes: [{ ProcessIDOrProcess: [{ ProcessID: aUser }], PersonaIDOrPersona: [{ PersonaID: aPersona, PersonaChoice: choice }] }] } }] });
+    if (reg.http === 409 && /was chosen by/.test(reg.body?.paStatus?.detail ?? '')) continue;
+    if (reg.http !== 200) { client.notice = `Your A-User was not deployed: ${reg.body?.paStatus?.detail ?? reg.http}`; return; }
+    client.token = tokenOf(reg, client.name) ?? client.token;
+    const aToken = tokenOf(reg, aUser);
+    const r = client.yaw * Math.PI / 180, side = [1.2 * Math.cos(r), 1.2 * Math.sin(r)];   // 1.2 m to the H-User's right (yaw 0 looks north, positive turns west), not in its view
+    const add = await act('locate/mm-add', aUser, { Nil: aPersona, At: client.at, With: [spatial('SA-' + aUser, client.x - (client.ox ?? 0) + side[0], client.y - (client.oy ?? 0) + side[1], client.yaw)] }, aToken);
+    client.notice = add.http === 200 ? `Your A-User ${choice.replaceAll('_', ' ')} is beside you.` : `Your A-User is deployed, but its Persona could not be placed: ${add.body?.paStatus?.detail ?? add.http}`;
+    return;
+  }
 }
 // LINKING A DEVICE TO THE ACCOUNT (2026-11-26). Thalia - or another program acting for the person - asked to be linked and shows a code; opened with ?link=<request>, after the person
 // entered with its password, this panel shows the device and the code: approved, the device is given a key of its own and enters as the person without the password. The panel
@@ -720,7 +815,7 @@ async function join() {
   const form = await registrationOptions();
   let choice, profile, reg;
   for (;;) {                                                                  // a Persona chosen by someone else at the same moment is refused: the choice is made again
-  choice = await choosePersona();
+  choice = await choosePersona(form?.level === 'Visitor' ? 'V' : 'H');
   profile = { Header: 'MMM-PPR-V2.2', MInstanceID: 'MI1', humanID: client.human, PersonalProfileID: 'Profile-' + client.human,
     PersonalProfile: { ...(form ? { AccountLevel: form.level } : {}), Data: [form ? { FirstName: form.first, LastName: form.last, Email: form.email } : { FirstName: client.name }], Processes: [{ ProcessIDOrProcess: [{ ProcessID: client.name }], PersonaIDOrPersona: [...new Set([userName + '-Persona', client.persona])].map(p => ({ PersonaID: p, ...(choice && p === userName + '-Persona' ? { PersonaChoice: choice } : {}) })) }] } };   // a User has its own Personae: the ones it registers with
   reg = await act('identity/register', client.human, { With: [profile] });

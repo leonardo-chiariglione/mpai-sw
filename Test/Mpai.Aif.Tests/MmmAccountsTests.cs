@@ -1,4 +1,4 @@
-using System.Text.Json.Nodes;
+﻿using System.Text.Json.Nodes;
 using Mpai.Mmm;
 using Mpai.Mmm.Client;
 using Microsoft.AspNetCore.Builder;
@@ -35,7 +35,7 @@ public class MmmAccountsTests
     {
         var m = new MInstance(Repository.Schemas) { RequireCredentials = true };
         World.Setup(m, Repository.Root);
-        m.Catalogue = new HashSet<string>(["Female_Adult_01", "Male_Adult_01"], StringComparer.Ordinal);
+        m.Catalogue = new HashSet<string>(["Female_Adult_01", "Male_Adult_01", "Sports_Male_01"], StringComparer.Ordinal);   // Sports_: a Visitor's Persona (2026-11-27)
         if (state is not null) m.RestoreState(state);
         var app = MmmServer.Build(m, "http://127.0.0.1:0");
         await app.StartAsync();
@@ -94,7 +94,7 @@ public class MmmAccountsTests
         {
             Assert.DoesNotContain(m.AccountLevels, l => l.Id == MInstance.Manager);
             var options = await http.GetStringAsync("/api/v2.2/register/options");
-            Assert.DoesNotContain("Manager", options);
+            Assert.DoesNotContain($"\"{MInstance.Manager}\"", options);      // not a level offered (the Officer's description names the MMM Manager, 2026-11-27)
             // an Account opened before the Manager was named: it becomes the Manager's when it enters
             Assert.Equal(201, (await Register(http, "Boss", new JsonObject { ["AccountLevel"] = "Participant", ["Credential"] = "secret1", ["Data"] = new JsonArray(Data("Boss", "X", "MPAI", "boss@example.com")) }, "Male_Adult_01")).Http);
             Assert.Equal("Participant", m.LevelNameOf("Boss"));
@@ -158,7 +158,7 @@ public class MmmAccountsTests
     {
         var m = new MInstance(Repository.Schemas) { RequireCredentials = true };
         World.Setup(m, Repository.Root);
-        m.Catalogue = new HashSet<string>(["Female_Adult_01", "Male_Adult_01"], StringComparer.Ordinal);
+        m.Catalogue = new HashSet<string>(["Female_Adult_01", "Male_Adult_01", "Sports_Male_01"], StringComparer.Ordinal);   // Sports_: a Visitor's Persona (2026-11-27)
         Outcome Reg(string user, string org) => m.Perform(null, new ProcessActionRequest
         {
             SourceProcessID = $"{user}-human", Action = "Register",
@@ -183,7 +183,7 @@ public class MmmAccountsTests
             Assert.Equal(422, (await Register(http, "MarioRossi", new JsonObject { ["AccountLevel"] = "Visitor", ["Data"] = new JsonArray(Data("Mario", "Rossi")) })).Http);           // no password
             Assert.Equal(422, (await Register(http, "MarioRossi", new JsonObject { ["AccountLevel"] = "Visitor", ["Credential"] = "abc", ["Data"] = new JsonArray(Data("Mario", "Rossi")) })).Http);   // too short
             Assert.Equal(422, (await Register(http, "Anna", new JsonObject { ["AccountLevel"] = "Participant", ["Credential"] = "secret1", ["Data"] = new JsonArray(Data("Anna", "Bianchi")) })).Http);   // no email, no organisation
-            var visitor = await Register(http, "MarioRossi", new JsonObject { ["AccountLevel"] = "Visitor", ["Credential"] = "secret1", ["Data"] = new JsonArray(Data("Mario", "Rossi")) }, "Male_Adult_01");
+            var visitor = await Register(http, "MarioRossi", new JsonObject { ["AccountLevel"] = "Visitor", ["Credential"] = "secret1", ["Data"] = new JsonArray(Data("Mario", "Rossi")) }, "Sports_Male_01");
             Assert.Equal(201, visitor.Http);
             var anna = await Register(http, "Anna", new JsonObject { ["AccountLevel"] = "Participant", ["Credential"] = "secret2", ["Data"] = new JsonArray(Data("Anna", "Bianchi", "MPAI", "anna@example.com")) }, "Female_Adult_01");
             Assert.Equal(201, anna.Http);
@@ -199,18 +199,18 @@ public class MmmAccountsTests
             Assert.Equal(404, (await Register(http, "Nobody", new JsonObject { ["Credential"] = "secret9" })).Http);
 
             // THE END OF A VISIT: Mario's Persona is offered again; Anna (a Participant) keeps hers
-            Assert.True(m.PersonaTaken("Male_Adult_01"));
+            Assert.True(m.PersonaTaken("Sports_Male_01"));
             Assert.True(m.EndVisit("MarioRossi"));
             Assert.False(m.EndVisit("Anna"));
-            Assert.False(m.PersonaTaken("Male_Adult_01"));
+            Assert.False(m.PersonaTaken("Sports_Male_01"));
             Assert.Null(m.Get("MarioRossi-Persona"));
             Assert.NotNull(m.Get("Anna-Persona"));
             Assert.Null(m.TokenOf("MarioRossi"));
-            // Mario enters again with his password and chooses a Persona, as his User
-            var back = await Register(http, "MarioRossi", new JsonObject { ["Credential"] = "secret1" });
-            Assert.Equal(200, back.Http);
-            Assert.Null(m.InfoOf("MarioRossi")!["Persona"]);
-            Assert.Equal(200, (await Register(http, "MarioRossi", new JsonObject(), "Male_Adult_01", back.Tokens["MarioRossi"])).Http);
+            // A VISITOR IS FORGOTTEN (2026-11-27): Mario's Account is gone with his visit - his password opens nothing - and he registers again
+            Assert.Null(m.Get("Account-MarioRossi-human"));
+            Assert.Equal(404, (await Register(http, "MarioRossi", new JsonObject { ["Credential"] = "secret1" })).Http);
+            var back = await Register(http, "MarioRossi", new JsonObject { ["AccountLevel"] = "Visitor", ["Credential"] = "secret1", ["Data"] = new JsonArray(Data("Mario", "Rossi")) }, "Sports_Male_01");
+            Assert.Equal(201, back.Http);
             Assert.Equal("MarioRossi-Persona", (string?)m.InfoOf("MarioRossi")!["Persona"]);
             saved = m.SaveState();
         }
@@ -222,12 +222,12 @@ public class MmmAccountsTests
         var (mv, appv, httpv) = await WorldAsync();
         try
         {
-            var v = await Register(httpv, "GinoVerdi", new JsonObject { ["AccountLevel"] = "Visitor", ["Credential"] = "secret3", ["Data"] = new JsonArray(Data("Gino", "Verdi")) }, "Male_Adult_01");
+            var v = await Register(httpv, "GinoVerdi", new JsonObject { ["AccountLevel"] = "Visitor", ["Credential"] = "secret3", ["Data"] = new JsonArray(Data("Gino", "Verdi")) }, "Sports_Male_01");
             Assert.Equal(201, v.Http);
             var gino = new MmmClient(httpv, "GinoVerdi", v.Tokens["GinoVerdi"]);
             Assert.Equal(200, (await gino.PerformAsync("MM-Add", Uc2.C("GinoVerdi-Persona", at: "MVS", with: Uc2.SpatialAttitude("SA-Gino", 3, 0)))).Http);
-            for (var i = 0; i < 30 && mv.PersonaTaken("Male_Adult_01"); i++) await Task.Delay(1000);
-            Assert.False(mv.PersonaTaken("Male_Adult_01"));
+            for (var i = 0; i < 30 && mv.PersonaTaken("Sports_Male_01"); i++) await Task.Delay(1000);
+            Assert.False(mv.PersonaTaken("Sports_Male_01"));
             Assert.Null(mv.Get("GinoVerdi-Persona"));
         }
         finally { MmmServer.VisitEnds = before; httpv.Dispose(); await appv.DisposeAsync(); Meeting.Reset(); }

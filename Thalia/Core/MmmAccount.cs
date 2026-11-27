@@ -26,7 +26,7 @@ static class MmmAccount
             return Results.Json(new JsonObject
             {
                 ["address"] = (string?)a["address"] ?? defaultAddress, ["first"] = (string?)p["first"], ["last"] = (string?)p["last"], ["organisation"] = (string?)p["organisation"],
-                ["email"] = (string?)p["email"], ["level"] = LevelOf(a, p), ["hasPassword"] = a["password"] is not null, ["user"] = (string?)a["user"],
+                ["email"] = (string?)p["email"], ["hasPassword"] = a["password"] is not null, ["user"] = (string?)a["user"],
                 ["linked"] = a["device"] is not null, ["linkPending"] = a["linkRequest"] is not null, ["linkResult"] = (string?)a["linkResult"]
             });
         });
@@ -35,7 +35,7 @@ static class MmmAccount
         {
             var given = JsonNode.Parse(await new StreamReader(ctx.Request.Body).ReadToEndAsync()) as JsonObject ?? new JsonObject();
             var a = Read();
-            foreach (var k in new[] { "address", "first", "last", "organisation", "email", "level" }) if (given[k] is not null) a[k] = ((string?)given[k])?.Trim();
+            foreach (var k in new[] { "address", "first", "last", "organisation", "email" }) if (given[k] is not null) a[k] = ((string?)given[k])?.Trim();      // the role is chosen in the MMM (2026-11-27)
             if ((string?)given["password"] is { Length: > 0 } pw) a["password"] = Convert.ToBase64String(Protect(Encoding.UTF8.GetBytes(pw)));
             Directory.CreateDirectory(thaliaData);
             await File.WriteAllTextAsync(file, a.ToJsonString());
@@ -165,7 +165,7 @@ static class MmmAccount
                     }
                     : new JsonObject
                     {
-                        ["AccountLevel"] = LevelOf(a, me0), ["Credential"] = password, ["Data"] = new JsonArray(data),
+                        ["Credential"] = password, ["Data"] = new JsonArray(data),          // no Account Level: the person chooses its role at its first entry into the MMM (2026-11-27)
                         ["Processes"] = new JsonArray(new JsonObject { ["ProcessIDOrProcess"] = new JsonArray(new JsonObject { ["ProcessID"] = user }), ["PersonaIDOrPersona"] = new JsonArray(new JsonObject { ["PersonaID"] = user + "-Persona" }) })
                     }
             };
@@ -196,8 +196,6 @@ static class MmmAccount
         catch (Exception e) { Console.WriteLine("opening the world: " + e.Message); }
     }
 
-    // THE ACCOUNT LEVEL: the one chosen (Settings), else Participant when the profile has an email (the Persona is kept from one visit to the next), Visitor without.
-    static string LevelOf(JsonObject a, JsonObject profile) => (string?)a["level"] is { Length: > 0 } l ? l : (string?)profile["email"] is { Length: > 0 } ? "Participant" : "Visitor";
 
     // A visitor's User: the letters of its first and last name (as the page makes it).
     public static string AccountId(string first, string last)
