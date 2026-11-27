@@ -541,7 +541,7 @@ public partial class RcaShell : ComponentBase
             Instruct("Choose a picture.");
             var tcs = new TaskCompletionSource<(string Name, byte[] Data)?>(TaskCreationOptions.RunContinuationsAsynchronously);
             picture = tcs; choosingPicture = true;
-            Refresh();
+            await OpenTestData("");
 
             // Stop while the person is choosing ends the choosing: nothing chosen.
             var stop = (_appStopping ?? _stopping)?.Token ?? CancellationToken.None;
@@ -807,6 +807,31 @@ public partial class RcaShell : ComponentBase
     private async Task PlayAgain()
     {
         if (lastSpeechWav is not null) await Js.InvokeVoidAsync("rca.playWav", lastSpeechWav);
+    }
+
+    // THE PICTURES OF TEST\DATA (2026-11-27): the choosing starts there (the host lists them, to a person on its own machine); where the host has none, only the
+    // browser's chooser is shown.
+    private sealed record TestDataFolder(string Dir, string[] Folders, string[] Files);
+    private TestDataFolder? testData;
+
+    private async Task OpenTestData(string dir)
+    {
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(await Http.GetStringAsync("testdata/list?dir=" + Uri.EscapeDataString(dir)));
+            var r = doc.RootElement;
+            string[] Of(string p) => r.GetProperty(p).EnumerateArray().Select(x => x.GetString() ?? "").ToArray();
+            testData = new TestDataFolder(r.GetProperty("dir").GetString() ?? "", Of("folders"), Of("files"));
+        }
+        catch { testData = null; }
+        Refresh();
+    }
+
+    private async Task TestDataPictureChosen(string path)
+    {
+        var data = await Http.GetByteArrayAsync("testdata/file?path=" + Uri.EscapeDataString(path));
+        var waiting = picture; picture = null;
+        waiting?.TrySetResult((path[(path.LastIndexOf('/') + 1)..], data));
     }
 
     private async Task PictureChosen(InputFileChangeEventArgs e)

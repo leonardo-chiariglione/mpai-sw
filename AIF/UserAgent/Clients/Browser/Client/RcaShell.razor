@@ -83,7 +83,18 @@
 
   @if (choosingPicture)
   {
-    <div class="picture"><InputFile OnChange="PictureChosen" accept="image/*" /></div>
+    @if (testData is { } td)
+    {
+      <div class="picture testdata">
+        <div><b>Test\Data@(td.Dir.Length > 0 ? "\\" + td.Dir.Replace('/', '\\') : "")</b></div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin:6px 0">
+          @if (td.Dir.Length > 0) { <button @onclick='() => OpenTestData(td.Dir.Contains("/") ? td.Dir[..td.Dir.LastIndexOf("/")] : "")'>&#8593; up</button> }
+          @foreach (var f in td.Folders) { var to = f; <button @onclick="() => OpenTestData(to)">&#128193; @to[(to.LastIndexOf('/') + 1)..]</button> }
+          @foreach (var f in td.Files) { var file = f; <button @onclick="() => TestDataPictureChosen(file)">@file[(file.LastIndexOf('/') + 1)..]</button> }
+        </div>
+      </div>
+    }
+    <div class="picture">@(testData is null ? "" : "Or another file: ")<InputFile OnChange="PictureChosen" accept="image/*" /></div>
   }
 
   @if (choosingSpeechFile)

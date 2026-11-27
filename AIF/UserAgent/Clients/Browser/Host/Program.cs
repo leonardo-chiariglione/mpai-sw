@@ -125,6 +125,31 @@ app.MapGet("/avatar/{file}", (string file) =>
         ? Results.File(Path.Combine(assets, file), type)
         : Results.NotFound());
 
+// THE PICTURES OF TEST\DATA (the author, 2026-11-27, testing the MAS Apps in Thalia: the search for a file starts from Test\Data). A browser's file chooser cannot be
+// told where to start, so the client shows the folders and pictures of Test\Data here, and the browser's chooser stays for any other file. Only to a person on this
+// same machine (a published host is a public site), only below Test\Data, and only pictures.
+var testData = Path.Combine(root, "Test", "Data");
+string[] pictureTypes = [".jpg", ".jpeg", ".png", ".bmp", ".gif"];
+string? InTestData(string? relative)
+{
+    var full = Path.GetFullPath(Path.Combine(testData, (relative ?? "").Replace('/', Path.DirectorySeparatorChar)));
+    return full.Equals(testData, StringComparison.OrdinalIgnoreCase) || full.StartsWith(testData + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ? full : null;
+}
+bool Local(HttpContext ctx) => ctx.Connection.RemoteIpAddress is { } ip && System.Net.IPAddress.IsLoopback(ip);
+app.MapGet("/testdata/list", (string? dir, HttpContext ctx) =>
+{
+    if (!Local(ctx) || !Directory.Exists(testData) || InTestData(dir) is not { } full || !Directory.Exists(full)) return Results.NotFound();
+    string Rel(string p) => Path.GetRelativePath(testData, p).Replace(Path.DirectorySeparatorChar, '/');
+    var folders = Directory.GetDirectories(full).Select(Rel).OrderBy(n => n, StringComparer.OrdinalIgnoreCase).ToArray();
+    var files = Directory.GetFiles(full).Where(f => pictureTypes.Contains(Path.GetExtension(f).ToLowerInvariant())).Select(Rel).OrderBy(n => n, StringComparer.OrdinalIgnoreCase).ToArray();
+    var here = Rel(full);
+    return Results.Json(new { dir = here == "." ? "" : here, folders, files });
+});
+app.MapGet("/testdata/file", (string path, HttpContext ctx) =>
+    Local(ctx) && InTestData(path) is { } full && File.Exists(full) && pictureTypes.Contains(Path.GetExtension(full).ToLowerInvariant())
+        ? Results.File(full, "application/octet-stream", Path.GetFileName(full))
+        : Results.NotFound());
+
 // NEVER FROM THE BROWSER'S CACHE: a workflow changed on disk is the one run
 // next, not a copy the browser kept (it did, and ran the old one).
 app.MapGet("/mas/MPAI-MAS.orch", (HttpContext ctx) =>

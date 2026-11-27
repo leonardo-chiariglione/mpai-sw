@@ -30,11 +30,20 @@ public static class StandardDevices
         var chosen = await ui.InvokeAsync(() =>
         {
             var dialog = new OpenFileDialog { Title = "Choose a picture", Filter = "Images|*.jpg;*.jpeg;*.png;*.bmp;*.gif|All files|*.*" };
+            if (TestData() is { } start) dialog.InitialDirectory = start;
             return dialog.ShowDialog() == true ? dialog.FileName : null;
         });
         if (chosen is null) return null;
         var bytes = await File.ReadAllBytesAsync(chosen);
         return MpaiJson.ToJson(BasicVisualObject.FromFile(Path.GetFileName(chosen), bytes, "Visual Object"));
+    }
+
+    // WHERE THE FILE CHOOSER STARTS (the author, 2026-11-27, testing the Apps in Thalia): Test\Data of the software, where the test pictures are; where there is
+    // none (a participant's machine) the chooser starts where Windows would.
+    public static string? TestData()
+    {
+        try { var d = Path.Combine(MpaiPaths.Root, "Test", "Data"); return Directory.Exists(d) ? d : null; }
+        catch { return null; }
     }
 
     // A PORTABLE AVATAR'S UTTERANCE, PRESENTED on the avatar; the step ends when she has finished speaking.

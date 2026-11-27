@@ -1107,6 +1107,7 @@ public partial class MainWindow : Window
                     Title  = "Choose a picture",
                     Filter = "Pictures (*.jpg;*.jpeg;*.png;*.bmp)|*.jpg;*.jpeg;*.png;*.bmp|All files (*.*)|*.*"
                 };
+                if (StandardDevices.TestData() is { } start) dialog.InitialDirectory = start;      // Test\Data, where the test pictures are (2026-11-27)
                 return dialog.ShowDialog() == true ? dialog.FileName : null;
             });
             if (chosen is null) return null;
