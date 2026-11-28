@@ -57,6 +57,7 @@
                           {"Output": {"AIMInstID": "1CAV-MAS-V2.0-I01", "DataType": "CAV-AMM-V2.0", "PortNumber": 2}, "Input": {"AIMInstID": "1CAV-AMS-V2.0-I01", "DataType": "CAV-AMM-V2.0"}},
                           {"Output": {"AIMInstID": "1CAV-HCI-V2.0-I01", "DataType": "CAV-AHM-V2.0"}, "Input": {"AIMInstID": "1CAV-AMS-V2.0-I01", "DataType": "CAV-AHM-V2.0"}},
                           {"Output": {"AIMInstID": "1CAV-AMS-V2.0-I01", "DataType": "CAV-AHM-V2.0"}, "Input": {"AIMInstID": "1CAV-HCI-V2.0-I01", "DataType": "CAV-AHM-V2.0"}},
+                          {"Output": {"AIMInstID": "1CAV-AMS-V2.0-I01", "DataType": "MMC-DKN-V2.5"}, "Input": {"AIMInstID": "1CAV-HCI-V2.0-I01", "DataType": "MMC-DKN-V2.5"}},
                           {"Output": {"AIMInstID": "1CAV-AMS-V2.0-I01", "DataType": "OSD-BMS-V1.5"}, "Input": {"AIMInstID": "1CAV-HCI-V2.0-I01", "DataType": "OSD-BMS-V1.5"}},
                           {"Output": {"AIMInstID": "1CAV-MAS-V2.0-I01", "DataType": "CAV-BRC-V2.0"}, "Input": {"AIMInstID": "", "DataType": "CAV-BRC-V2.0", "PortNumber": 1}},
                           {"Output": {"AIMInstID": "1CAV-MAS-V2.0-I01", "DataType": "CAV-MRC-V2.0"}, "Input": {"AIMInstID": "", "DataType": "CAV-MRC-V2.0", "PortNumber": 1}},

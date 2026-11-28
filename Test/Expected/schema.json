@@ -110,6 +110,7 @@
   "MMC/V2.5/AIMs/ConversationAboutAScene.json": "valid",
   "MMC/V2.5/AIMs/ConversationWithEmotion.json": "valid",
   "MMC/V2.5/AIMs/ConversationWithPersonalStatus.json": "valid",
+  "MMC/V2.5/AIMs/DomainKnowledgeRetrieval.json": "valid",
   "MMC/V2.5/AIMs/EntityDialogueProcessing.json": "valid",
   "MMC/V2.5/AIMs/EntitySpeechDescription.json": "valid",
   "MMC/V2.5/AIMs/EntityTextDescription.json": "valid",

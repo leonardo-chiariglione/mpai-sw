@@ -74,6 +74,8 @@ public sealed class CavWorld : IDisposable
     public IDevice PointOfView { get; }
 
     public Simulation Sim => sim;
+    // What follows each step of the world, under its lock: where the vehicle now is goes elsewhere too (the Vehicle Item of an M-Instance the CAV drives in).
+    public Action<Simulation>? Stepped { get; set; }
     // Completes when the drive is over: arrived, collided, the steps given, the CAV silent, or the vehicle brought to its safe state and stopped.
     public Task Finished => finished.Task;
     public string? Failure => failure;
@@ -140,6 +142,7 @@ public sealed class CavWorld : IDisposable
                         w.sim.Actuate(commands);
                         responses = w.sim.Advance();
                         w.steps++;
+                        w.Stepped?.Invoke(w.sim);
                         if (w.movedAt is null && w.sim.EgoS > 0.5) lock (w.gate) w.movedAt = w.sim.Time;
                     }
                     lock (w.gate) w.stepMs.Add(clock.Elapsed.TotalMilliseconds);

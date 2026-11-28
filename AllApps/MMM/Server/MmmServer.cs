@@ -175,13 +175,13 @@ public static class MmmServer
                     var users = (rq.Complements?.With ?? []).SelectMany(w => w?["PersonalProfile"]?["Processes"]?.AsArray() ?? []).SelectMany(p => p?["ProcessIDOrProcess"]?.AsArray() ?? [])
                                 .Select(p => p?["ProcessID"]?.GetValue<string>()).ToList();
                     var byAccount = m.RequireCredentials && (identity.Accounts || me.Kind == "visitor");
-                    // its A-User (2026-11-27) is <name>-A: a User of the same person (the M-Instance allows one H-User and one A-User per human)
-                    static string PersonOf(string? u) => u is { Length: > 2 } && u.EndsWith("-A", StringComparison.Ordinal) ? u[..^2] : u ?? "";
-                    users = users.Select(u => PersonOf(u)).ToList();
-                    var name = byAccount ? users.FirstOrDefault() ?? "" : me.Name;
+                    // its A-User (2026-11-27) is <name>-A: a User of the same person (the M-Instance allows one H-User and one A-User per human); a Process the person controls itself,
+                    // with no H-User - a CAV that drives a Vehicle Item - is <what>-<name> (2026-11-27). In a world with Accounts the person is the human that registers: <name>-human.
+                    var name = byAccount ? (rq.SourceProcessID.EndsWith("-human", StringComparison.Ordinal) ? rq.SourceProcessID[..^6] : users.FirstOrDefault() ?? "") : me.Name;
+                    bool Its(string? u) => u == name || u == name + "-A" || (u is not null && name.Length > 0 && u.EndsWith("-" + name, StringComparison.Ordinal) && u.Length > name.Length + 1);
                     if (byAccount && (name.Length == 0 || (!identity.Accounts && identity.IsReserved(name))))
                         return Results.Json(new { paStatus = new { code = "InsRights", detail = $"{name} is the name of someone invited: choose another" } }, statusCode: 403);
-                    if (rq.SourceProcessID != name + "-human" || users.Any(u => u != name))
+                    if (rq.SourceProcessID != name + "-human" || users.Any(u => !Its(u)))
                         return Results.Json(new { paStatus = new { code = "InsRights", detail = $"{me.Login}{(me.Login.Length > 0 ? " is" : "")} {me.Name}: it registers only as that" } }, statusCode: 403);
                 }
 

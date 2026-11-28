@@ -70,3 +70,5 @@ COL.update(asphalt=(0.17, 0.17, 0.18, 1), marking=(0.95, 0.95, 0.93, 1), yellow=
            grass=(0.36, 0.55, 0.3, 1), island=(0.3, 0.5, 0.27, 1), barrier=(0.75, 0.76, 0.78, 1), trunk=(0.35, 0.24, 0.14, 1), leaves=(0.2, 0.42, 0.18, 1),
            facade1=(0.78, 0.74, 0.66, 1), facade2=(0.62, 0.66, 0.72, 1), facade3=(0.7, 0.55, 0.45, 1), facade4=(0.85, 0.84, 0.8, 1), gate=(0.25, 0.32, 0.45, 1),
            portal=(0.45, 0.75, 1.0, 0.35), plaza=(0.66, 0.64, 0.6, 1))
+# THE VEHICLE (make_proving_ground.py, 2026-11-27): a car, an Item a Process - the CAV - moves.
+COL.update(carbody=(0.82, 0.18, 0.14, 1), cabin=(0.16, 0.2, 0.26, 1), tyre=(0.07, 0.07, 0.08, 1), headlight=(0.98, 0.97, 0.88, 1), taillight=(0.75, 0.05, 0.05, 1))

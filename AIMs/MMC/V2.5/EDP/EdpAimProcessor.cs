@@ -106,6 +106,26 @@ public sealed class EdpAimProcessor : IAimProcessor
         // WITH FACTS (the Voice Command Interface): an L3 whose Refined Text is its own input (#3) and that is not the secretary. What arrives there is not a text of the
         // person: it is what an application did or did not do, told as the Response Hint, and the reply says it.
         _factsPort        = !_secretary && refined.Length > 0 && refined != _textPort ? refined : "";
+        _knowledgePort    = ports.InputOrDefault("MMC-DKN-V2.5", "");
+    }
+
+    // DOMAIN KNOWLEDGE (MMC-DKN, 2026-11-27): what the application knows of its domain that is relevant to what the person said, retrieved by Domain Knowledge Retrieval
+    // (MMC-DKR). EDP knows no application: what it may say of the domain is what it is told here. With the Port connected, what the person said is answered when the knowledge
+    // retrieved for it has come (whichever comes first).
+    private readonly string _knowledgePort;
+    private Message? _waitingForKnowledge;
+    private string? _known;
+    private string? KnowledgeOf(Message message)
+    {
+        if (_knowledgePort.Length == 0 || !message.Ports.TryGetValue(_knowledgePort, out var json) || string.IsNullOrWhiteSpace(json)) return null;
+        try
+        {
+            var k = System.Text.Json.Nodes.JsonNode.Parse(json);
+            var items = (k?["Items"] as System.Text.Json.Nodes.JsonArray ?? []).OfType<System.Text.Json.Nodes.JsonObject>().Select(i => "- " + (string?)i["Text"]).ToList();
+            var domain = (string?)k?["Domain"];
+            return (domain is { Length: > 0 } ? domain + Environment.NewLine : "") + (items.Count == 0 ? "(nothing of the domain is relevant to this)" : string.Join(Environment.NewLine, items));
+        }
+        catch (System.Text.Json.JsonException) { return null; }
     }
 
     private readonly string _factsPort;         // OSD-BTO #3: the Response Hint an application's response comes to
@@ -140,6 +160,20 @@ public sealed class EdpAimProcessor : IAimProcessor
             var heardNow = _heard;
             _heard = null;
             return System.Threading.Tasks.Task.FromResult(Facts(message, facts, heardNow));
+        }
+        if (_knowledgePort.Length > 0)
+        {
+            var knowledge = KnowledgeOf(message);
+            var spoken = ReadText(message, _textPort);
+            if (knowledge is not null) _known = knowledge;
+            if (!string.IsNullOrWhiteSpace(spoken) && _known is null) { _waitingForKnowledge = message; return System.Threading.Tasks.Task.FromResult(new Message { MessageId = message.MessageId, MessageType = message.MessageType, Ports = new Dictionary<string, string>() }); }
+            if (string.IsNullOrWhiteSpace(spoken))
+            {
+                if (_waitingForKnowledge is not { } waiting || _known is null)
+                    return System.Threading.Tasks.Task.FromResult(new Message { MessageId = message.MessageId, MessageType = message.MessageType, Ports = new Dictionary<string, string>() });
+                message = waiting with { MessageId = message.MessageId };
+                _waitingForKnowledge = null;
+            }
         }
         string? userText = ReadText(message, _textPort);
         // A message that carries no text but something else - the geometry of a scene, say - is context, not words: nothing is said to it. An empty message is the error.
@@ -210,6 +244,12 @@ public sealed class EdpAimProcessor : IAimProcessor
             prompt.AppendLine($"(Private tone guidance - do NOT mention this to the user: they currently seem {userStatus}. Respond with matching empathy, without ever naming their state.)");
         if (!string.IsNullOrWhiteSpace(summaryIn))
             prompt.AppendLine($"The conversation so far: {summaryIn}");
+        if (_known is { } known)
+        {
+            prompt.AppendLine("What you know of the domain of this conversation - answer from it, and never name a place, a thing or a fact of the domain that is not in it:");
+            prompt.AppendLine(known);
+            _known = null;
+        }
         prompt.AppendLine($"Text: \"{userText}\"");
 
         string reply;

@@ -1,0 +1,75 @@
+{
+ "Identifier": {
+  "ImplementerID": "1",
+  "ImplementationID": "MMC-DKR-V2.5-I01",
+  "AIMInstID": "1MMC-DKR-V2.5-I01"
+ },
+ "Header": "AIF-AMM-V3.0",
+ "AIMType": "MMC-DKR-V2.5",
+ "APIProfile": "Basic",
+ "Description": "Domain Knowledge Retrieval: the items of the application's Domain Knowledge (given on its Port, or the file of Setting DomainKnowledge) relevant to a request, with their Relevance. First version: BM25 over the words of the items, no model; an item whose Name the request says is always relevant. Setting Items: how many at most (6).",
+ "InternalTypes": [],
+ "ExternalPorts": [
+  {
+   "Name": "Request",
+   "Direction": "Input",
+   "DataType": "OSD-BTO-V1.5",
+   "IsOptional": false,
+   "Technology": "Software",
+   "Protocol": "",
+   "IsRemote": false
+  },
+  {
+   "Name": "DomainKnowledge",
+   "Direction": "Input",
+   "DataType": "MMC-DKN-V2.5",
+   "IsOptional": true,
+   "Technology": "Software",
+   "Protocol": "",
+   "IsRemote": false
+  },
+  {
+   "Name": "RetrievedKnowledge",
+   "Direction": "Output",
+   "DataType": "MMC-DKN-V2.5",
+   "IsOptional": false,
+   "Technology": "Software",
+   "Protocol": "",
+   "IsRemote": false
+  }
+ ],
+ "SubAIMs": [],
+ "Topology": [],
+ "Implementations": [
+  {
+   "ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/MMC/V2.5/DKR",
+   "MASPort": 443,
+   "BinaryName": "Mpai.Mmc.Dkr",
+   "Architecture": "x86-64",
+   "OperatingSystem": "Windows",
+   "Version": "2.5",
+   "Source": "AIMStorage"
+  }
+ ],
+ "ResourcePolicies": [
+  {
+   "Name": "Memory",
+   "Minimum": "0.5 GB",
+   "Request": "1 GB",
+   "Maximum": "2 GB"
+  },
+  {
+   "Name": "CPU:Class",
+   "Minimum": "Low",
+   "Request": "Medium",
+   "Maximum": "High"
+  }
+ ],
+ "DataXMData": {},
+ "Documentation": [
+  {
+   "Type": "Tutorial",
+   "URI": "https://mpai.community/standards/mpai-mmc/v2-5/"
+  }
+ ]
+}

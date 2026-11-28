@@ -11,6 +11,7 @@ using Mpai.Cae.Aii;
 using Mpai.Cae.Asi;
 using Mpai.Cae.Qcv;
 using Mpai.Core;
+using Mpai.Mmc.Dkr;            // DkrAimProcessor
 using Mpai.Cve.Vsi;
 using Mpai.Hci.Idr;
 using Mpai.Mmc.Edp;
@@ -64,7 +65,7 @@ public sealed class HciProvider(AmdStore store, string root) : IAimProvider, IDi
         "1OSD-BAS-V1.5-I01", "1OSD-BVS-V1.5-I01", "1OSD-BLS-V1.5-I01", "1OSD-MAL-V1.5-I01", "1CAE-QCV-V1.0-I01", "1CAE-ASI-V2.5-I01", "1CAE-AUS-V1.0-I01",
         "1CAE-AII-V2.5-I01", "1CVE-VSI-V1.0-I01", "1CVE-VII-V1.0-I01", "1PAF-FIR-V1.6-I01", "1MMC-SIR-V2.5-I01", "1OSD-IDR-V1.5-I01",
         "1MMC-ASR-V2.5-I01", "1MMC-NLU-V2.5-I01", "1MMC-SPE-V2.5-I01", "1PAF-FPE-V1.6-I01", "1MMC-PMX-V2.5-I01", "1MMC-EDP-V2.5-I01",
-        "1MMC-PDX-V2.5-I01", "1MMC-TTS-V2.5-I01", "1PAF-GFD-V1.6-I01", "1PAF-GBD-V1.6-I01", "1PAF-PMX-V1.6-I01"
+        "1MMC-PDX-V2.5-I01", "1MMC-TTS-V2.5-I01", "1PAF-GFD-V1.6-I01", "1PAF-GBD-V1.6-I01", "1PAF-PMX-V1.6-I01", "1MMC-DKR-V2.5-I02"
     ];
 
     public bool CanCreate(string aimName) => Leaves.Contains(aimName);
@@ -105,6 +106,7 @@ public sealed class HciProvider(AmdStore store, string root) : IAimProvider, IDi
             "1OSD-IDR-V1.5-I01" => new IdrAimProcessor(aimName, ports),
             "1MMC-ASR-V2.5-I01" => new AsrAimProcessor(aimName, AsrFactory.Create(settings), ports),
             "1MMC-NLU-V2.5-I01" => new NluAimProcessor(aimName, ports),
+            "1MMC-DKR-V2.5-I02" => new DkrAimProcessor(aimName, ports, settings),
             "1MMC-SPE-V2.5-I01" => new SpeAimProcessor(aimName, w2v2 ??= new Wav2Vec2EmotionEstimator(Setting(settings, "W2v2Model", Path.Combine(MpaiPaths.Root, "Models", "w2v2-emotion", "model.onnx"))), ports),
             "1PAF-FPE-V1.6-I01" => new FpeAimProcessor(aimName, hse ??= new HSEmotionEstimator(Mpai.Core.MpaiPaths.Given(settings, "HseModel")), ports),
             "1MMC-PMX-V2.5-I01" => new PmxAimProcessor(aimName, ports),

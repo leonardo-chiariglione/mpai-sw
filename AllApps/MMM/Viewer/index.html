@@ -245,6 +245,17 @@ function room(t) {
   return g;
 }
 
+// ---------------------------------------------------------------- Objects (2026-11-27)
+// An Item that carries a look of its own - a 3D Model Object with its glTF: a vehicle a Process drives - drawn from it, turned by its yaw, with its name above it.
+const objectModels = new Map();
+async function objectOf(t) {
+  if (!objectModels.has(t.Model)) objectModels.set(t.Model, new GLTFLoader().loadAsync(t.Model).then(g => g.scene));
+  const g = new THREE.Group(), m = (await objectModels.get(t.Model)).clone(true);
+  m.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } }); g.add(m);
+  const l = label(t.ID); l.position.set(0, 2.2, 0); g.add(l); g.userData.label = l; g.userData.object = true;
+  return g;
+}
+
 // ---------------------------------------------------------------- Personae
 // Their 3D Models (Rocketbox, AllApps/MMM/Viewer/personae): the opacity material made
 // transparent; measured as their skeleton poses them; arms brought down from the
@@ -1965,7 +1976,7 @@ async function refresh() {
   for (const t of state.Things) {
     seen.add(t.ID);
     const isRoom = t.Kind === 'Location' && t.At;
-    const shape = t.Kind === 'Persona' ? 'persona' : W && t.Kind === 'Location' ? null : isRoom ? 'room' : t.Kind === 'Location' ? 'pad' : null;   // in the world the buildings are drawn from their glTF
+    const shape = t.Kind === 'Persona' ? 'persona' : t.Kind === 'Object' && t.Model ? 'object' : W && t.Kind === 'Location' ? null : isRoom ? 'room' : t.Kind === 'Location' ? 'pad' : null;   // in the world the buildings are drawn from their glTF
     if (!shape) continue;
     let d = drawn.get(t.ID);
     if (d && d.shape !== shape) { scene.remove(d.object); d.object.userData.label?.element.remove(); drawn.delete(t.ID); d = null; }
@@ -1973,7 +1984,7 @@ async function refresh() {
       if (loading.has(t.ID)) continue;                                        // its model is still coming: a second refresh must not draw it again (a ghost left standing, with a label of its own)
       loading.add(t.ID);
       try {
-        const object = shape === 'persona' ? await persona(t) : shape === 'room' ? room(t) : pad(t);
+        const object = shape === 'persona' ? await persona(t) : shape === 'object' ? await objectOf(t) : shape === 'room' ? room(t) : pad(t);
         object.position.set(t.X, t.Z ?? 0, -t.Y); scene.add(object);          // the axes of space - X east, Y north, Z up - to those of three.js: x east, y up, z towards the viewer (south)
         d = { object, shape, target: new THREE.Vector3(t.X, t.Z ?? 0, -t.Y) }; drawn.set(t.ID, d);
       } finally { loading.delete(t.ID); }
@@ -2099,7 +2110,7 @@ renderer.setAnimationLoop(() => {
     if (d.seat && d.real) { const c = lookingAtScreen ? compactSeat(d.seat.q, lookWall) : null; d.target.set(c ? d.seat.cx + c.x : d.real.x, d.target.y, c ? -(d.seat.cy + c.y) : d.real.z); d.yaw = c ? c.yaw : d.real.yaw; }
     const p = d.object.position, to = d.target, dist = p.distanceTo(to);
     if (dist > 0.01) {
-      const step = Math.min(dist, 2.0 * dt * Math.max(1, dist / 3));
+      const step = Math.min(dist, d.shape === 'object' ? dt * Math.max(6, dist * 3) : 2.0 * dt * Math.max(1, dist / 3));     // a vehicle keeps up with where it is
       const dir = to.clone().sub(p).normalize();
       if (Math.hypot(dir.x, dir.z) > 0.2) d.object.rotation.y = Math.atan2(dir.x, dir.z);
       p.addScaledVector(dir, step);

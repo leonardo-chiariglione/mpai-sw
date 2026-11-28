@@ -20,7 +20,7 @@
 
     "Basic3DModelObjectSpaceTime":    { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SpaceTime.json" },
 
-    "Basic3DModelObjectData":         { "type": "array", "items": { "oneOf": [
+    "Basic3DModelObjectData":         { "type": "array", "items": { "anyOf": [
                                       { "type": "object", "properties": {
       "Data":                         { "type": "string" } } },
                                       { "type": "object", "properties": {

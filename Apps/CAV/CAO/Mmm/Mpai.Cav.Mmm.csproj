@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- THE CAV IN THE MMM: a Process of the M-Instance that a human runs - the CAV (CAV.orch over the Module 1CAV-CAO-V2.0-I01) driving a Vehicle Item on the CAV Proving Ground. -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Mpai.Cav.Mmm</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ua\Mpai.Cav.Ua.csproj" />
+    <ProjectReference Include="..\..\..\..\AIF\Controller\AIF.Controller.csproj" />
+    <ProjectReference Include="..\..\..\..\AIF\ControllerApi\Mpai.Aif.Api.csproj" />
+    <ProjectReference Include="..\..\..\..\AIF\UserAgent\Wdl\Mpai.Wdl.csproj" />
+    <ProjectReference Include="..\..\..\..\AIMs\CAV\V2.0\Ess\Mpai.Cav.Ess.csproj" />
+    <ProjectReference Include="..\..\..\..\AIMs\CAV\V2.0\Ams\Mpai.Cav.Ams.csproj" />
+    <ProjectReference Include="..\..\..\..\AIMs\CAV\V2.0\Mas\Mpai.Cav.Mas.csproj" />
+    <ProjectReference Include="..\..\..\..\AIMs\CAV\V2.0\Hci\Mpai.Cav.Hci.csproj" />
+    <ProjectReference Include="..\..\..\..\AIMs\CAV\V2.0\Map\Mpai.Cav.Map.csproj" />
+    <ProjectReference Include="..\..\..\..\AIMs\MMC\V2.5\TTS\Mpai.Mmc.Tts.csproj" />
+    <ProjectReference Include="..\..\..\..\AllApps\MMM\Client\Mpai.Mmm.Client.csproj" />
+  </ItemGroup>
+
+</Project>

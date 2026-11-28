@@ -49,11 +49,11 @@ public sealed class Simulation
     public bool LeftLane { get; private set; }
 
     // The road's friction along the Route: dry but for the stretches given.
-    public IReadOnlyList<(double From, double To, double Friction)> Surface { get; init; } = [];
+    public IReadOnlyList<(double From, double To, double Friction)> Surface { get; set; } = [];       // set: a world whose road changes as the drive goes on (the MMM's Proving Ground)
     public const double DryFriction = 0.9;
     // The weather, if any: the air temperature (degrees C) and snowfall (mm/h), which
     // the CAV's weather sensors report each second as Weather Data.
-    public (double Celsius, double Snow)? Weather { get; init; }
+    public (double Celsius, double Snow)? Weather { get; set; }
     public double FrictionAt(double s) => Surface.Where(x => s >= x.From && s < x.To).Select(x => x.Friction).DefaultIfEmpty(DryFriction).First();
     private long spatialData;
 

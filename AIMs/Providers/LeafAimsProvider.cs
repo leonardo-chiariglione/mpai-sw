@@ -8,6 +8,7 @@ using AIF.Controller;
 using AIF.Store;
 
 using Mpai.Core;
+using Mpai.Mmc.Dkr;            // DkrAimProcessor
 using Mpai.Aims.Asr;   // AsrAimProcessor, AsrFactory
 using Mpai.Mmc.Edp;    // EdpAimProcessor, OllamaClient
 using Mpai.Aims.Ttt;   // TttAimProcessor, TttFactory
@@ -47,7 +48,7 @@ public sealed class LeafAimsProvider : IAimProvider, IDisposable
                 or "1PAF-GBD-V1.6-I01" or "1PAF-PMX-V1.6-I01" or "1MMC-TSD-V2.5-I01" or "1MMC-ESD-V2.5-I02"
                 or "1MMC-ETD-V2.5-I01" or "1MMC-PTI-V2.5-I01" or "1MMC-ESD-V2.5-I03" or "1MMC-PSI-V2.5-I01" or "1PAF-EFD-V1.6-I02" or "1PAF-PFI-V1.6-I01"
                 or "1PAF-EBD-V1.6-I01" or "1PAF-PBI-V1.6-I01" or "1MMC-PMX-V2.5-I01" or "1MMC-NLU-V2.5-I01"
-                or "1CVE-VDI-V1.0-I01" or "1OSD-VOE-V1.5-I01" or "1OSD-BAS-V1.5-I01";
+                or "1CVE-VDI-V1.0-I01" or "1OSD-VOE-V1.5-I01" or "1OSD-BAS-V1.5-I01" or "1MMC-DKR-V2.5-I01" or "1MMC-DKR-V2.5-I02";
     public IAimProcessor Create(string aimName, IReadOnlyDictionary<string, string> settings, AIF.SharedStorage.ISharedStorage? storage) =>
         Create(aimName, settings, storage, null, null, null);
 
@@ -58,6 +59,7 @@ public sealed class LeafAimsProvider : IAimProvider, IDisposable
         {
             "1MMC-ASR-V2.5-I01" => new AsrAimProcessor(aimName, AsrFactory.Create(settings), AimPortReader.Load(_store, aimName)),
             "1MMC-EDP-V2.5-I01" => new EdpAimProcessor(aimName, Llm(settings, access), AimPortReader.Load(_store, aimName)),
+            "1MMC-DKR-V2.5-I01" or "1MMC-DKR-V2.5-I02" => new DkrAimProcessor(aimName, AimPortReader.Load(_store, aimName), settings),
             "1MMC-TTT-V2.5-I01" => new TttAimProcessor(aimName, TttFactory.Create(settings), AimPortReader.Load(_store, aimName)),
             "1MMC-PDX-V2.5-I01" => new PsdAimProcessor(aimName, AimPortReader.Load(_store, aimName)),
             "1MMC-TTS-V2.5-I01" => new TtsAimProcessor(aimName, TtsFactory.Create(settings), AimPortReader.Load(_store, aimName)),

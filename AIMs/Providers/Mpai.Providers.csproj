@@ -29,6 +29,7 @@
     <ProjectReference Include="..\PAF\V1.6\GBD\Mpai.Paf.Gbd.csproj" />
     <ProjectReference Include="..\MMC\V2.5\NLU\Mpai.Mmc.Nlu.csproj" />
     <ProjectReference Include="..\MMC\V2.5\QAM\Mpai.Mmc.Qam.csproj" />
+    <ProjectReference Include="..\MMC\V2.5\DKR\Mpai.Mmc.Dkr.csproj" />
     <ProjectReference Include="..\MMC\V2.5\AQM\Mpai.Mmc.Aqm.csproj" />
     <ProjectReference Include="..\OSD\V1.5\VII\Mpai.Osd.Vii.csproj" />
     <ProjectReference Include="..\MMC\V2.5\SPE\Mpai.Mmc.Spe.csproj" />

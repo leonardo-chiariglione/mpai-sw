@@ -238,6 +238,16 @@ m.box('plaza', PLAZA[0], PLAZA[1], 0, PLAZA[2], PLAZA[3], 0.05)
 
 m.glb(os.path.join(OUT, 'proving-ground.glb'))
 
+# ------------------------------------------------------------------ the Vehicle: a car of 4.5 x 1.8 m, an Item that a Process - the CAV - moves (vehicle.glb). It faces south in its own frame, as the
+# Personae do: the viewer turns it by the yaw of its Spatial Attitude (0 looks north).
+car = Mesh()
+car.box('carbody', -0.9, -2.25, 0.3, 0.9, 2.25, 0.95)
+car.box('cabin', -0.82, -0.7, 0.95, 0.82, 1.5, 1.45)
+for x in (-0.95, 0.68):
+    for y in (-1.45, 1.35): car.box('tyre', x, y - 0.33, 0, x + 0.27, y + 0.33, 0.65)
+for x in (-0.75, 0.45): car.box('headlight', x, -2.27, 0.62, x + 0.3, -2.2, 0.8); car.box('taillight', x, 2.2, 0.65, x + 0.3, 2.27, 0.82)
+car.glb(os.path.join(OUT, 'vehicle.glb'))
+
 # ------------------------------------------------------------------ world.json: the Proving Ground, in the world's frame
 def W(p): return [round(p[0] + AT[0], 3), round(p[1] + AT[1], 3)]
 for r in roads:

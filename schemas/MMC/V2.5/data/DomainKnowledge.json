@@ -1,0 +1,28 @@
+{ "$schema":                  "https://json-schema.org/draft/2020-12/schema",
+  "$id":                      "https://schemas.mpai.community/MMC/V2.5/data/DomainKnowledge.json",
+  "title":                    "Domain Knowledge V2.5",
+  "description":              "What is known of the domain of an application, as items of text: the knowledge base an application gives (a CAV: the places it can go to and what it can do; an Audio Scene: its instruments and operations), and the items of it that Domain Knowledge Retrieval (MMC-DKR) finds relevant to a request, each with its Relevance. An item may name something the application has: its Name, and the Reference by which the application identifies it.",
+  "type":                     "object",
+  "additionalProperties":     false,
+  "required":                 [ "Header", "DomainKnowledgeID", "Items" ],
+  "properties":               {
+
+    "Header":                 { "type": "string", "const": "MMC-DKN-V2.5" },
+    "MInstanceID":            { "type": "string", "description": "Identifier of the M-Instance." },
+    "DomainKnowledgeID":      { "type": "string", "description": "Identifier of this Domain Knowledge." },
+    "DomainKnowledgeTime":    { "$ref": "https://schemas.mpai.community/OSD/V1.5/data/SimpleTime.json", "description": "Time this Domain Knowledge was produced." },
+    "Domain":                 { "type": "string", "description": "What the knowledge is about, in a sentence: the application and its domain." },
+    "Items":                  { "type": "array", "items": { "$ref": "#/$defs/Item" } },
+    "DataXMData":             { "$ref": "https://schemas.mpai.community/PTF/V1.0/data/DataExchangeMetadata.json" },
+    "DescrMetadata":          { "type": "string", "maxLength": 2048 } },
+
+  "$defs":                    {
+
+    "Item":                   { "type": "object", "additionalProperties": false, "required": [ "ItemID", "Text" ], "properties": {
+      "ItemID":               { "type": "string", "description": "Identifier of the item within this Domain Knowledge." },
+      "Text":                 { "type": "string", "description": "What is known, in words." },
+      "Name":                 { "type": "string", "description": "The name of what the item is about, as a person says it (a place, an instrument)." },
+      "Synonyms":             { "type": "array", "items": { "type": "string" }, "description": "Other words and phrases by which a person says the same as the Name: the vocabulary of the domain, with its synonyms and variations." },
+      "Reference":            { "type": "string", "description": "The identifier by which the application identifies what is named (a Way Point of an Offline Map, an Object of a Scene)." },
+      "Source":               { "type": "string", "description": "Where the item comes from (a document, a Data Type of the application)." },
+      "Relevance":            { "type": "number", "minimum": 0, "maximum": 1, "description": "How relevant the item is to the request it was retrieved for: given by Domain Knowledge Retrieval." } } } } }

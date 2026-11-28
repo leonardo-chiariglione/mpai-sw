@@ -93,6 +93,8 @@
   "1MMC-CAS-V2.5-I01": "loads (composite)",
   "1MMC-CPS-V2.5-I01": "loads (composite)",
   "1MMC-CTS-V2.5-I01": "loads",
+  "1MMC-DKR-V2.5-I01": "loads",
+  "1MMC-DKR-V2.5-I02": "loads",
   "1MMC-EDP-V2.5-I01": "loads",
   "1MMC-EDP-V2.5-I02": "loads",
   "1MMC-EDP-V2.5-I03": "loads",

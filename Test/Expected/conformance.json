@@ -92,6 +92,8 @@
   "1MMC-CAS-V2.5-I01": "conforms",
   "1MMC-CPS-V2.5-I01": "conforms",
   "1MMC-CTS-V2.5-I01": "conforms",
+  "1MMC-DKR-V2.5-I01": "conforms",
+  "1MMC-DKR-V2.5-I02": "conforms",
   "1MMC-EDP-V2.5-I01": "conforms",
   "1MMC-EDP-V2.5-I02": "Input MMC-SUM-V2.5 (Summary): required here, optional in the L2.; Input MMC-TDO-V2.5 (TextDescriptorsObject): required here, optional in the L2.; Input OSD-BTO-V1.5 (RefinedText): required here, optional in the L2.",
   "1MMC-EDP-V2.5-I03": "conforms",

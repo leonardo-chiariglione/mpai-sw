@@ -1,0 +1,89 @@
+{
+ "Identifier": {
+  "ImplementerID": "1",
+  "ImplementationID": "MMC-DKR-V2.5-I02",
+  "AIMInstID": "1MMC-DKR-V2.5-I02"
+ },
+ "Header": "AIF-AMM-V3.0",
+ "AIMType": "MMC-DKR-V2.5",
+ "APIProfile": "Basic",
+ "Description": "Domain Knowledge Retrieval for a Connected Autonomous Vehicle: the Domain Knowledge of the Domain Type CAV - what CAV-TEC V2.0 says a passenger can ask of a CAV and what it tells, with the terms of the domain and the words of a passenger as Synonyms - is the file of its Access (Setting DomainKnowledge); the Domain Knowledge received on its Port is that of the Domain Instance, the places of the CAV from its Offline Map. Both are searched together. First version: BM25 over the words of the items, no model; an item whose Name or one of whose Synonyms the request says is always relevant. Setting Items: how many at most (6).",
+ "InternalTypes": [],
+ "ExternalPorts": [
+  {
+   "Name": "Request",
+   "Direction": "Input",
+   "DataType": "OSD-BTO-V1.5",
+   "IsOptional": false,
+   "Technology": "Software",
+   "Protocol": "",
+   "IsRemote": false
+  },
+  {
+   "Name": "DomainKnowledge",
+   "Direction": "Input",
+   "DataType": "MMC-DKN-V2.5",
+   "IsOptional": true,
+   "Technology": "Software",
+   "Protocol": "",
+   "IsRemote": false
+  },
+  {
+   "Name": "RetrievedKnowledge",
+   "Direction": "Output",
+   "DataType": "MMC-DKN-V2.5",
+   "IsOptional": false,
+   "Technology": "Software",
+   "Protocol": "",
+   "IsRemote": false
+  }
+ ],
+ "SubAIMs": [],
+ "Topology": [],
+ "AccessSources": [
+  {
+   "Name": "DomainKnowledge",
+   "Uri": "https://raw.githubusercontent.com/leonardo-chiariglione/mpai-sw/main/Apps/CAV/CAO/Access/CavTecDomainKnowledge.json",
+   "Sha256": "B5EFBBE41FE4010C7052CB38757B5E3105A09BC65232EC18EA4EAF7B60A106CC",
+   "Setting": "DomainKnowledge",
+   "Terms": {
+    "Licence": "BSD-3-Clause",
+    "Uri": "https://github.com/leonardo-chiariglione/mpai-sw/blob/main/LICENSE",
+    "PersonalData": false
+   },
+   "Description": "The Domain Knowledge of the Domain Type CAV (MMC-DKN-V2.5), from the web pages of CAV-TEC V2.0: its Terms and Definitions, its Architecture, the AMS-HCI Message and the Route Data Types - only what concerns a human; the words of a passenger are the Synonyms."
+  }
+ ],
+ "Implementations": [
+  {
+   "ImplementationURI": "https://github.com/leonardo-chiariglione/mpai-sw/tree/main/AIMs/MMC/V2.5/DKR",
+   "MASPort": 443,
+   "BinaryName": "Mpai.Mmc.Dkr",
+   "Architecture": "x86-64",
+   "OperatingSystem": "Windows",
+   "Version": "2.5",
+   "Source": "AIMStorage"
+  }
+ ],
+ "ResourcePolicies": [
+  {
+   "Name": "Memory",
+   "Minimum": "0.5 GB",
+   "Request": "1 GB",
+   "Maximum": "2 GB"
+  },
+  {
+   "Name": "CPU:Class",
+   "Minimum": "Low",
+   "Request": "Medium",
+   "Maximum": "High"
+  }
+ ],
+ "DataXMData": {},
+ "Documentation": [
+  {
+   "Type": "Tutorial",
+   "URI": "https://mpai.community/standards/mpai-mmc/v2-5/"
+  }
+ ]
+}

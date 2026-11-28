@@ -38,6 +38,29 @@ public sealed class RouteSelectionPlanning(string instanceId) : IAimProcessor, I
     private long count, messages;
 
     public string InstanceId { get; } = instanceId;
+
+    // THE DOMAIN KNOWLEDGE OF THE CAV (MMC-DKN, 2026-11-27): what the dialogue of the passenger is told of the CAV's domain - the places of its Offline Map, each with the
+    // Way Point it is (its Reference), and what the passenger may ask. Given when the Offline Map comes; Domain Knowledge Retrieval in HCI finds in it what fits what was said.
+    public const string KnowledgeType = "MMC-DKN-V2.5";
+    public static JsonObject Knowledge(RoadMap map)
+    {
+        var items = new JsonArray();
+        foreach (var w in map.WayPoints.Where(w => w.Name is { Length: > 0 }))
+            items.Add(new JsonObject
+            {
+                ["ItemID"] = w.Id, ["Name"] = w.Name, ["Reference"] = w.Id, ["Source"] = "OSD-BOO-V1.5",
+                ["Text"] = $"{w.Name} is a place on the map of the car: the car can take the passenger there."
+            });
+        items.Add(new JsonObject { ["ItemID"] = "Places", ["Text"] = $"The places the car can take the passenger to: {string.Join(", ", map.WayPoints.Where(w => w.Name is { Length: > 0 }).Select(w => w.Name))}." });
+        items.Add(new JsonObject { ["ItemID"] = "Routes", ["Text"] = "Asked for a place, the car proposes the Routes to it with the time each takes, and moves only when the passenger agrees." });
+        items.Add(new JsonObject { ["ItemID"] = "Commands", ["Text"] = "On the way the passenger may ask the car to stop, to wait (suspend) and to go on (resume), or to go to another place." });
+        return new JsonObject
+        {
+            ["Header"] = KnowledgeType, ["DomainKnowledgeID"] = $"DKN-{map.Id}",
+            ["Domain"] = "A connected autonomous vehicle (a car with no driver) that drives its passenger to the places of its map.",
+            ["Items"] = items
+        };
+    }
     public Task<Message> ProcessAsync(Message message) => throw new NotSupportedException("CAV-RSP runs continuously.");
 
     public async Task RunAsync(IAimPorts ports, AimContext context)
@@ -50,7 +73,10 @@ public sealed class RouteSelectionPlanning(string instanceId) : IAimProcessor, I
             var json = JsonNode.Parse(m.Json)!;
             switch (port.DataType)
             {
-                case AmsTypes.Map: map = RoadMap.FromOfflineMapObject(json); continue;
+                case AmsTypes.Map:
+                    map = RoadMap.FromOfflineMapObject(json);
+                    try { await ports.WriteAsync(KnowledgeType, 1, Knowledge(map).ToJsonString()); } catch (Exception) { }      // an L3 without the Port: nothing to give
+                    continue;
                 case AmsTypes.Hci:
                     var hci = json["HCIMessage"];
                     if (hci?["RequestedRoutes"]?[0]?["Route"]?["RouteSegments"]?.AsArray().LastOrDefault()?["WayPoint2ID"]?.GetValue<string>() is { } to)

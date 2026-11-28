@@ -791,7 +791,10 @@ public sealed class MInstance
         // A 3D Model Object the Request carries is made where it is added, its Process's own: an object of a virtual stage, placed by the show.
         if (!items.ContainsKey(c.Nil!) && with.FirstOrDefault(i => Header(i) == "OSD-3DO-V1.5" && (string?)i["3DModelObjectID"] == c.Nil) is { } model)
         {
-            items[c.Nil!] = new Item { ID = c.Nil!, DataType = "OSD-3DO-V1.5", Body = model, Holder = source };
+            // Its look, where it carries one: the glTF its first Basic 3D Model Object's Data gives (a DataURI). Such an Item is an object of the place - a vehicle a Process drives -,
+            // not a Persona (2026-11-27).
+            var look = (model["Basic3DModelObjects"]?[0]?["B3ObjectIDOrB3Object"]?[0] as JsonObject)?["Basic3DModelObjectData"]?[0]?["DataURI"]?.GetValue<string>();
+            items[c.Nil!] = new Item { ID = c.Nil!, DataType = "OSD-3DO-V1.5", Body = model, Holder = source, Model = look, Kind = look is null ? null : "Object" };
             created = true;
         }
         // An Audio Object the Request carries (OSD-AUO-V1.5) is made where it is added, its Process's own: a sound of the place (the applause of a theatre, N-26). It is heard by whoever
