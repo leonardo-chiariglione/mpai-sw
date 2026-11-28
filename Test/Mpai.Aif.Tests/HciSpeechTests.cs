@@ -11,16 +11,25 @@ using Mpai.Core.OSD;
 namespace Mpai.Aif.Tests;
 
 // STEP 3 (M3243 3.3): HCI HEARING AND SPEAKING. The Module 1CAV-HCI-V2.0-I01 under
-// its Controller, every Sub-AIM built; given the Offline Map of Step 2 and, turn by
-// turn, what the passenger says - recorded speech, synthesised with a voice that is
-// not the CAV's, as the cabin's microphone gives it - and what the AMS answers. The
-// speech path runs: Audio Qualifier Conversion, the audio scene, Audio Source
-// separation, Automatic Speech Recognition, Natural Language Understanding, EDP, and
-// Response and Scene Rendering speaking the answer. Two passengers, two voices.
-// Judged: what each says recognised well enough to be understood - a place asked
-// for, one named ambiguously asked about, yes; the Routes and the arrival spoken -
-// what the CAV says, heard by speech recognition, names the place; every AMS-HCI
-// Message valid. Reported: what was recognised, what was answered, the time of a turn.
+// its Controller, every Sub-AIM built; given, turn by turn, what the passenger says -
+// recorded speech, synthesised with a voice that is not the CAV's, as the cabin's
+// microphone gives it - and what the AMS knows, as Domain Knowledge (MMC-DKN): the
+// places of its Offline Map, the Route it proposed, the state of the Route driven.
+// The speech path runs: Audio Qualifier Conversion, the audio scene, Audio Source
+// separation, Automatic Speech Recognition, Natural Language Understanding, Domain
+// Knowledge Retrieval, EDP, and Response and Scene Rendering speaking the answer. Two
+// passengers, two voices.
+// REWRITTEN 2026-11-28 FOR RAG (M3328 3.7): what the passenger asks leaves HCI as the
+// Passenger Request - the items of the CAV's Domain Knowledge the request names
+// (Relevance 1): an action of CAV-TEC (HCIMessage.RequestedRoutes, ...RouteCommand:
+// Execute) and what it is about (the Way Point of a place). Before, HCI sent an
+// AMS-HCI Message made by JSI, and the AMS told it the Routes the same way.
+// Judged: a place asked for named in the request; a place named ambiguously not
+// chosen; the Route proposed spoken with its time, the arrival with the place - what
+// the CAV says, heard by speech recognition; yes understood as Execute; every
+// Passenger Request valid. Reported: what was recognised, what was answered, what was
+// requested, whether the CAV asked which station (the language model's choice), the
+// time of a turn.
 [Trait("Group", "Models")]
 [Trait("Blocks", "Yes")]
 [Collection(Timing.Name)]
@@ -95,26 +104,22 @@ public class HciSpeechTests
             var recognised = r.ByType("OSD-BTO-V1.5", 2) is { } t2 ? MpaiJson.FromJson<BasicTextObject>(t2)?.GetText() : null;
             var reply = r.ByType("OSD-BTO-V1.5", 1) is { } t1 ? MpaiJson.FromJson<BasicTextObject>(t1)?.GetText() : null;
             var speech = TestAvatar.Speech(r);
-            var sent = r.ByType("CAV-AHM-V2.0") is { } a ? JsonNode.Parse(a) : null;
+            var sent = r.ByType("MMC-DKN-V2.5") is { } a ? JsonNode.Parse(a) : null;          // the Passenger Request
             if (sent is not null) Sent.Add(sent);
-            Turns.Add($"{said} | heard: {recognised ?? "-"} | answered: {reply ?? "-"} ({speech?.Data.Length ?? 0} bytes of speech){(sent is null ? "" : " | sent " + sent["HCIMessage"]!.ToJsonString())} | {clock.Elapsed.TotalSeconds:0.0} s");
+            Turns.Add($"{said} | heard: {recognised ?? "-"} | answered: {reply ?? "-"} ({speech?.Data.Length ?? 0} bytes of speech){(sent is null ? "" : " | requested " + Asked(sent))} | {clock.Elapsed.TotalSeconds:0.0} s");
             return (recognised, reply, speech, sent);
         }
 
-        // The Offline Map, given with the first thing said.
-        private string? map;
-        public void Know(string offlineMap) => map = offlineMap;
+        // What the AMS knows, given with the next thing said (the Domain Instance of Domain Knowledge Retrieval).
+        private string? knowledge;
+        public void Know(JsonObject domainKnowledge) => knowledge = domainKnowledge.ToJsonString();
 
         public (string? Recognised, string? Reply, BasicSpeechObject? Speech, JsonNode? Sent) Hears(string text, string voice)
         {
             var inputs = new List<ControllerApi.Datum> { new("OSD-BAO-V1.5", 1, Passenger(text, voice)) };
-            if (map is not null) { inputs.Add(new("OSD-BOO-V1.5", 1, map)); map = null; }
+            if (knowledge is not null) { inputs.Add(new("MMC-DKN-V2.5", 1, knowledge)); knowledge = null; }
             return Turn($"\"{text}\" ({voice})", [.. inputs]);
         }
-
-        public (string? Recognised, string? Reply, BasicSpeechObject? Speech, JsonNode? Sent) Told(JsonObject ams, string what) =>
-            Turn($"(the AMS: {what})", new ControllerApi.Datum("CAV-AHM-V2.0", 1, new JsonObject { ["Header"] = "CAV-AHM-V2.0", ["AMSHCIMessageID"] = "AHM-A", ["AMSMessage"] = ams }.ToJsonString()));
-
 
         public void Dispose()
         {
@@ -128,8 +133,18 @@ public class HciSpeechTests
     private static string Heard(BasicSpeechObject? speech) =>
         speech is null || speech.Data.Length < 100 ? "" : Mpai.Aims.Asr.AsrFactory.Create(Settings("1MMC-ASR-V2.5-I01")).ProcessAsync(speech).GetAwaiter().GetResult().GetText();
 
-    private static string? To(JsonNode? sent) => sent?["HCIMessage"]?["RequestedRoutes"]?[0]?["Route"]?["RouteSegments"]?[0]?["WayPoint2ID"]?.GetValue<string>();
-    private static string? Command(JsonNode? sent) => sent is null ? null : $"{sent["HCIMessage"]?["RouteCommand"]} {sent["HCIMessage"]?["SelectedRouteID"]}".Trim();
+    // What a Passenger Request names: the References of its items of Relevance 1.
+    private static List<string> Named(JsonNode? request) =>
+        (request?["Items"] as JsonArray ?? []).OfType<JsonObject>().Where(i => (double?)i["Relevance"] >= 1).Select(i => (string?)i["Reference"]).OfType<string>().ToList();
+    private static string Asked(JsonNode? request) => Named(request) is { Count: > 0 } n ? string.Join(", ", n) : "nothing";
+
+    // What the AMS knows, as Route Selection Planning gives it: the places of the map and, where there is one, what it proposed or the state of the Route driven.
+    private static JsonObject Knowledge(RoadMap map, JsonObject? now = null)
+    {
+        var k = Mpai.Cav.Ams.RouteSelectionPlanning.Knowledge(map);
+        if (now is not null) k["Items"]!.AsArray().Add(now);
+        return k;
+    }
 
     [SkippableFact]
     public void Step3HearingAndSpeaking()
@@ -138,41 +153,41 @@ public class HciSpeechTests
         var result = new Dictionary<string, string>();
         var report = new Dictionary<string, object>();
         var sent = new List<JsonNode>();
-        var map = RoadMap.Grid(3).Named(CavDialogueTests.Places).ToOfflineMapObject(0);
+        var map = RoadMap.Grid(3).Named(CavDialogueTests.Places);
         foreach (var voice in Voices)
         {
             using var cabin = new Cabin();
-            cabin.Know(map);
+            cabin.Know(Knowledge(map));
             var (heard, reply, _, s) = cabin.Hears("Please take me to the hospital.", voice);
-            result[$"{voice}: a place"] = To(s) == "W20" ? "understood as its way point, requested" : $"heard \"{heard}\"; sent {To(s) ?? "nothing"}";
+            var n = Named(s);
+            result[$"{voice}: a place"] = n.Contains("HCIMessage.RequestedRoutes") && n.Contains("W20") ? "Routes to its Way Point requested" : $"heard \"{heard}\"; requested {Asked(s)}";
             (heard, reply, _, s) = cabin.Hears("No, take me to the station.", voice);
-            result[$"{voice}: a place named ambiguously"] = s is null && reply?.Contains("Which one") == true ? "asked which" : $"heard \"{heard}\"; answered \"{reply}\"";
-            (heard, reply, _, s) = cabin.Hears("The central one.", voice);
-            result[$"{voice}: the answer to which"] = To(s) == "W21" ? "understood, requested" : $"heard \"{heard}\"; sent {To(s) ?? "nothing"}";
-            var (_, _, speech, _) = cabin.Told(new JsonObject
-            {
-                ["RouteList"] = new JsonArray(new JsonObject
-                {
-                    ["Header"] = "CAV-RTE-V2.0", ["RouteID"] = "RTE0001", ["OfflineMapID"] = "MAP", ["RouteTime"] = Mpai.Cav.Ess.EssJson.SimpleTime("R-T", 0),
-                    ["RouteSegments"] = new JsonArray(new JsonObject { ["WayPoint1ID"] = "W00", ["WayPoint2ID"] = "W21", ["EstimatedArrDepSpaceTime"] = Mpai.Cav.Ess.EssJson.SimpleTime("R-E", 44_000) })
-                })
-            }, "one Route, 44 s");
+            n = Named(s);
+            result[$"{voice}: a place named ambiguously"] = n.Contains("HCIMessage.RequestedRoutes") && !n.Contains("W21") && !n.Contains("W02") ? "Routes requested, no station chosen" : $"heard \"{heard}\"; requested {Asked(s)}";
+            report[$"{voice}: asked which station"] = reply?.Contains('?') == true ? "yes" : $"no: \"{reply}\"";          // what the language model chose to say: not judged
+            (heard, reply, _, s) = cabin.Hears("Take me to Central Station.", voice);
+            n = Named(s);
+            result[$"{voice}: the place named"] = n.Contains("HCIMessage.RequestedRoutes") && n.Contains("W21") ? "Routes to its Way Point requested" : $"heard \"{heard}\"; requested {Asked(s)}";
+            // the AMS proposes one Route, 44 s
+            cabin.Know(Knowledge(map, Mpai.Cav.Ams.RouteSelectionPlanning.RouteItem("RTE0001", 0, "Central Station", 320, 44)));
+            var (_, _, speech, _) = cabin.Hears("How long will it take?", voice);
             var spoken = Heard(speech);
-            result[$"{voice}: the Route spoken"] = spoken.Contains("Central Station", StringComparison.OrdinalIgnoreCase) && (spoken.Contains("40", StringComparison.Ordinal) || spoken.Contains("forty", StringComparison.OrdinalIgnoreCase)) ? "heard with the place and its time" : $"heard \"{spoken}\"";
+            result[$"{voice}: the Route spoken"] = spoken.Contains("44", StringComparison.Ordinal) || spoken.Contains("forty", StringComparison.OrdinalIgnoreCase) ? "heard with its time" : $"heard \"{spoken}\"";
             (heard, reply, _, s) = cabin.Hears("Yes, let's go.", voice);
-            result[$"{voice}: yes"] = Command(s) == "Execute RTE0001" ? "the Route executed" : $"heard \"{heard}\"; sent {Command(s) ?? "nothing"}";
-            cabin.Told(new JsonObject { ["RouteStatus"] = new JsonObject { ["RouteID"] = "RTE0001", ["Status"] = "Executing" } }, "Executing");
-            (_, _, speech, _) = cabin.Told(new JsonObject { ["RouteStatus"] = new JsonObject { ["RouteID"] = "RTE0001", ["Status"] = "Arrived" } }, "Arrived");
+            result[$"{voice}: yes"] = Named(s).Contains("HCIMessage.RouteCommand:Execute") ? "the Route executed" : $"heard \"{heard}\"; requested {Asked(s)}";
+            // the AMS: arrived
+            cabin.Know(Knowledge(map, Mpai.Cav.Ams.RouteSelectionPlanning.StateItem("Arrived", "Central Station", "RTE0001")));
+            (_, _, speech, _) = cabin.Hears("Where are we?", voice);
             spoken = Heard(speech);
-            result[$"{voice}: the arrival spoken"] = spoken.Contains("arrived", StringComparison.OrdinalIgnoreCase) && spoken.Contains("Central Station", StringComparison.OrdinalIgnoreCase) ? "heard with the place" : $"heard \"{spoken}\"";
+            result[$"{voice}: the arrival spoken"] = spoken.Contains("Central Station", StringComparison.OrdinalIgnoreCase) ? "heard with the place" : $"heard \"{spoken}\"";
             report[voice] = cabin.Turns;
             report[$"{voice}: a turn"] = $"median {cabin.Seconds.Order().ElementAt(cabin.Seconds.Count / 2):0.0} s, longest {cabin.Seconds.Max():0.0} s";
             sent.AddRange(cabin.Sent);
         }
         var schemas = AIF.Metadata.PublishedSchemas.At(Repository.Schemas);
-        var schema = schemas[Path.GetFullPath(Path.Combine(Repository.Schemas, "CAV2", "V2.0", "data", "AMSHCIMessage.json"))];
+        var schema = schemas[Path.GetFullPath(Path.Combine(Repository.Schemas, "MMC", "V2.5", "data", "DomainKnowledge.json"))];
         var valid = sent.Count(t => { using var doc = JsonDocument.Parse(t.ToJsonString()); lock (AIF.Metadata.PublishedSchemas.Lock) return schema.Evaluate(doc.RootElement).IsValid; });
-        result["every AMS-HCI Message against its schema"] = valid == sent.Count ? "valid" : $"{valid} of {sent.Count} valid";
+        result["every Passenger Request against the schema of Domain Knowledge"] = valid == sent.Count ? "valid" : $"{valid} of {sent.Count} valid";
         File.WriteAllText(Path.Combine(Repository.Root, "Test", "Reports", "cav-stage1-hci-speech.json"),
             JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }) + Environment.NewLine);
         Expected.Match("cav-stage1-hci-speech.json", result);

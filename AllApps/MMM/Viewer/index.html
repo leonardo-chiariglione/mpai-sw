@@ -1450,7 +1450,7 @@ async function microphone() {
     const q = { Header: 'TFA-SPQ-V1.5', MInstanceID: 'MI1', SpeechQualifierID: id + '-Q', SubTypes: {},
       Formats: { ContentFormats: { RawData: { Header: 'TFA-PCM-V1.5', PCM: { SamplingFrequency: RATE, SamplePrecision: 16 } } }, TransportFormats: { StreamFormat: 'WebSocket' } },
       Attributes: { Source: 'Real', Device: { DeviceRole: 'Capture', DeviceType: 'Microphone', CaptureConfiguration: { ChannelCount: 1, SamplingMode: 'Mono' } } } };
-    const o = { id, queue: [int16(first)], ws: null, ready: false, dialogue: !!client.dialogue };
+    const o = { id, queue: [int16(first)], ws: null, ready: false, dialogue: !!client.dialogue, to: client.dialogueTo ?? 'Secretary' };
     (async () => {
       const captured = await act('import/um-capture', client.name, { Nil: id, At: 'ULoc-' + client.name, With: [q] });
       if (captured.http !== 201) { o.dead = true; return; }
@@ -1458,7 +1458,7 @@ async function microphone() {
       if (identified.http !== 201) { o.dead = true; return; }
       // To the room - MM-Add at its seat - or, in a dialogue with the Secretary, to the Secretary alone (MM-Send): the room does not hear it.
       const added = o.dialogue
-        ? await act('communicate/mm-send', client.name, { Nil: 'Say-' + id, To: 'Secretary', With: [{ Header: 'OSD-BSO-V1.5', MInstanceID: 'MI1', BasicSpeechObjectID: id }] })
+        ? await act('communicate/mm-send', client.name, { Nil: 'Say-' + id, To: o.to, With: [{ Header: 'OSD-BSO-V1.5', MInstanceID: 'MI1', BasicSpeechObjectID: id }] })
         : await act('locate/mm-add', client.name, { Nil: id, At: client.loc });
       if (added.http !== 200) { o.dead = true; return; }
       o.ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/v2.2/speech/${id}?token=${encodeURIComponent(client.token)}`);
@@ -1483,7 +1483,7 @@ async function microphone() {
   }, 1000);
   mic.onBlock(d => {
     diag.blocks++; { const l = level(d); if (l > diag.peak) diag.peak = l; if (l > recent) recent = l; }
-    if (!client.seated) return;
+    if (!client.seated && !client.dialogueTo) return;                // seated in a room, or speaking to a taxi
     mouthSend(client.muted || client.dialogue ? null : d);      // the mouth moves for the room, not for the Secretary
     if (client.muted) { if (current) { finish(current); current = null; } pre = []; return; }
     const f = Array.from(d), loud = level(f) > THRESHOLD, now = Date.now();
@@ -1504,6 +1504,7 @@ async function capture() {   // MM-Capture: the Things of the M-Location that th
   const pov = { Header: 'OSD-OPV-V1.5', PointOfViewID: 'POV-' + client.name, CartPosition: [client.x, client.y, client.eye ?? 1.6], Orientation: [yaw180(client.yaw), 0, 0] };
   const r = await act('locate/mm-capture', client.name, { At: client.at, With: [pov] });
   const scene = r.body?.complements?.With?.[0]?.ItemValueOrRef?.[0];
+  if (r.http === 200 && scene && W?.city?.taxiRank && !client.taxiStarted) startTaxi();
   if (r.http === 200 && scene) { client.things = scene.Things; if (W) { doorsAsSeen(scene.Things); conditionsAsSeen(scene.Things); } for (const t of scene.Things) if (t.Kind === 'Speech') hear(t); { const sc = scene.Things.find(t => t.Kind === 'Screen' && (t.Holder !== client.name || sharing?.own) && t.Streaming); watchScreen(sc?.ID ?? null, sc?.Holder === client.name); } }
   else if (W && r.http === 403 && client.loc !== 'MVS') meetingOver();   // the rights of the meeting are gone
 }
@@ -1611,6 +1612,45 @@ function pcmSource(b64) {
 // THE SECRETARY (a User of the meeting, M3283). The button calls it: from then on what this participant says goes to the Secretary - MM-Send of its Speech Object - and not to the room,
 // which hears nothing of it. The Secretary answers in a few spoken words, for this participant only (a Message of its own: Secretary-<User>-<n>), and does what was asked: the summary, which
 // is shown on the display, the hand, the microphone, the end of the meeting. Pressed again, or when the participant says it has done, what it says is heard by the room again.
+// A TAXI (2026-11-28, M3329): the human is the passenger. Near a taxi, the Taxi button starts a dialogue with the CAV Process that drives it - found by the Right to move the taxi the
+// Taxi Service gave it: from then on what the human says goes to that Process alone (MM-Send of its Speech Object), and what the taxi says comes back as Messages "Taxi-<User>-<n>"
+// with its words and its own speech, which are shown and played. Pressed again, the dialogue ends.
+function startTaxi() {
+  client.taxiStarted = true;
+  const b = barAdd(document.createElement('button'), 7);
+  b.textContent = 'Taxi'; b.title = 'Near a taxi: speak to the CAV that drives it. Press again to stop.';
+  let next = 1, timer = null;
+  const nearest = () => (client.things ?? []).filter(t => /^Taxi-\d+$/.test(t.ID)).map(t => ({ t, d: Math.hypot(t.X - client.x, t.Y - client.y) })).sort((a, b) => a.d - b.d)[0];
+  async function driverOf(taxi) {
+    const rs = await fetch(`/api/v2.2/items/${encodeURIComponent(taxi)}/rights`, { headers: { Authorization: 'Bearer ' + client.token } });
+    if (!rs.ok) return null;
+    const holders = await rs.json();
+    return holders.find(h => h.processID !== 'TaxiService' && JSON.stringify(h.rights).includes(`Taxi-Hire-${taxi}-`))?.processID ?? null;
+  }
+  const stop = note => { client.dialogue = false; client.dialogueTo = null; clearInterval(timer); timer = null; b.style.background = 'var(--panel)'; b.style.borderColor = '#5a8'; b.textContent = 'Taxi'; if (note) client.notice = note; };
+  b.onclick = async () => {
+    if (client.dialogueTo) { stop('You stopped speaking to the taxi.'); return; }
+    const n = nearest();
+    if (!n || n.d > 10) { client.notice = 'Walk to a taxi first (within 10 m).'; return; }
+    const driver = await driverOf(n.t.ID);
+    if (!driver) { client.notice = `${n.t.ID} has no driver now: no CAV has hired it.`; return; }
+    client.dialogue = true; client.dialogueTo = driver;
+    b.style.background = '#4a4020'; b.style.borderColor = '#f2c94c'; b.textContent = 'Taxi: speaking';
+    client.notice = `You speak to ${n.t.ID} (${driver}). Say where you want to go.`;
+    if (new URLSearchParams(location.search).get('mic') !== 'off' && !client.micOn) { client.micOn = true; microphone(); }
+    while (await readMessage(`Taxi-${client.name}-${next}`)) next++;        // the answers given before are not played again
+    timer = setInterval(async () => {
+      const told = await readMessage(`Taxi-${client.name}-${next}`);
+      if (!told) return;
+      next++;
+      let reply = null; try { reply = JSON.parse(told); } catch { }
+      if (!reply) return;
+      document.getElementById('summaryTitle').textContent = n.t.ID; document.getElementById('summaryText').textContent = reply.Say ?? ''; document.getElementById('summary').hidden = false;
+      if (reply.Speech) pcmSource(reply.Speech).start();
+    }, 600);
+  };
+}
+
 function startSecretary() {
   const b = barAdd(document.createElement('button'), 6);
   b.classList.add('roomOnly'); b.textContent = 'Secretary'; b.title = 'Speak to the Secretary instead of the meeting: ask for a summary, raise your hand, mute yourself. Press again to go back to the meeting.';

@@ -75,30 +75,38 @@ public sealed class RouteSelectionPlanning(string instanceId) : IAimProcessor, I
         for (var i = 0; i < candidates.Count; i++)
         {
             var (id, segments) = candidates[i];
-            items.Add(new JsonObject
-            {
-                ["ItemID"] = id, ["Name"] = i == 0 ? "the first route" : "the second route",
-                ["Synonyms"] = i == 0 ? new JsonArray("the first one", "the fastest", "the quickest", "the shorter", "the shortest")
-                                      : new JsonArray("the second one", "the other one", "the other route", "the alternative", "the longer"),
-                ["Reference"] = id, ["Source"] = AmsTypes.Hci,
-                ["Text"] = $"Route {id}, proposed to the {Named(destination!)}{(i == 0 ? ", the quickest" : ", another way")}: {segments.Sum(s => map!.Length(s)):0} m, about {map!.TimeOf(segments):0} s."
-            });
+            items.Add(RouteItem(id, i, Named(destination!), segments.Sum(s => map!.Length(s)), map!.TimeOf(segments)));
         }
-        if (status is not null && destination is not null)
-            items.Add(new JsonObject
-            {
-                ["ItemID"] = "RouteNow", ["Source"] = AmsTypes.Hci,
-                ["Text"] = status switch
-                {
-                    "Executing" => $"The car is driving the passenger to the {Named(destination)} (Route {routeId}).",
-                    "Suspended" => $"The car has halted on the way to the {Named(destination)}; it goes on when the passenger says so.",
-                    "Stopped"   => $"The car has stopped; the trip to the {Named(destination)} is abandoned.",
-                    "Arrived"   => $"The car has arrived at the {Named(destination)}.",
-                    _ => $"Route {routeId}: {status}."
-                }
-            });
+        if (status is not null && destination is not null) items.Add(StateItem(status, Named(destination), routeId));
         return k;
     }
+
+    // A Route proposed, as an item of the Domain Knowledge: its Name and Synonyms are what the passenger says to choose it - and, 2026-11-28, to ask about it ("how long",
+    // "how far"): without them a question about the Route found nothing in it.
+    public static JsonObject RouteItem(string id, int index, string place, double metres, double seconds) => new()
+    {
+        ["ItemID"] = id, ["Name"] = index == 0 ? "the first route" : "the second route",
+        ["Synonyms"] = index == 0 ? new JsonArray("the first one", "the fastest", "the quickest", "the shorter", "the shortest", "how long", "how far", "how much time")
+                                  : new JsonArray("the second one", "the other one", "the other route", "the alternative", "the longer"),
+        ["Reference"] = id, ["Source"] = AmsTypes.Hci,
+        ["Text"] = $"Route {id}, proposed to the {place}{(index == 0 ? ", the quickest" : ", another way")}: {metres:0} m, about {seconds:0} s."
+    };
+
+    // The state of the Route driven, as an item of the Domain Knowledge: named by what the passenger says to ask about the trip (2026-11-28; before, it had no Name).
+    public static JsonObject StateItem(string status, string place, string? routeId) => new()
+    {
+        ["ItemID"] = "RouteNow", ["Name"] = "the trip",
+        ["Synonyms"] = new JsonArray("where are we", "are we there", "have we arrived", "how far is it", "how long now", "are we moving"),
+        ["Source"] = AmsTypes.Hci,
+        ["Text"] = status switch
+        {
+            "Executing" => $"The car is driving the passenger to the {place} (Route {routeId}).",
+            "Suspended" => $"The car has halted on the way to the {place}; it goes on when the passenger says so.",
+            "Stopped"   => $"The car has stopped; the trip to the {place} is abandoned.",
+            "Arrived"   => $"The car has arrived at the {place}.",
+            _ => $"Route {routeId}: {status}."
+        }
+    };
 
     private static async Task Give(IAimPorts ports, JsonObject knowledge)
     {

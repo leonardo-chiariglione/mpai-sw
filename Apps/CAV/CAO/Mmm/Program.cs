@@ -28,7 +28,10 @@ using Mpai.Wdl;
 // Town, in the world's frame.
 //
 //   dotnet run --project Apps\CAV\CAO\Mmm -- --mmm http://127.0.0.1:7198 --who TessProva --first Tess --last Prova --org Test --email tess@example.com --credential <its password>
-//              [--taxi] [--from "Entrance Plaza" | "Taxi Rank"] [--to "Roundabout"]
+//              [--taxi] [--from "Entrance Plaza" | "Taxi Rank"] [--to "Roundabout"] [--listen]
+//
+// A HUMAN PASSENGER (--listen; 2026-11-28, M3329): no passenger's words are made here. The human is the passenger: their H-User (in their Thalia) MM-Sends the Speech Object of what
+// they say to this CAV Process; the CAV hears it in its cabin, and what it answers - its words and its own speech - goes back to that H-User as a Message (MM-Send, "Taxi-<User>-<n>").
 static string Arg(string[] args, string name, string? fallback = null)
 {
     var i = Array.IndexOf(args, name);
@@ -38,6 +41,7 @@ var root = Root();
 var mmm = new Uri(Arg(args, "--mmm", "http://127.0.0.1:7198"));
 var who = Arg(args, "--who");
 var asTaxi = args.Contains("--taxi");
+var listen = args.Contains("--listen");
 var (from, to) = (Arg(args, "--from", asTaxi ? "Taxi Rank" : "Entrance Plaza"), Arg(args, "--to", "Roundabout"));
 
 // ---- the city and the Proving Ground, as the CAV's Offline Map, in the world's frame
@@ -88,7 +92,7 @@ JsonObject Attitude((double X, double Y, double Yaw) w)
 (double X, double Y, double Yaw) Pose(Simulation s)
 {
     var v = s.Mechanics!;
-    var yaw = v.Heading * 180 / Math.PI - 90; yaw = (yaw + 540) % 360 - 180; if (yaw <= -180) yaw += 360;   // in (-180, 180], as the Orientation of OSD-OSA wants
+    var yaw = Math.Round(v.Heading * 180 / Math.PI - 90, 2); yaw = (yaw + 540) % 360 - 180; if (yaw <= -180) yaw += 360;   // in (-180, 180], as the Orientation of OSD-OSA wants - rounded first, so that rounding cannot make it -180
     return (v.East + Math.Sin(v.Heading) * RoadMap.LaneWidth / 2, v.North - Math.Cos(v.Heading) * RoadMap.LaneWidth / 2, yaw);
 }
 var model = new JsonObject
@@ -194,14 +198,16 @@ const string voice = "en_GB-alan-medium";
 try
 {
     // The passenger asks, and agrees to whatever the CAV answers first; the drive ends on arrival.
-    using var cabin = new CavWorld(sim, [new(null, $"Please take me to the {to}.", After: 3), new("", "Yes, let's go.")], text => Passenger(root, text, voice),
-                                   AvatarUtterance.AvatarDatum("cav-avatar.glb"), maxSteps: 3000, endCue: null) { Stepped = s => latest = Pose(s) };
+    PassengerLine[] lines = listen ? [] : [new(null, $"Please take me to the {to}.", After: 3), new("", "Yes, let's go.")];
+    using var cabin = new CavWorld(sim, lines, text => Passenger(root, text, voice),
+                                   AvatarUtterance.AvatarDatum("cav-avatar.glb"), maxSteps: listen ? 1_000_000 : 3000, endCue: null, decisionTimeout: listen ? TimeSpan.FromMinutes(30) : null) { Stepped = s => latest = Pose(s) };
     using var api = new ControllerApi(Path.Combine(root, "AIMs", "AMDs"), settings, store => new CompositeProvider(new EssProvider(root), new AmsProvider(), new MasProvider(), new HciProvider(store, root)));
     var devices = new DeviceRegistry()
         .RegisterDevice("Vehicle", cabin.Vehicle).RegisterDevice("Cabin", cabin.Cabin).RegisterDevice("Hearing", cabin.Hearing)
         .RegisterDevice("Map", cabin.Map).RegisterDevice("PointOfView", cabin.PointOfView).RegisterDevice("Journal", cabin.Journal)
         .RegisterAcquire("OSD-BTO-V1.5", (bool _, string? _) => Task.FromResult<string?>(MpaiJson.ToJson(BasicTextObject.FromText(storage))));
     var interpreter = new WorkflowInterpreter(api.Async(), devices, line => Console.WriteLine("  " + line));
+    var talking = listen ? Task.Run(() => Dialogue(process, http, mmm, token, cabin, moving.Token)) : Task.CompletedTask;
     using var stop = new CancellationTokenSource();
     Console.CancelKeyPress += (_, e) => { e.Cancel = true; stop.Cancel(); };
     var run = Task.Run(() => interpreter.RunAsync(new WorkflowReader().Read(File.ReadAllText(Path.Combine(root, "Apps", "CAV", "CAO", "CAV.orch"))), stop.Token));
@@ -224,6 +230,7 @@ finally
 {
     await Task.Delay(300); moving.Cancel();
     try { await Task.WhenAll(mover, reading); } catch { }
+    if (listen) Console.WriteLine("The dialogue with the passenger is over.");
     if (asTaxi)
     {
         var back = await process.PerformAsync("MM-Send", Uc2.C($"Msg-{cav}-release-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}", to: Taxis.Service, with: [Taxis.Message($"Msg-{cav}-release", $"release {vehicle}")]));
@@ -259,6 +266,103 @@ static string Passenger(string root, string text, string voice)
         if (id == "data") { pcm = wav[(pos + 8)..Math.Min(wav.Length, pos + 8 + length)]; break; }
         pos += 8 + length + (length & 1);
     }
+    var qualifier = new AudioQualifier
+    {
+        AudioQualifierID = Guid.NewGuid().ToString(),
+        Formats = new AudioFormats { ContentFormat = new AudioContentFormat { RawData = new AudioRawData { SampleSpace = new Pcm { SamplingFrequency = rate, Precision = 16 } } } },
+        Attributes = new AudioAttributes { Source = "Real", Device = new AudioDevice { DeviceRole = "Capture", DeviceType = "Microphone", CaptureConfiguration = new CaptureConfiguration { ChannelCount = 1, SamplingMode = "Mono" } } }
+    };
+    return MpaiJson.ToJson(BasicAudioObject.FromData(pcm, qualifier));
+}
+
+// THE DIALOGUE WITH A HUMAN PASSENGER: what reaches this Process from a User other than the Taxi Service is the Speech Object of what its human said - listened to on its stream and
+// given to the cabin; what the CAV says - its words and its speech - goes to the User that spoke last, as a Message "Taxi-<User>-<n>" whose data are { Say, Speech } (16 kHz PCM, base64).
+static async Task Dialogue(MmmClient process, HttpClient http, Uri mmm, string token, CavWorld cabin, CancellationToken stop)
+{
+    var seen = (await process.InboxAsync()).Select(m => m.ID).ToHashSet();
+    string? passenger = null; var sent = 0; var told = 0; var replies = new Dictionary<string, int>(); var heardSpeech = 0; DateTime? waitingSince = null;
+    while (!stop.IsCancellationRequested && !cabin.Finished.IsCompleted)
+    {
+        foreach (var (id, from) in await process.InboxAsync())
+        {
+            if (!seen.Add(id) || from == Taxis.Service) continue;
+            var (http1, item) = await process.ReadAsync(id);
+            if (item is null || !item.ToJsonString().Contains("OSD-BSO-V1.5")) continue;
+            var pcm = await Listen(mmm, token, id, stop);
+            if (pcm.Length < 3200) continue;                                       // less than 0.1 s: nothing said
+            passenger = from;
+            cabin.Hear(from, Bao(pcm, 16000));
+            Console.WriteLine($"  heard {from}: {pcm.Length / 32000.0:0.0} s of speech");
+        }
+        var said = cabin.Said; var spoken = cabin.Spoken;
+        if (spoken.Count > heardSpeech) { Console.WriteLine($"  the CAV's speech: {spoken.Count - heardSpeech} more ({spoken[^1].Length} bytes)"); heardSpeech = spoken.Count; }
+        while (passenger is not null && told < said.Count)
+        {
+            var text = said[told].Text;
+            // its speech follows its words: the avatar that says them (PAF-PAV) comes after the text; it is waited for, 20 s at most
+            waitingSince ??= DateTime.UtcNow;
+            if (spoken.Count <= told && DateTime.UtcNow - waitingSince < TimeSpan.FromSeconds(20)) break;
+            waitingSince = null;
+            var reply = new JsonObject { ["Say"] = text };
+            if (spoken.Count > told && Pcm16k(spoken[told]) is { } voice) reply["Speech"] = Convert.ToBase64String(voice);
+            var msg = $"Taxi-{passenger}-{(replies[passenger] = replies.GetValueOrDefault(passenger) + 1)}";            // numbered for each passenger: the n-th thing said to them
+            var r = await process.PerformAsync("MM-Send", Uc2.C(msg, to: passenger, with: [Taxis.Message(msg, reply.ToJsonString())]));
+            Console.WriteLine($"  to {passenger}: '{text}' ({r.Http}{(reply["Speech"] is null ? ", no speech" : "")})");
+            told++; sent++;
+        }
+        await Task.Delay(300, CancellationToken.None);
+    }
+}
+
+// The data of a Speech Object, as its stream gives them to who may listen: 16 kHz, 16-bit, mono PCM.
+static async Task<byte[]> Listen(Uri mmm, string token, string itemId, CancellationToken stop)
+{
+    using var ws = new System.Net.WebSockets.ClientWebSocket();
+    var uri = new UriBuilder(mmm) { Scheme = mmm.Scheme == "https" ? "wss" : "ws", Path = $"/ws/v2.2/speech/{Uri.EscapeDataString(itemId)}/listen", Query = "token=" + Uri.EscapeDataString(token) }.Uri;
+    using var all = new MemoryStream();
+    try
+    {
+        await ws.ConnectAsync(uri, stop);
+        var buf = new byte[16384];
+        while (ws.State == System.Net.WebSockets.WebSocketState.Open)
+        {
+            var r = await ws.ReceiveAsync(buf, stop);
+            if (r.MessageType == System.Net.WebSockets.WebSocketMessageType.Close) break;
+            all.Write(buf, 0, r.Count);
+        }
+    }
+    catch (Exception e) { Console.WriteLine($"  listening to {itemId}: {e.Message}"); }
+    return all.ToArray();
+}
+
+// The speech of the CAV (a WAV file, or raw PCM at 16 kHz) as 16 kHz, 16-bit mono PCM.
+static byte[]? Pcm16k(byte[] data)
+{
+    if (data.Length < 44 || System.Text.Encoding.ASCII.GetString(data, 0, 4) != "RIFF") return data;
+    var rate = BitConverter.ToInt32(data, 24); var channels = BitConverter.ToInt16(data, 22);
+    byte[] pcm = [];
+    for (var pos = 12; pos + 8 <= data.Length;)
+    {
+        var id = System.Text.Encoding.ASCII.GetString(data, pos, 4); var length = BitConverter.ToInt32(data, pos + 4);
+        if (id == "data") { pcm = data[(pos + 8)..Math.Min(data.Length, pos + 8 + length)]; break; }
+        pos += 8 + length + (length & 1);
+    }
+    var n = pcm.Length / 2 / Math.Max(1, (int)channels);
+    var src = new short[n]; for (var i = 0; i < n; i++) src[i] = BitConverter.ToInt16(pcm, i * 2 * channels);
+    if (rate == 16000) { var o = new byte[n * 2]; Buffer.BlockCopy(src, 0, o, 0, o.Length); return o; }
+    var m = (int)((long)n * 16000 / rate); var outp = new byte[m * 2];
+    for (var i = 0; i < m; i++)
+    {
+        var x = (double)i * rate / 16000; var k = (int)x; var f = x - k;
+        var v = k + 1 < n ? src[k] * (1 - f) + src[k + 1] * f : src[Math.Min(k, n - 1)];
+        BitConverter.TryWriteBytes(outp.AsSpan(i * 2), (short)Math.Round(v));
+    }
+    return outp;
+}
+
+// PCM samples as the Basic Audio Object a microphone gives.
+static string Bao(byte[] pcm, int rate)
+{
     var qualifier = new AudioQualifier
     {
         AudioQualifierID = Guid.NewGuid().ToString(),

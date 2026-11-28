@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- A STAND-IN FOR A HUMAN PASSENGER (M3329): an H-User that speaks to the CAV driving a taxi through the same Process Actions as the viewer does - UM-Capture, Identify, MM-Send of its
+       Speech Object, the speech's stream - with a synthesised voice instead of a microphone, and reads what the taxi answers. For testing where nobody speaks into a microphone. -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Mpai.Mmm.Passenger</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\AIMs\MMC\V2.5\TTS\Mpai.Mmc.Tts.csproj" />
+    <ProjectReference Include="..\..\AllApps\MMM\Client\Mpai.Mmm.Client.csproj" />
+  </ItemGroup>
+
+</Project>

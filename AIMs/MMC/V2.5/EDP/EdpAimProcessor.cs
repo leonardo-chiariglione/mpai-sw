@@ -624,6 +624,20 @@ public sealed class EdpAimProcessor : IAimProcessor
             catch { /* fall through to a safe reply below */ }
         }
 
+        // A REPLY WHOSE JSON IS MALFORMED ELSEWHERE (2026-11-28): the small model at times leaves the other values unquoted ("emotion": NEUTRAL) - the object does not parse,
+        // but its "response" string is whole. It is taken, with the emotion and attitude where they can be read, rather than "could you say that again?".
+        if (string.IsNullOrWhiteSpace(response))
+        {
+            var said = System.Text.RegularExpressions.Regex.Match(cleaned, "\"response\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"");
+            if (said.Success)
+            {
+                try { response = JsonSerializer.Deserialize<string>("\"" + said.Groups[1].Value + "\""); } catch { response = said.Groups[1].Value; }
+                string? Bare(string key) => System.Text.RegularExpressions.Regex.Match(cleaned, $"\"{key}\"\\s*:\\s*\"?([A-Za-z]+)") is { Success: true } m ? m.Groups[1].Value : null;
+                emotion = Bare("emotion")?.ToUpperInvariant() ?? emotion;
+                attitude = Bare("attitude")?.ToLowerInvariant() ?? attitude;
+            }
+        }
+
         // The spoken channel must NEVER contain JSON. If we didn't get a clean
         // "response" string, use the non-JSON remainder of the model output; if
         // that still looks like JSON, use a safe neutral line.

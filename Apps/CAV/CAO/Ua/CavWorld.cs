@@ -50,6 +50,7 @@ public sealed class CavWorld : IDisposable
     private readonly List<byte[]> spoken = [];
     private readonly List<double> stepMs = [];
     private readonly List<(double At, string Text)> spoke = [];
+    private readonly Queue<(string Who, string Audio)> heard = new();      // what a passenger who is a human says: its voice, as it came (M3329)
     private double? movedAt, arrivedAt; private double overLimit;
 
     // sim: the world; lines: what the passenger says; speak: the passenger's voice (the text as a Basic Audio Object, as a microphone gives it); avatarDatum: the Avatar Model the CAV answers with.
@@ -84,6 +85,10 @@ public sealed class CavWorld : IDisposable
     public IReadOnlyList<(double At, string Text)> Said { get { lock (gate) return said.ToList(); } }
     public IReadOnlyList<string> Recognised { get { lock (gate) return recognised.ToList(); } }
     public IReadOnlyList<byte[]> Spoken { get { lock (gate) return spoken.ToList(); } }
+    // The name of the CAV: what the avatar that speaks for it carries (the MachineID of the Module).
+    public string MachineName { get; init; } = "CAV";
+    // A HUMAN PASSENGER (2026-11-28, M3329): what a human says in the cabin, as a Basic Audio Object - the voice its H-User sent the CAV Process - given to the CAV as the cabin's microphone gives it.
+    public void Hear(string who, string basicAudioObject) { lock (gate) heard.Enqueue((who, basicAudioObject)); }
     // How long the CAV took to decide on and command each frame, in milliseconds.
     public IReadOnlyList<double> StepMilliseconds { get { lock (gate) return stepMs.ToList(); } }
     // The decision of the Autonomous Motion Subsystem on the last frame.
@@ -256,20 +261,25 @@ public sealed class CavWorld : IDisposable
         {
             yield return ("OSD-B3O-V1.5", w.avatarModel);
             w.avatarGiven.TrySetResult();                       // the consumer asked for the next: the avatar is written
+            yield return ("string", System.Text.Json.JsonSerializer.Serialize(w.MachineName));     // the name of the CAV, for the avatar that speaks for it
 
             // The passenger says a line when its cue is heard, and its time has come.
             var next = 0; var seen = 0; var cued = false;
             while (!cancel.IsCancellationRequested && !w.finished.Task.IsCompleted)
             {
-                string? line = null;
+                string? line = null; string? voice = null;
                 lock (w.gate)
                 {
+                    if (w.heard.TryDequeue(out var h)) { voice = h.Audio; w.spoke.Add((w.sim.Time, $"({h.Who} speaks)")); }
+                    else {
                     if (next < w.lines.Length && w.lines[next].Cue is null && w.sim.StepNumber >= 5) line = w.lines[next++].Says;
                     else if (cued && next < w.lines.Length && w.sim.Time >= w.lines[next].After) { line = w.lines[next++].Says; cued = false; }
                     for (; seen < w.said.Count; seen++)
                         if (!cued && next < w.lines.Length && w.lines[next].Cue is { } cue && w.said[seen].Text.Contains(cue)) cued = true;
+                    }
                 }
-                if (line is not null) { lock (w.gate) w.spoke.Add((w.sim.Time, line)); yield return ("OSD-BAO-V1.5", w.speak(line)); }
+                if (voice is not null) yield return ("OSD-BAO-V1.5", voice);
+                else if (line is not null) { lock (w.gate) w.spoke.Add((w.sim.Time, line)); yield return ("OSD-BAO-V1.5", w.speak(line)); }
                 else await Task.Delay(20, CancellationToken.None);
             }
         }

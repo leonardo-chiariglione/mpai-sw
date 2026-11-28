@@ -19,6 +19,8 @@
 #      PointOfView (OSD-OPV)                the point of view the passenger selects to see the environment outside - Position and Orientation -,
 #                                           read by the User Agent from the Point of View Acquisition Unit (UNT-POA)
 #      AvatarModel                          the avatar the CAV answers with
+#      MachineID (string)                   the name of the CAV, given once: the avatar that speaks for it carries it (2026-11-28: without it
+#                                           the avatar of HCI was never rendered, and the CAV spoke only in words)
 #
 #    what the CAV gives -
 #      BrakeCommand, MotorCommand,
@@ -59,6 +61,7 @@ on Start:
     stream  CabinVoice     (OSD-BAO-V1.5:2)  from device "Cabin"
     stream  PointOfView    (OSD-OPV-V1.5)    from device "PointOfView"
     stream  AvatarModel    (OSD-B3O-V1.5)    from device "Cabin"
+    stream  MachineID      (string)          from device "Cabin"
     deliver CabinText      (OSD-BTO-V1.5:1)  to device "Cabin"
     deliver CabinAvatar    (PAF-PAV-V1.6)    to device "Cabin"
     deliver UserID         (OSD-IID-V1.5)    to device "Cabin"
