@@ -80,6 +80,59 @@ public class MmmWorldTests
         public async ValueTask DisposeAsync() { Http?.Dispose(); if (App is not null) await App.DisposeAsync(); Meeting.Reset(); }
     }
 
+    // THE TAXIS AND THEIR SERVICE (2026-11-28, M3329): the taxis are Items of the Taxi Service at the bays of the rank, Free. A CAV Process hires one by a Message to the Service
+    // (MM-Send "hire"), is answered with the taxi it is given and may then move it (a Right) - and no other; when every taxi is out, "busy". Released, the taxi is back at its bay,
+    // Free, and the Process may no longer move it; hired again by the same Process, it may.
+    [Fact]
+    public async Task ATaxiIsAnItemThatTheTaxiServiceHiresToACavProcessAndTakesBack()
+    {
+        await using var w = new Running();
+        await w.StartAsync(DateTimeOffset.UtcNow.AddHours(2));
+        Assert.Equal(3, Taxis.Bays.Count);
+        foreach (var (id, x, y, _) in Taxis.Bays)
+        {
+            var t = w.M.Get(id)!;
+            Assert.Equal(("Object", Taxis.Service, "MVS", "Free"), (t.Kind, t.Holder, t.Location, (string?)t.Properties["Occupancy"]));
+            Assert.EndsWith("taxi.glb", t.Model);
+        }
+        var service = new TaxiService(w.Http, w.M);
+        var cav = new Dictionary<string, MmmClient>();
+        foreach (var n in new[] { "CavA", "CavB", "CavC", "CavD" }) cav[n] = await Arrive(w.Http, n);
+        var asked = 0;
+        async Task<string> Ask(string who, string text)
+        {
+            var before = w.M.Inbox(who).Count;
+            Assert.Equal(200, (await cav[who].PerformAsync("MM-Send", Uc2.C($"Msg-{who}-{++asked}", to: Taxis.Service, with: [Taxis.Message($"Msg-{who}-{asked}", text)]))).Http);
+            await service.PumpAsync();
+            var inbox = w.M.Inbox(who); Assert.Equal(before + 1, inbox.Count);
+            return Taxis.TextOf(w.M.Get(inbox[^1])!.Body);
+        }
+        Task<MmmClient.Result> Drive(string who, string taxi, double x, double y) =>
+            cav[who].PerformAsync("MM-Move", Uc2.C(taxi, from: "MVS", to: "MVS", with: Taxis.Place($"SA-{who}-{taxi}-{++asked}", x, y, 180)));
+
+        Assert.Equal(403, (await Drive("CavA", "Taxi-1", -9, -50)).Http);            // not hired: not its to move
+        Assert.Equal("Taxi-1", await Ask("CavA", "hire"));
+        Assert.Equal("Occupied", (string?)w.M.Get("Taxi-1")!.Properties["Occupancy"]);
+        Assert.Equal(200, (await Drive("CavA", "Taxi-1", -9, -50)).Http);
+        Assert.Equal(403, (await Drive("CavB", "Taxi-1", -9, -52)).Http);            // another CAV Process may not
+        Assert.Equal("Taxi-2", await Ask("CavB", "hire"));
+        Assert.Equal("Taxi-3", await Ask("CavC", "hire"));
+        Assert.Equal("busy", await Ask("CavD", "hire"));
+        Assert.Equal("not yours", await Ask("CavD", "release Taxi-1"));
+        // nor may a CAV Process give itself the Right to move a taxi: it is given by the Process holding the taxi
+        var self = Taxis.DrivePA("Taxi-3");
+        Assert.Equal(403, (await cav["CavD"].PerformAsync("Rights Change", Uc2.C("CavD", with: [self, Uc2.Rights("CavD-Self", "May", "Granted", Taxis.DriveID("Taxi-3"))]))).Http);
+
+        Assert.Equal("released", await Ask("CavA", "release Taxi-1"));
+        var back = w.M.Get("Taxi-1")!; var bay = Taxis.Bays[0];
+        Assert.Equal(("MVS", "Free"), (back.Location, (string?)back.Properties["Occupancy"]));
+        Assert.Equal(bay.Y, (double)back.SpatialAttitude!["Position"]!["CartPosition"]![1]!);
+        Assert.Equal(403, (await Drive("CavA", "Taxi-1", -9, -50)).Http);            // released: no longer
+        Assert.Equal("Taxi-1", await Ask("CavA", "hire"));                             // hired again by the same Process: it may again
+        Assert.Equal(200, (await Drive("CavA", "Taxi-1", -9, -50)).Http);
+        Assert.Equal(new Dictionary<string, string> { ["Taxi-1"] = "CavA", ["Taxi-2"] = "CavB", ["Taxi-3"] = "CavC" }, service.Hired);
+    }
+
     // THE CITY ROUND THE SQUARE (2026-11-28, M3329): a grid of streets with buildings on both sides, and the taxi rank. No building stands on a street; Rank Street goes from the
     // south edge of the Square to the first street; the bays of the rank are on its lay-by, free; the campus (the Square and its buildings) is inside the grid; the files are glTF.
     [Fact]

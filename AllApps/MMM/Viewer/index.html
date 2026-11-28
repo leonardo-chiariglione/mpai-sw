@@ -178,18 +178,13 @@ if (W) {
 
 // ---------------------------------------------------------------- the city round the Square (2026-11-28, M3329): a grid of streets with buildings on both sides, and the taxi rank
 // World/make_city.py: the campus - the Square and its buildings - is one block of the grid; Rank Street goes south from the Square to the first street. Its buildings stop a walker.
-// The taxis drawn at the rank are its look until the taxi operator's Service places the taxis as Items (Vehicle Items driven by CAV Processes).
+// The taxis are Items of the Taxi Service (Client/Taxis.cs), drawn from their 3D Model as any Object Item is, where the M-Instance says they are.
 if (W?.city) {
   const c = W.city;
   for (const r of c.solids) solids.push(r);
   new GLTFLoader().load(c.model, g => { g.scene.traverse(o => { if (o.isMesh) o.receiveShadow = true; }); scene.add(g.scene); });
   const tr = c.taxiRank;
-  if (tr) {
-    const l = label(tr.name); l.element.style.font = 'bold 16px system-ui, Arial'; l.position.set(tr.x, 4.2, -tr.y); scene.add(l); buildingLabels.push(l);
-    new GLTFLoader().load(tr.taxiModel, g => {
-      for (const b of tr.bays) { const t = g.scene.clone(); t.position.set(b.x, 0, -b.y); t.rotation.y = (b.yaw + 180) * Math.PI / 180; t.userData.rankTaxi = b.id; scene.add(t); }
-    });
-  }
+  if (tr) { const l = label(tr.name); l.element.style.font = 'bold 16px system-ui, Arial'; l.position.set(tr.x, 4.2, -tr.y); scene.add(l); buildingLabels.push(l); }
 }
 
 // ---------------------------------------------------------------- the Environments reached through a Gate (2026-11-27): the CAV Proving Ground

@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Text.Json.Nodes;
 
 namespace Mpai.Mmm.Client;
@@ -79,6 +79,7 @@ public static class World
         Meeting.AllPlaces = world["buildings"]!.AsArray().OfType<JsonObject>().SelectMany(b => b["rooms"]!.AsArray().OfType<JsonObject>()).Where(r => (bool?)r["public"] != true).Select(r => (string)r["id"]!).ToArray();
         m.AddService(Meeting.BuildingService);
         ProvingGround.Setup(m, world);                                    // the CAV Proving Ground, at the east end of Street y=-66
+        Taxis.Setup(m, world);                                            // the taxis at the rank on Rank Street, the Taxi Service's (M3329)
         m.AddService(Meeting.Asr);
         m.AddService(Meeting.Secretary, Meeting.SecretaryPersona, "catalogue/Female_Adult_05.glb");
         foreach (var b in world["buildings"]!.AsArray().OfType<JsonObject>())

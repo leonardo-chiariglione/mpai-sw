@@ -22,8 +22,13 @@ using Mpai.Wdl;
 // describes it. The conditions of the Proving Ground - the grip of the road, the weather - are read from the M-Instance as the drive goes on. The human says where to go: the
 // passenger's words, in the cabin, as in every drive of the CAV.
 //
+// A TAXI OF THE METAVERSE SQUARE (2026-11-28, M3329): with --taxi the CAV does not place a vehicle of its own: it hires a taxi from the Taxi Service (MM-Send "hire"; the answer names
+// the taxi, and the Service gives it the Right to move it), pulls out of the rank and drives through the streets of the city to the Proving Ground, moving the taxi from the
+// M-Location of the Square to that of the Proving Ground as it crosses its edge; at the end it gives the taxi back ("release"). Its Offline Map is the city and the Proving Ground's
+// Town, in the world's frame.
+//
 //   dotnet run --project Apps\CAV\CAO\Mmm -- --mmm http://127.0.0.1:7198 --who TessProva --first Tess --last Prova --org Test --email tess@example.com --credential <its password>
-//              [--from "Entrance Plaza"] [--to "Roundabout"]
+//              [--taxi] [--from "Entrance Plaza" | "Taxi Rank"] [--to "Roundabout"]
 static string Arg(string[] args, string name, string? fallback = null)
 {
     var i = Array.IndexOf(args, name);
@@ -32,21 +37,26 @@ static string Arg(string[] args, string name, string? fallback = null)
 var root = Root();
 var mmm = new Uri(Arg(args, "--mmm", "http://127.0.0.1:7198"));
 var who = Arg(args, "--who");
-var (from, to) = (Arg(args, "--from", "Entrance Plaza"), Arg(args, "--to", "Roundabout"));
+var asTaxi = args.Contains("--taxi");
+var (from, to) = (Arg(args, "--from", asTaxi ? "Taxi Rank" : "Entrance Plaza"), Arg(args, "--to", "Roundabout"));
 
-// ---- the Proving Ground, as the CAV's Offline Map
+// ---- the city and the Proving Ground, as the CAV's Offline Map, in the world's frame
 var world = JsonNode.Parse(File.ReadAllText(Path.Combine(root, "AllApps", "MMM", "Viewer", "world", "world.json")))!.AsObject();
 var env = ProvingGround.Environment(world) ?? throw new InvalidOperationException("world.json has no Proving Ground: run AllApps\\MMM\\World\\make_proving_ground.py");
 var (ex, ey) = ((double)env["x"]!, (double)env["y"]!);
-var map = ProvingGroundMap.Of(env);
+var map = CityMap.Of(world, env);
+var sq = world["square"]!; var square = (string)sq["id"]!;
+var origins = new Dictionary<string, (double X, double Y)> { [square] = ((double)sq["x"]!, (double)sq["y"]!), [ProvingGround.ID] = (ex, ey) };
+var pgBounds = env["bounds"]!.AsArray().Select(v => (double)v!).ToArray();
+string LocOf((double X, double Y, double Yaw) p) => p.X >= pgBounds[0] && p.X <= pgBounds[2] && p.Y >= pgBounds[1] && p.Y <= pgBounds[3] ? ProvingGround.ID : square;
 string Place(string name) => map.WayPoints.FirstOrDefault(w => string.Equals(w.Name, name, StringComparison.OrdinalIgnoreCase))?.Id
-                             ?? throw new ArgumentException($"no place {name} on the Proving Ground: {string.Join(", ", map.WayPoints.Where(w => w.Name is not null).Select(w => w.Name))}");
+                             ?? throw new ArgumentException($"no place {name} on the map: {string.Join(", ", map.WayPoints.Where(w => w.Name is not null).Select(w => w.Name))}");
 var route = map.FastestRoute(Place(from), Place(to)) ?? throw new InvalidOperationException($"no Route from {from} to {to}");
 var sim = new Simulation(map, route, [], seed: 7);
 sim.Mechanical(seed: 9);
 Console.WriteLine($"The CAV of {who}: from {from} to {to}, {route.Count} road segments, {sim.Path.Length:0} m.");
 
-// ---- the CAV, a Process of the M-Instance: registered by its human, with no Persona; its Vehicle Item placed at the Proving Ground
+// ---- the CAV, a Process of the M-Instance: registered by its human, with no Persona; its Vehicle Item placed at the Proving Ground, or a taxi hired
 var cav = $"CAV-{who}";
 using var http = new HttpClient { BaseAddress = mmm };
 var profile = new JsonObject
@@ -63,17 +73,22 @@ var reg = await new MmmClient(http, $"{who}-human").PerformAsync("Register", new
 if (!reg.Tokens.TryGetValue(cav, out var token)) { Console.WriteLine($"Register: {reg.Http} {reg.Response.PaStatus?.Detail}"); return 1; }
 var process = new MmmClient(http, cav, token);
 var vehicle = $"{cav}-Vehicle";
-JsonObject Attitude((double X, double Y, double Yaw) p) => new()
+// The Spatial Attitude of the vehicle in the M-Location it is in: on that M-Location's frame.
+JsonObject Attitude((double X, double Y, double Yaw) w)
+{
+    var o = origins[LocOf(w)]; var p = (X: w.X - o.X, Y: w.Y - o.Y, w.Yaw);
+    return new()
 {
     ["Header"] = "OSD-OSA-V1.5", ["ObjectSpatialAttitudeID"] = $"SA-{vehicle}",
     ["Position"] = new JsonObject { ["Header"] = "OSD-OPS-V1.5", ["PositionID"] = $"SA-{vehicle}-P", ["CartPosition"] = new JsonArray(Math.Round(p.X, 3), Math.Round(p.Y, 3), 0.0) },
     ["Orientation"] = new JsonObject { ["Header"] = "OSD-OOR-V1.5", ["OrientationID"] = $"SA-{vehicle}-O", ["Orientation"] = new JsonArray(Math.Round(p.Yaw, 2), 0.0, 0.0) }
 };
-// Where the Vehicle Item is in the Proving Ground: the vehicle keeps to the right, half a lane from the line of its road; yaw 0 looks north, positive turns to the west.
+}
+// Where the Vehicle Item is, in the world's frame: the vehicle keeps to the right, half a lane from the line of its road; yaw 0 looks north, positive turns to the west.
 (double X, double Y, double Yaw) Pose(Simulation s)
 {
     var v = s.Mechanics!;
-    var yaw = v.Heading * 180 / Math.PI - 90; yaw = (yaw + 540) % 360 - 180;
+    var yaw = v.Heading * 180 / Math.PI - 90; yaw = (yaw + 540) % 360 - 180; if (yaw <= -180) yaw += 360;   // in (-180, 180], as the Orientation of OSD-OSA wants
     return (v.East + Math.Sin(v.Heading) * RoadMap.LaneWidth / 2, v.North - Math.Cos(v.Heading) * RoadMap.LaneWidth / 2, yaw);
 }
 var model = new JsonObject
@@ -90,9 +105,37 @@ var model = new JsonObject
     }),
     ["DescrMetadata"] = $"The vehicle the CAV of {who} drives"
 };
-var added = await process.PerformAsync("MM-Add", Uc2.C(vehicle, at: ProvingGround.ID, with: [model, Attitude(Pose(sim))]));
-if (added.Http != 200) { Console.WriteLine($"MM-Add of the Vehicle Item: {added.Http} {added.Response.PaStatus?.Detail}"); return 1; }
-Console.WriteLine($"{cav} placed {vehicle} at the {(string)env["name"]!}.");
+var loc = LocOf(Pose(sim));
+if (asTaxi)
+{
+    // a taxi from the Taxi Service: asked for, and named in its answer
+    var known = (await process.InboxAsync()).Select(m => m.ID).ToHashSet();
+    var asked = await process.PerformAsync("MM-Send", Uc2.C($"Msg-{cav}-hire-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}", to: Taxis.Service, with: [Taxis.Message($"Msg-{cav}-hire", "hire")]));
+    if (asked.Http != 200) { Console.WriteLine($"MM-Send to the Taxi Service: {asked.Http} {asked.Response.PaStatus?.Detail}"); return 1; }
+    string? answer = null;
+    for (var i = 0; i < 50 && answer is null; i++)
+    {
+        await Task.Delay(200);
+        foreach (var (id, sender) in await process.InboxAsync())
+            if (sender == Taxis.Service && known.Add(id) && (await process.ReadAsync(id)).Item is { } item) answer = MessageText(item);
+    }
+    if (answer is null or "busy" || !answer.StartsWith("Taxi-", StringComparison.Ordinal)) { Console.WriteLine($"The Taxi Service: {answer ?? "no answer"}."); return 1; }
+    vehicle = answer;
+    var outOf = await process.PerformAsync("MM-Move", Uc2.C(vehicle, from: square, to: loc, with: Attitude(Pose(sim))));
+    if (outOf.Http != 200)
+    {
+        Console.WriteLine($"MM-Move of {vehicle} out of the rank: {outOf.Http} {outOf.Response.PaStatus?.Detail}");
+        await process.PerformAsync("MM-Send", Uc2.C($"Msg-{cav}-release-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}", to: Taxis.Service, with: [Taxis.Message($"Msg-{cav}-release", $"release {vehicle}")]));
+        return 1;
+    }
+    Console.WriteLine($"{cav} hired {vehicle} from the Taxi Service and pulled out of the rank.");
+}
+else
+{
+    var added = await process.PerformAsync("MM-Add", Uc2.C(vehicle, at: loc, with: [model, Attitude(Pose(sim))]));
+    if (added.Http != 200) { Console.WriteLine($"MM-Add of the Vehicle Item: {added.Http} {added.Response.PaStatus?.Detail}"); return 1; }
+    Console.WriteLine($"{cav} placed {vehicle} at the {(string)env["name"]!}.");
+}
 
 // ---- the vehicle moves the Vehicle Item: after each step of the vehicle, the latest pose goes to the M-Instance
 (double X, double Y, double Yaw)? latest = null;
@@ -105,8 +148,10 @@ var mover = Task.Run(async () =>
         var p = latest;
         if (p is { } pose && pose != sent)
         {
-            var r = await process.PerformAsync("MM-Move", Uc2.C(vehicle, from: ProvingGround.ID, to: ProvingGround.ID, with: Attitude(pose)));
+            var there = LocOf(pose);
+            var r = await process.PerformAsync("MM-Move", Uc2.C(vehicle, from: loc, to: there, with: Attitude(pose)));
             if (r.Http != 200) Console.WriteLine($"MM-Move: {r.Http} {r.Response.PaStatus?.Detail}");
+            else if (there != loc) { Console.WriteLine($"{vehicle}: from the M-Location {loc} to {there}."); loc = there; }
             sent = pose;
         }
         await Task.Delay(100);
@@ -179,6 +224,11 @@ finally
 {
     await Task.Delay(300); moving.Cancel();
     try { await Task.WhenAll(mover, reading); } catch { }
+    if (asTaxi)
+    {
+        var back = await process.PerformAsync("MM-Send", Uc2.C($"Msg-{cav}-release-{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}", to: Taxis.Service, with: [Taxis.Message($"Msg-{cav}-release", $"release {vehicle}")]));
+        Console.WriteLine($"{vehicle} given back to the Taxi Service: {back.Http}.");
+    }
     try { File.Delete(settings); Directory.Delete(storage, recursive: true); } catch { }
 }
 return 0;
@@ -218,20 +268,34 @@ static string Passenger(string root, string text, string voice)
     return MpaiJson.ToJson(BasicAudioObject.FromData(pcm, qualifier));
 }
 
-// THE PROVING GROUND AS AN OFFLINE MAP OF THE CAV: way points at the junctions of the Town's streets and at their ends, a road segment each way between neighbours (one lane each way,
-// 50 km/h), on the Proving Ground's own frame (east and north metres from its centre). The places a passenger may ask for are named.
-static class ProvingGroundMap
+// The text of a Message (MMM-MSG-V2.2) wherever the Item read holds it.
+static string? MessageText(JsonNode? n) => n switch
 {
-    private static readonly Dictionary<(double, double), string> Names = new()
+    JsonObject o when (string?)o["Header"] == "MMM-MSG-V2.2" => Taxis.TextOf(o),
+    JsonObject o => o.Select(kv => MessageText(kv.Value)).FirstOrDefault(t => !string.IsNullOrEmpty(t)),
+    JsonArray a => a.Select(MessageText).FirstOrDefault(t => !string.IsNullOrEmpty(t)),
+    _ => null
+};
+
+// THE CITY AND THE PROVING GROUND AS AN OFFLINE MAP OF THE CAV: way points at the junctions of the streets and at their ends, a road segment each way between neighbours (one lane each
+// way, 50 km/h), in the world's frame (east and north metres from the centre of the Metaverse Square): the streets of the city round the Square (world.json "city") and those of the
+// Proving Ground's Town, which Street y=-66 joins. The places a passenger may ask for are named: those of the Proving Ground (on its frame here, moved to the world's) and the Taxi Rank.
+static class CityMap
+{
+    private static readonly Dictionary<(double, double), string> ProvingGroundNames = new()
     {
         [(-275, 0)] = "Entrance Plaza", [(23, 0)] = "Roundabout", [(-110, 80)] = "Park", [(-250, 160)] = "North-West Corner", [(-40, -160)] = "South-East Corner"
     };
 
-    public static RoadMap Of(JsonObject env)
+    public static RoadMap Of(JsonObject world, JsonObject env)
     {
         var (ex, ey) = ((double)env["x"]!, (double)env["y"]!);
-        var streets = env["roads"]!.AsArray().OfType<JsonObject>().Where(r => (string?)r["kind"] == "urban")
-            .Select(r => r["centreline"]!.AsArray().Select(p => (X: (double)p![0]! - ex, Y: (double)p[1]! - ey)).ToArray()).ToList();
+        var Names = ProvingGroundNames.ToDictionary(n => (n.Key.Item1 + ex, n.Key.Item2 + ey), n => n.Value);
+        var roads = env["roads"]!.AsArray().OfType<JsonObject>().Where(r => (string?)r["kind"] == "urban").ToList();
+        if (world["city"]?["roads"] is JsonArray city) roads.AddRange(city.OfType<JsonObject>());
+        if (world["city"]?["roads"]?.AsArray().OfType<JsonObject>().FirstOrDefault(r => (string?)r["id"] == "Rank-Street") is { } rank)
+            Names[((double)rank["centreline"]![0]![0]!, (double)rank["centreline"]![0]![1]!)] = "Taxi Rank";
+        var streets = roads.Select(r => r["centreline"]!.AsArray().Select(p => (X: (double)p![0]!, Y: (double)p[1]!)).ToArray()).ToList();
         bool On((double X, double Y) p, (double X, double Y)[] s) =>
             Math.Abs(s[0].X - s[1].X) < 1e-6 ? Math.Abs(p.X - s[0].X) < 1e-6 && p.Y >= Math.Min(s[0].Y, s[1].Y) - 1e-6 && p.Y <= Math.Max(s[0].Y, s[1].Y) + 1e-6
                                              : Math.Abs(p.Y - s[0].Y) < 1e-6 && p.X >= Math.Min(s[0].X, s[1].X) - 1e-6 && p.X <= Math.Max(s[0].X, s[1].X) + 1e-6;
@@ -251,6 +315,6 @@ static class ProvingGroundMap
                 segments.Add(new RoadSegment($"S{Id(b)}-{Id(a)}", Id(b), Id(a), Math.Round(50 / 3.6, 3), 1));
             }
         }
-        return new RoadMap("ProvingGround-Town", 45.0703, 7.6869, wayPoints, segments);
+        return new RoadMap("City-and-ProvingGround", 45.0703, 7.6869, wayPoints, segments);
     }
 }

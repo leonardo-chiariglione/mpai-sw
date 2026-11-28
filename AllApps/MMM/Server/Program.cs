@@ -239,6 +239,12 @@ if (m.Get(ProvingGround.ID) is not null)        // the CAV Proving Ground: its S
     _ = Task.Run(async () => { while (true) { try { await provingGround.PumpAsync(); } catch (Exception e) { Console.Error.WriteLine("proving ground: " + e.Message); } await Task.Delay(500); } });
     Console.WriteLine("CAV Proving Ground: at the east end of Street y=-66 of the city.");
 }
+if (m.Get("Taxi-1") is not null)                // the taxis of the Square: their Service hires them to the CAV Processes that ask, and takes them back (M3329)
+{
+    var taxis = new TaxiService(inside, m);
+    _ = Task.Run(async () => { while (true) { try { await taxis.PumpAsync(); } catch (Exception e) { Console.Error.WriteLine("taxis: " + e.Message); } await Task.Delay(300); } });
+    Console.WriteLine($"Taxis: {Taxis.Bays.Count} at the rank on Rank Street.");
+}
 var minutesShown = 0;
 _ = Task.Run(async () => { while (true) { try { await meeting.PumpSummaryAsync(); } catch (Exception e) { Console.Error.WriteLine("summary: " + e.Message); } await Task.Delay(300); } });
 _ = Task.Run(async () => { while (true) { try { await meeting.PumpRunningSummariesAsync(); } catch (Exception e) { Console.Error.WriteLine("running summary: " + e.Message); } await Task.Delay(2000); } });   // a summary asked by voice grows as the meeting goes on

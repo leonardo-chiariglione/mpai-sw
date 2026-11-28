@@ -819,7 +819,9 @@ public sealed class MInstance
         if (Need(service, c.To, "To") is { } f2) return f2;
         if (!items.TryGetValue(c.Nil!, out var it)) return Fail(404, service, "IncID", $"no Item {c.Nil}");
         if (!items.ContainsKey(c.To!)) return Fail(404, service, "IncID", $"no M-Location {c.To}");
-        if (it.Holder != source) return Fail(403, service, "InsRights", $"{c.Nil} is not {source}'s");
+        // MOVED BY A RIGHT (2026-11-28, M3329): the Process holding an Item moves it, and so does a Process a Right lets move it - a CAV Process the taxi it was hired, or the Persona
+        // whose User granted it the Right for the trip.
+        if (it.Holder != source && !Allowed(source, "MM-Move", c.Nil, null) && !Allowed(source, "MM-Move", c.Nil, c.To)) return Fail(403, service, "InsRights", $"{c.Nil} is not {source}'s");
         if (c.From is not null && it.Location != c.From) return Fail(409, service, "Clash", $"{c.Nil} is at {it.Location}, not {c.From}");
         if (!MayEnter(source, "MM-Move", c.Nil!, c.To!)) return Fail(403, service, "InsRights", $"{source} may not move {c.Nil} to {c.To}");
         if (ClosedOnTheWay(it.Location, c.To!) is { } shut) return Fail(409, service, "Clash", $"{shut.ID} is closed");
@@ -1133,9 +1135,9 @@ public sealed class MInstance
         Store(with);
         // Rights on a place are given by the Process holding the Rights to it: the targets (To, At) of the Process
         // Actions the Rights name - the Room - not what they act on (the Persona moving in). Rights to change an Item (Property Change, which has no target) are given by the
-        // Process holding the Rights to the Item.
+        // Process holding the Rights to the Item; so are Rights to move an Item anywhere (MM-Move with no target).
         foreach (var r in rights)
-            foreach (var t in Entries(r).SelectMany(e => e.PAs).Select(Template).OfType<PA>().Select(t => t.Target ?? (t.Action == "Property Change" ? t.Nil : null)).OfType<string>())
+            foreach (var t in Entries(r).SelectMany(e => e.PAs).Select(Template).OfType<PA>().Select(t => t.Target ?? (t.Action is "Property Change" or "MM-Move" ? t.Nil : null)).OfType<string>())
                 if (items.TryGetValue(t, out var it) && it.Holder != source && !it.Public)
                     return Fail(403, service, "InsRights", $"{t} is not {source}'s to give Rights on");
 
@@ -1146,6 +1148,10 @@ public sealed class MInstance
             var withdrawn = Entries(r).Where(e => e.Verb == "May Not").SelectMany(e => e.PAs).ToHashSet();
             if (withdrawn.Count > 0 && holdings.TryGetValue(c.Nil!, out var held))
                 held.RemoveAll(h => Entries(items[h].Body!).Any(e => e.Verb == "May" && e.PAs.Any(p => withdrawn.Any(w => SamePA(p, w)))));
+            // and the other way: what is given now replaces what was taken away before for the same Process Action (a taxi hired again by the CAV Process it was once taken from)
+            var given = Entries(r).Where(e => e.Verb == "May").SelectMany(e => e.PAs).ToHashSet();
+            if (given.Count > 0 && holdings.TryGetValue(c.Nil!, out var held2))
+                held2.RemoveAll(h => Entries(items[h].Body!).Any(e => e.Verb == "May Not" && e.PAs.Any(p => given.Any(g => SamePA(p, g)))));
             rs.Add(Grant(r, c.Nil!));
         }
         return Ok(200, service, new Complements { With = rs });
