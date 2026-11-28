@@ -237,7 +237,7 @@ if (m.Get(ProvingGround.ID) is not null)        // the CAV Proving Ground: its S
 {
     var provingGround = new ProvingGroundService(inside, m);
     _ = Task.Run(async () => { while (true) { try { await provingGround.PumpAsync(); } catch (Exception e) { Console.Error.WriteLine("proving ground: " + e.Message); } await Task.Delay(500); } });
-    Console.WriteLine("CAV Proving Ground: through the Gate on the Square.");
+    Console.WriteLine("CAV Proving Ground: at the east end of Street y=-66 of the city.");
 }
 var minutesShown = 0;
 _ = Task.Run(async () => { while (true) { try { await meeting.PumpSummaryAsync(); } catch (Exception e) { Console.Error.WriteLine("summary: " + e.Message); } await Task.Delay(300); } });

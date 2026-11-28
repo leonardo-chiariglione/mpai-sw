@@ -80,6 +80,43 @@ public class MmmWorldTests
         public async ValueTask DisposeAsync() { Http?.Dispose(); if (App is not null) await App.DisposeAsync(); Meeting.Reset(); }
     }
 
+    // THE CITY ROUND THE SQUARE (2026-11-28, M3329): a grid of streets with buildings on both sides, and the taxi rank. No building stands on a street; Rank Street goes from the
+    // south edge of the Square to the first street; the bays of the rank are on its lay-by, free; the campus (the Square and its buildings) is inside the grid; the files are glTF.
+    [Fact]
+    public void TheCityIsAGridOfStreetsWithTheTaxiRankOnTheSquare()
+    {
+        var world = World.Load(Repository.Root);
+        var city = world["city"]!.AsObject();
+        double[] R(JsonNode n) => n.AsArray().Select(v => (double)v!).ToArray();
+        var solids = city["solids"]!.AsArray().Select(R).ToList();
+        bool Overlaps(double[] a, double[] b) => a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
+        foreach (var road in city["roads"]!.AsArray().OfType<JsonObject>())
+        {
+            var line = road["centreline"]!.AsArray().Select(R).ToArray(); var half = (double)road["laneWidth"]! * (int)road["lanes"]! / 2;
+            for (var i = 1; i < line.Length; i++)
+            {
+                var box = new[] { Math.Min(line[i - 1][0], line[i][0]) - half, Math.Min(line[i - 1][1], line[i][1]) - half, Math.Max(line[i - 1][0], line[i][0]) + half, Math.Max(line[i - 1][1], line[i][1]) + half };
+                Assert.DoesNotContain(solids, s => Overlaps(s, box));
+            }
+        }
+        var square = world["square"]!; var edge = (double)square["y"]! - (double)square["size"]! / 2;
+        var rank = city["roads"]!.AsArray().OfType<JsonObject>().Single(r => (string?)r["id"] == "Rank-Street")["centreline"]!.AsArray().Select(R).ToArray();
+        Assert.Equal(edge, rank[0][1]);
+        Assert.Contains(city["roads"]!.AsArray().OfType<JsonObject>(), r => (string?)r["id"] == $"Street-{(int)rank[^1][1]}");
+        var tr = city["taxiRank"]!; var lay = R(tr["layby"]!);
+        Assert.Equal(3, tr["bays"]!.AsArray().Count);
+        foreach (var b in tr["bays"]!.AsArray())
+        {
+            var (x, y) = ((double)b!["x"]!, (double)b["y"]!);
+            Assert.InRange(x, lay[0], lay[2]); Assert.InRange(y, lay[1], lay[3]);
+            Assert.DoesNotContain(solids, s => Overlaps(s, new[] { x - 1, y - 2.3, x + 1, y + 2.3 }));
+        }
+        var ext = R(city["extent"]!);
+        foreach (var b in world["buildings"]!.AsArray()) { Assert.InRange((double)b!["x"]!, ext[0], ext[2]); Assert.InRange((double)b["y"]!, ext[1], ext[3]); }
+        foreach (var f in new[] { (string)city["model"]!, (string)tr["taxiModel"]! })
+            Assert.Equal("glTF", Encoding.ASCII.GetString(File.ReadAllBytes(Path.Combine(Repository.Root, "AllApps", "MMM", "Viewer", f)), 0, 4));
+    }
+
     // What the viewer reads: the buildings and their doors are where the Locations are, a walker can pass a door, a seat is in its room, the glTF files are glTF.
     [Fact]
     public void TheWorldFileAgreesWithTheLocationsAndTheBuildingsAreGltf()
@@ -460,7 +497,7 @@ public class MmmWorldTests
     // THE CAV PROVING GROUND (2026-11-27): an M-Location reached through the Gate on the Square, public; its conditions (TimeOfDay, Weather, Friction: Item Properties of its
     // M-Location) are changed by a User the Proving Ground Service gives the Right to - a Participant, not a Visitor; its traffic lights change in turn, by the Service.
     [Fact]
-    public async Task TheProvingGroundIsReachedThroughItsGateAndItsConditionsChangeWithTheRight()
+    public async Task TheProvingGroundIsAtTheEndOfAStreetOfTheCityAndItsConditionsChangeWithTheRight()
     {
         await using var w = new Running();
         await w.StartAsync(DateTimeOffset.UtcNow.AddHours(2));
@@ -468,7 +505,12 @@ public class MmmWorldTests
         var env = ProvingGround.Environment(world)!;
         Assert.NotNull(env);
         Assert.True(File.Exists(Path.Combine(Repository.Root, "AllApps", "MMM", "Viewer", (string)env["model"]!)));
-        Assert.Equal("ProvingGround", w.M.Get("Gate-ProvingGround")!.Leads);
+        // part of the street grid (M3329): no Gate; Street y=-66 of the city goes on to its west edge, where its own street begins
+        Assert.Empty(world["gates"]!.AsArray());
+        var link = world["city"]!["roads"]!.AsArray().OfType<JsonObject>().Single(r => (string?)r["leads"] == ProvingGround.ID)["centreline"]!.AsArray();
+        var edge = (double)env["bounds"]![0]!;
+        Assert.Equal(edge, (double)link[^1]![0]!); Assert.Equal((double)env["y"]!, (double)link[^1]![1]!);
+        Assert.Contains(env["roads"]!.AsArray(), r => (double)r!["centreline"]![0]![0]! <= edge + 0.1 && (double)r["centreline"]![0]![1]! == (double)env["y"]!);
         Assert.Equal(12, ProvingGround.Signals.Length);
         Assert.Contains(env["roads"]!.AsArray(), r => (string?)r!["kind"] == "motorway");
 
@@ -483,7 +525,7 @@ public class MmmWorldTests
         var anna = await Arrive("Anna", "Participant"); var vito = await Arrive("Vito", "Visitor");
         var service = new ProvingGroundService(w.Http, w.M) { Clock = () => DateTimeOffset.FromUnixTimeSeconds(1_000_000_000) };    // 1e9 % 50 = 0: north-south green
         await service.PumpAsync();
-        Assert.Equal(200, (await Go(anna, "MVS", ProvingGround.ID, -290, 0)).Http);                       // through the Gate: anybody
+        Assert.Equal(200, (await Go(anna, "MVS", ProvingGround.ID, -290, 0)).Http);                       // across its edge: anybody
         Assert.Equal(200, (await Go(vito, "MVS", ProvingGround.ID, -290, 2)).Http);
 
         static JsonObject Set(string name, JsonNode value) => new()
@@ -508,6 +550,6 @@ public class MmmWorldTests
         // nor may Anna give herself the Right to change them: the Right to change an Item is given by the Process holding the Rights to it
         var self = Uc2.PA("MMM-PCP-V3.0", "PropertyChange", "PA-Anna-Signal", ("RQ1", "Nil", "ItemID", JsonValue.Create("Signal-J1-NS")!));
         Assert.Equal(403, (await anna.PerformAsync("Rights Change", Uc2.C("Anna", with: [self, Uc2.Rights("Anna-Signal-Right", "May", "Granted", "PA-Anna-Signal")]))).Http);
-        Assert.Equal(200, (await Go(anna, ProvingGround.ID, "MVS", 0, -10)).Http);                       // and back through the Gate
+        Assert.Equal(200, (await Go(anna, ProvingGround.ID, "MVS", 229, -66)).Http);                     // and back into the city
     }
 }

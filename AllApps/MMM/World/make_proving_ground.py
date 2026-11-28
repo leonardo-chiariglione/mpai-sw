@@ -13,7 +13,8 @@ the time of day, the weather, the grip of the road (Properties of the Proving Gr
   - the Test Straight, east of the Roundabout: three lanes, 250 m, for braking and lane changes;
   - the Motorway, along the north: two carriageways of two lanes (3.75 m) and a hard shoulder, a median with a barrier, an on-ramp from the Roundabout with an acceleration lane;
   - the Country Road, south of the Roundabout: winding, 6.5 m, between trees, to the Car Park with its marked bays;
-  - the Entrance Plaza, at the west end, with the Gate to the Metaverse Square.
+  - the Entrance Plaza, at the west end, where Street y=-66 of the city round the Metaverse Square comes in (2026-11-28, M3329: the Proving Ground is part of the street grid;
+    before, it was reached through a Gate on the Square).
 
 Axes: x east, y north, z up, metres (AllApps/MMM/AXES.md). The glTF's origin is the centre of the Proving Ground; world.json says where it is in the world (AT).
 """
@@ -23,7 +24,7 @@ from meshes import Mesh
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, '..', 'Viewer', 'world')
-AT = (1000.0, 0.0)                         # the centre of the Proving Ground in the world: far from the Square; it is reached through the Gate, not by walking
+AT = (551.0, -66.0)                        # the centre of the Proving Ground in the world: its Entrance Plaza just east of the last avenue of the city (World/make_city.py), its street on Street y=-66
 EXT = (-320.0, -220.0, 320.0, 220.0)      # its extent, relative to its centre
 Z_ROAD, Z_MARK, Z_WALK = 0.02, 0.026, 0.12
 
@@ -101,10 +102,11 @@ XS, YS, HALF, WALK = [-250, -180, -110, -40], [-160, -80, 0, 80, 160], 3.5, 2.5
 SIGNALISED = [(x, y) for x in (-180, -110) for y in (-80, 0, 80)]
 for x in XS: m.box('asphalt', x - HALF, YS[0] - HALF, -0.05, x + HALF, YS[-1] + HALF, Z_ROAD)
 for y in YS: m.box('asphalt', XS[0] - HALF, y - HALF, -0.05, XS[-1] + HALF, y + HALF, Z_ROAD)
-m.box('asphalt', -275, -HALF, -0.05, XS[0], HALF, Z_ROAD)              # the street from the Entrance Plaza
+m.box('asphalt', -320, -HALF, -0.05, XS[0], HALF, Z_ROAD)              # the street from the city, across the Entrance Plaza
 m.box('asphalt', XS[-1], -HALF, -0.05, 23, HALF, Z_ROAD)               # the street to the Roundabout
 for x in XS: road(f'Town-Street-{x}', f'Town street x={x}', 'urban', [(x, YS[0]), (x, YS[-1])], 2, 3.5)
 for y in YS: road(f'Town-Street-y{y}', f'Town street y={y}', 'urban', [(XS[0], y), (XS[-1], y)], 2, 3.5)
+road('Town-Plaza-Entry', 'Street from the city to the Entrance Plaza', 'urban', [(-320, 0), (-275, 0)], 2, 3.5)
 road('Town-Plaza-Street', 'Street from the Entrance Plaza', 'urban', [(-275, 0), (XS[0], 0)], 2, 3.5)
 road('Town-Roundabout-Street', 'Street to the Roundabout', 'urban', [(XS[-1], 0), (23, 0)], 2, 3.5)
 
@@ -159,7 +161,7 @@ for x in XS:
     for a, b in zip(YS, YS[1:]): town_markings(a, b, False, x)
 for y in YS:
     for a, b in zip(XS, XS[1:]): town_markings(a, b, True, y)
-dashes([(-275, 0), (W0, 0)], 0.12, 3, 6); dashes([(W1, 0), (22, 0)], 0.12, 3, 6)
+dashes([(-318, 0), (W0, 0)], 0.12, 3, 6); dashes([(W1, 0), (22, 0)], 0.12, 3, 6)
 
 # ------------------------------------------------------------------ the traffic lights: one Item for the north-south way and one for the east-west way of each junction
 signals = []
@@ -232,9 +234,9 @@ for row_y, facing in ((CP[3] - 5, -1), (CP[1] + 5, 1), (-185.5, 1), (-194.5, -1)
         quad('marking', (x, row_y), (x, row_y - facing * 5), 0.12, Z_ROAD, Z_MARK)
 road('Car-Park', 'Car Park', 'parking', [(CP[0], CP[1]), (CP[2], CP[1]), (CP[2], CP[3]), (CP[0], CP[3])], 0, 2.5, two_way=True, bay=[2.5, 5.0])
 
-# ------------------------------------------------------------------ the Entrance Plaza, with the Gate to the Metaverse Square
+# ------------------------------------------------------------------ the Entrance Plaza: on both sides of the street that comes in from the city
 PLAZA = (-318.0, -15.0, -275.0, 15.0)
-m.box('plaza', PLAZA[0], PLAZA[1], 0, PLAZA[2], PLAZA[3], 0.05)
+m.box('plaza', PLAZA[0], PLAZA[1], 0, PLAZA[2], -HALF, 0.05); m.box('plaza', PLAZA[0], HALF, 0, PLAZA[2], PLAZA[3], 0.05)
 
 m.glb(os.path.join(OUT, 'proving-ground.glb'))
 
@@ -258,21 +260,18 @@ for s in signals:
     for h in s['heads']: h['x'], h['y'] = W((h['x'], h['y']))
 env = dict(id='ProvingGround', name='CAV Proving Ground', model='world/proving-ground.glb', x=AT[0], y=AT[1],
            bounds=[AT[0] + EXT[0], AT[1] + EXT[1], AT[0] + EXT[2], AT[1] + EXT[3]],
-           spawn=dict(x=AT[0] - 290, y=AT[1], radius=3.0, yaw=270),
+           spawn=dict(x=AT[0] - 290, y=AT[1] + 8, radius=3.0, yaw=270),
            conditions=dict(TimeOfDay=12, Weather='Clear', Friction=0.9),
            solids=[[round(v, 3) for v in (r[0] + AT[0], r[1] + AT[1], r[2] + AT[0], r[3] + AT[1])] for r in solids],
            roads=roads, signals=signals)
-# The Gate: one Item, with a side on the Square and a side on the Entrance Plaza. Walked through, it takes a Persona to the other side.
-gate = dict(id='Gate-ProvingGround', name='CAV Proving Ground', leads='ProvingGround', at='MVS', width=5.0, sides=[
-    dict(at='MVS', x=0.0, y=-13.0, axis='y', outside=1, arrive=dict(at='ProvingGround', x=AT[0] - 296, y=AT[1], yaw=270)),
-    dict(at='ProvingGround', x=AT[0] - 302, y=AT[1], axis='x', outside=1, arrive=dict(at='MVS', x=0.0, y=-10.0, yaw=0))])
+# No Gate (2026-11-28): the Proving Ground is entered by walking or driving across its west edge, from Street y=-66 of the city.
 
 path = os.path.join(OUT, 'world.json')
 raw = open(path, 'rb').read()
 crlf = b'\r\n' in raw
 world = json.loads(raw.decode('utf-8'))
 world['environments'] = [env]
-world['gates'] = [gate]
+world['gates'] = []
 text = json.dumps(world, indent=1)
 open(path, 'wb').write((text.replace('\n', '\r\n') if crlf else text).encode('utf-8'))
 print('wrote proving-ground.glb and world.json:', len(roads), 'roads,', len(signals), 'traffic lights,', len(solids), 'solids')

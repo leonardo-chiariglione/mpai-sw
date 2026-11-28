@@ -71,6 +71,7 @@
                           {"Output": {"AIMCode": "CAV-HCI-V2.0", "DataType": "CAV-AHM-V2.0"}, "Input": {"AIMCode": "CAV-AMS-V2.0", "DataType": "CAV-AHM-V2.0"}},
                           {"Output": {"AIMCode": "CAV-AMS-V2.0", "DataType": "CAV-AHM-V2.0"}, "Input": {"AIMCode": "CAV-HCI-V2.0", "DataType": "CAV-AHM-V2.0"}},
                           {"Output": {"AIMCode": "CAV-AMS-V2.0", "DataType": "MMC-DKN-V2.5"}, "Input": {"AIMCode": "CAV-HCI-V2.0", "DataType": "MMC-DKN-V2.5"}},
+                          {"Output": {"AIMCode": "CAV-HCI-V2.0", "DataType": "MMC-DKN-V2.5"}, "Input": {"AIMCode": "CAV-AMS-V2.0", "DataType": "MMC-DKN-V2.5"}},
                           {"Output": {"AIMCode": "CAV-AMS-V2.0", "DataType": "OSD-BMS-V1.5"}, "Input": {"AIMCode": "CAV-HCI-V2.0", "DataType": "OSD-BMS-V1.5"}},
                           {"Output": {"AIMCode": "CAV-MAS-V2.0", "DataType": "CAV-BRC-V2.0"}, "Input": {"AIMCode": "", "DataType": "CAV-BRC-V2.0"}},
                           {"Output": {"AIMCode": "CAV-MAS-V2.0", "DataType": "CAV-MRC-V2.0"}, "Input": {"AIMCode": "", "DataType": "CAV-MRC-V2.0"}},

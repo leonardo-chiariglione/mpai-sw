@@ -106,7 +106,7 @@ const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshSta
 ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
 
 // The camera frames the M-Environment (about 30 m across) whatever the window's shape.
-const camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.1, 300);
+const camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.1, 900);   // far enough for the city round the Square (World/make_city.py)
 const controls = new OrbitControls(camera, renderer.domElement);
 function frame() {
   camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
@@ -176,6 +176,22 @@ if (W) {
   }
 }
 
+// ---------------------------------------------------------------- the city round the Square (2026-11-28, M3329): a grid of streets with buildings on both sides, and the taxi rank
+// World/make_city.py: the campus - the Square and its buildings - is one block of the grid; Rank Street goes south from the Square to the first street. Its buildings stop a walker.
+// The taxis drawn at the rank are its look until the taxi operator's Service places the taxis as Items (Vehicle Items driven by CAV Processes).
+if (W?.city) {
+  const c = W.city;
+  for (const r of c.solids) solids.push(r);
+  new GLTFLoader().load(c.model, g => { g.scene.traverse(o => { if (o.isMesh) o.receiveShadow = true; }); scene.add(g.scene); });
+  const tr = c.taxiRank;
+  if (tr) {
+    const l = label(tr.name); l.element.style.font = 'bold 16px system-ui, Arial'; l.position.set(tr.x, 4.2, -tr.y); scene.add(l); buildingLabels.push(l);
+    new GLTFLoader().load(tr.taxiModel, g => {
+      for (const b of tr.bays) { const t = g.scene.clone(); t.position.set(b.x, 0, -b.y); t.rotation.y = (b.yaw + 180) * Math.PI / 180; t.userData.rankTaxi = b.id; scene.add(t); }
+    });
+  }
+}
+
 // ---------------------------------------------------------------- the Environments reached through a Gate (2026-11-27): the CAV Proving Ground
 // An Environment is an M-Location of its own, far from the Square, reached through a Gate - one Item with a side on the Square and a side in the Environment: walked through, it
 // moves the Persona (MM-Move) to the other side. Its look is a glTF; its buildings, trees and barriers stop a walker; its roads are described exactly in world.json. What happens
@@ -183,7 +199,13 @@ if (W) {
 // changed with Property Change by a User holding the Right.
 const envs = new Map(), gates = [], signalHeads = [];
 const envOf = loc => envs.get(loc) ?? null;
-const boundsNow = () => (client && envOf(client.loc)?.bounds) || W.bounds;
+// Where a walker may go: the place it is in and, at the edge an Environment shares with the city (the Proving Ground, on Street y=-66), a few metres beyond, to cross it.
+const boundsNow = () => {
+  const e = client && envOf(client.loc);
+  if (e) return [e.bounds[0] - 3, e.bounds[1], e.bounds[2], e.bounds[3]];
+  const b = W.bounds, east = Math.max(b[2], ...[...envs.values()].map(v => v.bounds[0] + 3));
+  return [b[0], b[1], east, b[3]];
+};
 if (W) {
   const el = new GLTFLoader();
   for (const e of W.environments ?? []) {
@@ -1251,6 +1273,29 @@ function gateCheck(fwd, rad) {
     if (toward >= 0.5) { goThrough(g); return; }
   }
 }
+// THE EDGE OF AN ENVIRONMENT IN THE CITY (2026-11-28, M3329): the Proving Ground is part of the street grid, an M-Location of its own beside the Square's. Walking (or riding)
+// across its edge moves the Persona (MM-Move) from the M-Location of the Square to that of the Proving Ground, or back, where it is; the M-Instance may refuse it.
+function edgeCheck() {
+  if (client.moving || client.seated || !W) return;
+  for (const e of envs.values()) {
+    const [x0, y0, x1, y1] = e.bounds, inside = client.x >= x0 && client.x <= x1 && client.y >= y0 && client.y <= y1;
+    if (client.loc === 'MVS' && inside) { cross('MVS', e.id, x0 - 0.5); return; }
+    if (client.loc === e.id && !inside) { cross(e.id, 'MVS', x0 + 0.5); return; }
+  }
+}
+async function cross(from, to, backX) {
+  if (client.crossTried && Date.now() - client.crossTried < 2500) return;
+  client.crossTried = Date.now(); client.moving = true;
+  const [tx, ty] = origin[to];
+  const mv = await act('locate/mm-move', client.name, { Nil: client.persona, From: from, To: to, With: [spatial('SA-' + client.name + '-' + to, client.x - tx, client.y - ty, client.yaw)] });
+  client.moving = false;
+  if (mv.http === 200) {
+    Object.assign(client, { loc: to, at: to, ox: tx, oy: ty, sent: '', path: null }); marker.visible = false;
+    client.notice = to === 'MVS' ? 'Back in the city.' : `You are in the ${envOf(to)?.name ?? to}. Shift: run.`;
+  } else {
+    client.x = backX; client.notice = `${envOf(to === 'MVS' ? from : to)?.name ?? to}: ${mv.http === 403 ? 'you have no Right to go there (403)' : mv.http}.`;
+  }
+}
 async function goThrough(g) {
   if (client.moving || (g.tried && Date.now() - g.tried < 2500)) return;
   g.tried = Date.now(); client.moving = true;
@@ -1303,7 +1348,7 @@ function environmentFollows(dt) {               // each frame: entering or leavi
   if (e !== inEnv) {
     inEnv = e;
     if (e) { camera.far = 1500; applyConditions(e.now ?? e.conditions); scene.add(sun.target); }
-    else { camera.far = 300; scene.background = new THREE.Color(0x9cc3e6); scene.fog = null; sun.intensity = 1.6; hemi.intensity = 1.0; scene.environmentIntensity = 1; sun.position.set(8, 14, 10); sun.target.position.set(0, 0, 0); precipitation('Clear'); }
+    else { camera.far = 900; scene.background = new THREE.Color(0x9cc3e6); scene.fog = null; sun.intensity = 1.6; hemi.intensity = 1.0; scene.environmentIntensity = 1; sun.position.set(8, 14, 10); sun.target.position.set(0, 0, 0); precipitation('Clear'); }
     camera.updateProjectionMatrix(); conditionsPanel(e); grid = null;
   }
   if (!e) return;
@@ -1935,7 +1980,7 @@ function drive(dt) {   // the keys: W/S or up/down walk, A/D or left/right turn;
     const pace = envOf(client.loc) && k.has('shift') ? 9 : 2.2;      // in an Environment as large as the Proving Ground, Shift runs
     const nx = client.x - Math.sin(rad) * fwd * pace * dt, ny = client.y + Math.cos(rad) * fwd * pace * dt;
     if (!blocked(nx, client.y)) client.x = nx; if (!blocked(client.x, ny)) client.y = ny;
-    const B = boundsNow(); client.x = Math.max(B[0], Math.min(B[2], client.x)); client.y = Math.max(B[1], Math.min(B[3], client.y)); doorCheck(fwd, rad); gateCheck(fwd, rad);
+    const B = boundsNow(); client.x = Math.max(B[0], Math.min(B[2], client.x)); client.y = Math.max(B[1], Math.min(B[3], client.y)); doorCheck(fwd, rad); gateCheck(fwd, rad); edgeCheck();
   }
   client.x = W || client.seated ? client.x : Math.max(-HALF, Math.min(HALF, client.x - Math.sin(rad) * fwd * 2 * dt));   // yaw 0 looks north (+y); positive yaw turns to the west (-x)
   client.y = W || client.seated ? client.y : Math.max(-HALF, Math.min(HALF, client.y + Math.cos(rad) * fwd * 2 * dt));

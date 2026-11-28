@@ -64,6 +64,20 @@ public class DomainKnowledgeTests
         if (place is not null) Assert.Contains(place, found);
     }
 
+    // WHAT THE REQUEST SELECTS (M3328 3.7): the items it names have Relevance 1 - their References are what the AMS acts on; the others at most 0.9.
+    [Theory]
+    [InlineData("Please take me to the Roundabout.", "HCIMessage.RequestedRoutes,J23_0")]
+    [InlineData("Yes, let's go.", "HCIMessage.RouteCommand:Execute")]
+    [InlineData("Pull over, please.", "HCIMessage.RouteCommand:Suspend")]
+    [InlineData("Banana", "")]
+    public void TheItemsARequestNamesAreWhatItSelects(string request, string references)
+    {
+        var items = DkrAimProcessor.Retrieve(DkrAimProcessor.Merge(CavTec(), Cav()), request)["Items"]!.AsArray();
+        var selected = items.Where(i => (double)i!["Relevance"]! >= 1).Select(i => (string?)i!["Reference"]).OfType<string>().OrderBy(r => r, StringComparer.Ordinal);
+        Assert.Equal(references.Split(',', StringSplitOptions.RemoveEmptyEntries).OrderBy(r => r, StringComparer.Ordinal), selected);
+        Assert.All(items.Where(i => (double)i!["Relevance"]! < 1), i => Assert.True((double)i!["Relevance"]! <= 0.9));
+    }
+
     [Fact]
     public void TheCavTecKnowledgeComesFromTheStandardAndSatisfiesItsSchema()
     {

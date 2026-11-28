@@ -84,7 +84,8 @@ public sealed class DkrAimProcessor : IAimProcessor
     private static string Phrase(string text) => " " + string.Join(" ", Regex.Matches(text.ToLowerInvariant(), @"[\p{L}\p{N}]+").Select(m => m.Value)) + " ";
     private static IEnumerable<string> Synonyms(JsonObject item) => (item["Synonyms"] as JsonArray ?? []).Select(s => (string?)s ?? "").Where(s => s.Length > 0);
 
-    // The items of the knowledge relevant to the request, most relevant first, at most `most` of them; Relevance from 0 to 1 (the best 1).
+    // The items of the knowledge relevant to the request, most relevant first, at most `most` of them; Relevance 1 for an item the request names (its Name or one of its
+    // Synonyms said), at most 0.9 for the others: the items of Relevance 1 are what the request selects of the application's knowledge (M3328 3.7).
     public static JsonObject Retrieve(JsonObject? knowledge, string request, int most = 6)
     {
         var items = (knowledge?["Items"] as JsonArray ?? []).OfType<JsonObject>().ToList();
@@ -100,7 +101,7 @@ public sealed class DkrAimProcessor : IAimProcessor
             var score = query.Sum(w => { var f = d.Count(x => x == w); return f == 0 ? 0 : Idf(w) * f * (k1 + 1) / (f + k1 * (1 - b + b * d.Count / avg)); });
             var name = (string?)item["Name"];
             var named = new[] { name ?? "" }.Concat(Synonyms(item)).Where(n => n.Length > 0).Any(n => Phrase(n).Trim().Length > 0 && said.Contains(Phrase(n)));
-            return (Item: item, Score: score + (named ? 100 : 0));
+            return (Item: item, Score: score + (named ? 100 : 0), Named: named);
         }).Where(x => x.Score > 0).OrderByDescending(x => x.Score).Take(most).ToList();
         var best = scored.Count == 0 ? 1 : scored[0].Score;
         var result = new JsonObject
@@ -109,7 +110,7 @@ public sealed class DkrAimProcessor : IAimProcessor
             ["Items"] = new JsonArray(scored.Select(x =>
             {
                 var o = (JsonObject)x.Item.DeepClone();
-                o["Relevance"] = Math.Round(Math.Min(1, x.Score / best), 3);
+                o["Relevance"] = x.Named ? 1.0 : Math.Round(Math.Min(0.9, x.Score / best), 3);      // 1: named by the request (its Name or a Synonym said); what an application acts on
                 return (JsonNode)o;
             }).ToArray())
         };

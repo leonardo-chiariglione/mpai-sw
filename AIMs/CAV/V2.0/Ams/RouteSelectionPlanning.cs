@@ -25,6 +25,11 @@ namespace Mpai.Cav.Ams;
 // proposed again, the Route being driven kept until another is executed. Each
 // command HCI gives is answered with the Route's state, and Arrived is told when the
 // CAV stands at the end of its Route.
+//
+// THE PASSENGER'S REQUEST AS DOMAIN KNOWLEDGE (M3328 3.7, 2026-11-28). What the passenger said reaches the AMS also as the items of the CAV's Domain Knowledge it named
+// (Relevance 1): an action of CAV-TEC (Reference HCIMessage.RequestedRoutes, HCIMessage.SelectedRouteID, HCIMessage.RouteCommand:<command>) and what it is about - a
+// place (a Way Point of the map) or a Route proposed (its Route ID). No schema of a request: only identifiers the AMS itself gave, turned here into what an AMS-HCI
+// Message would ask. What the AMS does is Domain Knowledge too: with the places, the Routes it proposed and the state of the Route driven, given again at each change.
 public sealed class RouteSelectionPlanning(string instanceId) : IAimProcessor, IAimRunner
 {
     private const double ArrivedWithin = 15, Standing = 0.2, TooNear = 50;
@@ -61,13 +66,52 @@ public sealed class RouteSelectionPlanning(string instanceId) : IAimProcessor, I
             ["Items"] = items
         };
     }
+    // The knowledge of now: that of the map, the Routes proposed, the state of the Route driven.
+    private JsonObject Now()
+    {
+        var k = Knowledge(map!);
+        var items = k["Items"]!.AsArray();
+        string Named(string id) => map!.WayPoints.FirstOrDefault(w => w.Id == id)?.Name ?? id;
+        for (var i = 0; i < candidates.Count; i++)
+        {
+            var (id, segments) = candidates[i];
+            items.Add(new JsonObject
+            {
+                ["ItemID"] = id, ["Name"] = i == 0 ? "the first route" : "the second route",
+                ["Synonyms"] = i == 0 ? new JsonArray("the first one", "the fastest", "the quickest", "the shorter", "the shortest")
+                                      : new JsonArray("the second one", "the other one", "the other route", "the alternative", "the longer"),
+                ["Reference"] = id, ["Source"] = AmsTypes.Hci,
+                ["Text"] = $"Route {id}, proposed to the {Named(destination!)}{(i == 0 ? ", the quickest" : ", another way")}: {segments.Sum(s => map!.Length(s)):0} m, about {map!.TimeOf(segments):0} s."
+            });
+        }
+        if (status is not null && destination is not null)
+            items.Add(new JsonObject
+            {
+                ["ItemID"] = "RouteNow", ["Source"] = AmsTypes.Hci,
+                ["Text"] = status switch
+                {
+                    "Executing" => $"The car is driving the passenger to the {Named(destination)} (Route {routeId}).",
+                    "Suspended" => $"The car has halted on the way to the {Named(destination)}; it goes on when the passenger says so.",
+                    "Stopped"   => $"The car has stopped; the trip to the {Named(destination)} is abandoned.",
+                    "Arrived"   => $"The car has arrived at the {Named(destination)}.",
+                    _ => $"Route {routeId}: {status}."
+                }
+            });
+        return k;
+    }
+
+    private static async Task Give(IAimPorts ports, JsonObject knowledge)
+    {
+        try { await ports.WriteAsync(KnowledgeType, 1, knowledge.ToJsonString()); } catch (Exception) { }      // an L3 without the Port: nothing to give
+    }
+
     public Task<Message> ProcessAsync(Message message) => throw new NotSupportedException("CAV-RSP runs continuously.");
 
     public async Task RunAsync(IAimPorts ports, AimContext context)
     {
         var replan = false;
         string? command = null;
-        while (await ports.SelectAsync(-1, (AmsTypes.Map, 1), (AmsTypes.Hci, 1), (AmsTypes.Interaction, 1), (AmsTypes.Fed, 1)) is { } port)
+        while (await ports.SelectAsync(-1, (AmsTypes.Map, 1), (AmsTypes.Hci, 1), (KnowledgeType, 1), (AmsTypes.Interaction, 1), (AmsTypes.Fed, 1)) is { } port)
         {
             if (await ports.ReadAsync(port.DataType, 1, 0) is not { } m) continue;
             var json = JsonNode.Parse(m.Json)!;
@@ -75,7 +119,28 @@ public sealed class RouteSelectionPlanning(string instanceId) : IAimProcessor, I
             {
                 case AmsTypes.Map:
                     map = RoadMap.FromOfflineMapObject(json);
-                    try { await ports.WriteAsync(KnowledgeType, 1, Knowledge(map).ToJsonString()); } catch (Exception) { }      // an L3 without the Port: nothing to give
+                    await Give(ports, Now());
+                    continue;
+                case KnowledgeType:
+                    // The items the passenger named, and the identifiers this AMS gave them.
+                    var named = (json["Items"] as JsonArray ?? []).OfType<JsonObject>().Where(i => (double?)i["Relevance"] >= 1).Select(i => (string?)i["Reference"]).OfType<string>().ToList();
+                    var place = map is null ? null : named.FirstOrDefault(r => map.WayPoints.Any(w => w.Id == r));
+                    var chosenRoute = named.FirstOrDefault(r => candidates.Any(x => x.Id == r));
+                    if (named.Contains("HCIMessage.RequestedRoutes") && place is not null)
+                    {
+                        destination = place; propose = true; candidates = [];
+                        executeFirst = false;
+                    }
+                    if (named.Contains("HCIMessage.SelectedRouteID") && chosenRoute is not null) selected = chosenRoute;
+                    if (named.FirstOrDefault(r => r.StartsWith("HCIMessage.RouteCommand:", StringComparison.Ordinal)) is { } said)
+                    {
+                        command = said["HCIMessage.RouteCommand:".Length..];
+                        if (command == "Execute")
+                        {
+                            selected = chosenRoute ?? selected;
+                            if (selected is null && propose) { executeFirst = true; command = null; }
+                        }
+                    }
                     continue;
                 case AmsTypes.Hci:
                     var hci = json["HCIMessage"];
@@ -113,6 +178,7 @@ public sealed class RouteSelectionPlanning(string instanceId) : IAimProcessor, I
                 candidates = Candidates(here, destination);
                 if (candidates.Count == 0) context.Report($"no Route from {here.To} to {destination}");
                 await Tell(ports, ms, new JsonObject { ["RouteList"] = new JsonArray(candidates.Select(c => (JsonNode)RouteObject(c.Id, c.Segments, ms, true)).ToArray()) });
+                await Give(ports, Now());
                 if (executeFirst && candidates.Count > 0) { executeFirst = false; command = "Execute"; selected = candidates[0].Id; }
             }
 
@@ -207,8 +273,10 @@ public sealed class RouteSelectionPlanning(string instanceId) : IAimProcessor, I
 
     private async Task State(IAimPorts ports, long ms, string state)
     {
+        var changed = status != state;
         status = state;
         await Tell(ports, ms, new JsonObject { ["RouteStatus"] = new JsonObject { ["RouteID"] = routeId, ["Status"] = state } });
+        if (changed) await Give(ports, Now());
     }
 
     private async Task Tell(IAimPorts ports, long ms, JsonObject amsMessage)

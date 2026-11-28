@@ -78,7 +78,7 @@ public static class World
         Meeting.Areas = Areas(world);
         Meeting.AllPlaces = world["buildings"]!.AsArray().OfType<JsonObject>().SelectMany(b => b["rooms"]!.AsArray().OfType<JsonObject>()).Where(r => (bool?)r["public"] != true).Select(r => (string)r["id"]!).ToArray();
         m.AddService(Meeting.BuildingService);
-        ProvingGround.Setup(m, world);                                    // the CAV Proving Ground, through its Gate on the Square
+        ProvingGround.Setup(m, world);                                    // the CAV Proving Ground, at the east end of Street y=-66
         m.AddService(Meeting.Asr);
         m.AddService(Meeting.Secretary, Meeting.SecretaryPersona, "catalogue/Female_Adult_05.glb");
         foreach (var b in world["buildings"]!.AsArray().OfType<JsonObject>())

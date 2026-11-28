@@ -5,7 +5,8 @@ namespace Mpai.Mmm.Client;
 // THE CAV PROVING GROUND (2026-11-27): an M-Location of the MMM where a Connected Autonomous Vehicle tests what it can do (World/make_proving_ground.py writes it: its roads, exactly).
 // It is not a copy of a place of the Universe: what happens there is changed at once by a User holding the Right - the time of day, the weather and the grip of the road are Item
 // Properties of its M-Location (MMM-IPR-V3.0: TimeOfDay, Weather, Friction); its traffic lights are Items (Kind TrafficLight) whose Signal the Proving Ground Service changes in turn.
-// It is reached through a Gate on the Metaverse Square: an Item (Kind Gate) that gives access to it. The Proving Ground Service holds the Rights to it, its Gate and its traffic lights;
+// It is part of the street grid round the Metaverse Square (2026-11-28, M3329): Street y=-66 of the city leads to its Entrance Plaza, and a Persona or a vehicle crossing its west edge
+// is moved (MM-Move) from the M-Location of the Square to its own (before, a Gate on the Square led to it). The Proving Ground Service holds the Rights to it and its traffic lights;
 // it is public: any User may enter and look. Its conditions are changed by the Users the Service gives the Right to: a Participant's, an Officer's, the Manager's - not a Visitor's.
 public static class ProvingGround
 {

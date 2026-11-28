@@ -148,8 +148,9 @@ File.WriteAllText(settings, all.ToJsonString());
 const string voice = "en_GB-alan-medium";
 try
 {
-    using var cabin = new CavWorld(sim, [new(null, $"Please take me to the {to}.", After: 3), new("Shall we", "Yes, let's go.")], text => Passenger(root, text, voice),
-                                   AvatarUtterance.AvatarDatum("cav-avatar.glb"), maxSteps: 3000) { Stepped = s => latest = Pose(s) };
+    // The passenger asks, and agrees to whatever the CAV answers first; the drive ends on arrival.
+    using var cabin = new CavWorld(sim, [new(null, $"Please take me to the {to}.", After: 3), new("", "Yes, let's go.")], text => Passenger(root, text, voice),
+                                   AvatarUtterance.AvatarDatum("cav-avatar.glb"), maxSteps: 3000, endCue: null) { Stepped = s => latest = Pose(s) };
     using var api = new ControllerApi(Path.Combine(root, "AIMs", "AMDs"), settings, store => new CompositeProvider(new EssProvider(root), new AmsProvider(), new MasProvider(), new HciProvider(store, root)));
     var devices = new DeviceRegistry()
         .RegisterDevice("Vehicle", cabin.Vehicle).RegisterDevice("Cabin", cabin.Cabin).RegisterDevice("Hearing", cabin.Hearing)
@@ -166,6 +167,9 @@ try
         said = cabin.Said.Count;
         await Task.WhenAny(cabin.Finished, run, Task.Delay(500));
     }
+    if (cabin.Failure is not null)       // which AIM did not do its part
+        foreach (var x in api.Status(interpreter.ModuleId).Aims.Where(x => x.Status.ToString() is not ("Alive" or "Running") || x.Reports.Count > 0))
+            Console.WriteLine($"  AIM {x.Aim}: {x.Status} {x.Reason} {string.Join("; ", x.Reports.TakeLast(3))}");
     stop.Cancel();
     try { await run.WaitAsync(TimeSpan.FromSeconds(60)); } catch (Exception) { }
     foreach (var (at, text) in cabin.Said.Skip(said)) Console.WriteLine($"{at,6:0.0} s  the CAV: {text}");

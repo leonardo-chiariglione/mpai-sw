@@ -25,4 +25,4 @@
       "Synonyms":             { "type": "array", "items": { "type": "string" }, "description": "Other words and phrases by which a person says the same as the Name: the vocabulary of the domain, with its synonyms and variations." },
       "Reference":            { "type": "string", "description": "The identifier by which the application identifies what is named (a Way Point of an Offline Map, an Object of a Scene)." },
       "Source":               { "type": "string", "description": "Where the item comes from (a document, a Data Type of the application)." },
-      "Relevance":            { "type": "number", "minimum": 0, "maximum": 1, "description": "How relevant the item is to the request it was retrieved for: given by Domain Knowledge Retrieval." } } } } }
+      "Relevance":            { "type": "number", "minimum": 0, "maximum": 1, "description": "How relevant the item is to the request it was retrieved for, given by Domain Knowledge Retrieval: 1 for an item the request names (its Name or one of its Synonyms), less than 1 for the others." } } } } }
